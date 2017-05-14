@@ -155,7 +155,7 @@ def help_msg(bot: Bot, update):
                                                          '\n\n'
                                                          'Команды глобаладмина:\n'
                                                          '/set_admin <юзернэйм> - Добавить админа для текущего чата\n'
-                                                         '/del_admin <юзернэйм> - Забрать привелегии у админа текущего'
+                                                         '/del_admin <юзернэйм> - Забрать привелегии у админа текущего '
                                                          'чата')
 
 
@@ -277,6 +277,11 @@ def del_admin(bot: Bot, update: Update):
                            text='@{}, тебя разжаловали.'.format(user.username))
 
 
+@admin()
+def kick(bot: Bot, update: Update):
+    bot.leave_chat(update.message.chat.id)
+
+
 def main():
     # Create the EventHandler and pass it your bot's token.
     updater = Updater("386494081:AAFFK6Wy0RYktHqPr_Pyqi9vXXbupWC3sgI")
@@ -297,6 +302,7 @@ def main():
     dp.add_handler(CommandHandler("show_welcome", show_welcome))
     dp.add_handler(CommandHandler("set_admin", set_admin))
     dp.add_handler(CommandHandler("del_admin", del_admin))
+    dp.add_handler(CommandHandler("kick", kick))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.status_update, welcome))
