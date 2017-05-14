@@ -154,9 +154,10 @@ def help_msg(bot: Bot, update):
                                                          '/list_triggers - Показать все существующие триггеры'
                                                          '\n\n'
                                                          'Команды глобаладмина:\n'
-                                                         '/set_admin <юзернэйм> - Добавить админа для текущего чата\n'
+                                                         '/add_admin <юзернэйм> - Добавить админа для текущего чата\n'
                                                          '/del_admin <юзернэйм> - Забрать привелегии у админа текущего '
-                                                         'чата')
+                                                         'чата\n'
+                                                         '/list_admins - Показать список местных админов')
 
 
 @admin(adm_type=AdminType.GROUP)
@@ -212,6 +213,26 @@ def trigger_show(bot: Bot, update: Update):
 
 def manage_text(bot: Bot, update: Update):
     add_user(bot, update)
+    if str(update.message.text).upper().startswith('Приветствие:'.upper()):
+        set_welcome(bot, update)
+    elif update.message.text.upper() == 'Помощь'.upper():
+        help_msg(bot, update)
+    elif update.message.text.upper() == 'Покажи приветствие'.upper():
+        show_welcome(bot, update)
+    elif update.message.text.upper() == 'Включи приветствие'.upper():
+        enable_welcome(bot, update)
+    elif update.message.text.upper() == 'Выключи приветствие'.upper():
+        disable_welcome(bot, update)
+    elif str(update.message.text).upper().startswith('Затриггерь:'.upper()):
+        set_trigger(bot, update)
+    elif str(update.message.text).upper().startswith('Разтриггерь:'.upper()):
+        del_trigger(bot, update)
+    elif update.message.text.upper() == 'Список триггеров'.upper():
+        list_triggers(bot, update)
+    elif update.message.text.upper() == 'Список админов'.upper():
+        list_admins(bot, update)
+    elif update.message.text.upper() == 'Пинг'.upper():
+        ping(bot, update)
     trigger_show(bot, update)
 
 
@@ -260,13 +281,28 @@ def set_admin(bot: Bot, update: Update):
 @admin()
 def del_admin(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)[1]
-    msg = msg.replace('@', '')
-    if msg != '':
-        user = session.query(User).filter_by(username=msg).first()
+    if msg.find('@') != -1:
+        msg = msg.replace('@', '')
+        if msg != '':
+            user = session.query(User).filter_by(username=msg).first()
+            if user is None:
+                send_async(bot, chat_id=update.message.chat.id, text='Не знаю таких')
+            else:
+                adm = session.query(Admin).filter_by(user_id=user.id, admin_group=update.message.chat.id).first()
+                if adm is None:
+                    send_async(bot, chat_id=update.message.chat.id,
+                               text='У @{} здесь нет власти!'.format(user.username))
+                else:
+                    session.delete(adm)
+                    session.commit()
+                    send_async(bot, chat_id=update.message.chat.id,
+                               text='@{}, тебя разжаловали.'.format(user.username))
+    else:
+        user = session.query(User).filter_by(id=msg).first()
         if user is None:
             send_async(bot, chat_id=update.message.chat.id, text='Не знаю таких')
         else:
-            adm = session.query(Admin).filter_by(user_id=user.id, admin_group=update.message.chat.id).first()
+            adm = session.query(Admin).filter_by(user_id=msg, admin_group=update.message.chat.id).first()
             if adm is None:
                 send_async(bot, chat_id=update.message.chat.id,
                            text='У @{} здесь нет власти!'.format(user.username))
@@ -280,6 +316,18 @@ def del_admin(bot: Bot, update: Update):
 @admin()
 def kick(bot: Bot, update: Update):
     bot.leave_chat(update.message.chat.id)
+
+
+@admin()
+def list_admins(bot: Bot, update: Update):
+    admins = session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
+    users = []
+    for admin_user in admins:
+        users.append(session.query(User).filter_by(id=admin_user.user_id).first())
+    msg = 'Список здешних админов:\n'
+    for user in users:
+        msg += '{} @{} {} {}\n'.format(user.id, user.username, user.first_name, user.last_name)
+    send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
 def main():
@@ -300,8 +348,9 @@ def main():
     dp.add_handler(CommandHandler("enable_welcome", enable_welcome))
     dp.add_handler(CommandHandler("disable_welcome", disable_welcome))
     dp.add_handler(CommandHandler("show_welcome", show_welcome))
-    dp.add_handler(CommandHandler("set_admin", set_admin))
+    dp.add_handler(CommandHandler("add_admin", set_admin))
     dp.add_handler(CommandHandler("del_admin", del_admin))
+    dp.add_handler(CommandHandler("list_admins", list_admins))
     dp.add_handler(CommandHandler("kick", kick))
 
     # on noncommand i.e message - echo the message on Telegram
