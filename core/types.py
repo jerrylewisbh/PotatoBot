@@ -16,10 +16,12 @@ class AdminType(Enum):
 
 
 engine = create_engine('mysql+pymysql://mint_bot:VF;F8A{pWtW[X4sWC8du=N]u@fdev.me/mint_castle?charset=utf8mb4',
-                       echo=True)
+                       echo=True, pool_size=20, max_overflow=10)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 logger = logging.getLogger(__name__)
+session = Session()
+
 
 @event.listens_for(Pool, "connect")
 def set_unicode(dbapi_conn, conn_record):
@@ -28,6 +30,15 @@ def set_unicode(dbapi_conn, conn_record):
         cursor.execute("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'")
     except Exception as e:
         logger.debug(e)
+
+
+class Group(Base):
+    __tablename__ = 'groups'
+
+    id = Column(BigInteger, primary_key=True)
+    username = Column(UnicodeText(250))
+    title = Column(UnicodeText(250))
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -54,6 +65,7 @@ class WelcomeMsg(Base):
     chat_id = Column(BigInteger, primary_key=True)
     message = Column(UnicodeText(2500))
     enabled = Column(Boolean, default=False)
+    allow_trigger_all = Column(Boolean, default=False)
 
 
 class Wellcomed(Base):
@@ -79,10 +91,10 @@ class Admin(Base):
     admin_group = Column(BigInteger, primary_key=True, default=0)
 
 
-def admin(func=None, adm_type=AdminType.FULL):
+def admin(adm_type=AdminType.FULL):
     def decorate(func):
         def wrapper(bot, update, *args, **kwargs):
-            adms = Session().query(Admin).filter_by(user_id=update.message.from_user.id).all()
+            adms = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
             allowed = False
             for adm in adms:
                 if adm is not None and adm.admin_type <= adm_type.value and (
@@ -93,6 +105,16 @@ def admin(func=None, adm_type=AdminType.FULL):
                 func(bot, update, *args, **kwargs)
         return wrapper
     return decorate
+
+
+def trigger_decorator(func):
+    def wrapper(bot, update, *args, **kwargs):
+        welcome = session.query(WelcomeMsg).filter_by(chat_id=update.message.chat.id).first()
+        if welcome.allow_trigger_all:
+            func(bot, update, *args, **kwargs)
+        else:
+            ((admin(adm_type=AdminType.GROUP))(func))(bot, update, *args, **kwargs)
+    return wrapper
 
 
 Base.metadata.create_all(engine)
