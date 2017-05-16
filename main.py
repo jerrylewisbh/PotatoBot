@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
-from core.types import admin, session, Group
-from core.common import help_msg, ping, start, error, kick
-from core.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
-from core.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
-    disable_trigger_all, trigger_show
-from core.inline_keyboard_handling import callback_query
-from core.admins import list_admins, admins_for_users, set_admin, del_admin
-from core.utils import send_async, add_user, update_group
 import json
 
+from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+
+from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin
+from core.functions.common import help_msg, ping, start, error, kick
+from core.functions.inline_keyboard_handling import callback_query
+from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
+    disable_trigger_all, trigger_show
+from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
+from core.types import admin, session, Group
+from core.utils import send_async, add_user
 
 last_welcome = 0
 

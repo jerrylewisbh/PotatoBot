@@ -1,7 +1,8 @@
 from telegram import Update, Bot
+
+from core.functions.triggers import trigger_decorator
 from core.types import AdminType, Admin, admin, session
 from core.utils import logger, send_async
-from core.triggers import trigger_decorator
 
 
 def error(bot: Bot, update, error, **kwargs):
