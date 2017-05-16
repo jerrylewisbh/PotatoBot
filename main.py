@@ -7,8 +7,9 @@ from core.types import User, Group, Wellcomed, WelcomeMsg, Trigger, AdminType, A
     session
 from core.template import fill_template
 from time import time
+import json
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 last_welcome = 0
@@ -289,33 +290,48 @@ def update_group(bot: Bot, update: Update):
 def manage_text(bot: Bot, update: Update):
     add_user(bot, update)
     update_group(bot, update)
-    if str(update.message.text).upper().startswith('Приветствие:'.upper()):
-        set_welcome(bot, update)
-    elif update.message.text.upper() == 'Помощь'.upper():
-        help_msg(bot, update)
-    elif update.message.text.upper() == 'Покажи приветствие'.upper():
-        show_welcome(bot, update)
-    elif update.message.text.upper() == 'Включи приветствие'.upper():
-        enable_welcome(bot, update)
-    elif update.message.text.upper() == 'Выключи приветствие'.upper():
-        disable_welcome(bot, update)
-    elif str(update.message.text).upper().startswith('Затриггерь:'.upper()):
-        set_trigger(bot, update)
-    elif str(update.message.text).upper().startswith('Разтриггерь:'.upper()):
-        del_trigger(bot, update)
-    elif update.message.text.upper() == 'Список триггеров'.upper():
-        list_triggers(bot, update)
-    elif update.message.text.upper() == 'Список админов'.upper():
-        list_admins(bot, update)
-    elif update.message.text.upper() == 'Пинг'.upper():
-        ping(bot, update)
-    elif update.message.text.upper() == 'Разрешить триггерить всем'.upper():
-        enable_trigger_all(bot, update)
-    elif update.message.text.upper() == 'Запретить триггерить всем'.upper():
-        disable_trigger_all(bot, update)
-    elif update.message.text.upper() == 'Админы'.upper():
-        admins_for_users(bot, update)
-    trigger_show(bot, update)
+    if update.message.chat.type in ['group', 'supergroup', 'channel']:
+        if str(update.message.text).upper().startswith('Приветствие:'.upper()):
+            set_welcome(bot, update)
+        elif update.message.text.upper() == 'Помощь'.upper():
+            help_msg(bot, update)
+        elif update.message.text.upper() == 'Покажи приветствие'.upper():
+            show_welcome(bot, update)
+        elif update.message.text.upper() == 'Включи приветствие'.upper():
+            enable_welcome(bot, update)
+        elif update.message.text.upper() == 'Выключи приветствие'.upper():
+            disable_welcome(bot, update)
+        elif str(update.message.text).upper().startswith('Затриггерь:'.upper()):
+            set_trigger(bot, update)
+        elif str(update.message.text).upper().startswith('Разтриггерь:'.upper()):
+            del_trigger(bot, update)
+        elif update.message.text.upper() == 'Список триггеров'.upper():
+            list_triggers(bot, update)
+        elif update.message.text.upper() == 'Список админов'.upper():
+            list_admins(bot, update)
+        elif update.message.text.upper() == 'Пинг'.upper():
+            ping(bot, update)
+        elif update.message.text.upper() == 'Разрешить триггерить всем'.upper():
+            enable_trigger_all(bot, update)
+        elif update.message.text.upper() == 'Запретить триггерить всем'.upper():
+            disable_trigger_all(bot, update)
+        elif update.message.text.upper() == 'Админы'.upper():
+            admins_for_users(bot, update)
+        trigger_show(bot, update)
+    elif update.message.chat.type == 'private':
+        if update.message.text.upper() == 'Статус'.upper():
+            send_status(bot, update)
+
+
+@admin()
+def send_status(bot: Bot, update: Update):
+    msg = 'Выбери чат'
+    groups = session.query(Group).all()
+    inline_keys = []
+    for group in groups:
+        inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps({'type': 'group_info', 'id': str(group.id)})))
+    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
+    send_async(bot, chat_id=update.message.chat.id, text=msg, reply_markup=inline_markup)
 
 
 @admin(adm_type=AdminType.GROUP)
@@ -457,6 +473,25 @@ def admins_for_users(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
+def callback_query(bot: Bot, update: Update):
+    data = json.loads(update.callback_query.data)
+    if data['type'] == 'group_info':
+        group = session.query(Group).filter(Group.id == data['id']).first()
+        admins = session.query(Admin).filter(Admin.admin_group == data['id']).all()
+        welcome = session.query(WelcomeMsg).filter(WelcomeMsg.chat_id == data['id']).first()
+        msg = 'Группа: ' + group.title + '\n\n' \
+              'Админы:\n'
+        for adm in admins:
+            user = session.query(User).filter_by(id=adm.user_id).first()
+            msg += '{} @{} {} {}\n'.format(user.id, user.username, user.first_name, user.last_name)
+        msg += '\n' \
+               'Приветствие: {}\n' \
+               'Триггерят все: {}'.format('Включено' if welcome.enabled else 'Выключено',
+                                          'Включено' if welcome.allow_trigger_all else 'Выключено')
+        bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id)
+
+
+
 def main():
     # Create the EventHandler and pass it your bot's token.
     updater = Updater("386494081:AAFFK6Wy0RYktHqPr_Pyqi9vXXbupWC3sgI")
@@ -482,6 +517,8 @@ def main():
     dp.add_handler(CommandHandler("kick", kick))
     dp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     dp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
+
+    dp.add_handler(CallbackQueryHandler(callback_query))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.status_update, welcome))
