@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from telegram import Update, Bot
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import Update, Bot, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from telegram.ext.dispatcher import run_async
 from core.types import User, Group, Wellcomed, WelcomeMsg, Trigger, AdminType, Admin, admin, trigger_decorator, \
     session
@@ -88,7 +88,26 @@ def set_trigger(bot: Bot, update: Update):
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text='Триггер на фразу "{}" установлен.'.format(new_trigger[0]))
     else:
-        send_async(bot, chat_id=update.message.chat.id, text='Какие-то у тебя несведие мысли, попробуй ещё раз.')
+        send_async(bot, chat_id=update.message.chat.id, text='Какие-то у тебя несвежие мысли, попробуй ещё раз.')
+
+
+@admin(adm_type=AdminType.GROUP)
+def add_trigger(bot: Bot, update: Update):
+    msg = update.message.text.split(' ', 1)[1]
+    new_trigger = msg.split('::', 1)
+    if len(new_trigger) == 2:
+        trigger = session.query(Trigger).filter_by(trigger=new_trigger[0]).first()
+        if trigger is None:
+            trigger = Trigger(trigger=new_trigger[0], message=new_trigger[1])
+            session.add(trigger)
+            session.commit()
+            send_async(bot, chat_id=update.message.chat.id,
+                       text='Триггер на фразу "{}" установлен.'.format(new_trigger[0]))
+        else:
+            send_async(bot, chat_id=update.message.chat.id,
+                       text='Триггер "{}" уже существует, выбери другой.'.format(new_trigger[0]))
+    else:
+        send_async(bot, chat_id=update.message.chat.id, text='Какие-то у тебя несвежие мысли, попробуй ещё раз.')
 
 
 @admin(adm_type=AdminType.GROUP)
@@ -141,29 +160,58 @@ def disable_welcome(bot: Bot, update: Update):
 
 @trigger_decorator
 def help_msg(bot: Bot, update):
-    send_async(bot, chat_id=update.message.chat.id, text='Команды приветствия:\n'
-                                                         '/enable_welcome - Включить приветствие\n'
-                                                         '/disable_welcome - Выключить приветствие\n'
-                                                         '/set_welcome <текст> - Установить текст приветствия. '
-                                                         'Может содержать %username% - будет заменено на @username, '
-                                                         'если не установлено на Имя Фамилия, %first_name% - на имя, '
-                                                         '%last_name% - на фамилию, %id% - на id\n'
-                                                         '/show_welcome - Показать текущий текст приветствия для '
-                                                         'данного чата'
-                                                         '\n\n'
-                                                         'Команды триггеров:\n'
-                                                         '/set_trigger <триггер>::<сообщение> - Установить сообщение, '
-                                                         'которое бот будет кидать по триггеру.\n'
-                                                         '/del_trigger <триггер> - Удалить соответствующий триггер\n'
-                                                         '/list_triggers - Показать все существующие триггеры'
-                                                         '\n\n'
-                                                         'Команды глобаладмина:\n'
-                                                         '/add_admin <юзернэйм> - Добавить админа для текущего чата\n'
-                                                         '/del_admin <юзернэйм> - Забрать привелегии у админа текущего '
-                                                         'чата\n'
-                                                         '/list_admins - Показать список местных админов\n'
-                                                         '/enable_trigger - Разрешить триггерить всем в группе\n'
-                                                         '/disable_trigger - Запретить триггерить всем в группе')
+    admin_user = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+    global_adm = False
+    for adm in admin_user:
+        if adm.admin_type == AdminType.FULL.value:
+            global_adm = True
+            break
+    if global_adm:
+        send_async(bot, chat_id=update.message.chat.id, text='Команды приветствия:\n'
+                                                             '/enable_welcome - Включить приветствие\n'
+                                                             '/disable_welcome - Выключить приветствие\n'
+                                                             '/set_welcome <текст> - Установить текст приветствия. '
+                                                             'Может содержать %username% - будет заменено на @username, '
+                                                             'если не установлено на Имя Фамилия, %first_name% - на имя, '
+                                                             '%last_name% - на фамилию, %id% - на id\n'
+                                                             '/show_welcome - Показать текущий текст приветствия для '
+                                                             'данного чата'
+                                                             '\n\n'
+                                                             'Команды триггеров:\n'
+                                                             '/set_trigger <триггер>::<сообщение> - Установить сообщение, '
+                                                             'которое бот будет кидать по триггеру.\n'
+                                                             '/add_trigger <триггер>::<сообщение> - Добавляет сообщение, '
+                                                             'которое бот будет кидать по триггеру, но не заменяет старый.\n'
+                                                             '/del_trigger <триггер> - Удалить соответствующий триггер\n'
+                                                             '/list_triggers - Показать все существующие триггеры'
+                                                             '\n\n'
+                                                             'Команды глобаладмина:\n'
+                                                             '/add_admin <юзернэйм> - Добавить админа для текущего чата\n'
+                                                             '/del_admin <юзернэйм> - Забрать привелегии у админа текущего '
+                                                             'чата\n'
+                                                             '/list_admins - Показать список местных админов\n'
+                                                             '/enable_trigger - Разрешить триггерить всем в группе\n'
+                                                             '/disable_trigger - Запретить триггерить всем в группе')
+    elif len(admin_user) != 0:
+        send_async(bot, chat_id=update.message.chat.id, text='Команды приветствия:\n'
+                                                             '/enable_welcome - Включить приветствие\n'
+                                                             '/disable_welcome - Выключить приветствие\n'
+                                                             '/set_welcome <текст> - Установить текст приветствия. '
+                                                             'Может содержать %username% - будет заменено на @username, '
+                                                             'если не установлено на Имя Фамилия, %first_name% - на имя, '
+                                                             '%last_name% - на фамилию, %id% - на id\n'
+                                                             '/show_welcome - Показать текущий текст приветствия для '
+                                                             'данного чата'
+                                                             '\n\n'
+                                                             'Команды триггеров:\n'
+                                                             '/add_trigger <триггер>::<сообщение> - Добавляет сообщение, '
+                                                             'которое бот будет кидать по триггеру, но не заменяет старый.\n'
+                                                             '/list_triggers - Показать все существующие триггеры\n'
+                                                             '/enable_trigger - Разрешить триггерить всем в группе\n'
+                                                             '/disable_trigger - Запретить триггерить всем в группе')
+    else:
+        send_async(bot, chat_id=update.message.chat.id, text='Команды триггеров:\n'
+                                                             '/list_triggers - Показать все существующие триггеры')
 
 
 @admin(adm_type=AdminType.GROUP)
@@ -265,10 +313,12 @@ def manage_text(bot: Bot, update: Update):
         enable_trigger_all(bot, update)
     elif update.message.text.upper() == 'Запретить триггерить всем'.upper():
         disable_trigger_all(bot, update)
+    elif update.message.text.upper() == 'Админы'.upper():
+        admins_for_users(bot, update)
     trigger_show(bot, update)
 
 
-@admin()
+@admin(adm_type=AdminType.GROUP)
 def enable_trigger_all(bot: Bot, update: Update):
     welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=update.message.chat.id).first()
     if welcome_msg is None:
@@ -283,7 +333,7 @@ def enable_trigger_all(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text='Теперь триггерить могут все.')
 
 
-@admin()
+@admin(adm_type=AdminType.GROUP)
 def disable_trigger_all(bot: Bot, update: Update):
     welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=update.message.chat.id).first()
     if welcome_msg is None:
@@ -334,7 +384,8 @@ def set_admin(bot: Bot, update: Update):
                 session.add(new_group_admin)
                 session.commit()
                 send_async(bot, chat_id=update.message.chat.id,
-                           text='Приветствуйте нового админа: @{}!'.format(user.username))
+                           text='Приветствуйте нового админа: @{}!\n'
+                                'Для списка команд бота используй /help'.format(user.username))
             else:
                 send_async(bot, chat_id=update.message.chat.id,
                            text='@{} и без тебя тут правит!'.format(user.username))
@@ -392,6 +443,20 @@ def list_admins(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
+def admins_for_users(bot: Bot, update: Update):
+    admins = session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
+    users = []
+    for admin_user in admins:
+        users.append(session.query(User).filter_by(id=admin_user.user_id).first())
+    msg = 'Список здешних админов:\n'
+    if users is None:
+        msg += '[Пусто]'
+    else:
+        for user in users:
+            msg += '@{} {} {}\n'.format(user.username, user.first_name, user.last_name)
+    send_async(bot, chat_id=update.message.chat.id, text=msg)
+
+
 def main():
     # Create the EventHandler and pass it your bot's token.
     updater = Updater("386494081:AAFFK6Wy0RYktHqPr_Pyqi9vXXbupWC3sgI")
@@ -404,6 +469,7 @@ def main():
     dp.add_handler(CommandHandler("help", help_msg))
     dp.add_handler(CommandHandler("ping", ping))
     dp.add_handler(CommandHandler("set_trigger", set_trigger))
+    dp.add_handler(CommandHandler("add_trigger", add_trigger))
     dp.add_handler(CommandHandler("del_trigger", del_trigger))
     dp.add_handler(CommandHandler("list_triggers", list_triggers))
     dp.add_handler(CommandHandler("set_welcome", set_welcome))
