@@ -38,6 +38,8 @@ class Group(Base):
     id = Column(BigInteger, primary_key=True)
     username = Column(UnicodeText(250))
     title = Column(UnicodeText(250))
+    welcome_enabled = Column(Boolean, default=False)
+    allow_trigger_all = Column(Boolean, default=False)
 
 
 class User(Base):
@@ -64,8 +66,6 @@ class WelcomeMsg(Base):
 
     chat_id = Column(BigInteger, primary_key=True)
     message = Column(UnicodeText(2500))
-    enabled = Column(Boolean, default=False)
-    allow_trigger_all = Column(Boolean, default=False)
 
 
 class Wellcomed(Base):
@@ -97,24 +97,14 @@ def admin(adm_type=AdminType.FULL):
             adms = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
             allowed = False
             for adm in adms:
-                if adm is not None and adm.admin_type <= adm_type.value and (
-                        adm.admin_group in [0, update.message.chat.id]):
+                if adm is not None and adm.admin_type <= adm_type.value and \
+                                adm.admin_group in [0, update.message.chat.id]:
                     allowed = True
                     break
             if allowed:
                 func(bot, update, *args, **kwargs)
         return wrapper
     return decorate
-
-
-def trigger_decorator(func):
-    def wrapper(bot, update, *args, **kwargs):
-        welcome = session.query(WelcomeMsg).filter_by(chat_id=update.message.chat.id).first()
-        if welcome.allow_trigger_all:
-            func(bot, update, *args, **kwargs)
-        else:
-            ((admin(adm_type=AdminType.GROUP))(func))(bot, update, *args, **kwargs)
-    return wrapper
 
 
 Base.metadata.create_all(engine)

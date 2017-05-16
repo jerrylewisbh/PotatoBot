@@ -2,13 +2,13 @@
 from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from core.types import admin, session, Group
-from core.common import help_msg, add_user, update_group, ping, start, error, kick
+from core.common import help_msg, ping, start, error, kick
 from core.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 from core.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
     disable_trigger_all, trigger_show
 from core.inline_keyboard_handling import callback_query
 from core.admins import list_admins, admins_for_users, set_admin, del_admin
-from core.utils import send_async
+from core.utils import send_async, add_user, update_group
 import json
 
 
@@ -16,8 +16,7 @@ last_welcome = 0
 
 
 def manage_text(bot: Bot, update: Update):
-    add_user(bot, update)
-    update_group(bot, update)
+    add_user(update.message.from_user)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
         if str(update.message.text).upper().startswith('Приветствие:'.upper()):
             set_welcome(bot, update)

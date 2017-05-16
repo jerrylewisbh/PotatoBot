@@ -1,6 +1,7 @@
 from telegram import Update, Bot
-from core.types import User, Group, AdminType, Admin, admin, trigger_decorator, session
+from core.types import AdminType, Admin, admin, session
 from core.utils import logger, send_async
+from core.triggers import trigger_decorator
 
 
 def error(bot: Bot, update, error, **kwargs):
@@ -77,49 +78,3 @@ def help_msg(bot: Bot, update):
 @admin(adm_type=AdminType.GROUP)
 def ping(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text='Иди освежись, @' + update.message.from_user.username + '!')
-
-
-def add_user(bot: Bot, update: Update):
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
-    if user is None:
-        user = User(id=update.message.from_user.id, username=update.message.from_user.username or '',
-                    first_name=update.message.from_user.first_name or '',
-                    last_name=update.message.from_user.last_name or '')
-        session.add(user)
-    else:
-        updated = False
-        if user.username != update.message.from_user.username:
-            user.username = update.message.from_user.username
-            updated = True
-        if user.first_name != update.message.from_user.first_name:
-            user.first_name = update.message.from_user.first_name
-            updated = True
-        if user.last_name != update.message.from_user.last_name:
-            user.last_name = update.message.from_user.last_name
-            updated = True
-        if updated:
-            session.add(user)
-    try:
-        session.commit()
-    except Exception:
-        session.rollback()
-
-
-def update_group(bot: Bot, update: Update):
-    if update.message.chat.type in ['group', 'supergroup', 'channel']:
-        group = session.query(Group).filter_by(id=update.message.chat.id).first()
-        if group is None:
-            group = Group(id=update.message.chat.id, title=update.message.chat.title,
-                          username=update.message.chat.username)
-            session.add(group)
-        else:
-            updated = False
-            if group.username != update.message.chat.username:
-                group.username = update.message.chat.username
-                updated = True
-            if group.title != update.message.chat.title:
-                group.title = update.message.chat.title
-                updated = True
-            if updated:
-                session.add(group)
-        session.commit()

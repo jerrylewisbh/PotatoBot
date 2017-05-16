@@ -1,6 +1,16 @@
 from telegram import Update, Bot
-from core.types import WelcomeMsg, Trigger, AdminType, admin, trigger_decorator, session
-from core.utils import send_async
+from core.types import Group, Trigger, AdminType, admin, session
+from core.utils import send_async, update_group
+
+
+def trigger_decorator(func):
+    def wrapper(bot, update, *args, **kwargs):
+        group = update_group(update.message.chat)
+        if group.allow_trigger_all:
+            func(bot, update, *args, **kwargs)
+        else:
+            ((admin(adm_type=AdminType.GROUP))(func))(bot, update, *args, **kwargs)
+    return wrapper
 
 
 @admin()
@@ -48,31 +58,19 @@ def trigger_show(bot: Bot, update: Update):
 
 @admin(adm_type=AdminType.GROUP)
 def enable_trigger_all(bot: Bot, update: Update):
-    welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=update.message.chat.id).first()
-    if welcome_msg is None:
-        welcome_msg = WelcomeMsg(chat_id=update.message.chat.id, message='Привет, %username%!', allow_trigger_all=True)
-    else:
-        welcome_msg.allow_trigger_all = True
-    session.add(welcome_msg)
-    try:
-        session.commit()
-    except Exception:
-        session.rollback()
+    group = update_group(update.message.chat)
+    group.allow_trigger_all = True
+    session.add(group)
+    session.commit()
     send_async(bot, chat_id=update.message.chat.id, text='Теперь триггерить могут все.')
 
 
 @admin(adm_type=AdminType.GROUP)
 def disable_trigger_all(bot: Bot, update: Update):
-    welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=update.message.chat.id).first()
-    if welcome_msg is None:
-        welcome_msg = WelcomeMsg(chat_id=update.message.chat.id, message='Привет, %username%!', allow_trigger_all=False)
-    else:
-        welcome_msg.allow_trigger_all = False
-    session.add(welcome_msg)
-    try:
-        session.commit()
-    except Exception:
-        session.rollback()
+    group = update_group(update.message.chat)
+    group.allow_trigger_all = False
+    session.add(group)
+    session.commit()
     send_async(bot, chat_id=update.message.chat.id, text='Теперь триггерить могут только админы.')
 
 
