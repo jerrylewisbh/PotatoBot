@@ -1,67 +1,87 @@
 import json
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
-from core.types import User, Group, WelcomeMsg, Admin, session
+from core.types import User, Group, Admin, session, admin
+from core.utils import send_async
+from core.functions.admins import del_adm
 from enum import Enum
+import logging
+
+logger = logging.getLogger('MyApp')
 
 
 class QueryType(Enum):
     GroupList = 0
     GroupInfo = 1
     DelAdm = 2
+    Order = 3
 
 
-def callback_query(bot: Bot, update: Update):
+@admin()
+def send_status(bot: Bot, update: Update):
+    msg = 'Выбери чат'
+    groups = session.query(Group).all()
+    inline_keys = []
+    for group in groups:
+        inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps({'type': QueryType.GroupInfo.value, 'id': group.id})))
+    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
+    send_async(bot, chat_id=update.message.chat.id, text=msg, reply_markup=inline_markup)
+
+
+def generate_group_info(group_id):
+    group = session.query(Group).filter(Group.id == group_id).first()
+    admins = session.query(Admin).filter(Admin.admin_group == group_id).all()
+    msg = 'Группа: ' + group.title + '\n\n' \
+                                     'Админы:\n'
+    adm_del_keys = []
+    for adm in admins:
+        user = session.query(User).filter_by(id=adm.user_id).first()
+        msg += '{} @{} {} {}\n'.format(user.id, user.username, user.first_name, user.last_name)
+        adm_del_keys.append([InlineKeyboardButton('Разжаловать {} {}'.format(user.first_name, user.last_name),
+                                                  callback_data=json.dumps(
+                                                      {'type': QueryType.DelAdm.value, 'uid': user.id,
+                                                       'gid': group_id}))])
+    msg += '\n' \
+           'Приветствие: {}\n' \
+           'Триггерят все: {}'.format('Включено' if group.welcome_enabled else 'Выключено',
+                                      'Включено' if group.allow_trigger_all else 'Выключено')
+    adm_del_keys.append([InlineKeyboardButton('Назад', callback_data=json.dumps(
+        {'type': QueryType.GroupList.value}))])
+    inline_markup = InlineKeyboardMarkup(adm_del_keys)
+    return msg, inline_markup
+
+
+def generate_order_group_markup():
+    groups = session.query(Group).all()
+    inline_keys = []
+    for group in groups:
+        inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps(
+            {'type': QueryType.Order.value, 'id': group.id})))
+    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
+    return inline_markup
+
+
+def callback_query(bot: Bot, update: Update, chat_data):
     data = json.loads(update.callback_query.data)
-    if data['type'] == 'group_list':
+    logger.warning(data)
+    if data['type'] == QueryType.GroupList.value:
         msg = 'Выбери чат'
         groups = session.query(Group).all()
         inline_keys = []
         for group in groups:
             inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps(
-                {'type': 'group_info', 'id': str(group.id)})))
+                {'type': QueryType.GroupInfo.value, 'id': group.id})))
         inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
-    if data['type'] == 'group_info':
-        group = session.query(Group).filter(Group.id == data['id']).first()
-        admins = session.query(Admin).filter(Admin.admin_group == data['id']).all()
-        welcome = session.query(WelcomeMsg).filter(WelcomeMsg.chat_id == data['id']).first()
-        msg = 'Группа: ' + group.title + '\n\n' \
-              'Админы:\n'
-        adm_del_keys = []
-        for adm in admins:
-            user = session.query(User).filter_by(id=adm.user_id).first()
-            msg += '{} @{} {} {}\n'.format(user.id, user.username, user.first_name, user.last_name)
-            adm_del_keys.append(InlineKeyboardButton('Разжаловать {} {}'.format(user.first_name, user.last_name) ,
-                                                     callback_data=json.dumps(
-                                                     {'type': 'del_adm', 'user_id': user.id, 'group_id': data['id']})))
-        msg += '\n' \
-               'Приветствие: {}\n' \
-               'Триггерят все: {}'.format('Включено' if welcome.enabled else 'Выключено',
-                                          'Включено' if welcome.allow_trigger_all else 'Выключено')
-        adm_del_keys.extend([InlineKeyboardButton('Назад', callback_data=json.dumps(
-                {'type': 'group_list'}))])
-        inline_markup = InlineKeyboardMarkup([adm_del_keys])
+    if data['type'] == QueryType.GroupInfo.value:
+        msg, inline_markup = generate_group_info(data['id'])
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
-    if data['type'] == 'del_adm':
-        admin = session.query(Admin).filter(Admin.admin_group == data['group_id'],
-                                             Admin.user_id == data['user_id']).first()
-        session.delete(admin)
-        session.commit()
-        group = session.query(Group).filter(Group.id == data['group_id']).first()
-        admins = session.query(Admin).filter(Admin.admin_group == data['group_id']).all()
-        welcome = session.query(WelcomeMsg).filter(WelcomeMsg.chat_id == data['group_id']).first()
-        msg = 'Группа: ' + group.title + '\n\n' \
-              'Админы:\n'
-        for adm in admins:
-            user = session.query(User).filter_by(id=adm.user_id).first()
-            msg += '{} @{} {} {}\n'.format(user.id, user.username, user.first_name, user.last_name)
-        msg += '\n' \
-               'Приветствие: {}\n' \
-               'Триггерят все: {}'.format('Включено' if welcome.enabled else 'Выключено',
-                                          'Включено' if welcome.allow_trigger_all else 'Выключено')
-        inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Назад', callback_data=json.dumps(
-            {'type': 'group_list'}))]])
+    if data['type'] == QueryType.DelAdm.value:
+        user = session.query(User).filter_by(id=data['uid']).first()
+        del_adm(bot, data['gid'], user)
+        msg, inline_markup = generate_group_info(data['gid'])
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
+    if data['type'] == QueryType.Order.value:
+        send_async(bot, chat_id=data['id'], text=chat_data['order'])

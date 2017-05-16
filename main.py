@@ -3,22 +3,21 @@ import json
 import logging
 from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
-
+from core.functions.orders import order
 from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin
 from core.functions.common import help_msg, ping, start, error, kick
-from core.functions.inline_keyboard_handling import callback_query
+from core.functions.inline_keyboard_handling import callback_query, send_status
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
     disable_trigger_all, trigger_show
 from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
-from core.types import admin, session, Group
-from core.utils import send_async, add_user
+from core.utils import add_user
 
 last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-def manage_text(bot: Bot, update: Update):
+def manage_text(bot: Bot, update: Update, chat_data):
     add_user(update.message.from_user)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
         if str(update.message.text).upper().startswith('Приветствие:'.upper()):
@@ -51,17 +50,8 @@ def manage_text(bot: Bot, update: Update):
     elif update.message.chat.type == 'private':
         if update.message.text.upper() == 'Статус'.upper():
             send_status(bot, update)
-
-
-@admin()
-def send_status(bot: Bot, update: Update):
-    msg = 'Выбери чат'
-    groups = session.query(Group).all()
-    inline_keys = []
-    for group in groups:
-        inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps({'type': 'group_info', 'id': str(group.id)})))
-    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
-    send_async(bot, chat_id=update.message.chat.id, text=msg, reply_markup=inline_markup)
+        else:
+            order(bot, update, chat_data)
 
 
 def main():
@@ -90,11 +80,11 @@ def main():
     dp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     dp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
 
-    dp.add_handler(CallbackQueryHandler(callback_query))
+    dp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.status_update, welcome))
-    dp.add_handler(MessageHandler(Filters.text, manage_text))
+    dp.add_handler(MessageHandler(Filters.text, manage_text, pass_chat_data=True))
 
     # log all errors
     dp.add_error_handler(error)

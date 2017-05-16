@@ -27,6 +27,18 @@ def set_admin(bot: Bot, update: Update):
                            text='@{} и без тебя тут правит!'.format(user.username))
 
 
+def del_adm(bot, chat_id, user):
+    adm = session.query(Admin).filter_by(user_id=user.id, admin_group=chat_id).first()
+    if adm is None:
+        send_async(bot, chat_id=chat_id,
+                   text='У @{} здесь нет власти!'.format(user.username))
+    else:
+        session.delete(adm)
+        session.commit()
+        send_async(bot, chat_id=chat_id,
+                   text='@{}, тебя разжаловали.'.format(user.username))
+
+
 @admin()
 def del_admin(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)[1]
@@ -37,29 +49,13 @@ def del_admin(bot: Bot, update: Update):
             if user is None:
                 send_async(bot, chat_id=update.message.chat.id, text='Не знаю таких')
             else:
-                adm = session.query(Admin).filter_by(user_id=user.id, admin_group=update.message.chat.id).first()
-                if adm is None:
-                    send_async(bot, chat_id=update.message.chat.id,
-                               text='У @{} здесь нет власти!'.format(user.username))
-                else:
-                    session.delete(adm)
-                    session.commit()
-                    send_async(bot, chat_id=update.message.chat.id,
-                               text='@{}, тебя разжаловали.'.format(user.username))
+                del_adm(bot, update.message.chat.id, user)
     else:
         user = session.query(User).filter_by(id=msg).first()
         if user is None:
             send_async(bot, chat_id=update.message.chat.id, text='Не знаю таких')
         else:
-            adm = session.query(Admin).filter_by(user_id=msg, admin_group=update.message.chat.id).first()
-            if adm is None:
-                send_async(bot, chat_id=update.message.chat.id,
-                           text='У @{} здесь нет власти!'.format(user.username))
-            else:
-                session.delete(adm)
-                session.commit()
-                send_async(bot, chat_id=update.message.chat.id,
-                           text='@{}, тебя разжаловали.'.format(user.username))
+            del_adm(bot, update.message.chat.id, user)
 
 
 @admin()
@@ -68,7 +64,7 @@ def list_admins(bot: Bot, update: Update):
     users = []
     for admin_user in admins:
         users.append(session.query(User).filter_by(id=admin_user.user_id).first())
-    msg = 'Список здешних админов:\n'
+    msg = 'Список сдешних админов:\n'
     for user in users:
         msg += '{} @{} {} {}\n'.format(user.id, user.username, user.first_name, user.last_name)
     send_async(bot, chat_id=update.message.chat.id, text=msg)
@@ -79,7 +75,7 @@ def admins_for_users(bot: Bot, update: Update):
     users = []
     for admin_user in admins:
         users.append(session.query(User).filter_by(id=admin_user.user_id).first())
-    msg = 'Список здешних админов:\n'
+    msg = 'Список сдешних админов:\n'
     if users is None:
         msg += '[Пусто]'
     else:
