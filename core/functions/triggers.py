@@ -15,38 +15,42 @@ def trigger_decorator(func):
 
 @admin()
 def set_trigger(bot: Bot, update: Update):
-    msg = update.message.text.split(' ', 1)[1]
-    new_trigger = msg.split('::', 1)
-    if len(new_trigger) == 2:
-        trigger = session.query(Trigger).filter_by(trigger=new_trigger[0]).first()
-        if trigger is None:
-            trigger = Trigger(trigger=new_trigger[0], message=new_trigger[1])
+    msg = update.message.text.split(' ', 1)
+    if len(msg) == 2:
+        msg = msg[1]
+        new_trigger = msg.split('::', 1)
+        if len(new_trigger) == 2 and len(new_trigger[0]):
+            trigger = session.query(Trigger).filter_by(trigger=new_trigger[0]).first()
+            if trigger is None:
+                trigger = Trigger(trigger=new_trigger[0], message=new_trigger[1])
+            else:
+                trigger.message = new_trigger[1]
+            session.add(trigger)
+            session.commit()
+            send_async(bot, chat_id=update.message.chat.id, text='Триггер на фразу "{}" установлен.'.format(new_trigger[0]))
         else:
-            trigger.message = new_trigger[1]
-        session.add(trigger)
-        session.commit()
-        send_async(bot, chat_id=update.message.chat.id, text='Триггер на фразу "{}" установлен.'.format(new_trigger[0]))
-    else:
-        send_async(bot, chat_id=update.message.chat.id, text='Какие-то у тебя несвежие мысли, попробуй ещё раз.')
+            send_async(bot, chat_id=update.message.chat.id, text='Какие-то у тебя несвежие мысли, попробуй ещё раз.')
 
 
 @admin(adm_type=AdminType.GROUP)
 def add_trigger(bot: Bot, update: Update):
-    msg = update.message.text.split(' ', 1)[1]
-    new_trigger = msg.split('::', 1)
-    if len(new_trigger) == 2:
-        trigger = session.query(Trigger).filter_by(trigger=new_trigger[0]).first()
-        if trigger is None:
-            trigger = Trigger(trigger=new_trigger[0], message=new_trigger[1])
-            session.add(trigger)
-            session.commit()
-            send_async(bot, chat_id=update.message.chat.id,
-                       text='Триггер на фразу "{}" установлен.'.format(new_trigger[0]))
+    msg = update.message.text.split(' ', 1)
+    if len(msg) == 2:
+        msg = msg[1]
+        new_trigger = msg.split('::', 1)
+        if len(new_trigger) == 2 and len(new_trigger[0]):
+            trigger = session.query(Trigger).filter_by(trigger=new_trigger[0]).first()
+            if trigger is None:
+                trigger = Trigger(trigger=new_trigger[0], message=new_trigger[1])
+                session.add(trigger)
+                session.commit()
+                send_async(bot, chat_id=update.message.chat.id,
+                           text='Триггер на фразу "{}" установлен.'.format(new_trigger[0]))
+            else:
+                send_async(bot, chat_id=update.message.chat.id,
+                           text='Триггер "{}" уже существует, выбери другой.'.format(new_trigger[0]))
         else:
-            send_async(bot, chat_id=update.message.chat.id,
-                       text='Триггер "{}" уже существует, выбери другой.'.format(new_trigger[0]))
-    else:
-        send_async(bot, chat_id=update.message.chat.id, text='Какие-то у тебя несвежие мысли, попробуй ещё раз.')
+            send_async(bot, chat_id=update.message.chat.id, text='Какие-то у тебя несвежие мысли, попробуй ещё раз.')
 
 
 @trigger_decorator

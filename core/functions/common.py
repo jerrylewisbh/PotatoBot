@@ -1,8 +1,10 @@
 from telegram import Update, Bot
-
+import logging
 from core.functions.triggers import trigger_decorator
 from core.types import AdminType, Admin, admin, session
-from core.utils import logger, send_async
+from core.utils import send_async
+
+logger = logging.getLogger(__name__)
 
 
 def error(bot: Bot, update, error, **kwargs):

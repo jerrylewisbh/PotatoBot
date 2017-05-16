@@ -10,25 +10,24 @@ last_welcome = 0
 def welcome(bot: Bot, update: Update):
     global last_welcome
     if update.message.chat.type in ['group', 'supergroup']:
-        group = update_group(update.message.chat)
-        if group is not None and group.welcome_enabled:
-            welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
-            if welcome_msg is None:
-                welcome_msg = WelcomeMsg(chat_id=group.id, message='Привет, %username%!')
-                session.add(welcome_msg)
+        if update.message.new_chat_member is not None:
+            group = update_group(update.message.chat)
+            user = add_user(update.message.new_chat_member)
+            if group is not None and group.welcome_enabled:
+                welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
+                if welcome_msg is None:
+                    welcome_msg = WelcomeMsg(chat_id=group.id, message='Привет, %username%!')
+                    session.add(welcome_msg)
 
-            if update.message.new_chat_member is not None:
-                add_user(update.message.new_chat_member)
-
-            welcomed = session.query(Wellcomed).filter_by(user_id=update.message.new_chat_member.id,
-                                                          chat_id=update.message.chat.id).first()
-            if welcomed is None:
-                if time() - last_welcome > 30:
-                    send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
-                    last_welcome = time()
-                welcomed = Wellcomed(user_id=update.message.new_chat_member.id, chat_id=update.message.chat.id)
-                session.add(welcomed)
-            session.commit()
+                welcomed = session.query(Wellcomed).filter_by(user_id=update.message.new_chat_member.id,
+                                                              chat_id=update.message.chat.id).first()
+                if welcomed is None:
+                    if time() - last_welcome > 30:
+                        send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
+                        last_welcome = time()
+                    welcomed = Wellcomed(user_id=update.message.new_chat_member.id, chat_id=update.message.chat.id)
+                    session.add(welcomed)
+                session.commit()
 
 
 @admin(adm_type=AdminType.GROUP)

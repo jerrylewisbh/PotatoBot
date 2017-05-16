@@ -16,10 +16,10 @@ class AdminType(Enum):
 
 
 engine = create_engine('mysql+pymysql://mint_bot:VF;F8A{pWtW[X4sWC8du=N]u@fdev.me/mint_castle?charset=utf8mb4',
-                       echo=True, pool_size=20, max_overflow=10)
+                       echo=False, pool_size=20, max_overflow=10)
+logger = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
-logger = logging.getLogger(__name__)
 session = Session()
 
 
@@ -29,7 +29,7 @@ def set_unicode(dbapi_conn, conn_record):
     try:
         cursor.execute("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'")
     except Exception as e:
-        logger.debug(e)
+        logger.error(e)
 
 
 class Group(Base):

@@ -1,12 +1,6 @@
-import logging
 from telegram import Bot
 from telegram.ext.dispatcher import run_async
 from core.types import session, User, Group
-
-
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 
 @run_async

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-
+import logging
 from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
@@ -14,6 +14,8 @@ from core.types import admin, session, Group
 from core.utils import send_async, add_user
 
 last_welcome = 0
+logging.basicConfig(level=logging.WARNING,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 def manage_text(bot: Bot, update: Update):
