@@ -1,11 +1,16 @@
 from telegram import Bot
 from telegram.ext.dispatcher import run_async
 from core.types import session, User, Group
+from telegram.error import ChatMigrated
 
 
 @run_async
 def send_async(bot: Bot, *args, **kwargs):
-    bot.sendMessage(*args, **kwargs)
+    try:
+        bot.sendMessage(*args, **kwargs)
+    except ChatMigrated as e:
+        kwargs['chat_id'] = e.new_chat_id
+        bot.sendMessage(*args, **kwargs)
 
 
 def add_user(tg_user):

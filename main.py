@@ -3,7 +3,7 @@ import json
 import logging
 from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
-from core.functions.orders import order
+from core.functions.orders import order, orders
 from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin
 from core.functions.common import help_msg, ping, start, error, kick
 from core.functions.inline_keyboard_handling import callback_query, send_status
@@ -50,6 +50,8 @@ def manage_text(bot: Bot, update: Update, chat_data):
     elif update.message.chat.type == 'private':
         if update.message.text.upper() == 'Статус'.upper():
             send_status(bot, update)
+        elif update.message.text.upper() == 'Приказы'.upper():
+            orders(bot, update, chat_data)
         else:
             order(bot, update, chat_data)
 

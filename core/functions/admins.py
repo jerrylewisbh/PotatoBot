@@ -64,7 +64,7 @@ def list_admins(bot: Bot, update: Update):
     users = []
     for admin_user in admins:
         users.append(session.query(User).filter_by(id=admin_user.user_id).first())
-    msg = 'Список сдешних админов:\n'
+    msg = 'Список здешних админов:\n'
     for user in users:
         msg += '{} @{} {} {}\n'.format(user.id, user.username, user.first_name, user.last_name)
     send_async(bot, chat_id=update.message.chat.id, text=msg)
@@ -75,7 +75,7 @@ def admins_for_users(bot: Bot, update: Update):
     users = []
     for admin_user in admins:
         users.append(session.query(User).filter_by(id=admin_user.user_id).first())
-    msg = 'Список сдешних админов:\n'
+    msg = 'Список здешних админов:\n'
     if users is None:
         msg += '[Пусто]'
     else:
