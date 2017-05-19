@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger
+from sqlalchemy import Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger, ARRAY
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
@@ -89,6 +89,14 @@ class Admin(Base):
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
     admin_type = Column(Integer)
     admin_group = Column(BigInteger, primary_key=True, default=0)
+
+
+'''class OrderGroup(Base):
+    __tablename__ = 'order_groups'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(UnicodeText(250))
+    groups = Column(ARRAY(BigInteger))'''
 
 
 def admin(adm_type=AdminType.FULL):

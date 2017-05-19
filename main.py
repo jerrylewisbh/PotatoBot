@@ -50,8 +50,12 @@ def manage_text(bot: Bot, update: Update, chat_data):
     elif update.message.chat.type == 'private':
         if update.message.text.upper() == 'Статус'.upper():
             send_status(bot, update)
-        elif update.message.text.upper() == 'Приказы'.upper():
+        elif update.message.text.upper() in ['Приказы'.upper(), 'пин'.upper()]:
             orders(bot, update, chat_data)
+        elif update.message.text.startswith('add_group'):
+            pass
+        elif update.message.text == 'del_group':
+            pass
         else:
             order(bot, update, chat_data)
 

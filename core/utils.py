@@ -1,7 +1,8 @@
-from telegram import Bot
+from telegram import Bot, Chat
 from telegram.ext.dispatcher import run_async
 from core.types import session, User, Group
 from telegram.error import ChatMigrated
+import json
 
 
 @run_async
@@ -11,6 +12,17 @@ def send_async(bot: Bot, *args, **kwargs):
     except ChatMigrated as e:
         kwargs['chat_id'] = e.new_chat_id
         bot.sendMessage(*args, **kwargs)
+
+
+def send_pin_async(bot: Bot, *args, **kwargs):
+    try:
+        msg = bot.sendMessage(*args, **kwargs)
+    except ChatMigrated as e:
+        kwargs['chat_id'] = e.new_chat_id
+        msg = bot.sendMessage(*args, **kwargs)
+    import http.client
+    conn = http.client.HTTPConnection("127.0.0.1")
+    conn.request("GET", "/{}/{}/".format(msg.message_id, msg.chat.id))
 
 
 def add_user(tg_user):
