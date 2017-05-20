@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger, ARRAY
+from sqlalchemy import Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger
 from datetime import datetime
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import event
 from sqlalchemy.pool import Pool
 import logging
 from enum import Enum
+from config import DB
 
 
 class AdminType(Enum):
@@ -15,8 +16,7 @@ class AdminType(Enum):
     GROUP = 2
 
 
-engine = create_engine('mysql+pymysql://mint_bot:VF;F8A{pWtW[X4sWC8du=N]u@fdev.me/mint_castle?charset=utf8mb4',
-                       echo=False, pool_size=20, max_overflow=10)
+engine = create_engine(DB, echo=False, pool_size=20, max_overflow=10)
 logger = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
@@ -41,6 +41,8 @@ class Group(Base):
     welcome_enabled = Column(Boolean, default=False)
     allow_trigger_all = Column(Boolean, default=False)
     bot_in_group = Column(Boolean, default=True)
+
+    group_items = relationship('OrderGroupItem', back_populates='chat')
 
 
 class User(Base):
@@ -92,12 +94,42 @@ class Admin(Base):
     admin_group = Column(BigInteger, primary_key=True, default=0)
 
 
-'''class OrderGroup(Base):
+class OrderGroup(Base):
     __tablename__ = 'order_groups'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(UnicodeText(250))
-    groups = Column(ARRAY(BigInteger))'''
+
+    items = relationship('OrderGroupItem', back_populates='group', cascade="save-update, merge, delete, delete-orphan")
+
+
+class OrderGroupItem(Base):
+    __tablename__ = 'order_group_items'
+
+    group_id = Column(Integer, ForeignKey(OrderGroup.id, ondelete='CASCADE'), primary_key=True)
+    chat_id = Column(BigInteger, ForeignKey(Group.id), primary_key=True)
+
+    group = relationship('OrderGroup', back_populates='items')
+    chat = relationship('Group', back_populates='group_items')
+
+
+class Order(Base):
+    __tablename__ = 'orders'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    chat_id = Column(BigInteger, ForeignKey(Group.id))
+    text = Column(UnicodeText(2500))
+
+    cleared = relationship('OrderCleared', back_populates='order')
+
+
+class OrderCleared(Base):
+    __tablename__ = 'order_cleared'
+
+    order_id = Column(Integer, ForeignKey(Order.id), primary_key=True)
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+
+    order = relationship('Order', back_populates='cleared')
 
 
 def admin(adm_type=AdminType.FULL):

@@ -1,6 +1,6 @@
 import json
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
-from core.types import User, Group, Admin, session, admin
+from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared
 from core.utils import send_async
 from core.functions.admins import del_adm
 from enum import Enum
@@ -17,6 +17,12 @@ class QueryType(Enum):
     Order = 3
     OrderOk = 4
     Orders = 5
+    OrderGroup = 6
+    OrderGroupManage = 7
+    OrderGroupTriggerChat = 8
+    OrderGroupAdd = 9
+    OrderGroupDelete = 10
+    OrderGroupList = 11
 
 
 def bot_in_chat(bot: Bot, group: Group):
@@ -38,7 +44,9 @@ def send_status(bot: Bot, update: Update):
     inline_keys = []
     for group in groups:
         if bot_in_chat(bot, group):
-            inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps({'t': QueryType.GroupInfo.value, 'id': group.id})))
+            inline_keys.append(InlineKeyboardButton(group.title,
+                                                    callback_data=json.dumps({'t': QueryType.GroupInfo.value,
+                                                                              'id': group.id})))
     inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
     send_async(bot, chat_id=update.message.chat.id, text=msg, reply_markup=inline_markup)
 
@@ -47,7 +55,7 @@ def generate_group_info(group_id):
     group = session.query(Group).filter(Group.id == group_id).first()
     admins = session.query(Admin).filter(Admin.admin_group == group_id).all()
     msg = 'Группа: ' + group.title + '\n\n' \
-                                     'Админы:\n'
+          'Админы:\n'
     adm_del_keys = []
     for adm in admins:
         user = session.query(User).filter_by(id=adm.user_id).first()
@@ -60,51 +68,93 @@ def generate_group_info(group_id):
            'Приветствие: {}\n' \
            'Триггерят все: {}'.format('Включено' if group.welcome_enabled else 'Выключено',
                                       'Включено' if group.allow_trigger_all else 'Выключено')
-    adm_del_keys.append([InlineKeyboardButton('Назад', callback_data=json.dumps(
+    adm_del_keys.append([InlineKeyboardButton('🔙Назад', callback_data=json.dumps(
         {'t': QueryType.GroupList.value}))])
     inline_markup = InlineKeyboardMarkup(adm_del_keys)
     return msg, inline_markup
 
 
 def generate_flag_orders():
-    flag_btns = []
-    flag_btns.append([InlineKeyboardButton(Castle.BLACK.value, callback_data=json.dumps(
-        {'t': QueryType.Orders.value, 'txt': Castle.BLACK.value})),
-                      InlineKeyboardButton(Castle.WHITE.value, callback_data=json.dumps(
-        {'t': QueryType.Orders.value, 'txt': Castle.WHITE.value})),
-                      InlineKeyboardButton(Castle.BLUE.value, callback_data=json.dumps(
-        {'t': QueryType.Orders.value, 'txt': Castle.BLUE.value}))])
-    flag_btns.append([InlineKeyboardButton(Castle.YELLOW.value, callback_data=json.dumps(
-        {'t': QueryType.Orders.value, 'txt': Castle.YELLOW.value})),
-                      InlineKeyboardButton(Castle.RED.value, callback_data=json.dumps(
-        {'t': QueryType.Orders.value, 'txt': Castle.RED.value})),
-                      InlineKeyboardButton(Castle.DUSK.value, callback_data=json.dumps(
-        {'t': QueryType.Orders.value, 'txt': Castle.DUSK.value}))])
-    flag_btns.append([InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
-        {'t': QueryType.Orders.value, 'txt': Castle.MINT.value})),
-                      InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
-        {'t': QueryType.Orders.value, 'txt': Icons.GORY.value})),
-                      InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
-        {'t': QueryType.Orders.value, 'txt': Icons.LES.value}))])
+    flag_btns = [[InlineKeyboardButton(Castle.BLACK.value, callback_data=json.dumps(
+                      {'t': QueryType.OrderGroup.value, 'txt': Castle.BLACK.value})),
+                  InlineKeyboardButton(Castle.WHITE.value, callback_data=json.dumps(
+                      {'t': QueryType.OrderGroup.value, 'txt': Castle.WHITE.value})),
+                  InlineKeyboardButton(Castle.BLUE.value, callback_data=json.dumps(
+                      {'t': QueryType.OrderGroup.value, 'txt': Castle.BLUE.value}))],
+                 [InlineKeyboardButton(Castle.YELLOW.value, callback_data=json.dumps(
+                      {'t': QueryType.OrderGroup.value, 'txt': Castle.YELLOW.value})),
+                  InlineKeyboardButton(Castle.RED.value, callback_data=json.dumps(
+                      {'t': QueryType.OrderGroup.value, 'txt': Castle.RED.value})),
+                  InlineKeyboardButton(Castle.DUSK.value, callback_data=json.dumps(
+                      {'t': QueryType.OrderGroup.value, 'txt': Castle.DUSK.value}))],
+                 [InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
+                      {'t': QueryType.OrderGroup.value, 'txt': Castle.MINT.value})),
+                  InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
+                      {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
+                  InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
+                      {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value}))]]
     inline_markup = InlineKeyboardMarkup(flag_btns)
     return inline_markup
 
 
-def generate_order_group_markup(bot: Bot):
+def generate_order_chats_markup(bot: Bot):
     groups = session.query(Group).filter_by(bot_in_group=True).all()
     inline_keys = []
     for group in groups:
         if bot_in_chat(bot, group):
-            inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps(
-                {'t': QueryType.Order.value, 'id': group.id})))
-    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
+            inline_keys.append([InlineKeyboardButton(group.title, callback_data=json.dumps(
+                {'t': QueryType.Order.value, 'g': False, 'id': group.id}))])
+    inline_markup = InlineKeyboardMarkup(inline_keys)
     return inline_markup
 
 
-def generate_ok_markup(group_id):
-    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Принято!', callback_data=json.dumps(
-            {'t': QueryType.OrderOk.value, 'id': group_id}))]])
+def generate_order_groups_markup(bot: Bot, order):
+    groups = session.query(OrderGroup).all()
+    inline_keys = []
+    for group in groups:
+        inline_keys.append([InlineKeyboardButton(group.name, callback_data=json.dumps(
+            {'t': QueryType.Order.value, 'g': True, 'id': group.id}))])
+    inline_keys.append([InlineKeyboardButton('По отрядам', callback_data=json.dumps(
+        {'t': QueryType.Orders.value, 'txt': order}))])
+    inline_markup = InlineKeyboardMarkup(inline_keys)
     return inline_markup
+
+
+def generate_ok_markup(order_id, count):
+    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Принято! ({})'.format(count),
+                                                                callback_data=json.dumps(
+                                                                    {'t': QueryType.OrderOk.value, 'id': order_id}))]])
+    return inline_markup
+
+
+def generate_groups_manage():
+    groups = session.query(OrderGroup).all()
+    inline_keys = []
+    for group in groups:
+        inline_keys.append([InlineKeyboardButton(group.name, callback_data=json.dumps(
+            {'t': QueryType.OrderGroupManage.value, 'id': group.id}))])
+    inline_keys.append([InlineKeyboardButton('Добавить группу', callback_data=json.dumps(
+        {'t': QueryType.OrderGroupAdd.value}))])
+    return InlineKeyboardMarkup(inline_keys)
+
+
+def generate_group_manage(group_id):
+    chats = session.query(Group).filter_by(bot_in_group=True).all()
+    inline_keys = []
+    for chat in chats:
+        in_group = False
+        for item in chat.group_items:
+            if item.group_id == group_id:
+                in_group = True
+                break
+        inline_keys.append([InlineKeyboardButton(('✔️' if in_group else '❌') +
+                                                 chat.title, callback_data=json.dumps(
+            {'t': QueryType.OrderGroupTriggerChat.value, 'id': group_id, 'c': chat.id}))])
+    inline_keys.append([InlineKeyboardButton('Удалить группу', callback_data=json.dumps(
+        {'t': QueryType.OrderGroupDelete.value, 'id': group_id}))])
+    inline_keys.append([InlineKeyboardButton('🔙Назад', callback_data=json.dumps(
+        {'t': QueryType.OrderGroupList.value}))])
+    return InlineKeyboardMarkup(inline_keys)
 
 
 def callback_query(bot: Bot, update: Update, chat_data: dict):
@@ -121,31 +171,115 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
         inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
-    if data['t'] == QueryType.GroupInfo.value:
+    elif data['t'] == QueryType.GroupInfo.value:
         msg, inline_markup = generate_group_info(data['id'])
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
-    if data['t'] == QueryType.DelAdm.value:
+    elif data['t'] == QueryType.DelAdm.value:
         user = session.query(User).filter_by(id=data['uid']).first()
         del_adm(bot, data['gid'], user)
         msg, inline_markup = generate_group_info(data['gid'])
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
-    if data['t'] == QueryType.Order.value:
-        markup = generate_ok_markup(data['id'])
-        send_async(bot, chat_id=data['id'], text=chat_data['order'], reply_markup=markup)
-    if data['t'] == QueryType.OrderOk.value:
-        if 'order_ok' not in chat_data.keys():
-            chat_data['order_ok'] = 0
-        chat_data['order_ok'] += 1
-        logger.warning('{}: {}'.format(update.callback_query.message.chat.title, chat_data['order_ok']))
-    if data['t'] == QueryType.Orders.value:
+    elif data['t'] == QueryType.Order.value:
+        if not data['g']:
+            order = Order()
+            order.text = chat_data['order']
+            order.chat_id = data['id']
+            session.add(order)
+            session.commit()
+            markup = generate_ok_markup(order.id, 0)
+            send_async(bot, chat_id=order.chat_id, text=order.text, reply_markup=markup)
+        else:
+            group = session.query(OrderGroup).filter_by(id=data['id']).first()
+            for item in group.items:
+                order = Order()
+                order.text = chat_data['order']
+                order.chat_id = item.chat_id
+                session.add(order)
+                session.commit()
+                markup = generate_ok_markup(order.id, 0)
+                send_async(bot, chat_id=order.chat_id, text=order.text, reply_markup=markup)
+            send_async(bot, chat_id=update.callback_query.message.chat.id,
+                       text='Отправлено в {} отрядов'.format(len(group.items)))
+    elif data['t'] == QueryType.OrderOk.value:
+        order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
+                                                         user_id=update.callback_query.from_user.id).first()
+        if order_ok is None:
+            order_ok = OrderCleared()
+            order_ok.order_id = data['id']
+            order_ok.user_id = update.callback_query.from_user.id
+            session.add(order_ok)
+            session.commit()
+        count = session.query(OrderCleared).filter_by(order_id=data['id']).count()
+        bot.editMessageText(update.callback_query.message.text,
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=generate_ok_markup(data['id'], count))
+    elif data['t'] == QueryType.Orders.value:
         if data['txt'] == Icons.LES.value:
             chat_data['order'] = Castle.LES.value
         elif data['txt'] == Icons.GORY.value:
             chat_data['order'] = Castle.GORY.value
         else:
             chat_data['order'] = data['txt']
-        markup = generate_order_group_markup(bot)
-        bot.editMessageText('Куда слать?', update.callback_query.message.chat.id, update.callback_query.message.message_id,
+        markup = generate_order_chats_markup(bot)
+        bot.editMessageText('Приказ: {}\nКуда слать?'.format(chat_data['order']),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
                             reply_markup=markup)
+    elif data['t'] == QueryType.OrderGroup.value:
+        if data['txt'] == Icons.LES.value:
+            chat_data['order'] = Castle.LES.value
+        elif data['txt'] == Icons.GORY.value:
+            chat_data['order'] = Castle.GORY.value
+        else:
+            chat_data['order'] = data['txt']
+        markup = generate_order_groups_markup(bot, chat_data['order'])
+        bot.editMessageText('Приказ: {}\nКуда слать?'.format(chat_data['order']),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)
+    elif data['t'] == QueryType.OrderGroupManage.value:
+        group = session.query(OrderGroup).filter_by(id=data['id']).first()
+        markup = generate_group_manage(data['id'])
+        bot.editMessageText('Настройки группы {}'.format(group.name),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)
+    elif data['t'] == QueryType.OrderGroupTriggerChat.value:
+        group = session.query(OrderGroup).filter_by(id=data['id']).first()
+        deleted = False
+        for item in group.items:
+            if item.chat_id == data['c']:
+                session.delete(item)
+                session.commit()
+                deleted = True
+        if not deleted:
+            item = OrderGroupItem()
+            item.group_id = group.id
+            item.chat_id = data['c']
+            session.add(item)
+            session.commit()
+        markup = generate_group_manage(data['id'])
+        bot.editMessageText('Настройки группы {}'.format(group.name),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)
+    elif data['t'] == QueryType.OrderGroupAdd.value:
+        chat_data['wait_group_name'] = True
+        send_async(bot, chat_id=update.callback_query.message.chat.id,
+                   text='Напиши мне название новой группы отрядов')
+    elif data['t'] == QueryType.OrderGroupDelete.value:
+        group = session.query(OrderGroup).filter_by(id=data['id']).first()
+        session.delete(group)
+        session.commit()
+        bot.editMessageText('Список групп',
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=generate_groups_manage())
+    elif data['t'] == QueryType.OrderGroupList.value:
+        bot.editMessageText('Список групп',
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=generate_groups_manage())

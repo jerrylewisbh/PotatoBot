@@ -10,6 +10,7 @@ from core.functions.inline_keyboard_handling import callback_query, send_status
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
     disable_trigger_all, trigger_show
 from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
+from core.functions.order_groups import group_list, add_group
 from core.utils import add_user
 from config import TOKEN
 
@@ -54,7 +55,9 @@ def manage_text(bot: Bot, update: Update, chat_data):
         elif update.message.text.upper() in ['Приказы'.upper(), 'пин'.upper()]:
             orders(bot, update, chat_data)
         elif update.message.text.upper() == 'Группы'.upper():
-            pass
+            group_list(bot, update)
+        elif chat_data['wait_group_name']:
+            add_group(bot, update, chat_data)
         else:
             order(bot, update, chat_data)
 
