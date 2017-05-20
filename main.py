@@ -5,12 +5,13 @@ from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from core.functions.orders import order, orders
 from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin
-from core.functions.common import help_msg, ping, start, error, kick
+from core.functions.common import help_msg, ping, start, error, kick, admin_panel
 from core.functions.inline_keyboard_handling import callback_query, send_status
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
     disable_trigger_all, trigger_show
 from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 from core.utils import add_user
+from config import TOKEN
 
 last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
@@ -52,9 +53,7 @@ def manage_text(bot: Bot, update: Update, chat_data):
             send_status(bot, update)
         elif update.message.text.upper() in ['Приказы'.upper(), 'пин'.upper()]:
             orders(bot, update, chat_data)
-        elif update.message.text.startswith('add_group'):
-            pass
-        elif update.message.text == 'del_group':
+        elif update.message.text.upper() == 'Группы'.upper():
             pass
         else:
             order(bot, update, chat_data)
@@ -62,13 +61,14 @@ def manage_text(bot: Bot, update: Update, chat_data):
 
 def main():
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater("386494081:AAFFK6Wy0RYktHqPr_Pyqi9vXXbupWC3sgI")
+    updater = Updater(TOKEN)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("admin", admin_panel))
     dp.add_handler(CommandHandler("help", help_msg))
     dp.add_handler(CommandHandler("ping", ping))
     dp.add_handler(CommandHandler("set_trigger", set_trigger))

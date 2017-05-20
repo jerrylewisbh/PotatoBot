@@ -62,7 +62,7 @@ def add_trigger(bot: Bot, update: Update):
 def trigger_show(bot: Bot, update: Update):
     trigger = session.query(Trigger).filter_by(trigger=update.message.text).first()
     if trigger is not None:
-        send_async(bot, chat_id=update.message.chat.id, text=trigger.message)
+        send_async(bot, chat_id=update.message.chat.id, text=trigger.message, disable_web_page_preview=True)
 
 
 @admin(adm_type=AdminType.GROUP)

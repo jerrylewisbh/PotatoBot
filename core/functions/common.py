@@ -3,6 +3,7 @@ import logging
 from core.functions.triggers import trigger_decorator
 from core.types import AdminType, Admin, admin, session
 from core.utils import send_async
+from core.functions.reply_markup import generate_standard_markup
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,14 @@ def error(bot: Bot, update, error, **kwargs):
 
 
 def start(bot: Bot, update: Update):
-    pass
+    if update.message.chat.type == 'private':
+        send_async(bot, chat_id=update.message.chat.id, text='Привет')
+
+
+@admin()
+def admin_panel(bot: Bot, update: Update):
+    if update.message.chat.type == 'private':
+        send_async(bot, chat_id=update.message.chat.id, text='Да здравствует админ!', reply_markup=generate_standard_markup())
 
 
 @admin()

@@ -64,6 +64,9 @@ def update_group(grp):
             if group.title != grp.title:
                 group.title = grp.title
                 updated = True
+            if not group.bot_in_group:
+                group.bot_in_group = True
+                updated = True
             if updated:
                 session.add(group)
         session.commit()

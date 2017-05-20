@@ -6,7 +6,7 @@ from core.functions.inline_keyboard_handling import generate_order_group_markup,
 
 @admin()
 def order(bot: Bot, update: Update, chat_data):
-    markup = generate_order_group_markup()
+    markup = generate_order_group_markup(bot)
     chat_data['order'] = update.message.text
     send_async(bot, chat_id=update.message.chat.id, text='Куда слать?', reply_markup=markup)
 

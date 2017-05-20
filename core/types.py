@@ -40,6 +40,7 @@ class Group(Base):
     title = Column(UnicodeText(250))
     welcome_enabled = Column(Boolean, default=False)
     allow_trigger_all = Column(Boolean, default=False)
+    bot_in_group = Column(Boolean, default=True)
 
 
 class User(Base):

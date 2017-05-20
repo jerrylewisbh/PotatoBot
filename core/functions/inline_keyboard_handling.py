@@ -1,5 +1,5 @@
 import json
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
 from core.types import User, Group, Admin, session, admin
 from core.utils import send_async
 from core.functions.admins import del_adm
@@ -19,13 +19,26 @@ class QueryType(Enum):
     Orders = 5
 
 
+def bot_in_chat(bot: Bot, group: Group):
+    try:
+        bot.getChatMembersCount(group.id)
+        return True
+    except TelegramError as e:
+        logger.warning(e.message)
+        group.bot_in_group = False
+        session.add(group)
+        session.commit()
+        return False
+
+
 @admin()
 def send_status(bot: Bot, update: Update):
     msg = 'Выбери чат'
-    groups = session.query(Group).all()
+    groups = session.query(Group).filter_by(bot_in_group=True).all()
     inline_keys = []
     for group in groups:
-        inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps({'t': QueryType.GroupInfo.value, 'id': group.id})))
+        if bot_in_chat(bot, group):
+            inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps({'t': QueryType.GroupInfo.value, 'id': group.id})))
     inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
     send_async(bot, chat_id=update.message.chat.id, text=msg, reply_markup=inline_markup)
 
@@ -77,12 +90,13 @@ def generate_flag_orders():
     return inline_markup
 
 
-def generate_order_group_markup():
-    groups = session.query(Group).all()
+def generate_order_group_markup(bot: Bot):
+    groups = session.query(Group).filter_by(bot_in_group=True).all()
     inline_keys = []
     for group in groups:
-        inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps(
-            {'t': QueryType.Order.value, 'id': group.id})))
+        if bot_in_chat(bot, group):
+            inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps(
+                {'t': QueryType.Order.value, 'id': group.id})))
     inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
     return inline_markup
 
@@ -98,11 +112,12 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
     logger.warning(data)
     if data['t'] == QueryType.GroupList.value:
         msg = 'Выбери чат'
-        groups = session.query(Group).all()
+        groups = session.query(Group).filter_by(bot_in_group=True).all()
         inline_keys = []
         for group in groups:
-            inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps(
-                {'t': QueryType.GroupInfo.value, 'id': group.id})))
+            if bot_in_chat(bot, group):
+                inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps(
+                    {'t': QueryType.GroupInfo.value, 'id': group.id})))
         inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
@@ -131,6 +146,6 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             chat_data['order'] = Castle.GORY.value
         else:
             chat_data['order'] = data['txt']
-        markup = generate_order_group_markup()
+        markup = generate_order_group_markup(bot)
         bot.editMessageText('Куда слать?', update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=markup)
