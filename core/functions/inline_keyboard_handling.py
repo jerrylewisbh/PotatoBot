@@ -133,7 +133,7 @@ def generate_groups_manage():
     for group in groups:
         inline_keys.append([InlineKeyboardButton(group.name, callback_data=json.dumps(
             {'t': QueryType.OrderGroupManage.value, 'id': group.id}))])
-    inline_keys.append([InlineKeyboardButton('Добавить группу', callback_data=json.dumps(
+    inline_keys.append([InlineKeyboardButton('➕Добавить группу', callback_data=json.dumps(
         {'t': QueryType.OrderGroupAdd.value}))])
     return InlineKeyboardMarkup(inline_keys)
 
@@ -150,7 +150,7 @@ def generate_group_manage(group_id):
         inline_keys.append([InlineKeyboardButton(('✅' if in_group else '❌') +
                                                  chat.title, callback_data=json.dumps(
             {'t': QueryType.OrderGroupTriggerChat.value, 'id': group_id, 'c': chat.id}))])
-    inline_keys.append([InlineKeyboardButton('Удалить группу', callback_data=json.dumps(
+    inline_keys.append([InlineKeyboardButton('🔥🚨Удалить группу🚨🔥', callback_data=json.dumps(
         {'t': QueryType.OrderGroupDelete.value, 'id': group_id}))])
     inline_keys.append([InlineKeyboardButton('🔙Назад', callback_data=json.dumps(
         {'t': QueryType.OrderGroupList.value}))])
