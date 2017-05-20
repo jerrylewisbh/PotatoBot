@@ -147,7 +147,7 @@ def generate_group_manage(group_id):
             if item.group_id == group_id:
                 in_group = True
                 break
-        inline_keys.append([InlineKeyboardButton(('✔️' if in_group else '❌') +
+        inline_keys.append([InlineKeyboardButton(('✅' if in_group else '❌') +
                                                  chat.title, callback_data=json.dumps(
             {'t': QueryType.OrderGroupTriggerChat.value, 'id': group_id, 'c': chat.id}))])
     inline_keys.append([InlineKeyboardButton('Удалить группу', callback_data=json.dumps(
