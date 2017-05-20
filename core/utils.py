@@ -10,6 +10,11 @@ def send_async(bot: Bot, *args, **kwargs):
     try:
         bot.sendMessage(*args, **kwargs)
     except ChatMigrated as e:
+        group = session.query(Group).filter_by(id=kwargs['chat_id']).first()
+        if group is not None:
+            group.bot_in_group = False
+            session.add(group)
+            session.commit()
         kwargs['chat_id'] = e.new_chat_id
         bot.sendMessage(*args, **kwargs)
 
