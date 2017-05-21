@@ -56,7 +56,7 @@ def manage_text(bot: Bot, update: Update, chat_data):
             orders(bot, update, chat_data)
         elif update.message.text.upper() == 'Группы'.upper():
             group_list(bot, update)
-        elif chat_data['wait_group_name']:
+        elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
             add_group(bot, update, chat_data)
         else:
             order(bot, update, chat_data)
