@@ -203,19 +203,21 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             send_async(bot, chat_id=update.callback_query.message.chat.id,
                        text='Отправлено в {} отрядов'.format(len(group.items)))
     elif data['t'] == QueryType.OrderOk.value:
-        order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
-                                                         user_id=update.callback_query.from_user.id).first()
-        if order_ok is None:
-            order_ok = OrderCleared()
-            order_ok.order_id = data['id']
-            order_ok.user_id = update.callback_query.from_user.id
-            session.add(order_ok)
-            session.commit()
-        count = session.query(OrderCleared).filter_by(order_id=data['id']).count()
-        bot.editMessageText(update.callback_query.message.text,
-                            update.callback_query.message.chat.id,
-                            update.callback_query.message.message_id,
-                            reply_markup=generate_ok_markup(data['id'], count))
+        order = session.query(Order).filter_by(id=data['id']).fitst()
+        if order is not None:
+            order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
+                                                             user_id=update.callback_query.from_user.id).first()
+            if order_ok is None:
+                order_ok = OrderCleared()
+                order_ok.order_id = data['id']
+                order_ok.user_id = update.callback_query.from_user.id
+                session.add(order_ok)
+                session.commit()
+            count = session.query(OrderCleared).filter_by(order_id=data['id']).count()
+            bot.editMessageText(update.callback_query.message.text,
+                                update.callback_query.message.chat.id,
+                                update.callback_query.message.message_id,
+                                reply_markup=generate_ok_markup(data['id'], count))
     elif data['t'] == QueryType.Orders.value:
         if data['txt'] == Icons.LES.value:
             chat_data['order'] = Castle.LES.value
