@@ -203,7 +203,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             send_async(bot, chat_id=update.callback_query.message.chat.id,
                        text='Отправлено в {} отрядов'.format(len(group.items)))
     elif data['t'] == QueryType.OrderOk.value:
-        order = session.query(Order).filter_by(id=data['id']).fitst()
+        order = session.query(Order).filter_by(id=data['id']).first()
         if order is not None:
             order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
                                                              user_id=update.callback_query.from_user.id).first()
