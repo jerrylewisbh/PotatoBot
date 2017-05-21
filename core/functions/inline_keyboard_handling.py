@@ -108,14 +108,14 @@ def generate_order_chats_markup(bot: Bot):
     return inline_markup
 
 
-def generate_order_groups_markup(bot: Bot, order):
+def generate_order_groups_markup(bot: Bot):
     groups = session.query(OrderGroup).all()
     inline_keys = []
     for group in groups:
         inline_keys.append([InlineKeyboardButton(group.name, callback_data=json.dumps(
             {'t': QueryType.Order.value, 'g': True, 'id': group.id}))])
     inline_keys.append([InlineKeyboardButton('По отрядам', callback_data=json.dumps(
-        {'t': QueryType.Orders.value, 'txt': order}))])
+        {'t': QueryType.Orders.value}))])
     inline_markup = InlineKeyboardMarkup(inline_keys)
     return inline_markup
 
@@ -231,13 +231,14 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                             update.callback_query.message.message_id,
                             reply_markup=markup)
     elif data['t'] == QueryType.OrderGroup.value:
-        if data['txt'] == Icons.LES.value:
-            chat_data['order'] = Castle.LES.value
-        elif data['txt'] == Icons.GORY.value:
-            chat_data['order'] = Castle.GORY.value
-        else:
-            chat_data['order'] = data['txt']
-        markup = generate_order_groups_markup(bot, chat_data['order'])
+        if 'txt' in data and len(data['txt']):
+            if data['txt'] == Icons.LES.value:
+                chat_data['order'] = Castle.LES.value
+            elif data['txt'] == Icons.GORY.value:
+                chat_data['order'] = Castle.GORY.value
+            else:
+                chat_data['order'] = data['txt']
+        markup = generate_order_groups_markup(bot)
         bot.editMessageText('Приказ: {}\nКуда слать?'.format(chat_data['order']),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
