@@ -89,3 +89,34 @@ def help_msg(bot: Bot, update):
 @admin(adm_type=AdminType.GROUP)
 def ping(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text='Иди освежись, @' + update.message.from_user.username + '!')
+
+
+def stock_compare(bot: Bot, update: Update, chat_data: dict):
+    strings = update.message.text.splitlines()
+    resources = {}
+    for string in strings[1:]:
+        resource = string.split(' (')
+        resource[1] = resource[1][:-1]
+        resources[resource[0]] = int(resource[1])
+    resource_diff = {}
+    if 'resources' in chat_data:
+        for key, val in resources.items():
+            if key in chat_data['resources']:
+                diff_count = resources[key] - chat_data['resources'][key]
+                if diff_count != 0:
+                    resource_diff[key] = diff_count
+            else:
+                resource_diff[key] = val
+        for key, val in chat_data['resources'].items():
+            if key not in resources:
+                resource_diff[key] = -val
+        msg = 'Изменения ресурсов:\n'
+        if len(resource_diff):
+            for key, val in resource_diff.items():
+                msg += '{} ({})\n'.format(key, val)
+        else:
+            msg += 'Ничего не изменилось'
+        send_async(bot, chat_id=update.message.chat.id, text=msg)
+    else:
+        send_async(bot, chat_id=update.message.chat.id, text='Жду с чем сравнивать...')
+    chat_data['resources'] = resources

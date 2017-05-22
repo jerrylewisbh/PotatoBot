@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton, Message, User
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from core.functions.orders import order, orders
 from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin
-from core.functions.common import help_msg, ping, start, error, kick, admin_panel
+from core.functions.common import help_msg, ping, start, error, kick, admin_panel, stock_compare
 from core.functions.inline_keyboard_handling import callback_query, send_status
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
     disable_trigger_all, trigger_show
@@ -56,6 +56,9 @@ def manage_text(bot: Bot, update: Update, chat_data):
             orders(bot, update, chat_data)
         elif update.message.text.upper() == 'Группы'.upper():
             group_list(bot, update)
+        elif update.message.forward_from and update.message.forward_from.id == 265204902 and \
+                update.message.text.startswith('📦Содержимое склада'):
+            stock_compare(bot, update, chat_data)
         elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
             add_group(bot, update, chat_data)
         else:
