@@ -91,6 +91,21 @@ def ping(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text='Иди освежись, @' + update.message.from_user.username + '!')
 
 
+def get_diff(dict_one, dict_two):
+    resource_diff = {}
+    for key, val in dict_one.items():
+        if key in dict_two:
+            diff_count = dict_one[key] - dict_two[key]
+            if diff_count != 0:
+                resource_diff[key] = diff_count
+        else:
+            resource_diff[key] = val
+    for key, val in dict_two.items():
+        if key not in dict_one:
+            resource_diff[key] = -val
+    return resource_diff
+
+
 def stock_compare(bot: Bot, update: Update, chat_data: dict):
     strings = update.message.text.splitlines()
     resources = {}
@@ -98,18 +113,8 @@ def stock_compare(bot: Bot, update: Update, chat_data: dict):
         resource = string.split(' (')
         resource[1] = resource[1][:-1]
         resources[resource[0]] = int(resource[1])
-    resource_diff = {}
     if 'resources' in chat_data:
-        for key, val in resources.items():
-            if key in chat_data['resources']:
-                diff_count = resources[key] - chat_data['resources'][key]
-                if diff_count != 0:
-                    resource_diff[key] = diff_count
-            else:
-                resource_diff[key] = val
-        for key, val in chat_data['resources'].items():
-            if key not in resources:
-                resource_diff[key] = -val
+        resource_diff = get_diff(resources, chat_data['resources'])
         msg = 'Изменения ресурсов:\n'
         if len(resource_diff):
             for key, val in resource_diff.items():
@@ -120,3 +125,25 @@ def stock_compare(bot: Bot, update: Update, chat_data: dict):
     else:
         send_async(bot, chat_id=update.message.chat.id, text='Жду с чем сравнивать...')
     chat_data['resources'] = resources
+
+
+def trade_compare(bot: Bot, update: Update, chat_data: dict):
+    strings = update.message.text.splitlines()
+    items = {}
+    for string in strings:
+        if string.startswith('/add_'):
+            item = string.split('   ')[1]
+            item = item.split(' x ')
+            items[item[0]] = int(item[1])
+    if 'items' in chat_data:
+        resource_diff = get_diff(items, chat_data['items'])
+        msg = 'Изменения предметов:\n'
+        if len(resource_diff):
+            for key, val in resource_diff.items():
+                msg += '{} ({})\n'.format(key, val)
+        else:
+            msg += 'Ничего не изменилось'
+        send_async(bot, chat_id=update.message.chat.id, text=msg)
+    else:
+        send_async(bot, chat_id=update.message.chat.id, text='Жду с чем сравнивать...')
+    chat_data['items'] = items
