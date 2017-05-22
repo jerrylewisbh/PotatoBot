@@ -60,7 +60,7 @@ def manage_text(bot: Bot, update: Update, chat_data):
                 update.message.text.startswith('📦Содержимое склада'):
             stock_compare(bot, update, chat_data)
         elif update.message.forward_from and update.message.forward_from.id == 278525885 and \
-                update.message.text.startswith('📦Твой склад с материалами:'):
+                '📦Твой склад с материалами:' in update.message.text:
             trade_compare(bot, update, chat_data)
         elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
             add_group(bot, update, chat_data)
