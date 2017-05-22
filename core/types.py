@@ -2,6 +2,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger
+from sqlalchemy.dialects.mysql import DATETIME
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import event
@@ -130,6 +131,16 @@ class OrderCleared(Base):
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
 
     order = relationship('Order', back_populates='cleared')
+
+
+class Stock(Base):
+    __tablename__ = 'stock'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(BigInteger, ForeignKey(User.id))
+    stock = Column(UnicodeText(2500))
+    date = Column(DATETIME(fsp=6), default=datetime.now())
+    stock_type = Column(Integer)
 
 
 def admin(adm_type=AdminType.FULL):

@@ -1,11 +1,18 @@
-from telegram import Update, Bot
+from telegram import Update, Bot, ParseMode
 import logging
 from core.functions.triggers import trigger_decorator
-from core.types import AdminType, Admin, admin, session
+from core.types import AdminType, Admin, Stock, admin, session
 from core.utils import send_async
 from core.functions.reply_markup import generate_standard_markup
+from enum import Enum
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+
+class StockType(Enum):
+    Stock = 0
+    TradeBot = 1
 
 
 def error(bot: Bot, update, error, **kwargs):
@@ -92,58 +99,104 @@ def ping(bot: Bot, update: Update):
 
 
 def get_diff(dict_one, dict_two):
-    resource_diff = {}
+    resource_diff_add = {}
+    resource_diff_del = {}
     for key, val in dict_one.items():
         if key in dict_two:
             diff_count = dict_one[key] - dict_two[key]
-            if diff_count != 0:
-                resource_diff[key] = diff_count
+            if diff_count > 0:
+                resource_diff_add[key] = diff_count
+            elif diff_count < 0:
+                resource_diff_del[key] = diff_count
         else:
-            resource_diff[key] = val
+            resource_diff_del[key] = -val
     for key, val in dict_two.items():
         if key not in dict_one:
-            resource_diff[key] = -val
-    return resource_diff
+            resource_diff_add[key] = val
+    resource_diff_add = dict(sorted(resource_diff_add.items(), key=lambda x: x[0]))
+    resource_diff_del = dict(sorted(resource_diff_del.items(), key=lambda x: x[0]))
+    return resource_diff_add, resource_diff_del
 
 
 def stock_compare(bot: Bot, update: Update, chat_data: dict):
-    strings = update.message.text.splitlines()
-    resources = {}
-    for string in strings[1:]:
-        resource = string.split(' (')
-        resource[1] = resource[1][:-1]
-        resources[resource[0]] = int(resource[1])
-    if 'resources' in chat_data:
-        resource_diff = get_diff(resources, chat_data['resources'])
-        msg = 'Изменения ресурсов:\n'
-        if len(resource_diff):
-            for key, val in resource_diff.items():
+    old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
+                                               stock_type=StockType.Stock.value).order_by(Stock.date.desc()).first()
+    new_stock = Stock()
+    new_stock.stock = update.message.text
+    new_stock.stock_type = StockType.Stock.value
+    new_stock.user_id = update.message.from_user.id
+    new_stock.date = datetime.now()
+    session.add(new_stock)
+    session.commit()
+    if old_stock is not None:
+        resources_old = {}
+        resources_new = {}
+        strings = old_stock.stock.splitlines()
+        for string in strings[1:]:
+            resource = string.split(' (')
+            resource[1] = resource[1][:-1]
+            resources_old[resource[0]] = int(resource[1])
+        strings = new_stock.stock.splitlines()
+        for string in strings[1:]:
+            resource = string.split(' (')
+            resource[1] = resource[1][:-1]
+            resources_new[resource[0]] = int(resource[1])
+        resource_diff_add, resource_diff_del = get_diff(resources_new, resources_old)
+        msg = '📦<b>Награблено:</b>\n'
+        if len(resource_diff_add):
+            for key, val in resource_diff_add.items():
                 msg += '{} ({})\n'.format(key, val)
         else:
-            msg += 'Ничего не изменилось'
-        send_async(bot, chat_id=update.message.chat.id, text=msg)
+            msg += 'Ничего\n'
+        msg += '\n📦<b>Потеряно:</b>\n'
+        if len(resource_diff_del):
+            for key, val in resource_diff_del.items():
+                msg += '{} ({})\n'.format(key, val)
+        else:
+            msg += 'Ничего\n'
+        send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
     else:
         send_async(bot, chat_id=update.message.chat.id, text='Жду с чем сравнивать...')
-    chat_data['resources'] = resources
 
 
 def trade_compare(bot: Bot, update: Update, chat_data: dict):
-    strings = update.message.text.splitlines()
-    items = {}
-    for string in strings:
-        if string.startswith('/add_'):
-            item = string.split('   ')[1]
-            item = item.split(' x ')
-            items[item[0]] = int(item[1])
-    if 'items' in chat_data:
-        resource_diff = get_diff(items, chat_data['items'])
-        msg = 'Изменения предметов:\n'
-        if len(resource_diff):
-            for key, val in resource_diff.items():
+    old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
+                                               stock_type=StockType.TradeBot.value).order_by(Stock.date.desc()).first()
+    new_stock = Stock()
+    new_stock.stock = update.message.text
+    new_stock.stock_type = StockType.TradeBot.value
+    new_stock.user_id = update.message.from_user.id
+    new_stock.date = datetime.now()
+    session.add(new_stock)
+    session.commit()
+    if old_stock is not None:
+        items_old = {}
+        items_new = {}
+        strings = old_stock.stock.splitlines()
+        for string in strings:
+            if string.startswith('/add_'):
+                item = string.split('   ')[1]
+                item = item.split(' x ')
+                items_old[item[0]] = int(item[1])
+        strings = new_stock.stock.splitlines()
+        for string in strings:
+            if string.startswith('/add_'):
+                item = string.split('   ')[1]
+                item = item.split(' x ')
+                items_new[item[0]] = int(item[1])
+        resource_diff_add, resource_diff_del = get_diff(items_new, items_old)
+        msg = '📦<b>Награблено:</b>\n'
+        if len(resource_diff_add):
+            for key, val in resource_diff_add.items():
                 msg += '{} ({})\n'.format(key, val)
         else:
-            msg += 'Ничего не изменилось'
-        send_async(bot, chat_id=update.message.chat.id, text=msg)
+            msg += 'Ничего\n'
+        msg += '\n📦<b>Потеряно:</b>\n'
+        if len(resource_diff_del):
+            for key, val in resource_diff_del.items():
+                msg += '{} ({})\n'.format(key, val)
+        else:
+            msg += 'Ничего\n'
+        send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
     else:
         send_async(bot, chat_id=update.message.chat.id, text='Жду с чем сравнивать...')
-    chat_data['items'] = items

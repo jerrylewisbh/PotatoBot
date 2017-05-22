@@ -219,12 +219,13 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                                 update.callback_query.message.message_id,
                                 reply_markup=generate_ok_markup(data['id'], count))
     elif data['t'] == QueryType.Orders.value:
-        if data['txt'] == Icons.LES.value:
-            chat_data['order'] = Castle.LES.value
-        elif data['txt'] == Icons.GORY.value:
-            chat_data['order'] = Castle.GORY.value
-        else:
-            chat_data['order'] = data['txt']
+        if 'txt' in data and len(data['txt']):
+            if data['txt'] == Icons.LES.value:
+                chat_data['order'] = Castle.LES.value
+            elif data['txt'] == Icons.GORY.value:
+                chat_data['order'] = Castle.GORY.value
+            else:
+                chat_data['order'] = data['txt']
         markup = generate_order_chats_markup(bot)
         bot.editMessageText('Приказ: {}\nКуда слать?'.format(chat_data['order']),
                             update.callback_query.message.chat.id,
