@@ -1,7 +1,7 @@
 import json
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
 from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared
-from core.utils import send_async
+from core.utils import send_async, update_group, add_user
 from core.functions.admins import del_adm
 from enum import Enum
 from core.enums import Castle, Icons
@@ -158,6 +158,8 @@ def generate_group_manage(group_id):
 
 
 def callback_query(bot: Bot, update: Update, chat_data: dict):
+    update_group(update.callback_query.message.chat)
+    add_user(update.callback_query.from_user)
     data = json.loads(update.callback_query.data)
     logger.warning(data)
     if data['t'] == QueryType.GroupList.value:
