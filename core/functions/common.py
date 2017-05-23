@@ -109,10 +109,10 @@ def get_diff(dict_one, dict_two):
             elif diff_count < 0:
                 resource_diff_del[key] = diff_count
         else:
-            resource_diff_del[key] = -val
+            resource_diff_add[key] = val
     for key, val in dict_two.items():
         if key not in dict_one:
-            resource_diff_add[key] = val
+            resource_diff_del[key] = -val
     resource_diff_add = dict(sorted(resource_diff_add.items(), key=lambda x: x[0]))
     resource_diff_del = dict(sorted(resource_diff_del.items(), key=lambda x: x[0]))
     return resource_diff_add, resource_diff_del
