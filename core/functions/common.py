@@ -187,13 +187,13 @@ def trade_compare(bot: Bot, update: Update, chat_data: dict):
         resource_diff_add, resource_diff_del = get_diff(items_new, items_old)
         msg = '📦<b>Награблено:</b>\n'
         if len(resource_diff_add):
-            for key, val in resource_diff_add.items():
+            for key, val in resource_diff_add:
                 msg += '{} ({})\n'.format(key, val)
         else:
             msg += 'Ничего\n'
         msg += '\n📦<b>Потеряно:</b>\n'
         if len(resource_diff_del):
-            for key, val in resource_diff_del.items():
+            for key, val in resource_diff_del:
                 msg += '{} ({})\n'.format(key, val)
         else:
             msg += 'Ничего\n'
