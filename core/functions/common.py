@@ -113,8 +113,8 @@ def get_diff(dict_one, dict_two):
     for key, val in dict_two.items():
         if key not in dict_one:
             resource_diff_del[key] = -val
-    resource_diff_add = dict(sorted(resource_diff_add.items(), key=lambda x: x[0]))
-    resource_diff_del = dict(sorted(resource_diff_del.items(), key=lambda x: x[0]))
+    resource_diff_add = sorted(resource_diff_add.items(), key=lambda x: x[0])
+    resource_diff_del = sorted(resource_diff_del.items(), key=lambda x: x[0])
     return resource_diff_add, resource_diff_del
 
 
@@ -144,13 +144,13 @@ def stock_compare(bot: Bot, update: Update, chat_data: dict):
         resource_diff_add, resource_diff_del = get_diff(resources_new, resources_old)
         msg = '📦<b>Награблено:</b>\n'
         if len(resource_diff_add):
-            for key, val in resource_diff_add.items():
+            for key, val in resource_diff_add:
                 msg += '{} ({})\n'.format(key, val)
         else:
             msg += 'Ничего\n'
         msg += '\n📦<b>Потеряно:</b>\n'
         if len(resource_diff_del):
-            for key, val in resource_diff_del.items():
+            for key, val in resource_diff_del:
                 msg += '{} ({})\n'.format(key, val)
         else:
             msg += 'Ничего\n'
