@@ -6,7 +6,9 @@ from core.utils import send_async, update_group
 def trigger_decorator(func):
     def wrapper(bot, update, *args, **kwargs):
         group = update_group(update.message.chat)
-        if group.allow_trigger_all:
+        if group is None:
+            ((admin(adm_type=AdminType.FULL))(func))(bot, update, *args, **kwargs)
+        elif group.allow_trigger_all:
             func(bot, update, *args, **kwargs)
         else:
             ((admin(adm_type=AdminType.GROUP))(func))(bot, update, *args, **kwargs)
