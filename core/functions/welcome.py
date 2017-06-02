@@ -3,11 +3,13 @@ from core.types import User, Wellcomed, WelcomeMsg, Group, AdminType, admin, ses
 from core.template import fill_template
 from time import time
 from core.utils import send_async, add_user, update_group
+from core.functions.newbies import newbie
 
 last_welcome = 0
 
 
 def welcome(bot: Bot, update: Update):
+    newbie(bot, update)
     global last_welcome
     if update.message.chat.type in ['group', 'supergroup']:
         if update.message.new_chat_member is not None:
