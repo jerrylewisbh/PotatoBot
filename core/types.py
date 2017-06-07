@@ -55,6 +55,8 @@ class User(Base):
     last_name = Column(UnicodeText(250))
     date_added = Column(DateTime, default=datetime.now())
 
+    character = relationship('Character', back_populates='user')
+
     def __repr__(self):
         user = ''
         if self.first_name:
@@ -141,6 +143,28 @@ class Stock(Base):
     stock = Column(UnicodeText(2500))
     date = Column(DATETIME(fsp=6), default=datetime.now())
     stock_type = Column(Integer)
+
+
+class Character(Base):
+    __tablename__ = 'characters'
+
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+    date = Column(DATETIME(fsp=6), primary_key=True)
+    name = Column(UnicodeText(250))
+    prof = Column(UnicodeText(250))
+    pet = Column(UnicodeText(250), nullable=True, default=None)
+    petLevel = Column(Integer, default=0)
+    maxStamina = Column(Integer)
+    level = Column(Integer)
+    attack = Column(Integer)
+    defence = Column(Integer)
+    exp = Column(Integer)
+    needExp = Column(Integer)
+    castle = Column(UnicodeText(100))
+    gold = Column(Integer)
+    donateGold = Column(Integer)
+
+    user = relationship('User', back_populates='character')
 
 
 def admin(adm_type=AdminType.FULL):

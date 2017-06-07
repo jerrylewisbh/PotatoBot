@@ -13,6 +13,9 @@ from core.functions.welcome import welcome, set_welcome, show_welcome, enable_we
 from core.functions.order_groups import group_list, add_group
 from core.utils import add_user
 from config import TOKEN
+from core.regexp import profile
+import re
+from core.functions.profile import char_update, char_show
 
 last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
@@ -64,6 +67,9 @@ def manage_text(bot: Bot, update: Update, chat_data):
             trade_compare(bot, update, chat_data)
         elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
             add_group(bot, update, chat_data)
+        elif update.message.forward_from and update.message.forward_from.id == 265204902 and \
+                re.search(profile, update.message.text):
+            char_update(bot, update)
         else:
             order(bot, update, chat_data)
 
@@ -94,6 +100,7 @@ def main():
     dp.add_handler(CommandHandler("kick", kick))
     dp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     dp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
+    dp.add_handler(CommandHandler("me", char_show))
 
     dp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True))
 
