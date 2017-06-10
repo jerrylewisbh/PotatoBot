@@ -42,7 +42,7 @@ def char_update(bot: Bot, update: Update):
     else:
         char = parse_profile(update.message.text, update.message.from_user.id, update.message.forward_date)
         send_async(bot, chat_id=update.message.chat.id, text='Располагайся в зарослях мяты, {}!\n'
-                                                             'Не забывай поливать свой профиль хотябы раз в день. 🌱'
+                                                             'Не забывай поливать свой профиль хотя бы раз в день. 🌱'
                    .format(char.name))
 
 
