@@ -6,6 +6,7 @@ from core.functions.admins import del_adm
 from enum import Enum
 from core.enums import Castle, Icons
 import logging
+from core.types import AdminType
 
 logger = logging.getLogger('MyApp')
 
@@ -27,7 +28,7 @@ class QueryType(Enum):
 
 def bot_in_chat(bot: Bot, group: Group):
     try:
-        bot.getChatMembersCount(group.id)
+        #bot.getChatMember(group.id, bot.id)
         return True
     except TelegramError as e:
         logger.warning(e.message)
@@ -108,7 +109,22 @@ def generate_order_chats_markup(bot: Bot):
     return inline_markup
 
 
-def generate_order_groups_markup(bot: Bot):
+def generate_order_groups_markup(bot: Bot, admin_user: list=None):
+    if admin_user:
+        group_adm = True
+        for adm in admin_user:
+            adm: Admin
+            if adm.admin_type == AdminType.FULL.value:
+                group_adm = False
+                break
+        if group_adm:
+            inline_keys = []
+            for adm in admin_user:
+                group = session.query(Group).filter_by(id=adm.admin_group).first()
+                inline_keys.append([InlineKeyboardButton(group.title, callback_data=json.dumps(
+                    {'t': QueryType.Order.value, 'g': False, 'id': group.id}))])
+            inline_markup = InlineKeyboardMarkup(inline_keys)
+            return inline_markup
     groups = session.query(OrderGroup).all()
     inline_keys = []
     for group in groups:
@@ -241,7 +257,8 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 chat_data['order'] = Castle.GORY.value
             else:
                 chat_data['order'] = data['txt']
-        markup = generate_order_groups_markup(bot)
+        admin_user = session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
+        markup = generate_order_groups_markup(bot, admin_user)
         bot.editMessageText('Приказ: {}\nКуда слать?'.format(chat_data['order']),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,

@@ -174,7 +174,8 @@ def admin(adm_type=AdminType.FULL):
             allowed = False
             for adm in adms:
                 if adm is not None and adm.admin_type <= adm_type.value and \
-                                adm.admin_group in [0, update.message.chat.id]:
+                        (adm.admin_group in [0, update.message.chat.id] or
+                         update.message.chat.id == update.message.from_user.id):
                     allowed = True
                     break
             if allowed:
