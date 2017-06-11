@@ -113,7 +113,6 @@ def generate_order_groups_markup(bot: Bot, admin_user: list=None):
     if admin_user:
         group_adm = True
         for adm in admin_user:
-            adm: Admin
             if adm.admin_type == AdminType.FULL.value:
                 group_adm = False
                 break
