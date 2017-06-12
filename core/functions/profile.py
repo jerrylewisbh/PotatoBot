@@ -41,15 +41,23 @@ def char_update(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text='Твой профиль завял, нужно что-то посвежей...')
     else:
         char = parse_profile(update.message.text, update.message.from_user.id, update.message.forward_date)
-        send_async(bot, chat_id=update.message.chat.id, text='Располагайся в зарослях мяты, {}!\n'
-                                                             'Не забывай поливать свой профиль хотя бы раз в день. 🌱'
-                   .format(char.name))
+        if char.castle == '🇲🇴':
+            send_async(bot, chat_id=update.message.chat.id, text='Располагайся в зарослях мяты, {}!\n'
+                                                                 'Не забывай поливать свой профиль хотя бы раз в день. 🌱'
+                       .format(char.name))
+        else:
+            send_async(bot, chat_id=update.message.chat.id,
+                       text="Перед тобой во всей красе предстали обширные заросли мяты.  "
+                            "Ты бесстрашно зашёл в них, в надежде добраться до таинственных новых земель. "
+                            "Однако долгие часы скитаний не привели тебя ни к чему. "
+                            "Повезло хоть, что выбраться смог! Без проводника здесь делать нечего...")
 
 
 def char_show(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         user = session.query(User).filter_by(id=update.message.from_user.id).first()
         if user is not None and user.character is not None:
+            char = sorted(user.character, key=lambda x: x.date, reverse=True)[0]
             text = '👤 %first_name% (%username%)\n' \
                    '%castle% %name%\n' \
                    '🏅 %prof% %level% уровня\n' \
@@ -57,5 +65,5 @@ def char_show(bot: Bot, update: Update):
                    '⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%\n' \
                    '💰 %gold% | 🔋 %maxStamina%\n' \
                    '🕑 Последнее обновление %date%'
-            text = fill_char_template(text, user)
+            text = fill_char_template(text, user, char)
             send_async(bot, chat_id=update.message.chat.id, text=text)

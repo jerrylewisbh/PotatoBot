@@ -12,7 +12,7 @@ def newbie(bot: Bot, update: Update):
         if update.message.new_chat_member is not None:
             user = session.query(User).filter(User.id == update.message.new_chat_member.id).first()
             if user is None:
-                group = session.query(Group).filter(Group.id == -1001106022956).first()
+                group = session.query(Group).filter(Group.id == -1001146975451).first()
                 if group is not None:
                     send_async(bot, chat_id=group.id,
                                text=fill_template(newbie_msg, update.message.new_chat_member))

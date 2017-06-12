@@ -14,9 +14,8 @@ def fill_template(msg: str, user: User):
     return msg
 
 
-def fill_char_template(msg: str, user: User):
+def fill_char_template(msg: str, user: User, char: Character):
     msg = fill_template(msg, user)
-    char = sorted(user.character, key=lambda x: x.date, reverse=True)[0]
     msg = msg.replace('%date%', str(char.date))
     msg = msg.replace('%name%', str(char.name))
     msg = msg.replace('%prof%', str(char.prof))
