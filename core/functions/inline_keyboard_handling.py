@@ -7,6 +7,7 @@ from enum import Enum
 from core.enums import Castle, Icons
 import logging
 from core.types import AdminType
+from datetime import datetime, timedelta
 
 logger = logging.getLogger('MyApp')
 
@@ -203,6 +204,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             order = Order()
             order.text = chat_data['order']
             order.chat_id = data['id']
+            order.date = datetime.now()
             msg = send_async(bot, chat_id=order.chat_id, text="Приказ выполнили:").result()
             order.confirmed_msg = msg.message_id
             session.add(order)
@@ -215,6 +217,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 order = Order()
                 order.text = chat_data['order']
                 order.chat_id = item.chat_id
+                order.date = datetime.now()
                 session.add(order)
                 session.commit()
                 markup = generate_ok_markup(order.id, 0)
@@ -226,7 +229,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
         if order is not None:
             order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
                                                              user_id=update.callback_query.from_user.id).first()
-            if order_ok is None:
+            if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
                 order_ok = OrderCleared()
                 order_ok.order_id = data['id']
                 order_ok.user_id = update.callback_query.from_user.id
