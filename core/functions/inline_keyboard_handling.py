@@ -203,6 +203,8 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             order = Order()
             order.text = chat_data['order']
             order.chat_id = data['id']
+            msg = send_async(bot, chat_id=order.chat_id, text="Приказ выполнили:").result()
+            order.confirmed_msg = msg.message_id
             session.add(order)
             session.commit()
             markup = generate_ok_markup(order.id, 0)
@@ -230,6 +232,12 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 order_ok.user_id = update.callback_query.from_user.id
                 session.add(order_ok)
                 session.commit()
+                if order.confirmed_msg != 0:
+                    confirmed = session.query(OrderCleared).filter_by(order_id=order.id).all()
+                    msg = 'Приказ выполнили:\n'
+                    for confirm in confirmed:
+                        msg += str(confirm.user) + '\n'
+                    bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
             count = session.query(OrderCleared).filter_by(order_id=data['id']).count()
             bot.editMessageText(update.callback_query.message.text,
                                 update.callback_query.message.chat.id,

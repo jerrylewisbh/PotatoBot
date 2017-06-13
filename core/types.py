@@ -56,6 +56,7 @@ class User(Base):
     date_added = Column(DateTime, default=datetime.now())
 
     character = relationship('Character', back_populates='user')
+    orders_confirmed = relationship('OrderCleared', back_populates='user')
 
     def __repr__(self):
         user = ''
@@ -65,6 +66,15 @@ class User(Base):
             user += self.last_name + ' '
         if self.username:
             user += '(@' + self.username + ')'
+        return user
+
+    def __str__(self):
+        user = ''
+        if self.first_name:
+            user += self.first_name + ' '
+        if self.last_name:
+            user += self.last_name
+        return user
 
 
 class WelcomeMsg(Base):
@@ -122,6 +132,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     chat_id = Column(BigInteger, ForeignKey(Group.id))
     text = Column(UnicodeText(2500))
+    confirmed_msg = Column(BigInteger)
 
     cleared = relationship('OrderCleared', back_populates='order')
 
@@ -133,6 +144,7 @@ class OrderCleared(Base):
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
 
     order = relationship('Order', back_populates='cleared')
+    user = relationship('User', back_populates='orders_confirmed')
 
 
 class Stock(Base):
