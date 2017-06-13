@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
-from telegram import Bot, Update, InlineKeyboardMarkup, InlineKeyboardButton, Message, User
+from telegram import Bot, Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from core.functions.orders import order, orders
 from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin
@@ -16,6 +15,7 @@ from config import TOKEN
 from core.regexp import profile
 import re
 from core.functions.profile import char_update, char_show
+from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns
 
 last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
@@ -101,6 +101,13 @@ def main():
     dp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     dp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
     dp.add_handler(CommandHandler("me", char_show))
+
+    dp.add_handler(CommandHandler("add_squad", add_squad))
+    dp.add_handler(CommandHandler("del_squad", del_squad))
+    dp.add_handler(CommandHandler("enable_thorns", enable_thorns))
+    dp.add_handler(CommandHandler("disable_thorns", disable_thorns))
+    dp.add_handler(CommandHandler("set_squad_name", set_squad_name))
+    dp.add_handler(CommandHandler("set_invite_link", set_invite_link))
 
     dp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True))
 

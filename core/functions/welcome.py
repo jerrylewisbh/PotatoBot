@@ -1,5 +1,5 @@
 from telegram import Update, Bot
-from core.types import User, Wellcomed, WelcomeMsg, Group, AdminType, admin, session
+from core.types import User, Wellcomed, WelcomeMsg, Group, AdminType, admin, session, Squad
 from core.template import fill_template
 from time import time
 from core.utils import send_async, add_user, update_group
@@ -15,21 +15,29 @@ def welcome(bot: Bot, update: Update):
         if update.message.new_chat_member is not None:
             group = update_group(update.message.chat)
             user = add_user(update.message.new_chat_member)
-            if group is not None and group.welcome_enabled:
-                welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
-                if welcome_msg is None:
-                    welcome_msg = WelcomeMsg(chat_id=group.id, message='Привет, %username%!')
-                    session.add(welcome_msg)
+            if len(group.squad) == 1 and group.squad[0].thorns_enabled and \
+                    (len(user.member) != 1 or user.member[0] not in group.squad[0].members):
+                send_async(bot, chat_id=update.message.chat.id,
+                           text='{} не смог пробраться через МЯТНЫЕ, МАТЬ ЕГО, тернии и ему пришлось уйти'.format(str(user)))
+                bot.kickChatMember(update.message.chat.id, update.message.new_chat_member.id)
+                bot.unbanChatMember(update.message.chat.id, update.message.new_chat_member.id)
+            else:
+                if group.welcome_enabled:
+                    welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
+                    if welcome_msg is None:
+                        welcome_msg = WelcomeMsg(chat_id=group.id, message='Привет, %username%!')
+                        session.add(welcome_msg)
 
-                welcomed = session.query(Wellcomed).filter_by(user_id=update.message.new_chat_member.id,
-                                                              chat_id=update.message.chat.id).first()
-                if welcomed is None:
-                    if time() - last_welcome > 30:
-                        send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
-                        last_welcome = time()
-                    welcomed = Wellcomed(user_id=update.message.new_chat_member.id, chat_id=update.message.chat.id)
-                    session.add(welcomed)
-                session.commit()
+                    welcomed = session.query(Wellcomed).filter_by(user_id=update.message.new_chat_member.id,
+                                                                  chat_id=update.message.chat.id).first()
+                    if welcomed is None:
+                        if time() - last_welcome > 30:
+                            send_async(bot, chat_id=update.message.chat.id,
+                                       text=fill_template(welcome_msg.message, user))
+                            last_welcome = time()
+                        welcomed = Wellcomed(user_id=update.message.new_chat_member.id, chat_id=update.message.chat.id)
+                        session.add(welcomed)
+                    session.commit()
 
 
 @admin(adm_type=AdminType.GROUP)

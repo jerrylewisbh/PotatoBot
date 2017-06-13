@@ -44,6 +44,7 @@ class Group(Base):
     bot_in_group = Column(Boolean, default=True)
 
     group_items = relationship('OrderGroupItem', back_populates='chat')
+    squad = relationship('Squad', back_populates='chat')
 
 
 class User(Base):
@@ -57,6 +58,7 @@ class User(Base):
 
     character = relationship('Character', back_populates='user')
     orders_confirmed = relationship('OrderCleared', back_populates='user')
+    member = relationship('SquadMember', back_populates='user')
 
     def __repr__(self):
         user = ''
@@ -179,6 +181,28 @@ class Character(Base):
     donateGold = Column(Integer)
 
     user = relationship('User', back_populates='character')
+
+
+class Squad(Base):
+    __tablename__ = 'squads'
+
+    chat_id = Column(BigInteger, ForeignKey(Group.id), primary_key=True)
+    invite_link = Column(UnicodeText(250), default='')
+    squad_name = Column(UnicodeText(250))
+    thorns_enabled = Column(Boolean, default=True)
+
+    members = relationship('SquadMember', back_populates='squad')
+    chat = relationship('Group', back_populates='squad')
+
+
+class SquadMember(Base):
+    __tablename__ = 'squad_members'
+
+    squad_id = Column(BigInteger, ForeignKey(Squad.chat_id))
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+
+    squad = relationship('Squad', back_populates='members')
+    user = relationship('User', back_populates='member')
 
 
 def admin(adm_type=AdminType.FULL):
