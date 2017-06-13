@@ -58,12 +58,13 @@ def char_show(bot: Bot, update: Update):
         user = session.query(User).filter_by(id=update.message.from_user.id).first()
         if user is not None and user.character is not None:
             char = sorted(user.character, key=lambda x: x.date, reverse=True)[0]
-            text = '👤 %first_name% (%username%)\n' \
-                   '%castle% %name%\n' \
-                   '🏅 %prof% %level% уровня\n' \
-                   '⚜️ Отряд <В РАЗРАБОТКЕ>\n' \
-                   '⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%\n' \
-                   '💰 %gold% | 🔋 %maxStamina%\n' \
-                   '🕑 Последнее обновление %date%'
-            text = fill_char_template(text, user, char)
-            send_async(bot, chat_id=update.message.chat.id, text=text)
+            if char.castle == '🇲🇴':
+                text = '👤 %first_name% (%username%)\n' \
+                       '%castle% %name%\n' \
+                       '🏅 %prof% %level% уровня\n' \
+                       '⚜️ Отряд <В РАЗРАБОТКЕ>\n' \
+                       '⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%\n' \
+                       '💰 %gold% | 🔋 %maxStamina%\n' \
+                       '🕑 Последнее обновление %date%'
+                text = fill_char_template(text, user, char)
+                send_async(bot, chat_id=update.message.chat.id, text=text)
