@@ -1,6 +1,6 @@
 import json
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
-from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared
+from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad
 from core.utils import send_async, update_group, add_user
 from core.functions.admins import del_adm
 from enum import Enum
@@ -100,12 +100,11 @@ def generate_flag_orders():
 
 
 def generate_order_chats_markup(bot: Bot):
-    groups = session.query(Group).filter_by(bot_in_group=True).all()
+    squads = session.query(Squad).all()
     inline_keys = []
-    for group in groups:
-        if bot_in_chat(bot, group):
-            inline_keys.append([InlineKeyboardButton(group.title, callback_data=json.dumps(
-                {'t': QueryType.Order.value, 'g': False, 'id': group.id}))])
+    for squad in squads:
+        inline_keys.append([InlineKeyboardButton(squad.squad_name, callback_data=json.dumps(
+            {'t': QueryType.Order.value, 'g': False, 'id': squad.chat_id}))])
     inline_markup = InlineKeyboardMarkup(inline_keys)
     return inline_markup
 
@@ -155,17 +154,17 @@ def generate_groups_manage():
 
 
 def generate_group_manage(group_id):
-    chats = session.query(Group).filter_by(bot_in_group=True).all()
+    squads = session.query(Squad).all()
     inline_keys = []
-    for chat in chats:
+    for squad in squads:
         in_group = False
-        for item in chat.group_items:
+        for item in squad.chat.group_items:
             if item.group_id == group_id:
                 in_group = True
                 break
         inline_keys.append([InlineKeyboardButton(('✅' if in_group else '❌') +
-                                                 chat.title, callback_data=json.dumps(
-            {'t': QueryType.OrderGroupTriggerChat.value, 'id': group_id, 'c': chat.id}))])
+                                                 squad.squad_name, callback_data=json.dumps(
+            {'t': QueryType.OrderGroupTriggerChat.value, 'id': group_id, 'c': squad.chat_id}))])
     inline_keys.append([InlineKeyboardButton('🔥🚨Удалить группу🚨🔥', callback_data=json.dumps(
         {'t': QueryType.OrderGroupDelete.value, 'id': group_id}))])
     inline_keys.append([InlineKeyboardButton('🔙Назад', callback_data=json.dumps(
