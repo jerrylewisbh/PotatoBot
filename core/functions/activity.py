@@ -22,7 +22,7 @@ def day_activity(bot: Bot, update: Update):
                 else:
                     status[str(cleared.user)] = 1
         msg = 'Статистика выполнения приказов за день:\n'
-        for name, count in status:
+        for name, count in status.items():
             msg += '{}: {}/{}\n'.format(name, count, total_count)
         send_async(bot, chat_id=update.message.chat.id, text=msg)
 
