@@ -14,7 +14,7 @@ from core.utils import add_user
 from config import TOKEN
 from core.regexp import profile
 import re
-from core.functions.profile import char_update, char_show
+from core.functions.profile import char_update, char_show, find_by_username
 from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns
 from core.functions.activity import day_activity, week_activity, battle_activity
 
@@ -115,6 +115,7 @@ def main():
     dp.add_handler(CommandHandler("disable_thorns", disable_thorns))
     dp.add_handler(CommandHandler("set_squad_name", set_squad_name))
     dp.add_handler(CommandHandler("set_invite_link", set_invite_link))
+    dp.add_handler(CommandHandler("find", find_by_username))
 
     dp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True))
 

@@ -69,3 +69,25 @@ def char_show(bot: Bot, update: Update):
                        '🕑 Последнее обновление %date%'
                 text = fill_char_template(text, user, char)
                 send_async(bot, chat_id=update.message.chat.id, text=text)
+
+
+@admin()
+def find_by_username(bot: Bot, update: Update):
+    if update.message.chat.type == 'private':
+        msg = update.message.text.split(' ', 1)[1]
+        msg = msg.replace('@', '')
+        if msg != '':
+            user = session.query(User).filter_by(username=msg).first()
+            if user is not None and len(user.character) >= 1:
+                char = sorted(user.character, key=lambda x: x.date, reverse=True)[0]
+                text = '👤 %first_name% (%username%)\n' \
+                       '%castle% %name%\n' \
+                       '🏅 %prof% %level% уровня\n' \
+                       '⚜️ Отряд <В РАЗРАБОТКЕ>\n' \
+                       '⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%\n' \
+                       '💰 %gold% | 🔋 %maxStamina%\n' \
+                       '🕑 Последнее обновление %date%'
+                text = fill_char_template(text, user, char)
+                send_async(bot, chat_id=update.message.chat.id, text=text)
+            else:
+                send_async(bot, chat_id=update.message.chat.id, text='В мятных записях ещё нет данных об этом герое')
