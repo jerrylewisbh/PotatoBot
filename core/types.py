@@ -45,6 +45,7 @@ class Group(Base):
 
     group_items = relationship('OrderGroupItem', back_populates='chat')
     squad = relationship('Squad', back_populates='chat')
+    orders = relationship('Order', back_populates='chat')
 
 
 class User(Base):
@@ -138,6 +139,7 @@ class Order(Base):
     date = Column(DATETIME(fsp=6), default=datetime.now())
 
     cleared = relationship('OrderCleared', back_populates='order')
+    chat = relationship('Group', back_populates='orders')
 
 
 class OrderCleared(Base):

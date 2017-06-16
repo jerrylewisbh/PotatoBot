@@ -16,6 +16,7 @@ from core.regexp import profile
 import re
 from core.functions.profile import char_update, char_show
 from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns
+from core.functions.activity import day_activity, week_activity
 
 last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
@@ -45,6 +46,10 @@ def manage_text(bot: Bot, update: Update, chat_data):
             list_admins(bot, update)
         elif update.message.text.upper() == 'Пинг'.upper():
             ping(bot, update)
+        elif update.message.text.upper() == 'Статистика за день'.upper():
+            day_activity(bot, update)
+        elif update.message.text.upper() == 'Статистика за неделю'.upper():
+            week_activity(bot, update)
         elif update.message.text.upper() == 'Разрешить триггерить всем'.upper():
             enable_trigger_all(bot, update)
         elif update.message.text.upper() == 'Запретить триггерить всем'.upper():
