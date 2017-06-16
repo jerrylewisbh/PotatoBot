@@ -42,13 +42,12 @@ def bot_in_chat(bot: Bot, group: Group):
 @admin()
 def send_status(bot: Bot, update: Update):
     msg = 'Выбери чат'
-    groups = session.query(Group).filter_by(bot_in_group=True).all()
+    squads = session.query(Squad).all()
     inline_keys = []
-    for group in groups:
-        if bot_in_chat(bot, group):
-            inline_keys.append(InlineKeyboardButton(group.title,
-                                                    callback_data=json.dumps({'t': QueryType.GroupInfo.value,
-                                                                              'id': group.id})))
+    for squad in squads:
+        inline_keys.append(InlineKeyboardButton(squad.squad_name,
+                                                callback_data=json.dumps({'t': QueryType.GroupInfo.value,
+                                                                          'id': squad.chat_id})))
     inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
     send_async(bot, chat_id=update.message.chat.id, text=msg, reply_markup=inline_markup)
 
@@ -70,6 +69,8 @@ def generate_group_info(group_id):
            'Приветствие: {}\n' \
            'Триггерят все: {}'.format('Включено' if group.welcome_enabled else 'Выключено',
                                       'Включено' if group.allow_trigger_all else 'Выключено')
+    if len(group.squad) == 1:
+        msg += '\nТернии: {}'.format('Включены' if group.squad[0].thorns_enabled else 'Выключены')
     adm_del_keys.append([InlineKeyboardButton('🔙Назад', callback_data=json.dumps(
         {'t': QueryType.GroupList.value}))])
     inline_markup = InlineKeyboardMarkup(adm_del_keys)
