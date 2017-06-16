@@ -19,7 +19,7 @@ def activity(squad, days=0, hours=0):
             else:
                 status[str(cleared.user)] = 1
     msg = 'Статистика выполнения приказов за неделю:\n'
-    users = sorted(status.items(), key=lambda x: x[1])
+    users = sorted(status.items(), key=lambda x: x[1], reverse=True)
     for name, count in users:
         msg += '{}: {}/{}\n'.format(name, count, total_count)
     return msg
