@@ -13,26 +13,27 @@ from core.template import fill_char_template
 
 def parse_profile(profile, user_id, date):
         parsed_data = re.search(regexp.profile, profile)
-
-        char = Character()
-        char.user_id = user_id
-        char.date = date
-        char.castle = str(parsed_data.group(1))
-        char.name = str(parsed_data.group(2))
-        char.prof = str(parsed_data.group(3))
-        char.level = int(parsed_data.group(4))
-        char.attack = int(parsed_data.group(5))
-        char.defence = int(parsed_data.group(6))
-        char.exp = int(parsed_data.group(7))
-        char.needExp = int(parsed_data.group(8))
-        char.maxStamina = int(parsed_data.group(10))
-        char.gold = int(parsed_data.group(11))
-        char.donateGold = int(parsed_data.group(12))
-        if parsed_data.group(16):
-            char.pet = str(parsed_data.group(16))
-            char.petLevel = int(parsed_data.group(18))
-        session.add(char)
-        session.commit()
+        char = session.query(Character).filter_by(user_id=user_id, date=date).first()
+        if char is None:
+            char = Character()
+            char.user_id = user_id
+            char.date = date
+            char.castle = str(parsed_data.group(1))
+            char.name = str(parsed_data.group(2))
+            char.prof = str(parsed_data.group(3))
+            char.level = int(parsed_data.group(4))
+            char.attack = int(parsed_data.group(5))
+            char.defence = int(parsed_data.group(6))
+            char.exp = int(parsed_data.group(7))
+            char.needExp = int(parsed_data.group(8))
+            char.maxStamina = int(parsed_data.group(10))
+            char.gold = int(parsed_data.group(11))
+            char.donateGold = int(parsed_data.group(12))
+            if parsed_data.group(16):
+                char.pet = str(parsed_data.group(16))
+                char.petLevel = int(parsed_data.group(18))
+            session.add(char)
+            session.commit()
         return char
 
 
