@@ -180,12 +180,12 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
     logger.warning(data)
     if data['t'] == QueryType.GroupList.value:
         msg = 'Выбери чат'
-        groups = session.query(Group).filter_by(bot_in_group=True).all()
+        squads = session.query(Squad).all()
         inline_keys = []
-        for group in groups:
-            if bot_in_chat(bot, group):
-                inline_keys.append(InlineKeyboardButton(group.title, callback_data=json.dumps(
-                    {'t': QueryType.GroupInfo.value, 'id': group.id})))
+        for squad in squads:
+            inline_keys.append(InlineKeyboardButton(squad.squad_name,
+                                                    callback_data=json.dumps({'t': QueryType.GroupInfo.value,
+                                                                              'id': squad.chat_id})))
         inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
