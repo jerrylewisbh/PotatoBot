@@ -7,19 +7,21 @@ from core.functions.inline_keyboard_handling import generate_groups_manage, gene
 @admin()
 def add_squad(bot: Bot, update: Update):
     if update.message.chat.type == 'supergroup':
-        squad = Squad()
-        squad.chat_id = update.message.chat.id
-        msg = update.message.text.split(' ', 1)
-        if len(msg) == 2:
-            squad.squad_name = msg[1]
-        else:
-            group = session.query(Group).filter_by(id=update.message.chat.id).first()
-            squad.squad_name = group.title
-        session.add(squad)
-        session.commit()
-        send_async(bot, chat_id=update.message.chat.id, text='Теперь здесь будет обитать отряд {}!\n'
-                                                             'Не забудьте задать ссылку для '
-                                                             'приглашения новых участников.'.format(squad.squad_name))
+        squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+        if squad is None:
+            squad = Squad()
+            squad.chat_id = update.message.chat.id
+            msg = update.message.text.split(' ', 1)
+            if len(msg) == 2:
+                squad.squad_name = msg[1]
+            else:
+                group = session.query(Group).filter_by(id=update.message.chat.id).first()
+                squad.squad_name = group.title
+            session.add(squad)
+            session.commit()
+            send_async(bot, chat_id=update.message.chat.id, text='Теперь здесь будет обитать отряд {}!\n'
+                                                                 'Не забудьте задать ссылку для '
+                                                                 'приглашения новых участников.'.format(squad.squad_name))
 
 
 @admin()
