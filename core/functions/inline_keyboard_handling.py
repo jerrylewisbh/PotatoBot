@@ -137,7 +137,7 @@ def generate_order_groups_markup(bot: Bot, admin_user: list=None):
 
 
 def generate_ok_markup(order_id, count):
-    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Принято! ({})'.format(count),
+    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Принято!'.format(count),
                                                                 callback_data=json.dumps(
                                                                     {'t': QueryType.OrderOk.value, 'id': order_id}))]])
     return inline_markup
@@ -224,8 +224,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 session.commit()
                 markup = generate_ok_markup(order.id, 0)
                 send_async(bot, chat_id=order.chat_id, text=order.text, reply_markup=markup)
-            send_async(bot, chat_id=update.callback_query.message.chat.id,
-                       text='Отправлено в {} отрядов'.format(len(group.items)))
+        update.callback_query.answer(text='Ваше сообщение отправлено')
     elif data['t'] == QueryType.OrderOk.value:
         order = session.query(Order).filter_by(id=data['id']).first()
         if order is not None:
@@ -243,11 +242,9 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                     for confirm in confirmed:
                         msg += str(confirm.user) + '\n'
                     bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
-            count = session.query(OrderCleared).filter_by(order_id=data['id']).count()
-            bot.editMessageText(update.callback_query.message.text,
-                                update.callback_query.message.chat.id,
-                                update.callback_query.message.message_id,
-                                reply_markup=generate_ok_markup(data['id'], count))
+                update.callback_query.answer(text='Я тебя записал')
+            else:
+                update.callback_query.answer(text='Хорош тыкать, уже всё')
     elif data['t'] == QueryType.Orders.value:
         if 'txt' in data and len(data['txt']):
             if data['txt'] == Icons.LES.value:
