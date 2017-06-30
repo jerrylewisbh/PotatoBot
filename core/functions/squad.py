@@ -11,6 +11,7 @@ def add_squad(bot: Bot, update: Update):
         if squad is None:
             squad = Squad()
             squad.chat_id = update.message.chat.id
+            squad.thorns_enabled = False
             msg = update.message.text.split(' ', 1)
             if len(msg) == 2:
                 squad.squad_name = msg[1]
