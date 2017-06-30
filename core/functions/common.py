@@ -2,7 +2,7 @@ from telegram import Update, Bot, ParseMode
 import logging
 from core.functions.triggers import trigger_decorator
 from core.types import AdminType, Admin, Stock, admin, session
-from core.utils import send_async
+from core.utils import send_async, add_user
 from core.functions.reply_markup import generate_standard_markup
 from enum import Enum
 from datetime import datetime
@@ -22,6 +22,7 @@ def error(bot: Bot, update, error, **kwargs):
 
 
 def start(bot: Bot, update: Update):
+    add_user(update.message.from_user)
     if update.message.chat.type == 'private':
         send_async(bot, chat_id=update.message.chat.id, text='Привет')
 
