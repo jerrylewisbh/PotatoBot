@@ -97,7 +97,7 @@ def set_global_admin(bot: Bot, update: Update):
             if adm is None:
                 new_group_admin = Admin(user_id=user.id,
                                         admin_type=AdminType.FULL.value,
-                                        admin_group=update.message.chat.id)
+                                        admin_group=0)
                 session.add(new_group_admin)
                 session.commit()
                 send_async(bot, chat_id=update.message.chat.id,
@@ -119,7 +119,7 @@ def set_super_admin(bot: Bot, update: Update):
             if adm is None and user.id == 79612802:
                 new_group_admin = Admin(user_id=user.id,
                                         admin_type=AdminType.SUPER.value,
-                                        admin_group=update.message.chat.id)
+                                        admin_group=0)
                 session.add(new_group_admin)
                 session.commit()
                 send_async(bot, chat_id=update.message.chat.id,
