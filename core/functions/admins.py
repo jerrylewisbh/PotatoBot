@@ -122,7 +122,7 @@ def set_super_admin(bot: Bot, update: Update):
                         send_async(bot, chat_id=update.message.chat.id,
                                    text='@{} уже бог!'.format(user.username))
                     else:
-                        adm.admin_type = AdminType.SUPER.value;
+                        adm.admin_type = AdminType.SUPER.value
                         session.add(adm)
                         session.commit()
                         send_async(bot, chat_id=update.message.chat.id,
@@ -135,3 +135,38 @@ def set_super_admin(bot: Bot, update: Update):
                     session.commit()
                     send_async(bot, chat_id=update.message.chat.id,
                                text='Новый бог: @{}!'.format(user.username))
+
+
+@admin(adm_type=AdminType.SUPER)
+def del_global_admin(bot: Bot, update: Update):
+    msg = update.message.text.split(' ', 1)[1]
+    if msg.find('@') != -1:
+        msg = msg.replace('@', '')
+        if msg != '':
+            user = session.query(User).filter_by(username=msg).first()
+            if user is None:
+                send_async(bot, chat_id=update.message.chat.id, text='Не знаю таких')
+            else:
+                adm = session.query(Admin).filter_by(user_id=user.id, admin_type=AdminType.FULL.value).first()
+                if adm is None:
+                    send_async(bot, chat_id=update.message.chat.id,
+                               text='У @{} нет власти!'.format(user.username))
+                else:
+                    session.delete(adm)
+                    session.commit()
+                    send_async(bot, chat_id=update.message.chat.id,
+                               text='@{} разжалован.'.format(user.username))
+    else:
+        user = session.query(User).filter_by(id=msg).first()
+        if user is None:
+            send_async(bot, chat_id=update.message.chat.id, text='Не знаю таких')
+        else:
+            adm = session.query(Admin).filter_by(user_id=user.id, admin_type=AdminType.FULL.value).first()
+            if adm is None:
+                send_async(bot, chat_id=update.message.chat.id,
+                           text='У @{} нет власти!'.format(user.username))
+            else:
+                session.delete(adm)
+                session.commit()
+                send_async(bot, chat_id=update.message.chat.id,
+                           text='@{} разжалован.'.format(user.username))
