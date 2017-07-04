@@ -13,6 +13,7 @@ from config import DB
 
 
 class AdminType(Enum):
+    SUPER = 0
     FULL = 1
     GROUP = 2
 

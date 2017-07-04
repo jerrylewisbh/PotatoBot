@@ -3,7 +3,7 @@ import logging
 from telegram import Bot, Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from core.functions.orders import order, orders
-from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin
+from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin, set_global_admin, set_super_admin
 from core.functions.common import help_msg, ping, start, error, kick, admin_panel, stock_compare, trade_compare
 from core.functions.inline_keyboard_handling import callback_query, send_status
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
@@ -102,6 +102,8 @@ def main():
     dp.add_handler(CommandHandler("disable_welcome", disable_welcome))
     dp.add_handler(CommandHandler("show_welcome", show_welcome))
     dp.add_handler(CommandHandler("add_admin", set_admin))
+    dp.add_handler(CommandHandler("add_global_admin", set_global_admin))
+    dp.add_handler(CommandHandler("add_super_admin", set_super_admin))
     dp.add_handler(CommandHandler("del_admin", del_admin))
     dp.add_handler(CommandHandler("list_admins", list_admins))
     dp.add_handler(CommandHandler("kick", kick))

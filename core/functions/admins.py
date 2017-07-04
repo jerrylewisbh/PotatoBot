@@ -82,3 +82,48 @@ def admins_for_users(bot: Bot, update: Update):
         for user in users:
             msg += '@{} {} {}\n'.format(user.username, user.first_name, user.last_name)
     send_async(bot, chat_id=update.message.chat.id, text=msg)
+
+
+@admin(adm_type=AdminType.SUPER)
+def set_global_admin(bot: Bot, update: Update):
+    msg = update.message.text.split(' ', 1)[1]
+    msg = msg.replace('@', '')
+    if msg != '':
+        user = session.query(User).filter_by(username=msg).first()
+        if user is None:
+            send_async(bot, chat_id=update.message.chat.id, text='Не знаю таких')
+        else:
+            adm = session.query(Admin).filter_by(user_id=user.id, admin_type=1).first()
+            if adm is None:
+                new_group_admin = Admin(user_id=user.id,
+                                        admin_type=AdminType.GROUP.value,
+                                        admin_group=update.message.chat.id)
+                session.add(new_group_admin)
+                session.commit()
+                send_async(bot, chat_id=update.message.chat.id,
+                           text='Новый глобальный админ: @{}!'.format(user.username))
+            else:
+                send_async(bot, chat_id=update.message.chat.id,
+                           text='@{} и без тебя админ!'.format(user.username))
+
+
+def set_super_admin(bot: Bot, update: Update):
+    msg = update.message.text.split(' ', 1)[1]
+    msg = msg.replace('@', '')
+    if msg != '':
+        user = session.query(User).filter_by(username=msg).first()
+        if user is None:
+            send_async(bot, chat_id=update.message.chat.id, text='Не знаю таких')
+        else:
+            adm = session.query(Admin).filter_by(user_id=user.id, admin_type=0).first()
+            if adm is None and user.id == 79612802:
+                new_group_admin = Admin(user_id=user.id,
+                                        admin_type=AdminType.GROUP.value,
+                                        admin_group=update.message.chat.id)
+                session.add(new_group_admin)
+                session.commit()
+                send_async(bot, chat_id=update.message.chat.id,
+                           text='Новый бог: @{}!'.format(user.username))
+            else:
+                send_async(bot, chat_id=update.message.chat.id,
+                           text='@{} уже бог!'.format(user.username))
