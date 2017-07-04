@@ -96,7 +96,7 @@ def set_global_admin(bot: Bot, update: Update):
             adm = session.query(Admin).filter_by(user_id=user.id, admin_type=1).first()
             if adm is None:
                 new_group_admin = Admin(user_id=user.id,
-                                        admin_type=AdminType.GROUP.value,
+                                        admin_type=AdminType.FULL.value,
                                         admin_group=update.message.chat.id)
                 session.add(new_group_admin)
                 session.commit()
@@ -118,7 +118,7 @@ def set_super_admin(bot: Bot, update: Update):
             adm = session.query(Admin).filter_by(user_id=user.id, admin_type=0).first()
             if adm is None and user.id == 79612802:
                 new_group_admin = Admin(user_id=user.id,
-                                        admin_type=AdminType.GROUP.value,
+                                        admin_type=AdminType.SUPER.value,
                                         admin_group=update.message.chat.id)
                 session.add(new_group_admin)
                 session.commit()
