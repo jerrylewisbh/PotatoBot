@@ -4,6 +4,7 @@ from core.template import fill_template
 from time import time
 from core.utils import send_async, add_user, update_group
 from core.functions.newbies import newbie
+from core.texts import *
 
 last_welcome = 0
 
@@ -24,14 +25,14 @@ def welcome(bot: Bot, update: Update):
             if len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != 386494081 and \
                     (len(user.member) != 1 or user.member[0] not in group.squad[0].members) and not allow_anywhere:
                 send_async(bot, chat_id=update.message.chat.id,
-                           text='{} не смог пробраться через МЯТНЫЕ, МАТЬ ЕГО, тернии и ему пришлось уйти'.format(str(user)))
+                           text=MSG_THORNS.format(str(user)))
                 bot.kickChatMember(update.message.chat.id, update.message.new_chat_member.id)
                 bot.unbanChatMember(update.message.chat.id, update.message.new_chat_member.id)
             else:
                 if group.welcome_enabled:
                     welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
                     if welcome_msg is None:
-                        welcome_msg = WelcomeMsg(chat_id=group.id, message='Привет, %username%!')
+                        welcome_msg = WelcomeMsg(chat_id=group.id, message=MSG_WELCOME_DEFAULT)
                         session.add(welcome_msg)
 
                     welcomed = session.query(Wellcomed).filter_by(user_id=update.message.new_chat_member.id,
@@ -57,7 +58,7 @@ def set_welcome(bot: Bot, update: Update):
             welcome_msg.message = update.message.text.split(' ', 1)[1]
         session.add(welcome_msg)
         session.commit()
-        send_async(bot, chat_id=update.message.chat.id, text='Текст приветствия установлен.')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_WELCOME_SET)
 
 
 @admin(adm_type=AdminType.GROUP)
@@ -67,7 +68,7 @@ def enable_welcome(bot: Bot, update: Update):
         group.welcome_enabled = True
         session.add(group)
         session.commit()
-        send_async(bot, chat_id=update.message.chat.id, text='Приветствие включено.')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_WELCOME_ENABLED)
 
 
 @admin(adm_type=AdminType.GROUP)
@@ -77,7 +78,7 @@ def disable_welcome(bot: Bot, update: Update):
         group.welcome_enabled = False
         session.add(group)
         session.commit()
-        send_async(bot, chat_id=update.message.chat.id, text='Приветствие выключено.')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_WELCOME_DISABLED)
 
 
 @admin(adm_type=AdminType.GROUP)
@@ -86,7 +87,7 @@ def show_welcome(bot: Bot, update):
         group = update_group(update.message.chat)
         welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
         if welcome_msg is None:
-            welcome_msg = WelcomeMsg(chat_id=group.id, message='Привет, %username%!')
+            welcome_msg = WelcomeMsg(chat_id=group.id, message=MSG_WELCOME_DEFAULT)
             session.add(welcome_msg)
             session.commit()
         send_async(bot, chat_id=group.id, text=welcome_msg.message)

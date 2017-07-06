@@ -3,6 +3,7 @@ from core.types import User, AdminType, Admin, admin, session, OrderGroup, Group
 from core.utils import send_async
 from core.functions.inline_keyboard_handling import generate_groups_manage, generate_group_manage
 from datetime import datetime, timedelta
+from core.texts import *
 
 
 def activity(squad, days=0, hours=0):
@@ -18,10 +19,10 @@ def activity(squad, days=0, hours=0):
                 status[str(cleared.user)] += 1
             else:
                 status[str(cleared.user)] = 1
-    msg = 'Статистика выполнения приказов за {} дней:\n'.format(days)
+    msg = MSG_ORDER_STATISTIC.format(days)
     users = sorted(status.items(), key=lambda x: x[1], reverse=True)
     for name, count in users:
-        msg += '{}: {}/{}\n'.format(name, count, total_count)
+        msg += MSG_ORDER_STATISTIC_OUT_FORMAT.format(name, count, total_count)
     return msg
 
 

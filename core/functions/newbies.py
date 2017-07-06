@@ -2,9 +2,7 @@ from telegram import Update, Bot
 from core.types import User, Group, session
 from core.template import fill_template
 from core.utils import send_async
-
-newbie_msg = 'Новый игрок в замке!\n' \
-             'Все на вербовку %username%!'
+from core.texts import *
 
 
 def newbie(bot: Bot, update: Update):
@@ -15,4 +13,4 @@ def newbie(bot: Bot, update: Update):
                 group = session.query(Group).filter(Group.id == -1001146975451).first()
                 if group is not None:
                     send_async(bot, chat_id=group.id,
-                               text=fill_template(newbie_msg, update.message.new_chat_member))
+                               text=fill_template(MSG_NEWBIE, update.message.new_chat_member))

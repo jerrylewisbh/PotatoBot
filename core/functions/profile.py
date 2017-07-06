@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import re
 from core import regexp
 from core.template import fill_char_template
+from core.texts import *
 
 
 def parse_profile(profile, user_id, date):
@@ -39,19 +40,14 @@ def parse_profile(profile, user_id, date):
 
 def char_update(bot: Bot, update: Update):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
-        send_async(bot, chat_id=update.message.chat.id, text='Твой профиль завял, нужно что-то посвежей...')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
     else:
         char = parse_profile(update.message.text, update.message.from_user.id, update.message.forward_date)
         if char.castle == '🇲🇴':
-            send_async(bot, chat_id=update.message.chat.id, text='Располагайся в зарослях мяты, {}!\n'
-                                                                 'Не забывай поливать свой профиль хотя бы раз в день. 🌱'
-                       .format(char.name))
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name))
         else:
             send_async(bot, chat_id=update.message.chat.id,
-                       text="Перед тобой во всей красе предстали обширные заросли мяты.  "
-                            "Ты бесстрашно зашёл в них, в надежде добраться до таинственных новых земель. "
-                            "Однако долгие часы скитаний не привели тебя ни к чему. "
-                            "Повезло хоть, что выбраться смог! Без проводника здесь делать нечего...")
+                       text=MSG_PROFILE_CASTLE_MISTAKE)
 
 
 def char_show(bot: Bot, update: Update):
@@ -60,14 +56,7 @@ def char_show(bot: Bot, update: Update):
         if user is not None and user.character is not None:
             char = sorted(user.character, key=lambda x: x.date, reverse=True)[0]
             if char.castle == '🇲🇴':
-                text = '👤 %first_name% (%username%)\n' \
-                       '%castle% %name%\n' \
-                       '🏅 %prof% %level% уровня\n' \
-                       '⚜️ Отряд <В РАЗРАБОТКЕ>\n' \
-                       '⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%\n' \
-                       '💰 %gold% | 🔋 %maxStamina%\n' \
-                       '🕑 Последнее обновление %date%'
-                text = fill_char_template(text, user, char)
+                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
                 send_async(bot, chat_id=update.message.chat.id, text=text)
 
 
@@ -80,14 +69,7 @@ def find_by_username(bot: Bot, update: Update):
             user = session.query(User).filter_by(username=msg).first()
             if user is not None and len(user.character) >= 1:
                 char = sorted(user.character, key=lambda x: x.date, reverse=True)[0]
-                text = '👤 %first_name% (%username%)\n' \
-                       '%castle% %name%\n' \
-                       '🏅 %prof% %level% уровня\n' \
-                       '⚜️ Отряд <В РАЗРАБОТКЕ>\n' \
-                       '⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%\n' \
-                       '💰 %gold% | 🔋 %maxStamina%\n' \
-                       '🕑 Последнее обновление %date%'
-                text = fill_char_template(text, user, char)
+                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
                 send_async(bot, chat_id=update.message.chat.id, text=text)
             else:
-                send_async(bot, chat_id=update.message.chat.id, text='В мятных записях ещё нет данных об этом герое')
+                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND)

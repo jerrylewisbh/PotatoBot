@@ -6,6 +6,7 @@ from core.utils import send_async, add_user
 from core.functions.reply_markup import generate_standard_markup
 from enum import Enum
 from datetime import datetime
+from core.texts import *
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +25,13 @@ def error(bot: Bot, update, error, **kwargs):
 def start(bot: Bot, update: Update):
     add_user(update.message.from_user)
     if update.message.chat.type == 'private':
-        send_async(bot, chat_id=update.message.chat.id, text='Привет')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME)
 
 
 @admin()
 def admin_panel(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
-        send_async(bot, chat_id=update.message.chat.id, text='Да здравствует админ!', reply_markup=generate_standard_markup())
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_ADMIN_WELCOME, reply_markup=generate_standard_markup())
 
 
 @admin()
@@ -43,60 +44,20 @@ def help_msg(bot: Bot, update):
     admin_user = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     global_adm = False
     for adm in admin_user:
-        if adm.admin_type == AdminType.FULL.value:
+        if adm.admin_type <= AdminType.FULL.value:
             global_adm = True
             break
     if global_adm:
-        send_async(bot, chat_id=update.message.chat.id, text='Команды приветствия:\n'
-                                                             '/enable_welcome - Включить приветствие\n'
-                                                             '/disable_welcome - Выключить приветствие\n'
-                                                             '/set_welcome <текст> - Установить текст приветствия. '
-                                                             'Может содержать %username% - будет заменено на @username, '
-                                                             'если не установлено на Имя Фамилия, %first_name% - на имя, '
-                                                             '%last_name% - на фамилию, %id% - на id\n'
-                                                             '/show_welcome - Показать текущий текст приветствия для '
-                                                             'данного чата'
-                                                             '\n\n'
-                                                             'Команды триггеров:\n'
-                                                             '/set_trigger <триггер>::<сообщение> - Установить сообщение, '
-                                                             'которое бот будет кидать по триггеру.\n'
-                                                             '/add_trigger <триггер>::<сообщение> - Добавляет сообщение, '
-                                                             'которое бот будет кидать по триггеру, но не заменяет старый.\n'
-                                                             '/del_trigger <триггер> - Удалить соответствующий триггер\n'
-                                                             '/list_triggers - Показать все существующие триггеры'
-                                                             '\n\n'
-                                                             'Команды глобаладмина:\n'
-                                                             '/add_admin <юзернэйм> - Добавить админа для текущего чата\n'
-                                                             '/del_admin <юзернэйм> - Забрать привелегии у админа текущего '
-                                                             'чата\n'
-                                                             '/list_admins - Показать список местных админов\n'
-                                                             '/enable_trigger - Разрешить триггерить всем в группе\n'
-                                                             '/disable_trigger - Запретить триггерить всем в группе')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_GLOBAL_ADMIN)
     elif len(admin_user) != 0:
-        send_async(bot, chat_id=update.message.chat.id, text='Команды приветствия:\n'
-                                                             '/enable_welcome - Включить приветствие\n'
-                                                             '/disable_welcome - Выключить приветствие\n'
-                                                             '/set_welcome <текст> - Установить текст приветствия. '
-                                                             'Может содержать %username% - будет заменено на @username, '
-                                                             'если не установлено на Имя Фамилия, %first_name% - на имя, '
-                                                             '%last_name% - на фамилию, %id% - на id\n'
-                                                             '/show_welcome - Показать текущий текст приветствия для '
-                                                             'данного чата'
-                                                             '\n\n'
-                                                             'Команды триггеров:\n'
-                                                             '/add_trigger <триггер>::<сообщение> - Добавляет сообщение, '
-                                                             'которое бот будет кидать по триггеру, но не заменяет старый.\n'
-                                                             '/list_triggers - Показать все существующие триггеры\n'
-                                                             '/enable_trigger - Разрешить триггерить всем в группе\n'
-                                                             '/disable_trigger - Запретить триггерить всем в группе')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_GROUP_ADMIN)
     else:
-        send_async(bot, chat_id=update.message.chat.id, text='Команды триггеров:\n'
-                                                             '/list_triggers - Показать все существующие триггеры')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_USER)
 
 
 @admin(adm_type=AdminType.GROUP)
 def ping(bot: Bot, update: Update):
-    send_async(bot, chat_id=update.message.chat.id, text='Иди освежись, @' + update.message.from_user.username + '!')
+    send_async(bot, chat_id=update.message.chat.id, text=MSG_PING.format(update.message.from_user.username))
 
 
 def get_diff(dict_one, dict_two):
@@ -143,21 +104,21 @@ def stock_compare(bot: Bot, update: Update, chat_data: dict):
             resource[1] = resource[1][:-1]
             resources_new[resource[0]] = int(resource[1])
         resource_diff_add, resource_diff_del = get_diff(resources_new, resources_old)
-        msg = '📦<b>Награблено:</b>\n'
+        msg = MSG_STOCK_COMPARE_HARVESTED
         if len(resource_diff_add):
             for key, val in resource_diff_add:
-                msg += '{} ({})\n'.format(key, val)
+                msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
-            msg += 'Ничего\n'
-        msg += '\n📦<b>Потеряно:</b>\n'
+            msg += MSG_EMPTY
+        msg += MSG_STOCK_COMPARE_LOST
         if len(resource_diff_del):
             for key, val in resource_diff_del:
-                msg += '{} ({})\n'.format(key, val)
+                msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
-            msg += 'Ничего\n'
+            msg += MSG_EMPTY
         send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
     else:
-        send_async(bot, chat_id=update.message.chat.id, text='Жду с чем сравнивать...')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT)
 
 
 def trade_compare(bot: Bot, update: Update, chat_data: dict):
@@ -186,18 +147,18 @@ def trade_compare(bot: Bot, update: Update, chat_data: dict):
                 item = item.split(' x ')
                 items_new[item[0]] = int(item[1])
         resource_diff_add, resource_diff_del = get_diff(items_new, items_old)
-        msg = '📦<b>Награблено:</b>\n'
+        msg = MSG_STOCK_COMPARE_HARVESTED
         if len(resource_diff_add):
             for key, val in resource_diff_add:
-                msg += '{} ({})\n'.format(key, val)
+                msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
-            msg += 'Ничего\n'
-        msg += '\n📦<b>Потеряно:</b>\n'
+            msg += MSG_EMPTY
+        msg += MSG_STOCK_COMPARE_LOST
         if len(resource_diff_del):
             for key, val in resource_diff_del:
-                msg += '{} ({})\n'.format(key, val)
+                msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
-            msg += 'Ничего\n'
+            msg += MSG_EMPTY
         send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
     else:
-        send_async(bot, chat_id=update.message.chat.id, text='Жду с чем сравнивать...')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT)

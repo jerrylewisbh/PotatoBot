@@ -1,6 +1,7 @@
 from telegram import Update, Bot
 from core.types import Group, Trigger, AdminType, admin, session
 from core.utils import send_async, update_group
+from core.texts import *
 
 
 def trigger_decorator(func):
@@ -29,9 +30,9 @@ def set_trigger(bot: Bot, update: Update):
                 trigger.message = new_trigger[1]
             session.add(trigger)
             session.commit()
-            send_async(bot, chat_id=update.message.chat.id, text='Триггер на фразу "{}" установлен.'.format(new_trigger[0]))
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW.format(new_trigger[0]))
         else:
-            send_async(bot, chat_id=update.message.chat.id, text='Какие-то у тебя несвежие мысли, попробуй ещё раз.')
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW_ERROR)
 
 
 @admin(adm_type=AdminType.GROUP)
@@ -49,17 +50,17 @@ def add_trigger(bot: Bot, update: Update):
                     session.add(trigger)
                     session.commit()
                     send_async(bot, chat_id=update.message.chat.id,
-                               text='Триггер на фразу "{}" установлен.'.format(new_trigger[0]))
+                               text=MSG_TRIGGER_NEW.format(new_trigger[0]))
                 else:
                     send_async(bot, chat_id=update.message.chat.id,
-                               text='Триггер "{}" уже существует, выбери другой.'.format(new_trigger[0]))
+                               text=MSG_TRIGGER_EXISTS.format(new_trigger[0]))
             else:
                 send_async(bot, chat_id=update.message.chat.id,
-                           text='Какие-то у тебя несвежие мысли, попробуй ещё раз.')
+                           text=MSG_TRIGGER_NEW_ERROR)
         else:
-            send_async(bot, chat_id=update.message.chat.id, text='Какие-то у тебя несвежие мысли, попробуй ещё раз.')
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW_ERROR)
 
-" "
+
 @trigger_decorator
 def trigger_show(bot: Bot, update: Update):
     trigger = session.query(Trigger).filter_by(trigger=update.message.text).first()
@@ -73,7 +74,7 @@ def enable_trigger_all(bot: Bot, update: Update):
     group.allow_trigger_all = True
     session.add(group)
     session.commit()
-    send_async(bot, chat_id=update.message.chat.id, text='Теперь триггерить могут все.')
+    send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_ALL_ENABLED)
 
 
 @admin(adm_type=AdminType.GROUP)
@@ -82,7 +83,7 @@ def disable_trigger_all(bot: Bot, update: Update):
     group.allow_trigger_all = False
     session.add(group)
     session.commit()
-    send_async(bot, chat_id=update.message.chat.id, text='Теперь триггерить могут только админы.')
+    send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_ALL_DISABLED)
 
 
 @admin()
@@ -92,13 +93,13 @@ def del_trigger(bot: Bot, update: Update):
     if trigger is not None:
         session.delete(trigger)
         session.commit()
-        send_async(bot, chat_id=update.message.chat.id, text='Триггер на фразу "{}" удалён.'.format(msg))
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_DEL.format(msg))
     else:
-        send_async(bot, chat_id=update.message.chat.id, text='Где ты такой триггер видел? 0_о')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_DEL_ERROR)
 
 
 @trigger_decorator
 def list_triggers(bot: Bot, update: Update):
     triggers = session.query(Trigger).all()
-    msg = 'Список текущих триггеров:\n' + ('\n'.join([trigger.trigger for trigger in triggers]) or '[Пусто]')
+    msg = MSG_TRIGGER_LIST_HEADER + ('\n'.join([trigger.trigger for trigger in triggers]) or MSG_EMPTY)
     send_async(bot, chat_id=update.message.chat.id, text=msg)
