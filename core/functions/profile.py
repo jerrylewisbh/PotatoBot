@@ -1,7 +1,7 @@
 from telegram import Update, Bot, ParseMode
 import logging
 from core.functions.triggers import trigger_decorator
-from core.types import AdminType, Admin, Stock, Character, User, admin, session
+from core.types import AdminType, Admin, Stock, Character, User, admin, session, data_update
 from core.utils import send_async
 from core.functions.reply_markup import generate_standard_markup
 from enum import Enum
@@ -60,6 +60,7 @@ def char_show(bot: Bot, update: Update):
                 send_async(bot, chat_id=update.message.chat.id, text=text)
 
 
+#@data_update
 @admin()
 def find_by_username(bot: Bot, update: Update):
     if update.message.chat.type == 'private':

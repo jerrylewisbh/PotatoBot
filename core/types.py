@@ -10,6 +10,9 @@ from sqlalchemy.pool import Pool
 import logging
 from enum import Enum
 from config import DB
+import requests
+from json import loads
+from core.enums import Castle
 
 
 class AdminType(Enum):
@@ -173,15 +176,15 @@ class Character(Base):
     prof = Column(UnicodeText(250))
     pet = Column(UnicodeText(250), nullable=True, default=None)
     petLevel = Column(Integer, default=0)
-    maxStamina = Column(Integer)
+    maxStamina = Column(Integer, default=5)
     level = Column(Integer)
     attack = Column(Integer)
     defence = Column(Integer)
     exp = Column(Integer)
-    needExp = Column(Integer)
+    needExp = Column(Integer, default=0)
     castle = Column(UnicodeText(100))
-    gold = Column(Integer)
-    donateGold = Column(Integer)
+    gold = Column(Integer, default=0)
+    donateGold = Column(Integer, default=0)
 
     user = relationship('User', back_populates='character')
 
@@ -223,6 +226,43 @@ def admin(adm_type=AdminType.FULL):
                 func(bot, update, *args, **kwargs)
         return wrapper
     return decorate
+
+
+def data_update(func):
+    def wrapper(bot, update, *args, **kwargs):
+        resp = requests.get('https://cwbot2.miropolskiy.com/json.php', auth=('ruckus', 'Ruarpamcotkong'))
+        data = loads(resp.text)
+        for player in data['players']:
+            user = session.query(User).filter_by(id=player['tgid']).first()
+            if user is None:
+                user = User()
+                user.id = player['tgid']
+                user.first_name = player['name']
+                user.username = player['username'][1:]
+                session.add(user)
+            character = session.query(Character).filter_by(user_id=user.id,
+                                                           date=datetime.strptime(player['last_update'],
+                                                                                  '%Y-%m-%d %H:%M:%S')).first()
+            if character is None:
+                character = Character()
+                character.user_id = user.id
+                character.date = datetime.strptime(player['last_update'], '%Y-%m-%d %H:%M:%S')
+                character.castle = Castle.MINT.value
+                character.prof = player['class']
+                character.name = player['player']
+                character.level = player['level']
+                character.attack = player['attack']
+                character.defence = player['defence']
+                session.add(character)
+            member = session.query(SquadMember).filter_by(user_id=user.id).first()
+            if member is None or member.squad_id != player['squad_id']:
+                if member is None:
+                    member = SquadMember()
+                    member.user_id = user.id
+                member.squad_id = player['squad_id']
+                session.add(member)
+            session.commit()
+    return wrapper
 
 
 Base.metadata.create_all(engine)
