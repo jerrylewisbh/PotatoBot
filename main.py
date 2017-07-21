@@ -18,6 +18,7 @@ import re
 from core.functions.profile import char_update, char_show, find_by_username
 from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns
 from core.functions.activity import day_activity, week_activity, battle_activity
+from datetime import datetime
 
 last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
@@ -25,6 +26,8 @@ logging.basicConfig(level=logging.WARNING,
 
 
 def manage_text(bot: Bot, update: Update, chat_data):
+    with open('log.txt', 'a') as log:
+        log.write(str(datetime.now() - update.message.date) + '\n')
     add_user(update.message.from_user)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
         if str(update.message.text).upper().startswith('Приветствие:'.upper()):
