@@ -17,6 +17,8 @@ def send_async(bot: Bot, *args, **kwargs):
             session.commit()
         kwargs['chat_id'] = e.new_chat_id
         return bot.sendMessage(*args, **kwargs)
+    except:
+        pass
 
 
 def send_pin_async(bot: Bot, *args, **kwargs):
