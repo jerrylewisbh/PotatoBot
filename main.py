@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 import logging
-from telegram import Bot, Update
+from telegram import Bot, Update, Message
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from core.functions.orders import order, orders
 from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin, set_global_admin, \
     set_super_admin, del_global_admin
 from core.functions.common import help_msg, ping, start, error, kick, admin_panel, stock_compare, trade_compare
 from core.functions.inline_keyboard_handling import callback_query, send_status
+from core.functions.pin import pin, not_pin_all, pin_all
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
     disable_trigger_all, trigger_show
 from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 from core.functions.order_groups import group_list, add_group
+from core.types import data_update, with_session
 from core.utils import add_user
 from config import TOKEN
 from core.regexp import profile
@@ -25,9 +27,9 @@ logging.basicConfig(level=logging.WARNING,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
+@with_session
+@data_update
 def manage_text(bot: Bot, update: Update, chat_data):
-    with open('log.txt', 'a') as log:
-        log.write(str(datetime.now() - update.message.date) + '\n')
     add_user(update.message.from_user)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
         if str(update.message.text).upper().startswith('Приветствие:'.upper()):
@@ -62,6 +64,12 @@ def manage_text(bot: Bot, update: Update, chat_data):
             disable_trigger_all(bot, update)
         elif update.message.text.upper() in ['Админы'.upper(), 'офицер'.upper()]:
             admins_for_users(bot, update)
+        elif update.message.text.upper() == 'Пинят все'.upper():
+            pin_all(bot, update)
+        elif update.message.text.upper() == 'Хорош пинить'.upper():
+            not_pin_all(bot, update)
+        elif update.message.text.upper() == 'Пин'.upper() and update.message.reply_to_message is not None:
+            pin(bot, update)
         trigger_show(bot, update)
     elif update.message.chat.type == 'private':
         if update.message.text.upper() == 'Статус'.upper():

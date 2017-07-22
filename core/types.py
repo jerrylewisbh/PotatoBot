@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger
 from sqlalchemy.dialects.mysql import DATETIME
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import event
 from sqlalchemy.pool import Pool
@@ -13,6 +13,7 @@ from config import DB
 import requests
 from json import loads
 from core.enums import Castle
+import threading
 
 
 class AdminType(Enum):
@@ -26,6 +27,7 @@ logger = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 session = Session()
+last_update = datetime.now() - timedelta(minutes=10)
 
 
 @event.listens_for(Pool, "connect")
@@ -45,6 +47,7 @@ class Group(Base):
     title = Column(UnicodeText(250))
     welcome_enabled = Column(Boolean, default=False)
     allow_trigger_all = Column(Boolean, default=False)
+    allow_pin_all = Column(Boolean, default=False)
     bot_in_group = Column(Boolean, default=True)
 
     group_items = relationship('OrderGroupItem', back_populates='chat')
@@ -230,39 +233,60 @@ def admin(adm_type=AdminType.FULL):
 
 def data_update(func):
     def wrapper(bot, update, *args, **kwargs):
-        resp = requests.get('https://cwbot2.miropolskiy.com/json.php', auth=('ruckus', 'Ruarpamcotkong'))
-        data = loads(resp.text)
-        for player in data['players']:
-            user = session.query(User).filter_by(id=player['tgid']).first()
-            if user is None:
-                user = User()
-                user.id = player['tgid']
-                user.first_name = player['name']
-                user.username = player['username'][1:]
-                session.add(user)
-            character = session.query(Character).filter_by(user_id=user.id,
-                                                           date=datetime.strptime(player['last_update'],
-                                                                                  '%Y-%m-%d %H:%M:%S')).first()
-            if character is None:
-                character = Character()
-                character.user_id = user.id
-                character.date = datetime.strptime(player['last_update'], '%Y-%m-%d %H:%M:%S')
-                character.castle = Castle.MINT.value
-                character.prof = player['class']
-                character.name = player['player']
-                character.level = player['level']
-                character.attack = player['attack']
-                character.defence = player['defence']
-                session.add(character)
-            member = session.query(SquadMember).filter_by(user_id=user.id).first()
-            if member is None or member.squad_id != player['squad_id']:
-                if member is None:
-                    member = SquadMember()
-                    member.user_id = user.id
-                member.squad_id = player['squad_id']
-                session.add(member)
-            session.commit()
+        global last_update
+        if datetime.now() - last_update > timedelta(minutes=10):
+            last_update = datetime.now()
+
+            def upd():
+                resp = requests.get('https://ker.su/json.php', auth=('ruckus', 'Ruarpamcotkong'))
+                data = loads(resp.text)
+                for player in data['players']:
+                    user = session.query(User).filter_by(id=player['tgid']).first()
+                    if user is None:
+                        user = User()
+                        user.id = player['tgid']
+                        user.first_name = player['name']
+                        if player['username'] is not None:
+                            user.username = player['username'][1:]
+                        session.add(user)
+                    character = session.query(Character).filter_by(user_id=user.id,
+                                                                   date=datetime.strptime(player['last_update'],
+                                                                                          '%Y-%m-%d %H:%M:%S')).first()
+                    if character is None:
+                        character = Character()
+                        character.user_id = user.id
+                        character.date = datetime.strptime(player['last_update'], '%Y-%m-%d %H:%M:%S')
+                        character.castle = Castle.MINT.value
+                        character.prof = player['class']
+                        character.name = player['player']
+                        character.level = player['level']
+                        character.attack = player['attack']
+                        character.defence = player['defence']
+                        character.exp = player['exp']
+                        character.gold = player['gold']
+                        session.add(character)
+                    member = session.query(SquadMember).filter_by(user_id=user.id).first()
+                    squad = session.query(Squad).filter_by(chat_id=player['squad_id']).first()
+                    if squad is not None and (member is None or member.squad_id != player['squad_id']):
+                        if member is None:
+                            member = SquadMember()
+                            member.user_id = user.id
+                        member.squad_id = player['squad_id']
+                        session.add(member)
+                    session.commit()
+            threading.Thread(target=upd).start()
+        func(bot, update, *args, **kwargs)
     return wrapper
+
+
+def with_session(fn):
+    def go(*args, **kw):
+        try:
+            return fn(*args, **kw)
+        except:
+            session.rollback()
+            raise
+    return go
 
 
 Base.metadata.create_all(engine)
