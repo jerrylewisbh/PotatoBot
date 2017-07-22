@@ -7,7 +7,7 @@ from core.functions.admins import list_admins, admins_for_users, set_admin, del_
     set_super_admin, del_global_admin
 from core.functions.common import help_msg, ping, start, error, kick, admin_panel, stock_compare, trade_compare
 from core.functions.inline_keyboard_handling import callback_query, send_status
-from core.functions.pin import pin, not_pin_all, pin_all
+from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
     disable_trigger_all, trigger_show
 from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
@@ -70,6 +70,8 @@ def manage_text(bot: Bot, update: Update, chat_data):
             not_pin_all(bot, update)
         elif update.message.text.upper() == 'Пин'.upper() and update.message.reply_to_message is not None:
             pin(bot, update)
+        elif update.message.text.upper() == 'сайлентпин'.upper() and update.message.reply_to_message is not None:
+            silent_pin(bot, update)
         trigger_show(bot, update)
     elif update.message.chat.type == 'private':
         if update.message.text.upper() == 'Статус'.upper():

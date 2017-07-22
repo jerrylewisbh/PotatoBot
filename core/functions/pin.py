@@ -25,6 +25,14 @@ def pin(bot: Bot, update: Update):
                       'disable_notification': False})
 
 
+@pin_decorator
+def silent_pin(bot: Bot, update: Update):
+    bot.request.post(bot.base_url + '/pinChatMessage',
+                     {'chat_id': update.message.reply_to_message.chat.id,
+                      'message_id': update.message.reply_to_message.message_id,
+                      'disable_notification': True})
+
+
 @admin(AdminType.GROUP)
 def pin_all(bot: Bot, update: Update):
     group = update_group(update.message.chat)
