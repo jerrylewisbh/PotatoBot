@@ -210,8 +210,11 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             session.commit()
             markup = generate_ok_markup(order.id, 0)
             msg = send_async(bot, chat_id=order.chat_id, text=order.text, reply_markup=markup).result()
-            bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': order.chat_id, 'message_id': msg.message_id,
-                                                                'disable_notification': False})
+            try:
+                bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': order.chat_id, 'message_id': msg.message_id,
+                                                                    'disable_notification': False})
+            except:
+                pass
         else:
             group = session.query(OrderGroup).filter_by(id=data['id']).first()
             for item in group.items:
@@ -225,9 +228,12 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 session.commit()
                 markup = generate_ok_markup(order.id, 0)
                 msg = send_async(bot, chat_id=order.chat_id, text=order.text, reply_markup=markup).result()
-                bot.request.post(bot.base_url + '/pinChatMessage',
-                                 {'chat_id': order.chat_id, 'message_id': msg.message_id,
-                                  'disable_notification': False})
+                try:
+                    bot.request.post(bot.base_url + '/pinChatMessage',
+                                     {'chat_id': order.chat_id, 'message_id': msg.message_id,
+                                      'disable_notification': False})
+                except:
+                    pass
         update.callback_query.answer(text=MSG_ORDER_SENT)
     elif data['t'] == QueryType.OrderOk.value:
         order = session.query(Order).filter_by(id=data['id']).first()
