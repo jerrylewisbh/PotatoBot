@@ -248,10 +248,11 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 session.add(order_ok)
                 session.commit()
                 if order.confirmed_msg != 0:
-                    confirmed = session.query(OrderCleared).filter_by(order_id=order.id).all()
+                    # confirmed = session.query(OrderCleared).filter_by(order_id=order.id).all()
                     msg = MSG_ORDER_CLEARED_BY_HEADER
-                    for confirm in confirmed:
-                        msg += '\n' + str(confirm.user)
+                    # for confirm in confirmed:
+                    #     msg += '\n' + str(confirm.user)
+                    msg += MSG_ORDER_CLEARED_BY_DUMMY
                     bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
                 update.callback_query.answer(text=MSG_ORDER_CLEARED)
             else:
