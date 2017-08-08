@@ -223,7 +223,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 order.text = chat_data['order']
                 order.chat_id = item.chat_id
                 order.date = datetime.now()
-                msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER).result()
+                msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_ORDER_CLEARED_BY_DUMMY).result()
                 order.confirmed_msg = msg.message_id
                 session.add(order)
                 session.commit()
@@ -247,13 +247,13 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 order_ok.user_id = update.callback_query.from_user.id
                 session.add(order_ok)
                 session.commit()
-                if order.confirmed_msg != 0:
-                    # confirmed = session.query(OrderCleared).filter_by(order_id=order.id).all()
-                    msg = MSG_ORDER_CLEARED_BY_HEADER
-                    # for confirm in confirmed:
-                    #     msg += '\n' + str(confirm.user)
-                    msg += MSG_ORDER_CLEARED_BY_DUMMY
-                    bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
+                # if order.confirmed_msg != 0:
+                #     confirmed = session.query(OrderCleared).filter_by(order_id=order.id).all()
+                #     msg = MSG_ORDER_CLEARED_BY_HEADER
+                #     for confirm in confirmed:
+                #         msg += '\n' + str(confirm.user)
+                #     msg += MSG_ORDER_CLEARED_BY_DUMMY
+                #     bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
                 update.callback_query.answer(text=MSG_ORDER_CLEARED)
             else:
                 update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
