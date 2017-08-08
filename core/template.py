@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from core.texts import MSG_NO_SQUAD
 from core.types import *
 from datetime import datetime
 
@@ -29,4 +30,8 @@ def fill_char_template(msg: str, user: User, char: Character):
     msg = msg.replace('%needExp%', str(char.needExp))
     msg = msg.replace('%castle%', str(char.castle))
     msg = msg.replace('%gold%', str(char.gold))
+    if len(user.member) == 1:
+        msg = msg.replace('%squad%', str(user.member[0].squad[0].squad_name))
+    else:
+        msg = msg.replace('%squad%', MSG_NO_SQUAD)
     return msg
