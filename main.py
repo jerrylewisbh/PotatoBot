@@ -2,6 +2,8 @@
 import logging
 from telegram import Bot, Update, Message
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+
+from core.functions.bosses import boss_leader
 from core.functions.orders import order, orders
 from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin, set_global_admin, \
     set_super_admin, del_global_admin
@@ -73,6 +75,8 @@ def manage_text(bot: Bot, update: Update, chat_data):
             pin(bot, update)
         elif update.message.text.upper() == 'сайлентпин'.upper() and update.message.reply_to_message is not None:
             silent_pin(bot, update)
+        elif update.message.text.upper() == 'главарь'.upper():
+            boss_leader(bot, update)
         trigger_show(bot, update)
     elif update.message.chat.type == 'private':
         if update.message.text.upper() == 'Статус'.upper():
