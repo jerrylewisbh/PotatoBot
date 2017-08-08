@@ -205,7 +205,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             order.text = chat_data['order']
             order.chat_id = data['id']
             order.date = datetime.now()
-            msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER).result()
+            msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_ORDER_CLEARED_BY_DUMMY).result()
             order.confirmed_msg = msg.message_id
             session.add(order)
             session.commit()
