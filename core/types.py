@@ -223,8 +223,14 @@ def admin(adm_type=AdminType.FULL):
                 if adm is not None and adm.admin_type <= adm_type.value and \
                         (adm.admin_group in [0, update.message.chat.id] or
                          update.message.chat.id == update.message.from_user.id):
-                    allowed = True
-                    break
+                    if adm.admin_group != 0:
+                        group = session.query(Group).filter_by(id=adm.admin_group).first()
+                        if group and group.bot_in_group:
+                            allowed = True
+                            break
+                    else:
+                        allowed = True
+                        break
             if allowed:
                 func(bot, update, *args, **kwargs)
         return wrapper

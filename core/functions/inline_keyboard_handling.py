@@ -119,9 +119,10 @@ def generate_order_groups_markup(bot: Bot, admin_user: list=None):
         if group_adm:
             inline_keys = []
             for adm in admin_user:
-                group = session.query(Group).filter_by(id=adm.admin_group).first()
-                inline_keys.append([InlineKeyboardButton(group.title, callback_data=json.dumps(
-                    {'t': QueryType.Order.value, 'g': False, 'id': group.id}))])
+                group = session.query(Group).filter_by(id=adm.admin_group, bot_in_group=True).first()
+                if group:
+                    inline_keys.append([InlineKeyboardButton(group.title, callback_data=json.dumps(
+                        {'t': QueryType.Order.value, 'g': False, 'id': group.id}))])
             inline_markup = InlineKeyboardMarkup(inline_keys)
             return inline_markup
     groups = session.query(OrderGroup).all()
