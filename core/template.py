@@ -31,7 +31,7 @@ def fill_char_template(msg: str, user: User, char: Character):
     msg = msg.replace('%castle%', str(char.castle))
     msg = msg.replace('%gold%', str(char.gold))
     if len(user.member) == 1:
-        msg = msg.replace('%squad%', str(user.member[0].squad[0].squad_name))
+        msg = msg.replace('%squad%', str(session.query(Squad).filter_by(chat_id=user.member[0].squad_id).first().squad_name))
     else:
         msg = msg.replace('%squad%', MSG_NO_SQUAD)
     return msg
