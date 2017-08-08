@@ -1,7 +1,7 @@
-from telegram import Update, Bot, ParseMode
+from telegram import Update, Bot, ParseMode, TelegramError
 import logging
 from core.functions.triggers import trigger_decorator
-from core.types import AdminType, Admin, Stock, admin, session
+from core.types import AdminType, Admin, Stock, admin, session, Group
 from core.utils import send_async, add_user
 from core.functions.reply_markup import generate_standard_markup
 from enum import Enum
@@ -32,6 +32,17 @@ def start(bot: Bot, update: Update):
 def admin_panel(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         send_async(bot, chat_id=update.message.chat.id, text=MSG_ADMIN_WELCOME, reply_markup=generate_standard_markup())
+
+
+def check_bot_in_chats(bot: Bot, update: Update):
+    groups = session.query(Group).filter_by(bot_in_group=True).all()
+    for group in groups:
+        try:
+            bot.getChatMember(group.id, bot.id)
+        except TelegramError as e:
+            group.bot_in_group = False
+            session.add(group)
+    session.commit()
 
 
 @admin()

@@ -5,7 +5,8 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 from core.functions.orders import order, orders
 from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin, set_global_admin, \
     set_super_admin, del_global_admin
-from core.functions.common import help_msg, ping, start, error, kick, admin_panel, stock_compare, trade_compare
+from core.functions.common import help_msg, ping, start, error, kick, admin_panel, stock_compare, trade_compare, \
+    check_bot_in_chats
 from core.functions.inline_keyboard_handling import callback_query, send_status
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
@@ -125,6 +126,7 @@ def main():
     dp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     dp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
     dp.add_handler(CommandHandler("me", char_show))
+    dp.add_handler(CommandHandler("check_bot_in_chats", check_bot_in_chats))
 
     dp.add_handler(CommandHandler("add_squad", add_squad))
     dp.add_handler(CommandHandler("del_squad", del_squad))
