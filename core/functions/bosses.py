@@ -12,8 +12,8 @@ def boss_leader(bot: Bot, update: Update):
     if len(group.squad) == 1:
         members = []
         for member in group.squad[0].members:
-            char = sorted(session.query(User).filter_by(id=member.user_id).first().character, key=lambda x: x.date, reverse=True)[0]
+            char = sorted(member.user.character, key=lambda x: x.date, reverse=True)[0]
             if 15 <= char.level <= 25:
-                members.append(repr(member.user[0]))
+                members.append(repr(member.user))
         msg = '\n'.join(members)
         send_async(bot, chat_id=update.message.chat.id, text=msg)
