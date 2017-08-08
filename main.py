@@ -75,7 +75,7 @@ def manage_text(bot: Bot, update: Update, chat_data):
             pin(bot, update)
         elif update.message.text.upper() == 'сайлентпин'.upper() and update.message.reply_to_message is not None:
             silent_pin(bot, update)
-        elif update.message.text.upper() == 'главарь'.upper():
+        elif update.message.text.upper() == 'бандит'.upper():
             boss_leader(bot, update)
         elif update.message.text.upper() == 'жало'.upper():
             boss_zhalo(bot, update)
