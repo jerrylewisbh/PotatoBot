@@ -17,3 +17,42 @@ def boss_leader(bot: Bot, update: Update):
                 members.append(repr(member.user))
         msg = '\n'.join(members)
         send_async(bot, chat_id=update.message.chat.id, text=msg)
+
+
+@trigger_decorator
+def boss_zhalo(bot: Bot, update: Update):
+    group = update_group(update.message.chat)
+    if len(group.squad) == 1:
+        members = []
+        for member in group.squad[0].members:
+            char = sorted(member.user.character, key=lambda x: x.date, reverse=True)[0]
+            if 26 <= char.level <= 35:
+                members.append(repr(member.user))
+        msg = '\n'.join(members)
+        send_async(bot, chat_id=update.message.chat.id, text=msg)
+
+
+@trigger_decorator
+def boss_monoeye(bot: Bot, update: Update):
+    group = update_group(update.message.chat)
+    if len(group.squad) == 1:
+        members = []
+        for member in group.squad[0].members:
+            char = sorted(member.user.character, key=lambda x: x.date, reverse=True)[0]
+            if 36 <= char.level <= 45:
+                members.append(repr(member.user))
+        msg = '\n'.join(members)
+        send_async(bot, chat_id=update.message.chat.id, text=msg)
+
+
+@trigger_decorator
+def boss_hydra(bot: Bot, update: Update):
+    group = update_group(update.message.chat)
+    if len(group.squad) == 1:
+        members = []
+        for member in group.squad[0].members:
+            char = sorted(member.user.character, key=lambda x: x.date, reverse=True)[0]
+            if 46 <= char.level:
+                members.append(repr(member.user))
+        msg = '\n'.join(members)
+        send_async(bot, chat_id=update.message.chat.id, text=msg)
