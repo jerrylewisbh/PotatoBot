@@ -197,7 +197,7 @@ def generate_squad_list(squads):
     for squad in squads:
         inline_keys.append([InlineKeyboardButton(squad.squad_name, callback_data=json.dumps(
             {'t': QueryType.MemberList.value, 'id': squad.chat_id}))])
-    return inline_keys
+    return InlineKeyboardMarkup(inline_keys)
 
 
 def generate_squad_members(members):
@@ -205,7 +205,7 @@ def generate_squad_members(members):
     for member in members:
         inline_keys.append([InlineKeyboardButton(repr(member.user), callback_data=json.dumps(
             {'t': QueryType.ShowHero.value, 'id': member.user_id}))])
-    return inline_keys
+    return InlineKeyboardMarkup(inline_keys)
 
 
 def callback_query(bot: Bot, update: Update, chat_data: dict):
