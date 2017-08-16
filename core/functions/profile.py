@@ -42,7 +42,7 @@ def parse_profile(profile, user_id, date):
 
 
 def parse_hero(profile, user_id, date):
-    parsed_data = re.search(regexp.profile, profile)
+    parsed_data = re.search(regexp.hero, profile)
     char = session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
         char = Character()
@@ -77,11 +77,12 @@ def char_update(bot: Bot, update: Update):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
     else:
+        char = None
         if re.search(hero, update.message.text):
             char = parse_hero(update.message.text, update.message.from_user.id, update.message.forward_date)
         elif re.search(profile, update.message.text):
             char = parse_profile(update.message.text, update.message.from_user.id, update.message.forward_date)
-        if char.castle == '🇲🇴':
+        if char and char.castle == '🇲🇴':
             send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name))
         else:
             send_async(bot, chat_id=update.message.chat.id,
