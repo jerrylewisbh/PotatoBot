@@ -3,6 +3,7 @@ import logging
 
 from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.functions.triggers import trigger_decorator
+from core.regexp import hero, profile
 from core.types import AdminType, Admin, Stock, Character, User, admin, session, data_update, Equip
 from core.utils import send_async
 from core.functions.reply_markup import generate_standard_markup
@@ -76,7 +77,10 @@ def char_update(bot: Bot, update: Update):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
     else:
-        char = parse_profile(update.message.text, update.message.from_user.id, update.message.forward_date)
+        if re.search(hero, update.message.text):
+            char = parse_hero(update.message.text, update.message.from_user.id, update.message.forward_date)
+        elif re.search(profile, update.message.text):
+            char = parse_profile(update.message.text, update.message.from_user.id, update.message.forward_date)
         if char.castle == '🇲🇴':
             send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name))
         else:

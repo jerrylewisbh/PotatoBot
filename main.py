@@ -18,7 +18,7 @@ from core.functions.order_groups import group_list, add_group
 from core.types import data_update, with_session
 from core.utils import add_user
 from config import TOKEN
-from core.regexp import profile
+from core.regexp import profile, hero
 import re
 from core.functions.profile import char_update, char_show, find_by_username
 from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns
@@ -100,7 +100,7 @@ def manage_text(bot: Bot, update: Update, chat_data):
         elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
             add_group(bot, update, chat_data)
         elif update.message.forward_from and update.message.forward_from.id == 265204902 and \
-                re.search(profile, update.message.text):
+                (re.search(profile, update.message.text) or re.search(hero, update.message.text)):
             char_update(bot, update)
         else:
             order(bot, update, chat_data)
