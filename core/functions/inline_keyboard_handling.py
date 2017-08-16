@@ -1,5 +1,7 @@
 import json
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
+
+from core.template import fill_char_template
 from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad
 from core.utils import send_async, update_group, add_user
 from core.functions.admins import del_adm
@@ -26,6 +28,9 @@ class QueryType(Enum):
     OrderGroupAdd = 9
     OrderGroupDelete = 10
     OrderGroupList = 11
+    ShowStock = 12
+    ShowEquip = 13
+    ShowHero = 14
 
 
 def bot_in_chat(bot: Bot, group: Group):
@@ -173,9 +178,22 @@ def generate_group_manage(group_id):
     return InlineKeyboardMarkup(inline_keys)
 
 
+def generate_profile_buttons(user):
+    inline_keys = []
+    inline_keys.append([InlineKeyboardButton('🏅Герой', callback_data=json.dumps(
+        {'t': QueryType.ShowHero.value, 'id': user.id}))])
+    if len(user.stock) > 0:
+        inline_keys.append([InlineKeyboardButton('📦Склад', callback_data=json.dumps(
+            {'t': QueryType.ShowStock.value, 'id': user.id}))])
+    if len(user.equip) > 0:
+        inline_keys.append([InlineKeyboardButton('🎽Экипировка', callback_data=json.dumps(
+            {'t': QueryType.ShowEquip.value, 'id': user.id}))])
+    return InlineKeyboardMarkup(inline_keys)
+
+
 def callback_query(bot: Bot, update: Update, chat_data: dict):
     update_group(update.callback_query.message.chat)
-    add_user(update.callback_query.from_user)
+    user = add_user(update.callback_query.from_user)
     data = json.loads(update.callback_query.data)
     logger.warning(data)
     if data['t'] == QueryType.GroupList.value:
@@ -194,7 +212,6 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
     elif data['t'] == QueryType.DelAdm.value:
-        user = session.query(User).filter_by(id=data['uid']).first()
         del_adm(bot, data['gid'], user)
         msg, inline_markup = generate_group_info(data['gid'])
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
@@ -327,3 +344,25 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
                             reply_markup=generate_groups_manage())
+    elif data['t'] == QueryType.ShowEquip.value:
+        user = session.query(User).filter_by(id=data['id']).first()
+        update.callback_query.answer(text=MSG_CLEARED)
+        bot.editMessageText(sorted(user.equip, key=lambda x: x.date, reverse=True)[0].equip,
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=generate_profile_buttons(user))
+    elif data['t'] == QueryType.ShowStock.value:
+        user = session.query(User).filter_by(id=data['id']).first()
+        update.callback_query.answer(text=MSG_CLEARED)
+        bot.editMessageText(sorted(user.stock, key=lambda x: x.date, reverse=True)[0].stock,
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=generate_profile_buttons(user))
+    elif data['t'] == QueryType.ShowHero.value:
+        user = session.query(User).filter_by(id=data['id']).first()
+        update.callback_query.answer(text=MSG_CLEARED)
+        bot.editMessageText(fill_char_template(MSG_PROFILE_SHOW_FORMAT,
+                                               user, sorted(user.character, key=lambda x: x.date, reverse=True)[0]),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=generate_profile_buttons(user))

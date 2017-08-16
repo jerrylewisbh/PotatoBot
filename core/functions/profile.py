@@ -1,7 +1,9 @@
 from telegram import Update, Bot, ParseMode
 import logging
+
+from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.functions.triggers import trigger_decorator
-from core.types import AdminType, Admin, Stock, Character, User, admin, session, data_update
+from core.types import AdminType, Admin, Stock, Character, User, admin, session, data_update, Equip
 from core.utils import send_async
 from core.functions.reply_markup import generate_standard_markup
 from enum import Enum
@@ -38,6 +40,38 @@ def parse_profile(profile, user_id, date):
         return char
 
 
+def parse_hero(profile, user_id, date):
+    parsed_data = re.search(regexp.profile, profile)
+    char = session.query(Character).filter_by(user_id=user_id, date=date).first()
+    if char is None:
+        char = Character()
+        char.user_id = user_id
+        char.date = date
+        char.castle = str(parsed_data.group(1))
+        char.name = str(parsed_data.group(2))
+        char.prof = str(parsed_data.group(3))
+        char.level = int(parsed_data.group(4))
+        char.attack = int(parsed_data.group(5))
+        char.defence = int(parsed_data.group(6))
+        char.exp = int(parsed_data.group(7))
+        char.needExp = int(parsed_data.group(8))
+        char.maxStamina = int(parsed_data.group(10))
+        char.gold = int(parsed_data.group(11))
+        char.donateGold = int(parsed_data.group(12))
+        if parsed_data.group(18):
+            char.pet = str(parsed_data.group(18))
+            char.petLevel = int(parsed_data.group(20))
+        if parsed_data.group(15):
+            equip = Equip()
+            equip.user_id = user_id
+            equip.date = date
+            equip.equip = str(parsed_data.group(15))
+            session.add(equip)
+        session.add(char)
+        session.commit()
+    return char
+
+
 def char_update(bot: Bot, update: Update):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
@@ -57,7 +91,8 @@ def char_show(bot: Bot, update: Update):
             char = sorted(user.character, key=lambda x: x.date, reverse=True)[0]
             if char.castle == '🇲🇴':
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
-                send_async(bot, chat_id=update.message.chat.id, text=text)
+                btns = generate_profile_buttons(user)
+                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns)
 
 
 #@data_update
@@ -71,6 +106,7 @@ def find_by_username(bot: Bot, update: Update):
             if user is not None and len(user.character) >= 1:
                 char = sorted(user.character, key=lambda x: x.date, reverse=True)[0]
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
-                send_async(bot, chat_id=update.message.chat.id, text=text)
+                btns = generate_profile_buttons(user)
+                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns)
             else:
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND)

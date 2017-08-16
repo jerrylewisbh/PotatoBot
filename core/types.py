@@ -67,6 +67,8 @@ class User(Base):
     character = relationship('Character', back_populates='user')
     orders_confirmed = relationship('OrderCleared', back_populates='user')
     member = relationship('SquadMember', back_populates='user')
+    equip = relationship('Equip', back_populates='user')
+    stock = relationship('Stock', back_populates='user')
 
     def __repr__(self):
         user = ''
@@ -169,6 +171,8 @@ class Stock(Base):
     date = Column(DATETIME(fsp=6), default=datetime.now())
     stock_type = Column(Integer)
 
+    user = relationship('User', back_populates='stock')
+
 
 class Character(Base):
     __tablename__ = 'characters'
@@ -212,6 +216,17 @@ class SquadMember(Base):
 
     squad = relationship('Squad', back_populates='members')
     user = relationship('User', back_populates='member')
+
+
+class Equip(Base):
+    __tablename__ = 'equip'
+
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+    date = Column(DATETIME(fsp=6), primary_key=True)
+
+    equip = Column(UnicodeText(250))
+
+    user = relationship('User', back_populates='equip')
 
 
 def admin(adm_type=AdminType.FULL):
