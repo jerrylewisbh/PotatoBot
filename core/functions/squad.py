@@ -1,7 +1,7 @@
 from telegram import Update, Bot
 from core.types import User, AdminType, Admin, admin, session, OrderGroup, Group, Squad
 from core.utils import send_async
-from core.functions.inline_keyboard_handling import generate_groups_manage, generate_group_manage
+from core.functions.inline_keyboard_handling import generate_groups_manage, generate_group_manage, generate_squad_list
 from core.texts import *
 
 
@@ -75,3 +75,23 @@ def disable_thorns(bot: Bot, update: Update):
         session.add(group.squad[0])
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_THORNS_DISABLED)
+
+
+@admin(AdminType.GROUP)
+def squad_list(bot: Bot, update: Update):
+    admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+    global_adm = False
+    for adm in admin:
+        if adm.admin_type <= AdminType.FULL.value:
+            global_adm = True
+            break
+    squads = []
+    if global_adm:
+        squads = session.query(Squad).all()
+    else:
+        for adm in admin:
+            group = session.query(Group).filter_by(id=adm.admin_group).first()
+            if group.squad[0]:
+                squads.append(group.squad[0])
+    markup = generate_squad_list(squads)
+    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LIST, reply_markup=markup)

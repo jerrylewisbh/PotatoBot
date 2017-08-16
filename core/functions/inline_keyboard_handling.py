@@ -31,6 +31,7 @@ class QueryType(Enum):
     ShowStock = 12
     ShowEquip = 13
     ShowHero = 14
+    MemberList = 15
 
 
 def bot_in_chat(bot: Bot, group: Group):
@@ -189,6 +190,22 @@ def generate_profile_buttons(user):
         inline_keys.append([InlineKeyboardButton('🎽Экипировка', callback_data=json.dumps(
             {'t': QueryType.ShowEquip.value, 'id': user.id}))])
     return InlineKeyboardMarkup(inline_keys)
+
+
+def generate_squad_list(squads):
+    inline_keys = []
+    for squad in squads:
+        inline_keys.append([InlineKeyboardButton(squad.squad_name, callback_data=json.dumps(
+            {'t': QueryType.MemberList.value, 'id': squad.chat_id}))])
+    return inline_keys
+
+
+def generate_squad_members(members):
+    inline_keys = []
+    for member in members:
+        inline_keys.append([InlineKeyboardButton(repr(member.user), callback_data=json.dumps(
+            {'t': QueryType.ShowHero.value, 'id': member.user_id}))])
+    return inline_keys
 
 
 def callback_query(bot: Bot, update: Update, chat_data: dict):
@@ -366,3 +383,10 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
                             reply_markup=generate_profile_buttons(user))
+    elif data['t'] == QueryType.MemberList.value:
+        squad = session.query(Squad).filter_by(chat_id=data['id']).first()
+        markup = generate_squad_members(squad.members)
+        bot.editMessageText(squad.squad_name,
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)

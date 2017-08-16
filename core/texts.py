@@ -165,3 +165,5 @@ MSG_ORDER_CLEARED_BY_DUMMY = 'эта функция перерабатывает
 MSG_NO_SQUAD = 'Безотрядный тунеядец'
 
 MSG_CLEARED = 'Выполнено'
+
+MSG_SQUAD_LIST = 'Список ваших отрядов:'

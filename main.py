@@ -21,7 +21,8 @@ from config import TOKEN
 from core.regexp import profile, hero
 import re
 from core.functions.profile import char_update, char_show, find_by_username
-from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns
+from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns, \
+    squad_list
 from core.functions.activity import day_activity, week_activity, battle_activity
 from datetime import datetime
 
@@ -89,6 +90,8 @@ def manage_text(bot: Bot, update: Update, chat_data):
             send_status(bot, update)
         elif update.message.text.upper() in ['Приказы'.upper(), 'пин'.upper()]:
             orders(bot, update, chat_data)
+        elif update.message.text.upper() in ['список отряда'.upper(), 'список'.upper()]:
+            squad_list(bot, update)
         elif update.message.text.upper() == 'Группы'.upper():
             group_list(bot, update)
         elif update.message.forward_from and update.message.forward_from.id == 265204902 and \
