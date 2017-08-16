@@ -270,6 +270,13 @@ def data_update(func):
                         if player['username'] is not None:
                             user.username = player['username'][1:]
                         session.add(user)
+                    else:
+                        updated = False
+                        if user.username != player['username'][1:]:
+                            user.username = player['username'][1:]
+                            updated = True
+                        if updated:
+                            session.add(user)
                     character = session.query(Character).filter_by(user_id=user.id,
                                                                    date=datetime.strptime(player['last_update'],
                                                                                           '%Y-%m-%d %H:%M:%S')).first()
