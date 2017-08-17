@@ -199,7 +199,7 @@ def generate_squad_list(squads):
             '{} : {}⚔ {}🛡 {}👥'.format(
                 squad.squad_name,
                 sum([member.user.character.attack for member in squad.members]),
-                sum([member.user.character.attack for member in squad.members]),
+                sum([member.user.character.defence for member in squad.members]),
                 len(squad.members)
             ),
             callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))])
