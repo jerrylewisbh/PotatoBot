@@ -6,7 +6,7 @@ from telegram.ext.dispatcher import run_async
 
 from core.template import fill_char_template
 from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad, \
-    with_session, Character
+    with_session, Character, Session, SquadMember
 from core.utils import send_async, update_group, add_user
 from core.functions.admins import del_adm
 from enum import Enum
@@ -15,6 +15,7 @@ import logging
 from core.types import AdminType
 from datetime import datetime, timedelta
 from core.texts import *
+from multiprocessing.pool import ThreadPool
 
 logger = logging.getLogger('MyApp')
 
@@ -197,9 +198,11 @@ def generate_profile_buttons(user):
 
 
 def generate_squad_list_key(squad):
+    session = Session()
     attack = 0
     defence = 0
-    for member in squad.members:
+    members = session.query(SquadMember).filter_by(squad_id=squad.chat_id).all()
+    for member in members:
         character = session.query(Character).filter_by(user_id=member.user_id).order_by(Character.date.desc()).limit(1).first()
         attack += character.attack
         defence += character.defence
@@ -208,15 +211,19 @@ def generate_squad_list_key(squad):
             squad.squad_name,
             attack,
             defence,
-            len(squad.members)
+            len(members)
         ),
         callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))]
 
 
 def generate_squad_list(squads):
     inline_keys = []
+    pool = ThreadPool(processes=2)
+    threads = []
     for squad in squads:
-        inline_keys.append(generate_squad_list_key(squad))
+        threads.append(pool.apply_async(generate_squad_list_key, (squad,)))
+    for thread in threads:
+        inline_keys.append(thread.get())
     return InlineKeyboardMarkup(inline_keys)
 
 
