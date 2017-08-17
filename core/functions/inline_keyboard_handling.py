@@ -15,6 +15,7 @@ import logging
 from core.types import AdminType
 from datetime import datetime, timedelta
 from core.texts import *
+from multiprocessing.pool import ThreadPool
 
 logger = logging.getLogger('MyApp')
 
@@ -196,7 +197,6 @@ def generate_profile_buttons(user):
     return InlineKeyboardMarkup(inline_keys)
 
 
-@run_async
 def generate_squad_list_key(squad):
     attack = 0
     defence = 0
@@ -215,11 +215,12 @@ def generate_squad_list_key(squad):
 
 def generate_squad_list(squads):
     inline_keys = []
-    tasks = []
+    pool = ThreadPool(processes=2)
+    threads = []
     for squad in squads:
-        tasks.append(generate_squad_list_key(squad))
-    for task in tasks:
-        inline_keys.append(task.result())
+        threads.append(pool.apply_async(generate_squad_list_key, (squad, )))
+    for thread in threads:
+        inline_keys.append(thread.get())
     return InlineKeyboardMarkup(inline_keys)
 
 
