@@ -1,8 +1,12 @@
 import json
+import asyncio
+
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
+from telegram.ext.dispatcher import run_async
 
 from core.template import fill_char_template
-from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad
+from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad, \
+    with_session
 from core.utils import send_async, update_group, add_user
 from core.functions.admins import del_adm
 from enum import Enum
@@ -192,22 +196,30 @@ def generate_profile_buttons(user):
     return InlineKeyboardMarkup(inline_keys)
 
 
+@run_async
+def generate_squad_list_key(squad):
+    attack = 0
+    defence = 0
+    for member in squad.members:
+        attack += member.user.character.attack
+        defence += member.user.character.defence
+    return [InlineKeyboardButton(
+        '{} : {}⚔ {}🛡 {}👥'.format(
+            squad.squad_name,
+            attack,
+            defence,
+            len(squad.members)
+        ),
+        callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))]
+
+
 def generate_squad_list(squads):
     inline_keys = []
+    tasks = []
     for squad in squads:
-        attack = 0
-        defence = 0
-        for member in squad.members:
-            attack += member.user.character.attack
-            defence += member.user.character.defence
-        inline_keys.append([InlineKeyboardButton(
-            '{} : {}⚔ {}🛡 {}👥'.format(
-                squad.squad_name,
-                attack,
-                defence,
-                len(squad.members)
-            ),
-            callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))])
+        tasks.append(generate_squad_list_key(squad))
+    for task in tasks:
+        inline_keys.append(task.result())
     return InlineKeyboardMarkup(inline_keys)
 
 
@@ -219,6 +231,7 @@ def generate_squad_members(members):
     return InlineKeyboardMarkup(inline_keys)
 
 
+@with_session
 def callback_query(bot: Bot, update: Update, chat_data: dict):
     update_group(update.callback_query.message.chat)
     user = add_user(update.callback_query.from_user)

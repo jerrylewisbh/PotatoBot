@@ -272,7 +272,7 @@ def data_update(func):
                         session.add(user)
                     else:
                         updated = False
-                        if user.username != player['username'][1:]:
+                        if player['username'] and user.username != player['username'][1:]:
                             user.username = player['username'][1:]
                             updated = True
                         if updated:

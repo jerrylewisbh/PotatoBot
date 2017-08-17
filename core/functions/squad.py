@@ -3,6 +3,7 @@ from core.types import User, AdminType, Admin, admin, session, OrderGroup, Group
 from core.utils import send_async
 from core.functions.inline_keyboard_handling import generate_groups_manage, generate_group_manage, generate_squad_list
 from core.texts import *
+import asyncio
 
 
 @admin()
