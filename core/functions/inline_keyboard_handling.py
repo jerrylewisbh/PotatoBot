@@ -199,9 +199,9 @@ def generate_profile_buttons(user):
 def generate_squad_list_key(squad):
     attack = 0
     defence = 0
-    for member in squad.members:
-        attack += member.user.character.attack
-        defence += member.user.character.defence
+    # for member in squad.members:
+    #     attack += member.user.character.attack
+    #     defence += member.user.character.defence
     return [InlineKeyboardButton(
         '{} : {}⚔ {}🛡 {}👥'.format(
             squad.squad_name,
