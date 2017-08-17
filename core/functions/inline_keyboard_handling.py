@@ -218,7 +218,7 @@ def generate_squad_list_key(squad):
 
 def generate_squad_list(squads):
     inline_keys = []
-    pool = ThreadPool(processes=2)
+    pool = ThreadPool(processes=10)
     threads = []
     for squad in squads:
         threads.append(pool.apply_async(generate_squad_list_key, (squad,)))
