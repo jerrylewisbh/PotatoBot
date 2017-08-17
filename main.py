@@ -89,6 +89,8 @@ def manage_text(bot: Bot, update: Update, chat_data):
             boss_hydra(bot, update)
         elif update.message.text.upper() == 'удоли'.upper() and update.message.reply_to_message is not None:
             delete_msg(bot, update)
+        else:
+            trigger_show(bot, update)
     elif update.message.chat.type == 'private':
         if update.message.text.upper() == 'Статус'.upper():
             send_status(bot, update)
