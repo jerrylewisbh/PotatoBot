@@ -6,7 +6,7 @@ from telegram.ext.dispatcher import run_async
 
 from core.template import fill_char_template
 from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad, \
-    with_session
+    with_session, Character
 from core.utils import send_async, update_group, add_user
 from core.functions.admins import del_adm
 from enum import Enum
@@ -200,8 +200,9 @@ def generate_squad_list_key(squad):
     attack = 0
     defence = 0
     for member in squad.members:
-        attack += member.user.character.attack
-        defence += member.user.character.defence
+        character = session.query(Character).filter_by(user_id=member.user_id).order_by(Character.date.desc()).limit(1).first()
+        attack += character.attack
+        defence += character.defence
     return [InlineKeyboardButton(
         '{} : {}⚔ {}🛡 {}👥'.format(
             squad.squad_name,

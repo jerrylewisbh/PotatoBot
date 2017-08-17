@@ -259,6 +259,7 @@ def data_update(func):
             last_update = datetime.now()
 
             def upd():
+                session = Session()
                 resp = requests.get('https://ker.su/json.php', auth=('ruckus', 'Ruarpamcotkong'))
                 data = loads(resp.text)
                 for player in data['players']:
