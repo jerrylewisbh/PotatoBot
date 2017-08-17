@@ -135,6 +135,7 @@ def stock_compare(bot: Bot, update: Update, chat_data: dict):
 @admin(adm_type=AdminType.GROUP)
 def delete_msg(bot: Bot, update: Update):
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.reply_to_message.message_id)
+    bot.delete_message(update.message.reply_to_message.chat_id, update.message.message_id)
 
 
 
