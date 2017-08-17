@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger
 from sqlalchemy.dialects.mysql import DATETIME
 from datetime import datetime, timedelta
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy import event
 from sqlalchemy.pool import Pool
 import logging
@@ -26,7 +26,7 @@ engine = create_engine(DB, echo=False, pool_size=20, max_overflow=10)
 logger = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
-session = Session()
+session = scoped_session(Session)()
 last_update = datetime.now() - timedelta(minutes=10)
 
 

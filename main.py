@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
+from threading import Thread
+
 from telegram import Bot, Update, Message
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+from telegram.ext.dispatcher import run_async
 
 from core.functions.bosses import boss_leader, boss_zhalo, boss_monoeye, boss_hydra
 from core.functions.orders import order, orders
@@ -91,7 +94,7 @@ def manage_text(bot: Bot, update: Update, chat_data):
         elif update.message.text.upper() in ['Приказы'.upper(), 'пин'.upper()]:
             orders(bot, update, chat_data)
         elif update.message.text.upper() in ['список отряда'.upper(), 'список'.upper()]:
-            squad_list(bot, update)
+            Thread(squad_list(bot, update)).start()
         elif update.message.text.upper() == 'Группы'.upper():
             group_list(bot, update)
         elif update.message.forward_from and update.message.forward_from.id == 265204902 and \
