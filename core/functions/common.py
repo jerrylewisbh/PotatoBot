@@ -1,4 +1,4 @@
-from telegram import Update, Bot, ParseMode, TelegramError
+from telegram import Update, Bot, ParseMode, TelegramError, Message
 import logging
 from core.functions.triggers import trigger_decorator
 from core.types import AdminType, Admin, Stock, admin, session, Group
@@ -130,6 +130,12 @@ def stock_compare(bot: Bot, update: Update, chat_data: dict):
         send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT)
+
+
+@admin(adm_type=AdminType.GROUP)
+def delete_msg(bot: Bot, update: Update):
+    bot.delete_message(update.message.reply_to_message.chat_id, update.message.reply_to_message.message_id)
+
 
 
 def trade_compare(bot: Bot, update: Update, chat_data: dict):
