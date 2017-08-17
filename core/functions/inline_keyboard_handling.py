@@ -230,7 +230,9 @@ def generate_squad_list(squads):
 def generate_squad_members(members):
     inline_keys = []
     for member in members:
-        inline_keys.append([InlineKeyboardButton('{}\n{}⚔ {}🛡'.format(repr(member.user), member.user.character.attack, member.user.character.defence), callback_data=json.dumps(
+        user = member.user
+        character = user.character
+        inline_keys.append([InlineKeyboardButton('{}: {}⚔ {}🛡'.format(user, character.attack, character.defence), callback_data=json.dumps(
             {'t': QueryType.ShowHero.value, 'id': member.user_id}))])
     return InlineKeyboardMarkup(inline_keys)
 
