@@ -1,5 +1,6 @@
+from sqlalchemy.orm import scoped_session
 from telegram import Update, Bot
-from core.types import User, AdminType, Admin, admin, session, OrderGroup, Group, Squad
+from core.types import User, AdminType, Admin, admin, session, OrderGroup, Group, Squad, Session
 from core.utils import send_async
 from core.functions.inline_keyboard_handling import generate_groups_manage, generate_group_manage, generate_squad_list
 from core.texts import *
@@ -80,6 +81,7 @@ def disable_thorns(bot: Bot, update: Update):
 
 @admin(AdminType.GROUP)
 def squad_list(bot: Bot, update: Update):
+    session = scoped_session(Session)()
     admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     global_adm = False
     for adm in admin:

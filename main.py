@@ -94,7 +94,7 @@ def manage_text(bot: Bot, update: Update, chat_data):
         elif update.message.text.upper() in ['Приказы'.upper(), 'пин'.upper()]:
             orders(bot, update, chat_data)
         elif update.message.text.upper() in ['список отряда'.upper(), 'список'.upper()]:
-            Thread(squad_list(bot, update)).start()
+            Thread(target=squad_list, args=(bot, update)).start()
         elif update.message.text.upper() == 'Группы'.upper():
             group_list(bot, update)
         elif update.message.forward_from and update.message.forward_from.id == 265204902 and \

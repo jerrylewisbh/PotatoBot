@@ -232,6 +232,7 @@ class Equip(Base):
 def admin(adm_type=AdminType.FULL):
     def decorate(func):
         def wrapper(bot, update, *args, **kwargs):
+            session = Session()
             adms = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
             allowed = False
             for adm in adms:
