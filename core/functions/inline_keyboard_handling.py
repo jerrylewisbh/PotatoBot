@@ -183,10 +183,10 @@ def generate_profile_buttons(user):
     inline_keys = []
     inline_keys.append([InlineKeyboardButton('🏅Герой', callback_data=json.dumps(
         {'t': QueryType.ShowHero.value, 'id': user.id}))])
-    if len(user.stock) > 0:
+    if user.stock:
         inline_keys.append([InlineKeyboardButton('📦Склад', callback_data=json.dumps(
             {'t': QueryType.ShowStock.value, 'id': user.id}))])
-    if len(user.equip) > 0:
+    if user.equip:
         inline_keys.append([InlineKeyboardButton('🎽Экипировка', callback_data=json.dumps(
             {'t': QueryType.ShowEquip.value, 'id': user.id}))])
     return InlineKeyboardMarkup(inline_keys)
@@ -195,8 +195,14 @@ def generate_profile_buttons(user):
 def generate_squad_list(squads):
     inline_keys = []
     for squad in squads:
-        inline_keys.append([InlineKeyboardButton(squad.squad_name, callback_data=json.dumps(
-            {'t': QueryType.MemberList.value, 'id': squad.chat_id}))])
+        inline_keys.append([InlineKeyboardButton(
+            '{} : {}⚔ {}🛡 {}👥'.format(
+                squad.squad_name,
+                sum([member.user.character.attack for member in squad.members]),
+                sum([member.user.character.attack for member in squad.members]),
+                len(squad.members)
+            ),
+            callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))])
     return InlineKeyboardMarkup(inline_keys)
 
 
@@ -364,14 +370,14 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
     elif data['t'] == QueryType.ShowEquip.value:
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
-        bot.editMessageText(sorted(user.equip, key=lambda x: x.date, reverse=True)[0].equip,
+        bot.editMessageText('{}\n🕑 Последнее обновление {}'.format(user.equip.equip, user.equip.date),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
                             reply_markup=generate_profile_buttons(user))
     elif data['t'] == QueryType.ShowStock.value:
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
-        bot.editMessageText(sorted(user.stock, key=lambda x: x.date, reverse=True)[0].stock,
+        bot.editMessageText('{}\n🕑 Последнее обновление {}'.format(user.stock.stock, user.stock.date.strftime("%Y-%m-%d %H:%M:%S")),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
                             reply_markup=generate_profile_buttons(user))
@@ -379,7 +385,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
         bot.editMessageText(fill_char_template(MSG_PROFILE_SHOW_FORMAT,
-                                               user, sorted(user.character, key=lambda x: x.date, reverse=True)[0]),
+                                               user, user.character),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
                             reply_markup=generate_profile_buttons(user))

@@ -12,7 +12,7 @@ def boss_leader(bot: Bot, update: Update):
     if len(group.squad) == 1:
         members = []
         for member in group.squad[0].members:
-            char = sorted(member.user.character, key=lambda x: x.date, reverse=True)[0]
+            char = member.user.character
             if 15 <= char.level <= 25:
                 members.append(repr(member.user))
         msg = '\n'.join(members)
@@ -25,7 +25,7 @@ def boss_zhalo(bot: Bot, update: Update):
     if len(group.squad) == 1:
         members = []
         for member in group.squad[0].members:
-            char = sorted(member.user.character, key=lambda x: x.date, reverse=True)[0]
+            char = member.user.character
             if 26 <= char.level <= 35:
                 members.append(repr(member.user))
         msg = '\n'.join(members)
@@ -38,7 +38,7 @@ def boss_monoeye(bot: Bot, update: Update):
     if len(group.squad) == 1:
         members = []
         for member in group.squad[0].members:
-            char = sorted(member.user.character, key=lambda x: x.date, reverse=True)[0]
+            char = member.user.character
             if 36 <= char.level <= 45:
                 members.append(repr(member.user))
         msg = '\n'.join(members)
@@ -51,7 +51,7 @@ def boss_hydra(bot: Bot, update: Update):
     if len(group.squad) == 1:
         members = []
         for member in group.squad[0].members:
-            char = sorted(member.user.character, key=lambda x: x.date, reverse=True)[0]
+            char = member.user.character
             if 46 <= char.level:
                 members.append(repr(member.user))
         msg = '\n'.join(members)

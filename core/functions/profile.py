@@ -93,7 +93,7 @@ def char_show(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         user = session.query(User).filter_by(id=update.message.from_user.id).first()
         if user is not None and user.character is not None:
-            char = sorted(user.character, key=lambda x: x.date, reverse=True)[0]
+            char =user.character
             if char.castle == '🇲🇴':
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
                 btns = generate_profile_buttons(user)
@@ -109,7 +109,7 @@ def find_by_username(bot: Bot, update: Update):
         if msg != '':
             user = session.query(User).filter_by(username=msg).first()
             if user is not None and len(user.character) >= 1:
-                char = sorted(user.character, key=lambda x: x.date, reverse=True)[0]
+                char = user.character
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns)
