@@ -108,7 +108,7 @@ def find_by_username(bot: Bot, update: Update):
         msg = msg.replace('@', '')
         if msg != '':
             user = session.query(User).filter_by(username=msg).first()
-            if user is not None and len(user.character) >= 1:
+            if user is not None and user.character:
                 char = user.character
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
                 btns = generate_profile_buttons(user)
