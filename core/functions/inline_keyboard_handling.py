@@ -195,11 +195,16 @@ def generate_profile_buttons(user):
 def generate_squad_list(squads):
     inline_keys = []
     for squad in squads:
+        attack = 0
+        defence = 0
+        for member in squad.members:
+            attack += member.user.character.attack
+            defence += member.user.character.defence
         inline_keys.append([InlineKeyboardButton(
             '{} : {}⚔ {}🛡 {}👥'.format(
                 squad.squad_name,
-                sum([member.user.character.attack for member in squad.members]),
-                sum([member.user.character.defence for member in squad.members]),
+                attack,
+                defence,
                 len(squad.members)
             ),
             callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))])
