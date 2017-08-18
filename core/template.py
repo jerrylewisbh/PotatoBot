@@ -34,7 +34,7 @@ def fill_char_template(msg: str, user: User, char: Character):
     else:
         msg = msg.replace('%squad%', MSG_NO_SQUAD)
     if char.pet:
-        msg = msg.replace('%pet%', '{} {}lvl'.format(str(char.pet), str(char.petLevel)))
+        msg = msg.replace('%pet%', '{} {} lvl'.format(str(char.pet), str(char.petLevel)))
     else:
         msg = msg.replace('%pet%', 'Животины нет')
     return msg
