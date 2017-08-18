@@ -66,7 +66,7 @@ class User(Base):
 
     character = relationship('Character', back_populates='user', order_by='Character.date.desc()', uselist=False)
     orders_confirmed = relationship('OrderCleared', back_populates='user')
-    member = relationship('SquadMember', back_populates='user')
+    member = relationship('SquadMember', back_populates='user', uselist=False)
     equip = relationship('Equip', back_populates='user', order_by='Equip.date.desc()', uselist=False)
     stock = relationship('Stock', back_populates='user', order_by='Stock.date.desc()', uselist=False)
 
