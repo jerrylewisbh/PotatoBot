@@ -25,7 +25,7 @@ from core.regexp import profile, hero
 import re
 from core.functions.profile import char_update, char_show, find_by_username
 from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns, \
-    squad_list
+    squad_list, squad_request, list_squad_requests, open_hiring, close_hiring
 from core.functions.activity import day_activity, week_activity, battle_activity
 from datetime import datetime
 
@@ -87,6 +87,10 @@ def manage_text(bot: Bot, update: Update, chat_data):
             boss_monoeye(bot, update)
         elif update.message.text.upper() == 'гидра'.upper():
             boss_hydra(bot, update)
+        elif update.message.text.upper() == 'открыть набор'.upper():
+            open_hiring(bot, update)
+        elif update.message.text.upper() == 'закрыть набор'.upper():
+            close_hiring(bot, update)
         elif update.message.text.upper() == 'удоли'.upper() and update.message.reply_to_message is not None:
             delete_msg(bot, update)
         else:
@@ -94,6 +98,10 @@ def manage_text(bot: Bot, update: Update, chat_data):
     elif update.message.chat.type == 'private':
         if update.message.text.upper() == 'Статус'.upper():
             send_status(bot, update)
+        elif update.message.text.upper() == 'хочу в отряд'.upper():
+            squad_request(bot, update)
+        elif update.message.text.upper() == 'заявки в отряд'.upper():
+            list_squad_requests(bot, update)
         elif update.message.text.upper() in ['Приказы'.upper(), 'пин'.upper()]:
             orders(bot, update, chat_data)
         elif update.message.text.upper() in ['список отряда'.upper(), 'список'.upper()]:

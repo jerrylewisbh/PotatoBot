@@ -203,6 +203,7 @@ class Squad(Base):
     invite_link = Column(UnicodeText(250), default='')
     squad_name = Column(UnicodeText(250))
     thorns_enabled = Column(Boolean, default=True)
+    hiring = Column(Boolean, default=False)
 
     members = relationship('SquadMember', back_populates='squad')
     chat = relationship('Group', back_populates='squad')
@@ -213,6 +214,7 @@ class SquadMember(Base):
 
     squad_id = Column(BigInteger, ForeignKey(Squad.chat_id))
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+    approved = Column(Boolean, default=False)
 
     squad = relationship('Squad', back_populates='members')
     user = relationship('User', back_populates='member')
@@ -297,10 +299,18 @@ def data_update(func):
                         session.add(character)
                     member = session.query(SquadMember).filter_by(user_id=user.id).first()
                     squad = session.query(Squad).filter_by(chat_id=player['squad_id']).first()
+                    if squad is None:
+                        group = session.query(Group).filter_by(id=player['squad_id']).first()
+                        if group is not None:
+                            squad = Squad()
+                            squad.chat_id = player['squad_id']
+                            squad.squad_name = player['squad']
+                            session.add(squad)
                     if squad is not None and (member is None or member.squad_id != player['squad_id']):
                         if member is None:
                             member = SquadMember()
                             member.user_id = user.id
+                            member.approved = True
                         member.squad_id = player['squad_id']
                         session.add(member)
                     session.commit()

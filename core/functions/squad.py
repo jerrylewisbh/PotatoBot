@@ -1,8 +1,11 @@
 from sqlalchemy.orm import scoped_session
 from telegram import Update, Bot
-from core.types import User, AdminType, Admin, admin, session, OrderGroup, Group, Squad, Session
+
+from core.template import fill_char_template
+from core.types import User, AdminType, Admin, admin, session, OrderGroup, Group, Squad, Session, SquadMember
 from core.utils import send_async
-from core.functions.inline_keyboard_handling import generate_groups_manage, generate_group_manage, generate_squad_list
+from core.functions.inline_keyboard_handling import generate_groups_manage, generate_group_manage, generate_squad_list, \
+    generate_leave_squad, generate_squad_request, generate_squad_request_answer
 from core.texts import *
 import asyncio
 
@@ -98,3 +101,48 @@ def squad_list(bot: Bot, update: Update):
                 squads.append(group.squad[0])
     markup = generate_squad_list(squads)
     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LIST, reply_markup=markup)
+
+
+def squad_request(bot: Bot, update: Update):
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if user is not None:
+        if user.member:
+            markup = generate_leave_squad(user.id)
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
+        else:
+            markup = generate_squad_request()
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
+
+
+@admin(AdminType.GROUP)
+def list_squad_requests(bot: Bot, update: Update):
+    admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+    group_admin = []
+    for adm in admin:
+        if adm.admin_type == AdminType.GROUP.value and adm.admin_group != 0:
+            group_admin.append(adm)
+    for adm in group_admin:
+        members = session.query(SquadMember).filter_by(squad_id=adm.admin_group, approved=False)
+        for member in members:
+            markup = generate_squad_request_answer(member.user_id)
+            send_async(bot, chat_id=update.message.chat.id, text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character), reply_markup=markup)
+
+
+@admin(AdminType.GROUP)
+def open_hiring(bot: Bot, update: Update):
+    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    if squad is not None:
+        squad.hiring = True
+        session.add(squad)
+        session.commit()
+        send_async(bot, chat_id=update.message.chat.id, text='Набор открыт')
+
+
+@admin(AdminType.GROUP)
+def close_hiring(bot: Bot, update: Update):
+    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    if squad is not None:
+        squad.hiring = False
+        session.add(squad)
+        session.commit()
+        send_async(bot, chat_id=update.message.chat.id, text='Набор закрыт')

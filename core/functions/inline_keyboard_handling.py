@@ -37,6 +37,10 @@ class QueryType(Enum):
     ShowEquip = 13
     ShowHero = 14
     MemberList = 15
+    LeaveSquad = 16
+    RequestSquad = 17
+    RequestSquadAccept = 18
+    RequestSquadDecline = 19
 
 
 def bot_in_chat(bot: Bot, group: Group):
@@ -227,6 +231,23 @@ def generate_squad_list(squads):
     return InlineKeyboardMarkup(inline_keys)
 
 
+def generate_leave_squad(user_id):
+    inline_keys = []
+    inline_keys.append([InlineKeyboardButton('Выйти',
+                        callback_data=json.dumps({'t': QueryType.LeaveSquad.value, 'id': user_id}))])
+    return InlineKeyboardMarkup(inline_keys)
+
+
+def generate_squad_request():
+    inline_keys = []
+    squads = session.query(Squad).filter_by(hiring=True).all()
+    for squad in squads:
+        inline_keys.append([InlineKeyboardButton(squad.squad_name,
+                                                 callback_data=json.dumps(
+                                                     {'t': QueryType.RequestSquad.value, 'id': squad.chat_id}))])
+    return InlineKeyboardMarkup(inline_keys)
+
+
 def generate_squad_members(members):
     inline_keys = []
     for member in members:
@@ -235,6 +256,17 @@ def generate_squad_members(members):
         inline_keys.append([InlineKeyboardButton('{}: {}⚔ {}🛡'.format(user, character.attack, character.defence), callback_data=json.dumps(
             {'t': QueryType.ShowHero.value, 'id': member.user_id}))])
     return InlineKeyboardMarkup(inline_keys)
+
+
+def generate_squad_request_answer(user_id):
+    inline_keys = []
+    inline_keys.append(InlineKeyboardButton('✅Принять',
+                                            callback_data=json.dumps(
+                                                {'t': QueryType.RequestSquadAccept.value, 'id': user_id})))
+    inline_keys.append(InlineKeyboardButton('❌Отклонить',
+                                            callback_data=json.dumps(
+                                                {'t': QueryType.RequestSquadDecline.value, 'id': user_id})))
+    return InlineKeyboardMarkup([inline_keys])
 
 
 @with_session
@@ -420,3 +452,47 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
                             reply_markup=markup)
+    elif data['t'] == QueryType.LeaveSquad.value:
+        member = session.query(SquadMember).filter_by(user_id=data['id']).first()
+        bot.editMessageText(MSG_SQUAD_LEAVED.format(member.user.character.name, member.squad.squad_name),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id)
+        if member:
+            session.delete(member)
+            session.commit()
+    elif data['t'] == QueryType.RequestSquad.value:
+        member = session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
+        if member is None:
+            member = SquadMember()
+            member.user_id = update.callback_query.from_user.id
+            member.squad_id = data['id']
+            session.add(member)
+            session.commit()
+            admins = session.query(Admin).filter_by(admin_group=data['id']).all()
+            usernames = ['@' + session.query(User).filter_by(id=admin.user_id).first().username for admin in admins]
+            bot.editMessageText(MSG_SQUAD_REQUESTED.format(member.squad.squad_name, ', '.join(usernames)),
+                                update.callback_query.message.chat.id,
+                                update.callback_query.message.message_id)
+        else:
+            markup = generate_leave_squad(user.id)
+            bot.editMessageText(MSG_SQUAD_REQUEST_EXISTS,
+                                update.callback_query.message.chat.id,
+                                update.callback_query.message.message_id,
+                                reply_markup=markup)
+    elif data['t'] == QueryType.RequestSquadAccept.value:
+        member = session.query(SquadMember).filter_by(user_id=data['id']).first()
+        if member:
+            member.approved = True
+            session.add(member)
+            session.commit()
+            bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@'+user.username),
+                                update.callback_query.message.chat.id,
+                                update.callback_query.message.message_id)
+    elif data['t'] == QueryType.RequestSquadAccept.value:
+        member = session.query(SquadMember).filter_by(user_id=data['id']).first()
+        if member:
+            bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + member.user.username),
+                                update.callback_query.message.chat.id,
+                                update.callback_query.message.message_id)
+            session.delete(member)
+            session.commit()
