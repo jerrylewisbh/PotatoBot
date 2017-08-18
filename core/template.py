@@ -34,4 +34,8 @@ def fill_char_template(msg: str, user: User, char: Character):
         msg = msg.replace('%squad%', str(session.query(Squad).filter_by(chat_id=user.member.squad_id).first().squad_name))
     else:
         msg = msg.replace('%squad%', MSG_NO_SQUAD)
+    if char.pet:
+        msg = msg.replace('%pet%', str(char.pet) + ' ' + str(char.petLevel) + 'lvl')
+    else:
+        msg = msg.replace('%pet%', 'Животины нет')
     return msg

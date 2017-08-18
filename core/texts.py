@@ -130,6 +130,7 @@ MSG_PROFILE_SHOW_FORMAT = '👤 %first_name% (%username%)\n' \
                           '⚜️ Отряд %squad%\n' \
                           '⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%\n' \
                           '💰 %gold% | 🔋 %maxStamina%\n' \
+                          '%pet%\n' \
                           '🕑 Последнее обновление %date%'
 MSG_PROFILE_NOT_FOUND = 'В мятных записях ещё нет данных об этом герое'
 
