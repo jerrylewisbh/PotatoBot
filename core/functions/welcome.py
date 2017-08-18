@@ -23,7 +23,7 @@ def welcome(bot: Bot, update: Update):
                     allow_anywhere = True
                     break
             if len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != 386494081 and \
-                    (len(user.member) != 1 or user.member[0] not in group.squad[0].members) and not allow_anywhere:
+                    (user.member or user.member not in group.squad[0].members) and not allow_anywhere:
                 send_async(bot, chat_id=update.message.chat.id,
                            text=MSG_THORNS.format(str(user)))
                 bot.kickChatMember(update.message.chat.id, update.message.new_chat_member.id)
