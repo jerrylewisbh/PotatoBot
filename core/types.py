@@ -22,7 +22,7 @@ class AdminType(Enum):
     GROUP = 2
 
 
-engine = create_engine(DB, echo=False, pool_size=20, max_overflow=10)
+engine = create_engine(DB, echo=False, pool_size=200, max_overflow=50)
 logger = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
