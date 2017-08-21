@@ -138,7 +138,6 @@ def delete_msg(bot: Bot, update: Update):
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.message_id)
 
 
-
 def trade_compare(bot: Bot, update: Update, chat_data: dict):
     old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
                                                stock_type=StockType.TradeBot.value).order_by(Stock.date.desc()).first()
