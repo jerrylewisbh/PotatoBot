@@ -308,6 +308,7 @@ def send_order(bot, order, order_type, chat_id, markup):
     return msg_sent
 
 
+@run_async
 @with_session
 def callback_query(bot: Bot, update: Update, chat_data: dict):
     update_group(update.callback_query.message.chat)
