@@ -6,7 +6,7 @@ from telegram.ext.dispatcher import run_async
 
 from core.template import fill_char_template
 from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad, \
-    with_session, Character, Session, SquadMember
+    with_session, Character, Session, SquadMember, MessageType
 from core.utils import send_async, update_group, add_user
 from core.functions.admins import del_adm
 from enum import Enum
@@ -16,6 +16,7 @@ from core.types import AdminType
 from datetime import datetime, timedelta
 from core.texts import *
 from multiprocessing.pool import ThreadPool
+from json import loads
 
 logger = logging.getLogger('MyApp')
 
@@ -269,6 +270,44 @@ def generate_squad_request_answer(user_id):
     return InlineKeyboardMarkup([inline_keys])
 
 
+@run_async
+def send_order(bot, order, order_type, chat_id, markup):
+    msg_sent = None
+    if order_type == MessageType.AUDIO.value:
+        msg_sent = bot.send_audio(chat_id, order, reply_markup=markup)
+    elif order_type == MessageType.DOCUMENT.value:
+        msg_sent = bot.send_document(chat_id, order, reply_markup=markup)
+    elif order_type == MessageType.VOICE.value:
+        msg_sent = bot.send_voice(chat_id, order, reply_markup=markup)
+    elif order_type == MessageType.STICKER.value:
+        msg_sent = bot.send_sticker(chat_id, order, reply_markup=markup)
+    elif order_type == MessageType.CONTACT.value:
+        msg = order.replace('\'', '"')
+        contact = loads(msg)
+        if 'phone_number' not in contact.keys():
+            contact['phone_number'] = None
+        if 'first_name' not in contact.keys():
+            contact['first_name'] = None
+        if 'last_name' not in contact.keys():
+            contact['last_name'] = None
+            msg_sent = bot.send_contact(chat_id,
+                                        contact['phone_number'],
+                                        contact['first_name'],
+                                        contact['last_name'],
+                                        reply_markup=markup)
+    elif order_type == MessageType.VIDEO.value:
+        msg_sent = bot.send_video(chat_id, order, reply_markup=markup)
+    elif order_type == MessageType.VIDEO_NOTE.value:
+        msg_sent = bot.send_video_note(chat_id, order, reply_markup=markup)
+    elif order_type == MessageType.LOCATION.value:
+        msg = order.replace('\'', '"')
+        location = loads(msg)
+        msg_sent = bot.send_location(chat_id, location['latitude'], location['longitude'], reply_markup=markup)
+    else:
+        msg_sent = send_async(bot, chat_id=chat_id, text=order, disable_web_page_preview=True, reply_markup=markup)
+    return msg_sent
+
+
 @with_session
 def callback_query(bot: Bot, update: Update, chat_data: dict):
     update_group(update.callback_query.message.chat)
@@ -301,14 +340,14 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             order.text = chat_data['order']
             order.chat_id = data['id']
             order.date = datetime.now()
-            # msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_ORDER_CLEARED_BY_DUMMY).result()
             order.confirmed_msg = 0
             session.add(order)
             session.commit()
             markup = generate_ok_markup(order.id, 0)
-            msg = send_async(bot, chat_id=order.chat_id, text=order.text, reply_markup=markup).result()
+            msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result()
             try:
-                bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': order.chat_id, 'message_id': msg.message_id,
+                bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': order.chat_id,
+                                                                    'message_id': msg.message_id,
                                                                     'disable_notification': False})
             except:
                 pass
@@ -319,12 +358,11 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 order.text = chat_data['order']
                 order.chat_id = item.chat_id
                 order.date = datetime.now()
-                # msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_ORDER_CLEARED_BY_DUMMY).result()
                 order.confirmed_msg = 0
                 session.add(order)
                 session.commit()
                 markup = generate_ok_markup(order.id, 0)
-                msg = send_async(bot, chat_id=order.chat_id, text=order.text, reply_markup=markup).result()
+                msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result()
                 try:
                     bot.request.post(bot.base_url + '/pinChatMessage',
                                      {'chat_id': order.chat_id, 'message_id': msg.message_id,
@@ -343,13 +381,6 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 order_ok.user_id = update.callback_query.from_user.id
                 session.add(order_ok)
                 session.commit()
-                # if order.confirmed_msg != 0:
-                #     confirmed = session.query(OrderCleared).filter_by(order_id=order.id).all()
-                #     msg = MSG_ORDER_CLEARED_BY_HEADER
-                #     for confirm in confirmed:
-                #         msg += '\n' + str(confirm.user)
-                #     msg += MSG_ORDER_CLEARED_BY_DUMMY
-                #     bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
                 update.callback_query.answer(text=MSG_ORDER_CLEARED)
             else:
                 update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)

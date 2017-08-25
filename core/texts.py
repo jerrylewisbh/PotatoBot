@@ -105,7 +105,7 @@ MSG_ORDER_SENT = 'Ваше сообщение отправлено'
 MSG_ORDER_CLEARED = 'Я тебя записал'
 MSG_ORDER_CLEARED_ERROR = 'Хорош тыкать, уже всё'
 
-MSG_ORDER_SEND_HEADER = 'Приказ: {}\nКуда слать?'
+MSG_ORDER_SEND_HEADER = 'Куда слать?'
 
 MSG_ORDER_GROUP_CONFIG_HEADER = 'Настройки группы {}'
 MSG_ORDER_GROUP_NEW = 'Напиши мне название новой группы отрядов'

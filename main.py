@@ -33,6 +33,94 @@ last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+@with_session
+@data_update
+def manage_all(bot: Bot, update: Update, chat_data):
+    add_user(update.message.from_user)
+    if update.message.chat.type in ['group', 'supergroup', 'channel']:
+        if str(update.message.text).upper().startswith('Приветствие:'.upper()):
+            set_welcome(bot, update)
+        elif update.message.text.upper() == 'Помощь'.upper():
+            help_msg(bot, update)
+        elif update.message.text.upper() == 'Покажи приветствие'.upper():
+            show_welcome(bot, update)
+        elif update.message.text.upper() == 'Включи приветствие'.upper():
+            enable_welcome(bot, update)
+        elif update.message.text.upper() == 'Выключи приветствие'.upper():
+            disable_welcome(bot, update)
+        elif str(update.message.text).upper().startswith('Затриггерь:'.upper()):
+            set_trigger(bot, update)
+        elif str(update.message.text).upper().startswith('Разтриггерь:'.upper()):
+            del_trigger(bot, update)
+        elif update.message.text.upper() == 'Список триггеров'.upper():
+            list_triggers(bot, update)
+        elif update.message.text.upper() == 'Список админов'.upper():
+            list_admins(bot, update)
+        elif update.message.text.upper() == 'Пинг'.upper():
+            ping(bot, update)
+        elif update.message.text.upper() == 'Статистика за день'.upper():
+            day_activity(bot, update)
+        elif update.message.text.upper() == 'Статистика за неделю'.upper():
+            week_activity(bot, update)
+        elif update.message.text.upper() == 'Статистика за бой'.upper():
+            battle_activity(bot, update)
+        elif update.message.text.upper() == 'Разрешить триггерить всем'.upper():
+            enable_trigger_all(bot, update)
+        elif update.message.text.upper() == 'Запретить триггерить всем'.upper():
+            disable_trigger_all(bot, update)
+        elif update.message.text.upper() in ['Админы'.upper(), 'офицер'.upper()]:
+            admins_for_users(bot, update)
+        elif update.message.text.upper() == 'Пинят все'.upper():
+            pin_all(bot, update)
+        elif update.message.text.upper() == 'Хорош пинить'.upper():
+            not_pin_all(bot, update)
+        elif update.message.text.upper() == 'Пин'.upper() and update.message.reply_to_message is not None:
+            pin(bot, update)
+        elif update.message.text.upper() == 'сайлентпин'.upper() and update.message.reply_to_message is not None:
+            silent_pin(bot, update)
+        elif update.message.text.upper() == 'бандит'.upper():
+            boss_leader(bot, update)
+        elif update.message.text.upper() == 'жало'.upper():
+            boss_zhalo(bot, update)
+        elif update.message.text.upper() == 'циклоп'.upper():
+            boss_monoeye(bot, update)
+        elif update.message.text.upper() == 'гидра'.upper():
+            boss_hydra(bot, update)
+        elif update.message.text.upper() == 'открыть набор'.upper():
+            open_hiring(bot, update)
+        elif update.message.text.upper() == 'закрыть набор'.upper():
+            close_hiring(bot, update)
+        elif update.message.text.upper() == 'удоли'.upper() and update.message.reply_to_message is not None:
+            delete_msg(bot, update)
+        else:
+            trigger_show(bot, update)
+    elif update.message.chat.type == 'private':
+        if update.message.text.upper() == 'Статус'.upper():
+            send_status(bot, update)
+        elif update.message.text.upper() == 'хочу в отряд'.upper():
+            squad_request(bot, update)
+        elif update.message.text.upper() == 'заявки в отряд'.upper():
+            list_squad_requests(bot, update)
+        elif update.message.text.upper() in ['Приказы'.upper(), 'пин'.upper()]:
+            orders(bot, update, chat_data)
+        elif update.message.text.upper() in ['список отряда'.upper(), 'список'.upper()]:
+            Thread(target=squad_list, args=(bot, update)).start()
+        elif update.message.text.upper() == 'Группы'.upper():
+            group_list(bot, update)
+        elif update.message.forward_from and update.message.forward_from.id == 265204902 and \
+                update.message.text.startswith('📦Содержимое склада'):
+            stock_compare(bot, update, chat_data)
+        elif update.message.forward_from and update.message.forward_from.id == 278525885 and \
+                        '📦Твой склад с материалами:' in update.message.text:
+            trade_compare(bot, update, chat_data)
+        elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
+            add_group(bot, update, chat_data)
+        elif update.message.forward_from and update.message.forward_from.id == 265204902 and \
+                (re.search(profile, update.message.text) or re.search(hero, update.message.text)):
+            char_update(bot, update)
+        else:
+            order(bot, update, chat_data)
+
 
 @with_session
 @data_update
@@ -167,7 +255,8 @@ def main():
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.status_update, welcome))
-    dp.add_handler(MessageHandler(Filters.text, manage_text, pass_chat_data=True))
+    # dp.add_handler(MessageHandler(Filters.text, manage_text, pass_chat_data=True))
+    dp.add_handler(MessageHandler(Filters.all, manage_all, pass_chat_data=True))
 
     # log all errors
     dp.add_error_handler(error)
