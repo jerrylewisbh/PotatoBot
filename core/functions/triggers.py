@@ -73,7 +73,7 @@ def add_trigger(bot: Bot, update: Update):
         trigger_text = msg[1].strip()
         session = Session()
         trigger = session.query(Trigger).filter_by(trigger=trigger_text).first()
-        if trigger is not None:
+        if trigger is None:
             data = update.message.reply_to_message
             add_trigger_db(data, trigger_text)
             send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW.format(trigger))
