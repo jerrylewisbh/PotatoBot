@@ -1,8 +1,7 @@
-from telegram import Bot, Chat
+from telegram import Bot
 from telegram.ext.dispatcher import run_async
 from core.types import Session, User, Group
 from telegram.error import ChatMigrated
-import json
 
 
 @run_async
@@ -10,6 +9,7 @@ def send_async(bot: Bot, *args, **kwargs):
     try:
         return bot.sendMessage(*args, **kwargs)
     except ChatMigrated as e:
+        session = Session()
         group = session.query(Group).filter_by(id=kwargs['chat_id']).first()
         if group is not None:
             group.bot_in_group = False
@@ -33,6 +33,7 @@ def send_pin_async(bot: Bot, *args, **kwargs):
 
 
 def add_user(tg_user):
+    session = Session()
     user = session.query(User).filter_by(id=tg_user.id).first()
     if user is None:
         user = User(id=tg_user.id, username=tg_user.username or '',
@@ -58,6 +59,7 @@ def add_user(tg_user):
 
 def update_group(grp):
     if grp.type in ['group', 'supergroup', 'channel']:
+        session = Session()
         group = session.query(Group).filter_by(id=grp.id).first()
         if group is None:
             group = Group(id=grp.id, title=grp.title,
