@@ -76,7 +76,7 @@ def add_trigger(bot: Bot, update: Update):
         if trigger is None:
             data = update.message.reply_to_message
             add_trigger_db(data, trigger_text)
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW.format(trigger))
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW.format(trigger_text))
         else:
             send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_EXISTS.format(trigger_text))
     else:
