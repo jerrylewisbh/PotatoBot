@@ -85,7 +85,7 @@ def admins_for_users(bot: Bot, update: Update):
         msg += MSG_EMPTY
     else:
         for user in users:
-            msg += MSG_LIST_ADMINS_USER_FORMAT.format(user.username, user.first_name, user.last_name)
+            msg += MSG_LIST_ADMINS_USER_FORMAT.format(user.username or '', user.first_name or '', user.last_name or '')
     send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
