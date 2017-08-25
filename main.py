@@ -33,9 +33,9 @@ last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+@run_async
 @with_session
 @data_update
-@run_async
 def manage_all(bot: Bot, update: Update, chat_data):
     add_user(update.message.from_user)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
