@@ -95,17 +95,17 @@ def manage_all(bot: Bot, update: Update, chat_data):
         else:
             trigger_show(bot, update)
     elif update.message.chat.type == 'private':
-        if update.message.text.upper() == 'Статус'.upper():
+        if update.message.text and update.message.text.upper() == 'Статус'.upper():
             send_status(bot, update)
-        elif update.message.text.upper() == 'хочу в отряд'.upper():
+        elif update.message.text and update.message.text.upper() == 'хочу в отряд'.upper():
             squad_request(bot, update)
-        elif update.message.text.upper() == 'заявки в отряд'.upper():
+        elif update.message.text and update.message.text.upper() == 'заявки в отряд'.upper():
             list_squad_requests(bot, update)
-        elif update.message.text.upper() in ['Приказы'.upper(), 'пин'.upper()]:
+        elif update.message.text and update.message.text.upper() in ['Приказы'.upper(), 'пин'.upper()]:
             orders(bot, update, chat_data)
-        elif update.message.text.upper() in ['список отряда'.upper(), 'список'.upper()]:
+        elif update.message.text and update.message.text.upper() in ['список отряда'.upper(), 'список'.upper()]:
             Thread(target=squad_list, args=(bot, update)).start()
-        elif update.message.text.upper() == 'Группы'.upper():
+        elif update.message.text and update.message.text.upper() == 'Группы'.upper():
             group_list(bot, update)
         elif update.message.forward_from and update.message.forward_from.id == 265204902 and \
                 update.message.text.startswith('📦Содержимое склада'):
@@ -115,7 +115,7 @@ def manage_all(bot: Bot, update: Update, chat_data):
             trade_compare(bot, update, chat_data)
         elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
             add_group(bot, update, chat_data)
-        elif update.message.forward_from and update.message.forward_from.id == 265204902 and \
+        elif update.message.text and update.message.forward_from and update.message.forward_from.id == 265204902 and \
                 (re.search(profile, update.message.text) or re.search(hero, update.message.text)):
             char_update(bot, update)
         else:
