@@ -17,7 +17,7 @@ def trigger_decorator(func):
     return wrapper
 
 
-def add_trigger(msg: Message, trigger_text: str):
+def add_trigger_db(msg: Message, trigger_text: str):
     trigger = session.query(Trigger).filter_by(trigger=trigger_text).first()
     if trigger is None:
         trigger = Trigger()
@@ -59,36 +59,26 @@ def set_trigger(bot: Bot, update: Update):
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger = msg[1].strip()
         data = update.message.reply_to_message
-        add_trigger(data, trigger)
+        add_trigger_db(data, trigger)
         send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW.format(trigger))
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW_ERROR)
 
 
-# @admin(adm_type=AdminType.GROUP)
-# def add_trigger(bot: Bot, update: Update):
-#     msg = update.message.text.split(' ', 1)
-#     if len(msg) == 2:
-#         msg = msg[1]
-#         new_trigger = msg.split('::', 1)
-#         if len(new_trigger) == 2:
-#             new_trigger[0] = new_trigger[0].strip()
-#             if len(new_trigger[0]) > 0:
-#                 trigger = session.query(Trigger).filter_by(trigger=new_trigger[0]).first()
-#                 if trigger is None:
-#                     trigger = Trigger(trigger=new_trigger[0], message=new_trigger[1])
-#                     session.add(trigger)
-#                     session.commit()
-#                     send_async(bot, chat_id=update.message.chat.id,
-#                                text=MSG_TRIGGER_NEW.format(new_trigger[0]))
-#                 else:
-#                     send_async(bot, chat_id=update.message.chat.id,
-#                                text=MSG_TRIGGER_EXISTS.format(new_trigger[0]))
-#             else:
-#                 send_async(bot, chat_id=update.message.chat.id,
-#                            text=MSG_TRIGGER_NEW_ERROR)
-#         else:
-#             send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW_ERROR)
+@admin(adm_type=AdminType.GROUP)
+def add_trigger(bot: Bot, update: Update):
+    msg = update.message.text.split(' ', 1)
+    if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
+        trigger_text = msg[1].strip()
+        trigger = session.query(Trigger).filter_by(trigger=trigger_text).first()
+        if trigger is not None:
+            data = update.message.reply_to_message
+            add_trigger_db(data, trigger_text)
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW.format(trigger))
+        else:
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_EXISTS)
+    else:
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW_ERROR)
 
 
 @trigger_decorator
