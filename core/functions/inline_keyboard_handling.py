@@ -4,7 +4,7 @@ from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, Te
 from telegram.ext.dispatcher import run_async
 
 from core.template import fill_char_template
-from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad, \
+from core.types import User, Group, Admin, Session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad, \
     Character, Session, SquadMember, MessageType
 from core.utils import send_async, update_group, add_user
 from core.functions.admins import del_adm
@@ -43,20 +43,9 @@ class QueryType(Enum):
     RequestSquadDecline = 19
 
 
-def bot_in_chat(bot: Bot, group: Group):
-    try:
-        #bot.getChatMember(group.id, bot.id)
-        return True
-    except TelegramError as e:
-        logger.warning(e.message)
-        group.bot_in_group = False
-        session.add(group)
-        session.commit()
-        return False
-
-
 @admin()
 def send_status(bot: Bot, update: Update):
+    session = Session()
     msg = MSG_GROUP_STATUS_CHOOSE_CHAT
     squads = session.query(Squad).all()
     inline_keys = []
@@ -69,6 +58,7 @@ def send_status(bot: Bot, update: Update):
 
 
 def generate_group_info(group_id):
+    session = Session()
     group = session.query(Group).filter(Group.id == group_id).first()
     admins = session.query(Admin).filter(Admin.admin_group == group_id).all()
     adm_msg = ''
@@ -115,6 +105,7 @@ def generate_flag_orders():
 
 
 def generate_order_chats_markup(bot: Bot):
+    session = Session()
     squads = session.query(Squad).all()
     inline_keys = []
     for squad in squads:
@@ -125,6 +116,7 @@ def generate_order_chats_markup(bot: Bot):
 
 
 def generate_order_groups_markup(bot: Bot, admin_user: list=None):
+    session = Session()
     if admin_user:
         group_adm = True
         for adm in admin_user:
@@ -159,6 +151,7 @@ def generate_ok_markup(order_id, count):
 
 
 def generate_groups_manage():
+    session = Session()
     groups = session.query(OrderGroup).all()
     inline_keys = []
     for group in groups:
@@ -170,6 +163,7 @@ def generate_groups_manage():
 
 
 def generate_group_manage(group_id):
+    session = Session()
     squads = session.query(Squad).all()
     inline_keys = []
     for squad in squads:
@@ -239,6 +233,7 @@ def generate_leave_squad(user_id):
 
 
 def generate_squad_request():
+    session = Session()
     inline_keys = []
     squads = session.query(Squad).filter_by(hiring=True).all()
     for squad in squads:
@@ -309,6 +304,7 @@ def send_order(bot, order, order_type, chat_id, markup):
 
 @run_async
 def callback_query(bot: Bot, update: Update, chat_data: dict):
+    session = Session()
     update_group(update.callback_query.message.chat)
     user = add_user(update.callback_query.from_user)
     data = json.loads(update.callback_query.data)
