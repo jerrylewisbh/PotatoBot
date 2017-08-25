@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from core.texts import MSG_NO_SQUAD
 from core.types import *
-from datetime import datetime
 
 
 def fill_template(msg: str, user: User):

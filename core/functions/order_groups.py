@@ -1,5 +1,5 @@
 from telegram import Update, Bot
-from core.types import User, AdminType, Admin, admin, session, OrderGroup
+from core.types import Session, OrderGroup
 from core.utils import send_async
 from core.functions.inline_keyboard_handling import generate_groups_manage, generate_group_manage
 from core.texts import *
@@ -11,6 +11,7 @@ def group_list(bot: Bot, update: Update):
 
 
 def add_group(bot: Bot, update: Update, chat_data):
+    session = Session()
     chat_data['wait_group_name'] = False
     group = OrderGroup()
     group.name = update.message.text

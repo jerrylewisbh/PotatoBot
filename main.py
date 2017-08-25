@@ -18,7 +18,7 @@ from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_
     disable_trigger_all, trigger_show
 from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 from core.functions.order_groups import group_list, add_group
-from core.types import data_update, with_session
+from core.types import data_update
 from core.utils import add_user
 from config import TOKEN
 from core.regexp import profile, hero
@@ -33,9 +33,9 @@ last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-@run_async
-@with_session
+
 @data_update
+@run_async
 def manage_all(bot: Bot, update: Update, chat_data):
     add_user(update.message.from_user)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
@@ -123,7 +123,6 @@ def manage_all(bot: Bot, update: Update, chat_data):
             order(bot, update, chat_data)
 
 
-@with_session
 @data_update
 def manage_text(bot: Bot, update: Update, chat_data):
     add_user(update.message.from_user)

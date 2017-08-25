@@ -1,5 +1,5 @@
 from telegram import Update, Bot
-from core.types import User, AdminType, Admin, admin, session
+from core.types import User, AdminType, Admin, admin, Session
 from core.utils import send_async
 from core.texts import *
 
@@ -9,6 +9,7 @@ def set_admin(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
+        session = Session()
         user = session.query(User).filter_by(username=msg).first()
         if user is None:
             send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
@@ -28,6 +29,7 @@ def set_admin(bot: Bot, update: Update):
 
 
 def del_adm(bot, chat_id, user):
+    session = Session()
     adm = session.query(Admin).filter_by(user_id=user.id, admin_group=chat_id).first()
     if adm is None:
         send_async(bot, chat_id=chat_id,
@@ -41,6 +43,7 @@ def del_adm(bot, chat_id, user):
 
 @admin()
 def del_admin(bot: Bot, update: Update):
+    session = Session()
     msg = update.message.text.split(' ', 1)[1]
     if msg.find('@') != -1:
         msg = msg.replace('@', '')
@@ -60,6 +63,7 @@ def del_admin(bot: Bot, update: Update):
 
 @admin()
 def list_admins(bot: Bot, update: Update):
+    session = Session()
     admins = session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
     users = []
     for admin_user in admins:
@@ -71,6 +75,7 @@ def list_admins(bot: Bot, update: Update):
 
 
 def admins_for_users(bot: Bot, update: Update):
+    session = Session()
     admins = session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
     users = []
     for admin_user in admins:
@@ -86,6 +91,7 @@ def admins_for_users(bot: Bot, update: Update):
 
 @admin(adm_type=AdminType.SUPER)
 def set_global_admin(bot: Bot, update: Update):
+    session = Session()
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
@@ -108,6 +114,7 @@ def set_global_admin(bot: Bot, update: Update):
 
 
 def set_super_admin(bot: Bot, update: Update):
+    session = Session()
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
@@ -139,6 +146,7 @@ def set_super_admin(bot: Bot, update: Update):
 
 @admin(adm_type=AdminType.SUPER)
 def del_global_admin(bot: Bot, update: Update):
+    session = Session()
     msg = update.message.text.split(' ', 1)[1]
     if msg.find('@') != -1:
         msg = msg.replace('@', '')

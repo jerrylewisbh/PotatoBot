@@ -1,6 +1,6 @@
 from telegram import Bot, Chat
 from telegram.ext.dispatcher import run_async
-from core.types import session, User, Group
+from core.types import Session, User, Group
 from telegram.error import ChatMigrated
 import json
 

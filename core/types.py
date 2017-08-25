@@ -37,8 +37,7 @@ class MessageType(Enum):
 engine = create_engine(DB, echo=False, pool_size=200, max_overflow=50)
 logger = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
-Session = sessionmaker(bind=engine)
-session = scoped_session(Session)()
+Session = scoped_session(sessionmaker(bind=engine))
 last_update = datetime.now() - timedelta(minutes=10)
 
 
@@ -330,16 +329,6 @@ def data_update(func):
             threading.Thread(target=upd).start()
         func(bot, update, *args, **kwargs)
     return wrapper
-
-
-def with_session(fn):
-    def go(*args, **kw):
-        try:
-            return fn(*args, **kw)
-        except:
-            session.rollback()
-            raise
-    return go
 
 
 Base.metadata.create_all(engine)

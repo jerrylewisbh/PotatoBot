@@ -1,9 +1,6 @@
 from telegram import Update, Bot
 from core.functions.triggers import trigger_decorator
-from core.types import User, AdminType, Admin, admin, session, OrderGroup, Group, Squad
 from core.utils import send_async, update_group
-from core.functions.inline_keyboard_handling import generate_groups_manage, generate_group_manage
-from core.texts import *
 
 
 @trigger_decorator

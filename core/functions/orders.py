@@ -1,5 +1,5 @@
 from telegram import Update, Bot
-from core.types import User, AdminType, Admin, admin, session, MessageType
+from core.types import AdminType, Admin, admin, Session, MessageType
 from core.utils import send_async
 from core.functions.inline_keyboard_handling import generate_order_groups_markup, generate_flag_orders
 from core.texts import *
@@ -7,6 +7,7 @@ from core.texts import *
 
 @admin(adm_type=AdminType.GROUP)
 def order(bot: Bot, update: Update, chat_data):
+    session = Session()
     admin_user = session.query(Admin).filter(Admin.user_id == update.message.from_user.id).all()
     markup = generate_order_groups_markup(bot, admin_user)
     msg = update.message

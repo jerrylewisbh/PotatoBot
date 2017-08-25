@@ -1,7 +1,7 @@
-from telegram import Update, Bot, ParseMode, TelegramError, Message
+from telegram import Update, Bot, ParseMode, TelegramError
 import logging
 from core.functions.triggers import trigger_decorator
-from core.types import AdminType, Admin, Stock, admin, session, Group
+from core.types import AdminType, Admin, Stock, admin, Session, Group
 from core.utils import send_async, add_user
 from core.functions.reply_markup import generate_standard_markup
 from enum import Enum
@@ -35,6 +35,7 @@ def admin_panel(bot: Bot, update: Update):
 
 
 def check_bot_in_chats(bot: Bot, update: Update):
+    session = Session()
     groups = session.query(Group).filter_by(bot_in_group=True).all()
     for group in groups:
         try:
@@ -52,6 +53,7 @@ def kick(bot: Bot, update: Update):
 
 @trigger_decorator
 def help_msg(bot: Bot, update):
+    session = Session()
     admin_user = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     global_adm = False
     for adm in admin_user:
@@ -92,6 +94,7 @@ def get_diff(dict_one, dict_two):
 
 
 def stock_compare(bot: Bot, update: Update, chat_data: dict):
+    session = Session()
     old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
                                                stock_type=StockType.Stock.value).order_by(Stock.date.desc()).first()
     new_stock = Stock()
@@ -139,6 +142,7 @@ def delete_msg(bot: Bot, update: Update):
 
 
 def trade_compare(bot: Bot, update: Update, chat_data: dict):
+    session = Session()
     old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
                                                stock_type=StockType.TradeBot.value).order_by(Stock.date.desc()).first()
     new_stock = Stock()

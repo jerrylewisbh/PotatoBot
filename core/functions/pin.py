@@ -1,7 +1,7 @@
 from telegram import Bot, Update, Message
 
 from core.texts import MSG_PIN_ALL_ENABLED, MSG_PIN_ALL_DISABLED
-from core.types import AdminType, admin, session
+from core.types import AdminType, admin, Session
 from core.utils import update_group, send_async
 
 
@@ -36,6 +36,7 @@ def silent_pin(bot: Bot, update: Update):
 @admin(AdminType.GROUP)
 def pin_all(bot: Bot, update: Update):
     group = update_group(update.message.chat)
+    session = Session()
     if not group.allow_pin_all:
         group.allow_pin_all = True
         session.add(group)
@@ -46,6 +47,7 @@ def pin_all(bot: Bot, update: Update):
 @admin(AdminType.GROUP)
 def not_pin_all(bot: Bot, update: Update):
     group = update_group(update.message.chat)
+    session = Session()
     if group.allow_pin_all:
         group.allow_pin_all = False
         session.add(group)

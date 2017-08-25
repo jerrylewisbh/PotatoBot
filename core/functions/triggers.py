@@ -1,8 +1,8 @@
 from telegram import Update, Bot, Message
-from core.types import Group, Trigger, AdminType, admin, session, MessageType
+from core.types import Trigger, AdminType, admin, Session, MessageType
 from core.utils import send_async, update_group
 from core.texts import *
-from json import loads, dumps
+from json import loads
 
 
 def trigger_decorator(func):
@@ -18,6 +18,7 @@ def trigger_decorator(func):
 
 
 def add_trigger_db(msg: Message, trigger_text: str):
+    session = Session()
     trigger = session.query(Trigger).filter_by(trigger=trigger_text).first()
     if trigger is None:
         trigger = Trigger()
@@ -70,6 +71,7 @@ def add_trigger(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger_text = msg[1].strip()
+        session = Session()
         trigger = session.query(Trigger).filter_by(trigger=trigger_text).first()
         if trigger is not None:
             data = update.message.reply_to_message
@@ -83,6 +85,7 @@ def add_trigger(bot: Bot, update: Update):
 
 @trigger_decorator
 def trigger_show(bot: Bot, update: Update):
+    session = Session()
     trigger = session.query(Trigger).filter_by(trigger=update.message.text).first()
     if trigger is not None:
         if trigger.message_type == MessageType.AUDIO.value:
@@ -117,6 +120,7 @@ def trigger_show(bot: Bot, update: Update):
 
 @admin(adm_type=AdminType.GROUP)
 def enable_trigger_all(bot: Bot, update: Update):
+    session = Session()
     group = update_group(update.message.chat)
     group.allow_trigger_all = True
     session.add(group)
@@ -126,6 +130,7 @@ def enable_trigger_all(bot: Bot, update: Update):
 
 @admin(adm_type=AdminType.GROUP)
 def disable_trigger_all(bot: Bot, update: Update):
+    session = Session()
     group = update_group(update.message.chat)
     group.allow_trigger_all = False
     session.add(group)
@@ -136,6 +141,7 @@ def disable_trigger_all(bot: Bot, update: Update):
 @admin()
 def del_trigger(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)[1]
+    session = Session()
     trigger = session.query(Trigger).filter_by(trigger=msg).first()
     if trigger is not None:
         session.delete(trigger)
@@ -147,6 +153,7 @@ def del_trigger(bot: Bot, update: Update):
 
 @trigger_decorator
 def list_triggers(bot: Bot, update: Update):
+    session = Session()
     triggers = session.query(Trigger).all()
     msg = MSG_TRIGGER_LIST_HEADER + ('\n'.join([trigger.trigger for trigger in triggers]) or MSG_EMPTY)
     send_async(bot, chat_id=update.message.chat.id, text=msg)

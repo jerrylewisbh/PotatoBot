@@ -1,12 +1,11 @@
 import json
-import asyncio
 
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
 from telegram.ext.dispatcher import run_async
 
 from core.template import fill_char_template
 from core.types import User, Group, Admin, session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad, \
-    with_session, Character, Session, SquadMember, MessageType
+    Character, Session, SquadMember, MessageType
 from core.utils import send_async, update_group, add_user
 from core.functions.admins import del_adm
 from enum import Enum
@@ -309,7 +308,6 @@ def send_order(bot, order, order_type, chat_id, markup):
 
 
 @run_async
-@with_session
 def callback_query(bot: Bot, update: Update, chat_data: dict):
     update_group(update.callback_query.message.chat)
     user = add_user(update.callback_query.from_user)
