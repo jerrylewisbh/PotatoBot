@@ -22,6 +22,18 @@ class AdminType(Enum):
     GROUP = 2
 
 
+class MessageType(Enum):
+    TEXT = 0
+    VOICE = 1
+    DOCUMENT = 2
+    STICKER = 3
+    CONTACT = 4
+    VIDEO = 5
+    VIDEO_NOTE = 6
+    LOCATION = 7
+    AUDIO = 8
+
+
 engine = create_engine(DB, echo=False, pool_size=200, max_overflow=50)
 logger = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
@@ -109,6 +121,7 @@ class Trigger(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     trigger = Column(UnicodeText(2500))
     message = Column(UnicodeText(2500))
+    message_type = Column(Integer, default=0)
 
 
 class Admin(Base):
