@@ -35,64 +35,65 @@ logging.basicConfig(level=logging.WARNING,
 
 @with_session
 @data_update
+@run_async
 def manage_all(bot: Bot, update: Update, chat_data):
     add_user(update.message.from_user)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
-        if str(update.message.text).upper().startswith('Приветствие:'.upper()):
+        if update.message.text and update.message.text.upper().startswith('Приветствие:'.upper()):
             set_welcome(bot, update)
-        elif update.message.text.upper() == 'Помощь'.upper():
+        elif update.message.text and update.message.text.upper() == 'Помощь'.upper():
             help_msg(bot, update)
-        elif update.message.text.upper() == 'Покажи приветствие'.upper():
+        elif update.message.text and update.message.text.upper() == 'Покажи приветствие'.upper():
             show_welcome(bot, update)
-        elif update.message.text.upper() == 'Включи приветствие'.upper():
+        elif update.message.text and update.message.text.upper() == 'Включи приветствие'.upper():
             enable_welcome(bot, update)
-        elif update.message.text.upper() == 'Выключи приветствие'.upper():
+        elif update.message.text and update.message.text.upper() == 'Выключи приветствие'.upper():
             disable_welcome(bot, update)
-        elif str(update.message.text).upper().startswith('Затриггерь:'.upper()):
+        elif update.message.text and update.message.text.upper().startswith('Затриггерь:'.upper()):
             set_trigger(bot, update)
-        elif str(update.message.text).upper().startswith('Разтриггерь:'.upper()):
+        elif update.message.text and update.message.text.upper().startswith('Разтриггерь:'.upper()):
             del_trigger(bot, update)
-        elif update.message.text.upper() == 'Список триггеров'.upper():
+        elif update.message.text and update.message.text.upper() == 'Список триггеров'.upper():
             list_triggers(bot, update)
-        elif update.message.text.upper() == 'Список админов'.upper():
+        elif update.message.text and update.message.text.upper() == 'Список админов'.upper():
             list_admins(bot, update)
-        elif update.message.text.upper() == 'Пинг'.upper():
+        elif update.message.text and update.message.text.upper() == 'Пинг'.upper():
             ping(bot, update)
-        elif update.message.text.upper() == 'Статистика за день'.upper():
+        elif update.message.text and update.message.text.upper() == 'Статистика за день'.upper():
             day_activity(bot, update)
-        elif update.message.text.upper() == 'Статистика за неделю'.upper():
+        elif update.message.text and update.message.text.upper() == 'Статистика за неделю'.upper():
             week_activity(bot, update)
-        elif update.message.text.upper() == 'Статистика за бой'.upper():
+        elif update.message.text and update.message.text.upper() == 'Статистика за бой'.upper():
             battle_activity(bot, update)
-        elif update.message.text.upper() == 'Разрешить триггерить всем'.upper():
+        elif update.message.text and update.message.text.upper() == 'Разрешить триггерить всем'.upper():
             enable_trigger_all(bot, update)
-        elif update.message.text.upper() == 'Запретить триггерить всем'.upper():
+        elif update.message.text and update.message.text.upper() == 'Запретить триггерить всем'.upper():
             disable_trigger_all(bot, update)
-        elif update.message.text.upper() in ['Админы'.upper(), 'офицер'.upper()]:
+        elif update.message.text and update.message.text.upper() in ['Админы'.upper(), 'офицер'.upper()]:
             admins_for_users(bot, update)
-        elif update.message.text.upper() == 'Пинят все'.upper():
+        elif update.message.text and update.message.text.upper() == 'Пинят все'.upper():
             pin_all(bot, update)
-        elif update.message.text.upper() == 'Хорош пинить'.upper():
+        elif update.message.text and update.message.text.upper() == 'Хорош пинить'.upper():
             not_pin_all(bot, update)
-        elif update.message.text.upper() == 'Пин'.upper() and update.message.reply_to_message is not None:
+        elif update.message.text and update.message.text.upper() == 'Пин'.upper() and update.message.reply_to_message is not None:
             pin(bot, update)
-        elif update.message.text.upper() == 'сайлентпин'.upper() and update.message.reply_to_message is not None:
+        elif update.message.text and update.message.text.upper() == 'сайлентпин'.upper() and update.message.reply_to_message is not None:
             silent_pin(bot, update)
-        elif update.message.text.upper() == 'бандит'.upper():
+        elif update.message.text and update.message.text.upper() == 'бандит'.upper():
             boss_leader(bot, update)
-        elif update.message.text.upper() == 'жало'.upper():
+        elif update.message.text and update.message.text.upper() == 'жало'.upper():
             boss_zhalo(bot, update)
-        elif update.message.text.upper() == 'циклоп'.upper():
+        elif update.message.text and update.message.text.upper() == 'циклоп'.upper():
             boss_monoeye(bot, update)
-        elif update.message.text.upper() == 'гидра'.upper():
+        elif update.message.text and update.message.text.upper() == 'гидра'.upper():
             boss_hydra(bot, update)
-        elif update.message.text.upper() == 'открыть набор'.upper():
+        elif update.message.text and update.message.text.upper() == 'открыть набор'.upper():
             open_hiring(bot, update)
-        elif update.message.text.upper() == 'закрыть набор'.upper():
+        elif update.message.text and update.message.text.upper() == 'закрыть набор'.upper():
             close_hiring(bot, update)
-        elif update.message.text.upper() == 'удоли'.upper() and update.message.reply_to_message is not None:
+        elif update.message.text and update.message.text.upper() == 'удоли'.upper() and update.message.reply_to_message is not None:
             delete_msg(bot, update)
-        else:
+        elif update.message.text:
             trigger_show(bot, update)
     elif update.message.chat.type == 'private':
         if update.message.text and update.message.text.upper() == 'Статус'.upper():
