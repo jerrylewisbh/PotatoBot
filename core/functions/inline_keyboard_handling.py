@@ -493,6 +493,10 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
         if member:
             session.delete(member)
             session.commit()
+            admins = session.query(Admin).filter_by(admin_group=member.squad.chat_id).all()
+            for adm in admins:
+                send_async(bot, chat_id=adm.user_id,
+                           text=MSG_SQUAD_LEAVED.format(member.user.character.name, member.squad.squad_name))
     elif data['t'] == QueryType.RequestSquad.value:
         member = session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
         if member is None:
