@@ -506,6 +506,9 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             bot.editMessageText(MSG_SQUAD_REQUESTED.format(member.squad.squad_name, ', '.join(usernames)),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
+            admins = session.query(Admin).filter_by(admin_group=member.squad.chat_id).all()
+            for adm in admins:
+                send_async(bot, chat_id=adm.user_id, text=MSG_SQUAD_REQUEST_NEW)
         else:
             markup = generate_leave_squad(user.id)
             bot.editMessageText(MSG_SQUAD_REQUEST_EXISTS,
@@ -521,6 +524,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@'+user.username),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
+            send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_ACCEPTED_ANSWER)
     elif data['t'] == QueryType.RequestSquadDecline.value:
         member = session.query(SquadMember).filter_by(user_id=data['id']).first()
         if member:
@@ -529,3 +533,4 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                                 update.callback_query.message.message_id)
             session.delete(member)
             session.commit()
+            send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_DECLINED_ANSWER)
