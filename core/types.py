@@ -32,6 +32,7 @@ class MessageType(Enum):
     VIDEO_NOTE = 6
     LOCATION = 7
     AUDIO = 8
+    PHOTO = 9
 
 
 engine = create_engine(DB, echo=False, pool_size=200, max_overflow=50)

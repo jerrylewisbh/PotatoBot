@@ -35,6 +35,9 @@ def order(bot: Bot, update: Update, chat_data):
     elif msg.location:
         chat_data['order'] = str(msg.location)
         chat_data['order_type'] = MessageType.LOCATION.value
+    elif msg.photo:
+        chat_data['order'] = msg.photo[-1].file_id
+        chat_data['order_type'] = MessageType.PHOTO.value
     else:
         chat_data['order'] = msg.text
         chat_data['order_type'] = MessageType.TEXT.value

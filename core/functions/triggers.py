@@ -47,6 +47,9 @@ def add_trigger_db(msg: Message, trigger_text: str):
     elif msg.location:
         trigger.message = str(msg.location)
         trigger.message_type = MessageType.LOCATION.value
+    elif msg.photo:
+        trigger.message = msg.photo[-1].file_id
+        trigger.message_type = MessageType.PHOTO.value
     else:
         trigger.message = msg.text
         trigger.message_type = MessageType.TEXT.value
@@ -114,6 +117,8 @@ def trigger_show(bot: Bot, update: Update):
             msg = trigger.message.replace('\'', '"')
             location = loads(msg)
             bot.send_location(update.message.chat.id, location['latitude'], location['longitude'])
+        elif trigger.message_type == MessageType.PHOTO.value:
+            bot.send_photo(update.message.chat.id, trigger.message)
         else:
             send_async(bot, chat_id=update.message.chat.id, text=trigger.message, disable_web_page_preview=True)
 
