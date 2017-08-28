@@ -128,11 +128,18 @@ def list_squad_requests(bot: Bot, update: Update):
     for adm in admin:
         if adm.admin_type == AdminType.GROUP.value and adm.admin_group != 0:
             group_admin.append(adm)
+    count = 0
     for adm in group_admin:
         members = session.query(SquadMember).filter_by(squad_id=adm.admin_group, approved=False)
         for member in members:
+            count += 1
             markup = generate_squad_request_answer(member.user_id)
-            send_async(bot, chat_id=update.message.chat.id, text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character), reply_markup=markup)
+            send_async(bot, chat_id=update.message.chat.id,
+                       text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character),
+                       reply_markup=markup)
+    if count == 0:
+        send_async(bot, chat_id=update.message.chat.id,
+                   text=MSG_SQUAD_REQUEST_EMPTY)
 
 
 @admin(AdminType.GROUP)
