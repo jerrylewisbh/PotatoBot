@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 from threading import Thread
 
-from telegram import Bot, Update
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from telegram.ext.dispatcher import run_async
 
 from core.functions.bosses import boss_leader, boss_zhalo, boss_monoeye, boss_hydra
-from core.functions.orders import order, orders
+from core.functions.orders import order, orders, MSG_ORDER_ACCEPT
 from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin, set_global_admin, \
     set_super_admin, del_global_admin
 from core.functions.common import help_msg, ping, start, error, kick, admin_panel, stock_compare, trade_compare, \
     check_bot_in_chats, delete_msg
-from core.functions.inline_keyboard_handling import callback_query, send_status, generate_ok_markup, send_order
+from core.functions.inline_keyboard_handling import callback_query, send_status, generate_ok_markup, send_order, \
+    QueryType
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
     disable_trigger_all, trigger_show
@@ -155,7 +157,8 @@ def ready_to_battle(bot, job_queue):
         order.confirmed_msg = 0
         session.add(order)
         session.commit()
-        markup = generate_ok_markup(order.id, 0)
+        markup = InlineKeyboardMarkup([[InlineKeyboardButton('ГРАБЬНАСИЛУЙУБИВАЙ!',
+                                      callback_data=json.dumps({'t': QueryType.OrderOk.value, 'id': order.id}))]])
         msg = send_order(bot, order.text, 0, order.chat_id, markup)
         try:
             msg = msg.result().result()
