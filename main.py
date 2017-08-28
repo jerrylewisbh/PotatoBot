@@ -12,14 +12,14 @@ from core.functions.admins import list_admins, admins_for_users, set_admin, del_
     set_super_admin, del_global_admin
 from core.functions.common import help_msg, ping, start, error, kick, admin_panel, stock_compare, trade_compare, \
     check_bot_in_chats, delete_msg
-from core.functions.inline_keyboard_handling import callback_query, send_status
+from core.functions.inline_keyboard_handling import callback_query, send_status, generate_ok_markup, send_order
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
     disable_trigger_all, trigger_show
 from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 from core.functions.order_groups import group_list, add_group
-from core.types import data_update
-from core.utils import add_user
+from core.types import data_update, Session, Group, Order, Squad
+from core.utils import add_user, send_async
 from config import TOKEN
 from core.regexp import profile, hero
 import re
@@ -27,7 +27,7 @@ from core.functions.profile import char_update, char_show, find_by_username
 from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns, \
     squad_list, squad_request, list_squad_requests, open_hiring, close_hiring
 from core.functions.activity import day_activity, week_activity, battle_activity
-from datetime import datetime
+from datetime import datetime, time
 
 last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
@@ -123,6 +123,48 @@ def manage_all(bot: Bot, update: Update, chat_data):
             order(bot, update, chat_data)
 
 
+@run_async
+def ready_to_battle(bot, job_queue):
+    session = Session()
+    group = session.query(Squad).all()
+    for item in group:
+        order = Order()
+        order.text = 'К битве готовсь!'
+        order.chat_id = item.chat_id
+        order.date = datetime.now()
+        order.confirmed_msg = 0
+        session.add(order)
+        session.commit()
+        markup = generate_ok_markup(order.id, 0)
+        msg = send_order(bot, order.text, 0, order.chat_id, markup)
+        try:
+            msg = msg.result().result()
+            bot.request.post(bot.base_url + '/pinChatMessage',
+                             {'chat_id': order.chat_id, 'message_id': msg.message_id,
+                              'disable_notification': False})
+        except Exception as e:
+            print(e)
+
+
+@run_async
+def ready_to_battle_result(bot, job_queue):
+    session = Session()
+    group = session.query(Squad).all()
+    for item in group:
+        order = session.query(Order).filter_by(chat_id=item.chat_id, text='К битве готовсь!').order_by(Order.date.desc()).first()
+        if order is not None:
+            attack = 0
+            defence = 0
+            for clear in order.cleared:
+                if clear.user.character:
+                    attack += clear.user.character.attack
+                    defence += clear.user.character.defence
+            send_async(bot, chat_id=item.chat_id, text='{} бойцов отряда {} к битве готовы!\n{}⚔ {}🛡'
+                       .format(len(order.cleared), item.squad_name, attack, defence))
+            send_async(bot, chat_id=-1001139179731, text='{} бойцов отряда {} к битве готовы!\n{}⚔ {}🛡'
+                       .format(len(order.cleared), item.squad_name, attack, defence))
+
+
 def main():
     # Create the EventHandler and pass it your bot's token.
     updater = Updater(TOKEN)
@@ -172,6 +214,17 @@ def main():
 
     # log all errors
     dp.add_error_handler(error)
+
+    updater.job_queue.run_daily(ready_to_battle, time(hour=7, minute=50))
+    updater.job_queue.run_daily(ready_to_battle_result, time(hour=7, minute=55))
+    updater.job_queue.run_daily(ready_to_battle, time(hour=11, minute=50))
+    updater.job_queue.run_daily(ready_to_battle_result, time(hour=11, minute=55))
+    updater.job_queue.run_daily(ready_to_battle, time(hour=15, minute=50))
+    updater.job_queue.run_daily(ready_to_battle_result, time(hour=15, minute=55))
+    updater.job_queue.run_daily(ready_to_battle, time(hour=19, minute=50))
+    updater.job_queue.run_daily(ready_to_battle_result, time(hour=19, minute=55))
+    updater.job_queue.run_daily(ready_to_battle, time(hour=23, minute=50))
+    updater.job_queue.run_daily(ready_to_battle_result, time(hour=23, minute=55))
 
     # Start the Bot
     updater.start_polling()
