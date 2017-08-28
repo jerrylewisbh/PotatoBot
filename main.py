@@ -18,7 +18,7 @@ from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_
     disable_trigger_all, trigger_show
 from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 from core.functions.order_groups import group_list, add_group
-from core.types import data_update, Session, Group, Order, Squad
+from core.types import data_update, Session, Group, Order, Squad, Admin
 from core.utils import add_user, send_async
 from config import TOKEN
 from core.regexp import profile, hero
@@ -34,11 +34,30 @@ logging.basicConfig(level=logging.WARNING,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
+def battle_time():
+    now = datetime.now().time()
+    _BATTLE_TIME = [[time(7, 57), time(8, 0)],
+                    [time(11, 57), time(12, 0)],
+                    [time(15, 57), time(16, 0)],
+                    [time(19, 57), time(20, 0)],
+                    [time(23, 57), time(0, 0)]]
+    for time_start, time_end in _BATTLE_TIME:
+        if time_start <= time_end and time_start <= now <= time_end or \
+                        not time_start <= time_end and (time_start <= now or now <= time_end):
+            return True
+    return False
+
+
 @data_update
 @run_async
 def manage_all(bot: Bot, update: Update, chat_data):
     add_user(update.message.from_user)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
+        session = Session()
+        squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+        admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).first()
+        if squad is not None and admin is None and battle_time():
+            bot.delete_message(update.message.chat.id, update.message.message_id)
         if update.message.text and update.message.text.upper().startswith('Приветствие:'.upper()):
             set_welcome(bot, update)
         elif update.message.text and update.message.text.upper() == 'Помощь'.upper():
