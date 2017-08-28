@@ -13,6 +13,7 @@ class Castle(Enum):
     DUSK = '\U0001F1F0\U0001F1EE'
     LES = '\U0001f332Лесной форт'
     GORY = '\u26f0Горный форт'
+    SEA = '\u2693\uFE0FМорской форт'
 
 
 class Icons(Enum):
@@ -25,3 +26,4 @@ class Icons(Enum):
     DUSK = '\U0001F1F0\U0001F1EE'
     LES = '\U0001f332'
     GORY = '\u26f0'
+    SEA = '\u2693\uFE0F'

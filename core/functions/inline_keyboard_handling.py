@@ -99,7 +99,9 @@ def generate_flag_orders():
                   InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
                       {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
                   InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value}))]]
+                      {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value}))],
+                 [InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
+                      {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))]]
     inline_markup = InlineKeyboardMarkup(flag_btns)
     return inline_markup
 
@@ -339,7 +341,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             session.add(order)
             session.commit()
             markup = generate_ok_markup(order.id, 0)
-            msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result()
+            msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result().result()
             try:
                 bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': order.chat_id,
                                                                     'message_id': msg.message_id,
@@ -357,7 +359,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 session.add(order)
                 session.commit()
                 markup = generate_ok_markup(order.id, 0)
-                msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result()
+                msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result().result()
                 try:
                     bot.request.post(bot.base_url + '/pinChatMessage',
                                      {'chat_id': order.chat_id, 'message_id': msg.message_id,
@@ -385,6 +387,8 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 chat_data['order'] = Castle.LES.value
             elif data['txt'] == Icons.GORY.value:
                 chat_data['order'] = Castle.GORY.value
+            elif data['txt'] == Icons.SEA.value:
+                chat_data['order'] = Castle.SEA.value
             else:
                 chat_data['order'] = data['txt']
         markup = generate_order_chats_markup(bot)
@@ -394,10 +398,13 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                             reply_markup=markup)
     elif data['t'] == QueryType.OrderGroup.value:
         if 'txt' in data and len(data['txt']):
+            chat_data['order_type'] = MessageType.TEXT
             if data['txt'] == Icons.LES.value:
                 chat_data['order'] = Castle.LES.value
             elif data['txt'] == Icons.GORY.value:
                 chat_data['order'] = Castle.GORY.value
+            elif data['txt'] == Icons.SEA.value:
+                chat_data['order'] = Castle.SEA.value
             else:
                 chat_data['order'] = data['txt']
         admin_user = session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
