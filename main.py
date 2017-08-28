@@ -55,7 +55,8 @@ def manage_all(bot: Bot, update: Update, chat_data):
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
         session = Session()
         squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-        admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).first()
+        admin = session.query(Admin).filter(Admin.user_id == update.message.from_user.id and
+                                            Admin.admin_group in [update.message.chat.id, 0]).first()
         if squad is not None and admin is None and battle_time():
             bot.delete_message(update.message.chat.id, update.message.message_id)
         if update.message.text and update.message.text.upper().startswith('Приветствие:'.upper()):
