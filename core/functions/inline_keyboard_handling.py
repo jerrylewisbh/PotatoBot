@@ -65,8 +65,8 @@ def generate_group_info(group_id):
     adm_del_keys = []
     for adm in admins:
         user = session.query(User).filter_by(id=adm.user_id).first()
-        adm_msg += MSG_GROUP_STATUS_ADMIN_FORMAT.format(user.id, user.username, user.first_name, user.last_name)
-        adm_del_keys.append([InlineKeyboardButton(MSG_GROUP_STATUS_DEL_ADMIN.format(user.first_name, user.last_name),
+        adm_msg += MSG_GROUP_STATUS_ADMIN_FORMAT.format(user.id, user.username or '', user.first_name or '', user.last_name or '')
+        adm_del_keys.append([InlineKeyboardButton(MSG_GROUP_STATUS_DEL_ADMIN.format(user.first_name or '', user.last_name or ''),
                                                   callback_data=json.dumps(
                                                       {'t': QueryType.DelAdm.value, 'uid': user.id,
                                                        'gid': group_id}))])
