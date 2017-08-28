@@ -521,7 +521,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@'+user.username),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
-    elif data['t'] == QueryType.RequestSquadAccept.value:
+    elif data['t'] == QueryType.RequestSquadDecline.value:
         member = session.query(SquadMember).filter_by(user_id=data['id']).first()
         if member:
             bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + member.user.username),
