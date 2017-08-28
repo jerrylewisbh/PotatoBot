@@ -11,8 +11,8 @@ def boss_leader(bot: Bot, update: Update):
         for member in group.squad[0].members:
             char = member.user.character
             if 15 <= char.level <= 25:
-                members.append('@' + member.user.username + ' ')
-        msg = '\n'.join(members)
+                members.append('@' + member.user.username)
+        msg = ' '.join(members)
         send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
@@ -24,8 +24,8 @@ def boss_zhalo(bot: Bot, update: Update):
         for member in group.squad[0].members:
             char = member.user.character
             if 26 <= char.level <= 35:
-                members.append('@' + member.user.username + ' ')
-        msg = '\n'.join(members)
+                members.append('@' + member.user.username)
+        msg = ' '.join(members)
         send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
@@ -37,8 +37,8 @@ def boss_monoeye(bot: Bot, update: Update):
         for member in group.squad[0].members:
             char = member.user.character
             if 36 <= char.level <= 45:
-                members.append('@' + member.user.username + ' ')
-        msg = '\n'.join(members)
+                members.append('@' + member.user.username)
+        msg = ' '.join(members)
         send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
@@ -50,6 +50,6 @@ def boss_hydra(bot: Bot, update: Update):
         for member in group.squad[0].members:
             char = member.user.character
             if 46 <= char.level:
-                members.append('@' + member.user.username + ' ')
-        msg = '\n'.join(members)
+                members.append('@' + member.user.username)
+        msg = ' '.join(members)
         send_async(bot, chat_id=update.message.chat.id, text=msg)

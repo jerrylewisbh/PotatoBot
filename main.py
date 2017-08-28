@@ -2,7 +2,7 @@
 import logging
 from threading import Thread
 
-from telegram import Bot, Update, Message
+from telegram import Bot, Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from telegram.ext.dispatcher import run_async
 
