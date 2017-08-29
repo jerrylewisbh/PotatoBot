@@ -273,6 +273,7 @@ def generate_fire_up(members):
                                                                        member.user.character.defence),
                                                  callback_data=json.dumps(
                                                      {'t': QueryType.LeaveSquad.value, 'id': member.user_id}))])
+    return InlineKeyboardMarkup([inline_keys])
 
 
 @run_async
