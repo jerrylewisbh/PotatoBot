@@ -600,7 +600,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
         if update.callback_query.from_user.id != data['id']:
             update.callback_query.answer(text='Пшёл вон!')
             return
-    user = session.query(User).filter_by(id=data['id']).first()
+        user = session.query(User).filter_by(id=data['id']).first()
         bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + user.username),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id)
