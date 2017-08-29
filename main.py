@@ -3,7 +3,7 @@ import json
 import logging
 from threading import Thread
 
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from telegram.ext.dispatcher import run_async
 
@@ -176,6 +176,7 @@ def ready_to_battle_result(bot, job_queue):
     full_attack = 0
     full_defence = 0
     full_text = ''
+    full_count = 0
     for item in group:
         order = session.query(Order).filter_by(chat_id=item.chat_id, text='К битве готовсь!').order_by(Order.date.desc()).first()
         if order is not None:
@@ -185,14 +186,15 @@ def ready_to_battle_result(bot, job_queue):
                 if clear.user.character:
                     attack += clear.user.character.attack
                     defence += clear.user.character.defence
-            text = '{} бойцов отряда {} к битве готовы!\n{}⚔ {}🛡'.format(len(order.cleared),
+            text = '{} бойцов отряда <b>{}<b> к битве готовы!\n{}⚔ {}🛡'.format(len(order.cleared),
                                                                           item.squad_name, attack, defence)
-            send_async(bot, chat_id=item.chat_id, text=text)
-            full_text += text + '\n'
+            send_async(bot, chat_id=item.chat_id, text=text, parse_mode=ParseMode.HTML)
+            full_text += '<b>{}</b>: {}👥 {}⚔ {}🛡\n'.format(item.squad_name, len(order.cleared), attack, defence)
             full_attack += attack
             full_defence += defence
-    send_async(bot, chat_id=-1001139179731, text=full_text + 'Суммарная планируемая атака и защита на битву: {}⚔ {}🛡'
-               .format(full_attack, full_defence))
+            full_count += len(order.cleared)
+    send_async(bot, chat_id=-1001139179731, text=full_text + '\n<b>Всего: {}👥 {}⚔ {}🛡'
+               .format(full_count, full_attack, full_defence), parse_mode=ParseMode.HTML)
 
 
 def main():
