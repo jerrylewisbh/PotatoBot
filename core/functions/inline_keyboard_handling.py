@@ -580,6 +580,9 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             session.commit()
             send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_DECLINED_ANSWER)
     elif data['t'] == QueryType.InviteSquadAccept.value:
+        if update.callback_query.from_user.id != data['id']:
+            update.callback_query.answer(text='Пшёл вон!')
+            return
         member = session.query(SquadMember).filter_by(user_id=data['id']).first()
         if member is None:
             member = SquadMember()
@@ -594,7 +597,10 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
     elif data['t'] == QueryType.InviteSquadDecline.value:
-        user = session.query(User).filter_by(id=data['id']).first()
+        if update.callback_query.from_user.id != data['id']:
+            update.callback_query.answer(text='Пшёл вон!')
+            return
+    user = session.query(User).filter_by(id=data['id']).first()
         bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + user.username),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id)
