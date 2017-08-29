@@ -262,7 +262,7 @@ def disable_trigger_all(bot: Bot, update: Update):
 def del_trigger(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)[1]
     session = Session()
-    trigger = session.query(Trigger).filter_by(trigger=msg).first()
+    trigger = session.query(LocalTrigger).filter_by(trigger=msg).first()
     if trigger is not None:
         session.delete(trigger)
         session.commit()
