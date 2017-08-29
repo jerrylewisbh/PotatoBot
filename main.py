@@ -172,6 +172,7 @@ def ready_to_battle_result(bot, job_queue):
     group = session.query(Squad).all()
     full_attack = 0
     full_defence = 0
+    full_text = ''
     for item in group:
         order = session.query(Order).filter_by(chat_id=item.chat_id, text='К битве готовсь!').order_by(Order.date.desc()).first()
         if order is not None:
@@ -181,13 +182,13 @@ def ready_to_battle_result(bot, job_queue):
                 if clear.user.character:
                     attack += clear.user.character.attack
                     defence += clear.user.character.defence
-            send_async(bot, chat_id=item.chat_id, text='{} бойцов отряда {} к битве готовы!\n{}⚔ {}🛡'
-                       .format(len(order.cleared), item.squad_name, attack, defence))
-            send_async(bot, chat_id=-1001139179731, text='{} бойцов отряда {} к битве готовы!\n{}⚔ {}🛡'
-                       .format(len(order.cleared), item.squad_name, attack, defence))
+            text = '{} бойцов отряда {} к битве готовы!\n{}⚔ {}🛡'.format(len(order.cleared),
+                                                                          item.squad_name, attack, defence)
+            send_async(bot, chat_id=item.chat_id, text=text)
+            full_text += text + '\n'
             full_attack += attack
             full_defence += defence
-    send_async(bot, chat_id=-1001139179731, text='Суммарная планируемая атака и защита на битву: {}⚔ {}🛡'
+    send_async(bot, chat_id=-1001139179731, text=full_text + 'Суммарная планируемая атака и защита на битву: {}⚔ {}🛡'
                .format(full_attack, full_defence))
 
 
