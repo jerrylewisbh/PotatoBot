@@ -299,6 +299,8 @@ def send_order(bot, order, order_type, chat_id, markup):
         msg = order.replace('\'', '"')
         location = loads(msg)
         msg_sent = bot.send_location(chat_id, location['latitude'], location['longitude'], reply_markup=markup)
+    elif order_type == MessageType.PHOTO.value:
+        msg_sent = bot.send_photo(chat_id, order, reply_markup=markup)
     else:
         msg_sent = send_async(bot, chat_id=chat_id, text=order, disable_web_page_preview=True, reply_markup=markup)
     return msg_sent
