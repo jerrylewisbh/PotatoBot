@@ -269,8 +269,8 @@ def generate_squad_request_answer(user_id):
 def generate_fire_up(members):
     inline_keys = []
     for member in members:
-        inline_keys.append([InlineKeyboardButton('🔥{}: {}⚔ {}🛡'.format(member.user, member.character.attack,
-                                                                       member.character.defence),
+        inline_keys.append([InlineKeyboardButton('🔥{}: {}⚔ {}🛡'.format(member.user, member.user.character.attack,
+                                                                       member.user.character.defence),
                                                  callback_data=json.dumps(
                                                      {'t': QueryType.LeaveSquad.value, 'id': member.user_id}))])
 
