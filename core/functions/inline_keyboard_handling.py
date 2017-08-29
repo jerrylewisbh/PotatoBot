@@ -499,29 +499,32 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                             reply_markup=markup)
     elif data['t'] == QueryType.LeaveSquad.value:
         member = session.query(SquadMember).filter_by(user_id=data['id']).first()
-        squad_id = member.squad_id
         if member:
+            squad = member.squad
+            user = member.user
             session.delete(member)
             session.commit()
-            admins = session.query(Admin).filter_by(admin_group=member.squad.chat_id).all()
+            admins = session.query(Admin).filter_by(admin_group=squad.chat_id).all()
             for adm in admins:
                 if adm.user_id != update.callback_query.from_user.id:
                     send_async(bot, chat_id=adm.user_id,
-                               text=MSG_SQUAD_LEAVED.format(member.user.character.name, member.squad.squad_name))
-            send_async(bot, chat_id=squad_id,
-                       text=MSG_SQUAD_LEAVED.format(member.user.character.name, member.squad.squad_name))
+                               text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name))
+            send_async(bot, chat_id=member.squad_id,
+                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name))
             send_async(bot, chat_id=member.user_id,
-                       text=MSG_SQUAD_LEAVED.format(member.user.character.name, member.squad.squad_name))
-        if data['id'] == update.callback_query.from_user.id:
-            bot.editMessageText(MSG_SQUAD_LEAVED.format(member.user.character.name, member.squad.squad_name),
-                                update.callback_query.message.chat.id,
-                                update.callback_query.message.message_id)
+                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name))
+            if data['id'] == update.callback_query.from_user.id:
+                bot.editMessageText(MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
+                                    update.callback_query.message.chat.id,
+                                    update.callback_query.message.message_id)
+            else:
+                members = session.query(SquadMember).filter_by(squad_id=member.squad_id).all()
+                bot.editMessageText(update.callback_query.message.text,
+                                    update.callback_query.message.chat.id,
+                                    update.callback_query.message.message_id,
+                                    reply_markup=generate_fire_up(members))
         else:
-            members = session.query(SquadMember).filter_by(squad_id=squad_id).all()
-            bot.editMessageText(update.callback_query.message.text,
-                                update.callback_query.message.chat.id,
-                                update.callback_query.message.message_id,
-                                reply_markup=generate_fire_up(members))
+            update.callback_query.answer(text='Этот пользователь уже выпилен из отряда, кнопка больше не работает =(')
     elif data['t'] == QueryType.RequestSquad.value:
         member = session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
         if member is None:
