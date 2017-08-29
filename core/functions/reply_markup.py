@@ -11,5 +11,5 @@ def generate_standard_markup():
 def generate_group_admin_markup():
     buttons = []
     buttons.append([KeyboardButton('Приказы'), KeyboardButton('Заявки в отряд'), KeyboardButton('Список отряда')])
-    buttons.append([KeyboardButton('чистка отряда')])
-    return ReplyKeyboardMarkup([buttons], True)
+    buttons.append([KeyboardButton('Чистка отряда')])
+    return ReplyKeyboardMarkup(buttons, True)
