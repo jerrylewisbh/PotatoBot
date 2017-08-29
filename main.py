@@ -27,7 +27,7 @@ from core.regexp import profile, hero
 import re
 from core.functions.profile import char_update, char_show, find_by_username
 from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns, \
-    squad_list, squad_request, list_squad_requests, open_hiring, close_hiring, remove_from_squad
+    squad_list, squad_request, list_squad_requests, open_hiring, close_hiring, remove_from_squad, add_to_squad
 from core.functions.activity import day_activity, week_activity, battle_activity
 from datetime import datetime, time
 
@@ -243,6 +243,7 @@ def main():
     dp.add_handler(CommandHandler("set_squad_name", set_squad_name))
     dp.add_handler(CommandHandler("set_invite_link", set_invite_link))
     dp.add_handler(CommandHandler("find", find_by_username))
+    dp.add_handler(CommandHandler("add", add_to_squad))
 
     dp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True))
 

@@ -35,7 +35,7 @@ class MessageType(Enum):
     PHOTO = 9
 
 
-engine = create_engine(DB, echo=False, pool_size=200, max_overflow=50)
+engine = create_engine(DB, echo=False, pool_size=200, max_overflow=50, isolation_level="READ UNCOMMITTED")
 logger = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
 Session = scoped_session(sessionmaker(bind=engine))

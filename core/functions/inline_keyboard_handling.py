@@ -41,6 +41,8 @@ class QueryType(Enum):
     RequestSquad = 17
     RequestSquadAccept = 18
     RequestSquadDecline = 19
+    InviteSquadAccept = 20
+    InviteSquadDecline = 21
 
 
 @admin()
@@ -263,6 +265,17 @@ def generate_squad_request_answer(user_id):
     inline_keys.append(InlineKeyboardButton('❌Отклонить',
                                             callback_data=json.dumps(
                                                 {'t': QueryType.RequestSquadDecline.value, 'id': user_id})))
+    return InlineKeyboardMarkup([inline_keys])
+
+
+def generate_squad_invite_answer(user_id):
+    inline_keys = []
+    inline_keys.append(InlineKeyboardButton('✅Зелёное Да',
+                                            callback_data=json.dumps(
+                                                {'t': QueryType.InviteSquadAccept.value, 'id': user_id})))
+    inline_keys.append(InlineKeyboardButton('❌Красное Да',
+                                            callback_data=json.dumps(
+                                                {'t': QueryType.InviteSquadDecline.value, 'id': user_id})))
     return InlineKeyboardMarkup([inline_keys])
 
 
@@ -566,3 +579,22 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             session.delete(member)
             session.commit()
             send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_DECLINED_ANSWER)
+    elif data['t'] == QueryType.InviteSquadAccept.value:
+        member = session.query(SquadMember).filter_by(user_id=data['id']).first()
+        if member is None:
+            member = SquadMember()
+            member.user_id = user.id
+            member.squad_id = update.callback_query.message.chat.id
+            session.add(member)
+            session.commit()
+            member.approved = True
+            session.add(member)
+            session.commit()
+            bot.editMessageText(MSG_SQUAD_ADD_ACCEPTED.format('@'+user.username),
+                                update.callback_query.message.chat.id,
+                                update.callback_query.message.message_id)
+    elif data['t'] == QueryType.InviteSquadDecline.value:
+        user = session.query(User).filter_by(id=data['id']).first()
+        bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + user.username),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id)

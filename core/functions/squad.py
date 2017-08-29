@@ -5,7 +5,8 @@ from core.template import fill_char_template
 from core.types import User, AdminType, Admin, admin, Group, Squad, Session, SquadMember
 from core.utils import send_async
 from core.functions.inline_keyboard_handling import generate_squad_list, \
-    generate_leave_squad, generate_squad_request, generate_squad_request_answer, generate_fire_up
+    generate_leave_squad, generate_squad_request, generate_squad_request_answer, generate_fire_up, \
+    generate_squad_invite_answer
 from core.texts import *
 
 
@@ -180,3 +181,22 @@ def remove_from_squad(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id,
                    text=MSG_SQUAD_CLEAN.format(squad.squad_name),
                    reply_markup=markup)
+
+
+@admin(AdminType.GROUP)
+def add_to_squad(bot: Bot, update: Update):
+    session = Session()
+    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    if squad is not None:
+        username = update.message.text.split(' ', 1)
+        if len(username) == 2:
+            username = username[1].replace('@', '')
+            user = session.query(User).filter_by(username=username).first()
+            if user is not None and user.member is None:
+                markup = generate_squad_invite_answer(user.id)
+                send_async(bot, chat_id=update.message.chat.id,
+                           text=MSG_SQUAD_ADD.format('@' + username),
+                           reply_markup=markup)
+            elif user.member is not None:
+                send_async(bot, chat_id=update.message.chat.id,
+                           text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
