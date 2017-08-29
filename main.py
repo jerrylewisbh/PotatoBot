@@ -193,7 +193,7 @@ def ready_to_battle_result(bot, job_queue):
             full_attack += attack
             full_defence += defence
             full_count += len(order.cleared)
-    send_async(bot, chat_id=-1001139179731, text=full_text + '\n<b>Всего: {}👥 {}⚔ {}🛡'
+    send_async(bot, chat_id=-1001139179731, text=full_text + '\n<b>Всего</b>: {}👥 {}⚔ {}🛡'
                .format(full_count, full_attack, full_defence), parse_mode=ParseMode.HTML)
 
 
