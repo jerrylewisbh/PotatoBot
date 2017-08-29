@@ -188,8 +188,8 @@ def ready_to_battle_result(bot, job_queue):
                 if clear.user.character:
                     attack += clear.user.character.attack
                     defence += clear.user.character.defence
-            text = '{} бойцов отряда <b>{}<b> к битве готовы!\n{}⚔ {}🛡'.format(len(order.cleared),
-                                                                          item.squad_name, attack, defence)
+            text = '{} бойцов отряда <b>{}<b> к битве готовы!\n{}⚔ {}🛡'\
+                .format(len(order.cleared), item.squad_name, attack, defence)
             send_async(bot, chat_id=item.chat_id, text=text, parse_mode=ParseMode.HTML)
             full_text += '<b>{}</b>: {}👥 {}⚔ {}🛡\n'.format(item.squad_name, len(order.cleared), attack, defence)
             full_attack += attack
