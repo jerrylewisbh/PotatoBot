@@ -244,6 +244,16 @@ class Equip(Base):
     user = relationship('User', back_populates='equip')
 
 
+class LocalTrigger(Base):
+    __tablename__ = 'local_triggers'
+
+    id = Column(BigInteger, autoincrement=True, primary_key=True)
+    chat_id = Column(BigInteger, ForeignKey(Group.id))
+    trigger = Column(UnicodeText(2500))
+    message = Column(UnicodeText(2500))
+    message_type = Column(Integer, default=0)
+
+
 def admin(adm_type=AdminType.FULL):
     def decorate(func):
         def wrapper(bot, update, *args, **kwargs):

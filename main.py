@@ -17,7 +17,7 @@ from core.functions.inline_keyboard_handling import callback_query, send_status,
     QueryType
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all, \
-    disable_trigger_all, trigger_show
+    disable_trigger_all, trigger_show, set_global_trigger, add_global_trigger, del_global_trigger
 from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 from core.functions.order_groups import group_list, add_group
 from core.types import data_update, Session, Group, Order, Squad, Admin
@@ -213,6 +213,9 @@ def main():
     dp.add_handler(CommandHandler("admin", admin_panel))
     dp.add_handler(CommandHandler("help", help_msg))
     dp.add_handler(CommandHandler("ping", ping))
+    dp.add_handler(CommandHandler("set_global_trigger", set_global_trigger))
+    dp.add_handler(CommandHandler("add_global_trigger", add_global_trigger))
+    dp.add_handler(CommandHandler("del_global_trigger", del_global_trigger))
     dp.add_handler(CommandHandler("set_trigger", set_trigger))
     dp.add_handler(CommandHandler("add_trigger", add_trigger))
     dp.add_handler(CommandHandler("del_trigger", del_trigger))
