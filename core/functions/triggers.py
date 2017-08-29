@@ -69,7 +69,7 @@ def set_global_trigger(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW_ERROR)
 
 
-@admin(adm_type=AdminType.GROUP)
+@admin()
 def add_global_trigger(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
