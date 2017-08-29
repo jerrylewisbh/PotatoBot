@@ -142,7 +142,7 @@ def list_squad_requests(bot: Bot, update: Update):
                    text=MSG_SQUAD_REQUEST_EMPTY)
 
 
-@admin(AdminType.GROUP)
+@admin()
 def open_hiring(bot: Bot, update: Update):
     session = Session()
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
@@ -153,7 +153,7 @@ def open_hiring(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text='Набор открыт')
 
 
-@admin(AdminType.GROUP)
+@admin()
 def close_hiring(bot: Bot, update: Update):
     session = Session()
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
