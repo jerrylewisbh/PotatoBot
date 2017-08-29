@@ -1,4 +1,4 @@
-from telegram import Update, Bot, Message
+from telegram import Update, Bot, Message, ParseMode
 from core.types import Trigger, AdminType, admin, Session, MessageType, LocalTrigger
 from core.utils import send_async, update_group
 from core.texts import *
@@ -166,7 +166,7 @@ def list_triggers(bot: Bot, update: Update):
     msg = MSG_TRIGGER_LIST_HEADER + \
           '\n<b>Глобальные:</b>\n' + ('\n'.join([trigger.trigger for trigger in triggers]) or MSG_EMPTY) + \
           '\n<b>Локальные:</b>\n' + ('\n'.join([trigger.trigger for trigger in local_triggers]) or MSG_EMPTY)
-    send_async(bot, chat_id=update.message.chat.id, text=msg)
+    send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
 
 
 def add_trigger_db(msg: Message, chat, trigger_text: str):
