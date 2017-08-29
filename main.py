@@ -27,7 +27,7 @@ from core.regexp import profile, hero
 import re
 from core.functions.profile import char_update, char_show, find_by_username
 from core.functions.squad import add_squad, del_squad, set_invite_link, set_squad_name, enable_thorns, disable_thorns, \
-    squad_list, squad_request, list_squad_requests, open_hiring, close_hiring
+    squad_list, squad_request, list_squad_requests, open_hiring, close_hiring, remove_from_squad
 from core.functions.activity import day_activity, week_activity, battle_activity
 from datetime import datetime, time
 
@@ -130,6 +130,8 @@ def manage_all(bot: Bot, update: Update, chat_data):
             Thread(target=squad_list, args=(bot, update)).start()
         elif update.message.text and update.message.text.upper() == 'Группы'.upper():
             group_list(bot, update)
+        elif update.message.text and update.message.text.upper() == 'чистка отряда'.upper():
+            remove_from_squad(bot, update)
         elif update.message.forward_from and update.message.forward_from.id == 265204902 and \
                 update.message.text.startswith('📦Содержимое склада'):
             stock_compare(bot, update, chat_data)

@@ -5,7 +5,7 @@ from core.template import fill_char_template
 from core.types import User, AdminType, Admin, admin, Group, Squad, Session, SquadMember
 from core.utils import send_async
 from core.functions.inline_keyboard_handling import generate_squad_list, \
-    generate_leave_squad, generate_squad_request, generate_squad_request_answer
+    generate_leave_squad, generate_squad_request, generate_squad_request_answer, generate_fire_up
 from core.texts import *
 
 
@@ -65,7 +65,7 @@ def del_squad(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_DELETE)
 
 
-@admin()
+@admin(AdminType.GROUP)
 def enable_thorns(bot: Bot, update: Update):
     session = Session()
     group = session.query(Group).filter_by(id=update.message.chat.id).first()
@@ -76,7 +76,7 @@ def enable_thorns(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_THORNS_ENABLED)
 
 
-@admin()
+@admin(AdminType.GROUP)
 def disable_thorns(bot: Bot, update: Update):
     session = Session()
     group = session.query(Group).filter_by(id=update.message.chat.id).first()
@@ -162,3 +162,21 @@ def close_hiring(bot: Bot, update: Update):
         session.add(squad)
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text='Набор закрыт')
+
+
+@admin(AdminType.GROUP)
+def remove_from_squad(bot: Bot, update: Update):
+    session = Session()
+    admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+    group_admin = []
+    for adm in admin:
+        squad = session.query(Squad).filter_by(chat_id=adm.admin_group).first()
+        if squad is not None:
+            group_admin.append(adm)
+    for adm in group_admin:
+        members = session.query(SquadMember).filter_by(squad_id=adm.admin_group)
+        markup = generate_fire_up(members)
+        squad = session.query(Squad).filter_by(chat_id=adm.admin_group).first()
+        send_async(bot, chat_id=update.message.chat.id,
+                   text=MSG_SQUAD_CLEAN.format(squad.squad_name),
+                   reply_markup=markup)

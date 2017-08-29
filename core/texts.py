@@ -178,3 +178,5 @@ MSG_SQUAD_REQUEST_DECLINED = '{} бесполезен и никто ему не 
 MSG_SQUAD_REQUEST_NEW = 'К вам в отряд есть новые заявки.'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'Вас приняли в отряд.'
 MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'Ваша заявка в отряд отклонена.'
+MSG_SQUAD_CLEAN = 'Чистка отряда {}.\n' \
+                  'Кого сегодня отправим на покой?'
