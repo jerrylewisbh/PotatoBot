@@ -509,6 +509,8 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                                text=MSG_SQUAD_LEAVED.format(member.user.character.name, member.squad.squad_name))
             send_async(bot, chat_id=squad_id,
                        text=MSG_SQUAD_LEAVED.format(member.user.character.name, member.squad.squad_name))
+            send_async(bot, chat_id=member.user_id,
+                       text=MSG_SQUAD_LEAVED.format(member.user.character.name, member.squad.squad_name))
         if data['id'] == update.callback_query.from_user.id:
             bot.editMessageText(MSG_SQUAD_LEAVED.format(member.user.character.name, member.squad.squad_name),
                                 update.callback_query.message.chat.id,
