@@ -12,7 +12,7 @@ from core.functions.orders import order, orders, MSG_ORDER_ACCEPT
 from core.functions.admins import list_admins, admins_for_users, set_admin, del_admin, set_global_admin, \
     set_super_admin, del_global_admin
 from core.functions.common import help_msg, ping, start, error, kick, admin_panel, stock_compare, trade_compare, \
-    check_bot_in_chats, delete_msg
+    check_bot_in_chats, delete_msg, delete_user
 from core.functions.inline_keyboard_handling import callback_query, send_status, generate_ok_markup, send_order, \
     QueryType
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
@@ -115,6 +115,8 @@ def manage_all(bot: Bot, update: Update, chat_data):
             close_hiring(bot, update)
         elif update.message.text and update.message.text.upper() == 'удоли'.upper() and update.message.reply_to_message is not None:
             delete_msg(bot, update)
+        elif update.message.text and update.message.text.upper() == 'свали'.upper() and update.message.reply_to_message is not None:
+            delete_user(bot, update)
         elif update.message.text:
             trigger_show(bot, update)
     elif update.message.chat.type == 'private':

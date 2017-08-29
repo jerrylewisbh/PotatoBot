@@ -149,6 +149,12 @@ def delete_msg(bot: Bot, update: Update):
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.message_id)
 
 
+@admin()
+def delete_user(bot: Bot, update: Update):
+    bot.kickChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
+    bot.unbanChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
+
+
 def trade_compare(bot: Bot, update: Update, chat_data: dict):
     session = Session()
     old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
