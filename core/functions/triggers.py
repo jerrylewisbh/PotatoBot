@@ -63,7 +63,7 @@ def set_global_trigger(bot: Bot, update: Update):
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger = msg[1].strip()
         data = update.message.reply_to_message
-        add_trigger_db(data, trigger)
+        add_global_trigger_db(data, trigger)
         send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW.format(trigger))
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW_ERROR)
@@ -78,7 +78,7 @@ def add_global_trigger(bot: Bot, update: Update):
         trigger = session.query(Trigger).filter_by(trigger=trigger_text).first()
         if trigger is None:
             data = update.message.reply_to_message
-            add_trigger_db(data, trigger_text)
+            add_global_trigger_db(data, trigger_text)
             send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW.format(trigger_text))
         else:
             send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_EXISTS.format(trigger_text))
