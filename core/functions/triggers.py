@@ -171,7 +171,7 @@ def list_triggers(bot: Bot, update: Update):
 
 def add_trigger_db(msg: Message, chat, trigger_text: str):
     session = Session()
-    trigger = session.query(LocalTrigger).filter_by(trigger=trigger_text).first()
+    trigger = session.query(LocalTrigger).filter_by(chat_id=chat.id, trigger=trigger_text).first()
     if trigger is None:
         trigger = LocalTrigger()
         trigger.chat_id = chat.id
