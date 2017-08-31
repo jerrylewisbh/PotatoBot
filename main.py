@@ -22,7 +22,7 @@ from core.functions.welcome import welcome, set_welcome, show_welcome, enable_we
 from core.functions.order_groups import group_list, add_group
 from core.types import data_update, Session, Group, Order, Squad, Admin
 from core.utils import add_user, send_async
-from config import TOKEN, API_PORT
+from config import TOKEN, API_PORT, GOVERNMENT_CHAT
 from core.regexp import profile, hero
 import re
 from core.functions.profile import char_update, char_show, find_by_username
@@ -200,7 +200,7 @@ def ready_to_battle_result(bot, job_queue):
             full_attack += attack
             full_defence += defence
             full_count += len(order.cleared)
-    send_async(bot, chat_id=-1001149271906, text=full_text + '\n<b>Всего</b>: {}👥 {}⚔ {}🛡'
+    send_async(bot, chat_id=GOVERNMENT_CHAT, text=full_text + '\n<b>Всего</b>: {}👥 {}⚔ {}🛡'
                .format(full_count, full_attack, full_defence), parse_mode=ParseMode.HTML)
 
 
