@@ -115,12 +115,15 @@ def squad_request(bot: Bot, update: Update):
     session = Session()
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if user is not None:
-        if user.member:
-            markup = generate_leave_squad(user.id)
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
+        if user.character:
+            if user.member:
+                markup = generate_leave_squad(user.id)
+                send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
+            else:
+                markup = generate_squad_request()
+                send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
         else:
-            markup = generate_squad_request()
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
+            send_async(bot, chat_id=update.message.chat.id, text='Сначала дай мне профиль!')
 
 
 @admin(AdminType.GROUP)
