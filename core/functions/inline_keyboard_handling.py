@@ -585,10 +585,11 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             member.approved = True
             session.add(member)
             session.commit()
-            bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@'+user.username),
+            bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
             send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_ACCEPTED_ANSWER)
+            send_async(bot, chat_id=member.squad_id, text=MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username))
     elif data['t'] == QueryType.RequestSquadDecline.value:
         member = session.query(SquadMember).filter_by(user_id=data['id']).first()
         if member:
