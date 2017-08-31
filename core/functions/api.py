@@ -64,3 +64,20 @@ def new_order_click(order_id, user_id):
     except:
         Session.rollback()
         return flask.Response(status=400)
+
+
+@app.route('/ready_to_battle_status/<int:order_id>', methods=['GET'])
+def order_status(order_id):
+    try:
+        session = Session()
+        order = session.query(Order).filter_by(id=order_id).first()
+        if order is not None:
+            users = []
+            for order_ok in order.cleared:
+                users.append({'username': order_ok.user.username, 'id': order_ok.user.id,
+                              'attack': order_ok.user.character.attack if order_ok.user.character else 0,
+                              'defence': order_ok.user.character.defence if order_ok.user.character else 0})
+            return flask.Response(status=200, mimetype="application/json", response=json.dumps({'users': users}))
+    except:
+        Session.rollback()
+        return flask.Response(status=400)
