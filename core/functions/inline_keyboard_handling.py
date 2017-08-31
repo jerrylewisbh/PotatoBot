@@ -395,17 +395,36 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
     elif data['t'] == QueryType.OrderOk.value:
         order = session.query(Order).filter_by(id=data['id']).first()
         if order is not None:
-            order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
-                                                             user_id=update.callback_query.from_user.id).first()
-            if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
-                order_ok = OrderCleared()
-                order_ok.order_id = data['id']
-                order_ok.user_id = update.callback_query.from_user.id
-                session.add(order_ok)
-                session.commit()
-                update.callback_query.answer(text=MSG_ORDER_CLEARED)
+            squad = session.query(Squad).filter_by(chat_id=order.chat_id).first()
+            if squad is not None:
+                squad_member = session.query(SquadMember).filter_by(squad_id=squad.chat_id,
+                                                                    user_id=update.callback_query.from_user.id)
+                if squad_member is not None:
+                    order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
+                                                                     user_id=update.callback_query.from_user.id).first()
+                    if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
+                        order_ok = OrderCleared()
+                        order_ok.order_id = data['id']
+                        order_ok.user_id = update.callback_query.from_user.id
+                        session.add(order_ok)
+                        session.commit()
+                        update.callback_query.answer(text=MSG_ORDER_CLEARED)
+                    else:
+                        update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
+                else:
+                    update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
             else:
-                update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
+                order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
+                                                                 user_id=update.callback_query.from_user.id).first()
+                if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
+                    order_ok = OrderCleared()
+                    order_ok.order_id = data['id']
+                    order_ok.user_id = update.callback_query.from_user.id
+                    session.add(order_ok)
+                    session.commit()
+                    update.callback_query.answer(text=MSG_ORDER_CLEARED)
+                else:
+                    update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
     elif data['t'] == QueryType.Orders.value:
         if 'txt' in data and len(data['txt']):
             if data['txt'] == Icons.LES.value:
