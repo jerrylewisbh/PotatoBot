@@ -20,7 +20,7 @@ from core.functions.triggers import set_trigger, add_trigger, del_trigger, list_
     disable_trigger_all, trigger_show, set_global_trigger, add_global_trigger, del_global_trigger
 from core.functions.welcome import welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 from core.functions.order_groups import group_list, add_group
-from core.types import data_update, Session, Group, Order, Squad, Admin
+from core.types import Session, Group, Order, Squad, Admin
 from core.utils import add_user, send_async
 from config import TOKEN, API_PORT, GOVERNMENT_CHAT
 from core.regexp import profile, hero
