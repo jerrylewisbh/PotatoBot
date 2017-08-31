@@ -51,7 +51,6 @@ def battle_time():
     return False
 
 
-@data_update
 @run_async
 def manage_all(bot: Bot, update: Update, chat_data):
     add_user(update.message.from_user)
