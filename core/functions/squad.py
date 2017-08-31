@@ -197,7 +197,7 @@ def add_to_squad(bot: Bot, update: Update):
         if len(username) == 2:
             username = username[1].replace('@', '')
             user = session.query(User).filter_by(username=username).first()
-            if user is not None and user.member is None:
+            if user is not None and user.character is not None and user.member is None:
                 markup = generate_squad_invite_answer(user.id)
                 send_async(bot, chat_id=update.message.chat.id,
                            text=MSG_SQUAD_ADD.format('@' + username),
@@ -205,3 +205,5 @@ def add_to_squad(bot: Bot, update: Update):
             elif user.member is not None:
                 send_async(bot, chat_id=update.message.chat.id,
                            text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
+            elif user.character is None:
+                send_async(bot, chat_id=update.message.chat.id, text='Сначала пусть даст профиль!')
