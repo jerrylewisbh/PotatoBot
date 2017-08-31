@@ -22,7 +22,7 @@ from core.functions.welcome import welcome, set_welcome, show_welcome, enable_we
 from core.functions.order_groups import group_list, add_group
 from core.types import data_update, Session, Group, Order, Squad, Admin
 from core.utils import add_user, send_async
-from config import TOKEN
+from config import TOKEN, API_PORT
 from core.regexp import profile, hero
 import re
 from core.functions.profile import char_update, char_show, find_by_username
@@ -30,6 +30,7 @@ from core.functions.squad import add_squad, del_squad, set_invite_link, set_squa
     squad_list, squad_request, list_squad_requests, open_hiring, close_hiring, remove_from_squad, add_to_squad
 from core.functions.activity import day_activity, week_activity, battle_activity
 from datetime import datetime, time
+from core.functions.api import app
 
 last_welcome = 0
 logging.basicConfig(level=logging.WARNING,
@@ -268,7 +269,7 @@ def main():
 
     # Start the Bot
     updater.start_polling()
-
+    app.run(port=API_PORT)
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
     # start_polling() is non-blocking and will stop the bot gracefully.
