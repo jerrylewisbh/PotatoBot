@@ -61,6 +61,8 @@ def del_squad(bot: Bot, update: Update):
     session = Session()
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if update.message.chat.type == 'supergroup' and squad is not None:
+        for member in squad.members:
+            session.delete(member)
         session.delete(squad)
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_DELETE)
