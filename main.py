@@ -63,6 +63,9 @@ def manage_all(bot: Bot, update: Update, chat_data):
             bot.delete_message(update.message.chat.id, update.message.message_id)
         if update.message.text and update.message.text.upper().startswith('Приветствие:'.upper()):
             set_welcome(bot, update)
+        elif update.message.text and 'Твои результаты в бою:' in update.message.text and \
+                update.message.forward_from and update.message.forward_from.id == 265204902:
+            bot.delete_message(update.message.chat.id, update.message.message_id)
         elif update.message.text and update.message.text.upper() == 'Помощь'.upper():
             help_msg(bot, update)
         elif update.message.text and update.message.text.upper() == 'Покажи приветствие'.upper():
