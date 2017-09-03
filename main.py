@@ -4,7 +4,7 @@ import logging
 from threading import Thread
 
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, JobQueue
 from telegram.ext.dispatcher import run_async
 
 from core.functions.bosses import boss_leader, boss_zhalo, boss_monoeye, boss_hydra
@@ -51,8 +51,12 @@ def battle_time():
     return False
 
 
+def del_msg(bot, job):
+    bot.delete_message(job.context[0], job.context[1])
+
+
 @run_async
-def manage_all(bot: Bot, update: Update, chat_data):
+def manage_all(bot: Bot, update: Update, chat_data, job_queue):
     add_user(update.message.from_user)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
         session = Session()
@@ -65,7 +69,7 @@ def manage_all(bot: Bot, update: Update, chat_data):
             set_welcome(bot, update)
         elif update.message.text and 'Твои результаты в бою:' in update.message.text and \
                 update.message.forward_from and update.message.forward_from.id == 265204902:
-            bot.delete_message(update.message.chat.id, update.message.message_id)
+            job_queue.run_once(del_msg, 2, (update.message.chat.id, update.message.message_id))
         elif update.message.text and update.message.text.upper() == 'Помощь'.upper():
             help_msg(bot, update)
         elif update.message.text and update.message.text.upper() == 'Покажи приветствие'.upper():
@@ -255,7 +259,7 @@ def main():
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.status_update, welcome))
     # dp.add_handler(MessageHandler(Filters.text, manage_text, pass_chat_data=True))
-    dp.add_handler(MessageHandler(Filters.all, manage_all, pass_chat_data=True))
+    dp.add_handler(MessageHandler(Filters.all, manage_all, pass_chat_data=True, pass_job_queue=True))
 
     # log all errors
     dp.add_error_handler(error)
@@ -273,7 +277,7 @@ def main():
 
     # Start the Bot
     updater.start_polling()
-    app.run(port=API_PORT)
+    # app.run(port=API_PORT)
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
     # start_polling() is non-blocking and will stop the bot gracefully.
