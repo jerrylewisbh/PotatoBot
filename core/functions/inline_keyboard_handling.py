@@ -398,10 +398,10 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             squad = session.query(Squad).filter_by(chat_id=order.chat_id).first()
             if squad is not None:
                 squad_member = session.query(SquadMember).filter_by(squad_id=squad.chat_id,
-                                                                    user_id=update.callback_query.from_user.id)
+                                                                    user_id=update.callback_query.from_user.id).first()
                 if squad_member is not None:
                     order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
-                                                                     user_id=update.callback_query.from_user.id).first()
+                                                                     user_id=squad_member.user_id).first()
                     if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
                         order_ok = OrderCleared()
                         order_ok.order_id = data['id']
