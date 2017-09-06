@@ -108,13 +108,13 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
             pin(bot, update)
         elif update.message.text and update.message.text.upper() == 'сайлентпин'.upper() and update.message.reply_to_message is not None:
             silent_pin(bot, update)
-        elif update.message.text and update.message.text.upper() == 'бандит'.upper():
+        elif update.message.text and update.message.text.upper() in ['бандит'.upper(), 'краб'.upper()]:
             boss_leader(bot, update)
-        elif update.message.text and update.message.text.upper() == 'жало'.upper():
+        elif update.message.text and update.message.text.upper() in ['жало'.upper(), 'королева роя'.upper()]:
             boss_zhalo(bot, update)
-        elif update.message.text and update.message.text.upper() == 'циклоп'.upper():
+        elif update.message.text and update.message.text.upper() in ['циклоп'.upper(), 'борода'.upper()]:
             boss_monoeye(bot, update)
-        elif update.message.text and update.message.text.upper() == 'гидра'.upper():
+        elif update.message.text and update.message.text.upper() in ['гидра'.upper(), 'лич'.upper()]:
             boss_hydra(bot, update)
         elif update.message.text and update.message.text.upper() == 'открыть набор'.upper():
             open_hiring(bot, update)
