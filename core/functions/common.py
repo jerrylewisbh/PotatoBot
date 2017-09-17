@@ -3,7 +3,7 @@ import logging
 from core.functions.triggers import trigger_decorator
 from core.types import AdminType, Admin, Stock, admin, Session, Group
 from core.utils import send_async, add_user
-from core.functions.reply_markup import generate_standard_markup, generate_group_admin_markup
+from core.functions.reply_markup import generate_admin_markup
 from enum import Enum
 from datetime import datetime
 from core.texts import *
@@ -33,13 +33,15 @@ def admin_panel(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         session = Session()
         admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        full_adm = False
+        grp_adm = False
         for adm in admin:
-            if adm.admin_type == AdminType.FULL.value:
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_ADMIN_WELCOME,
-                           reply_markup=generate_standard_markup())
-                return
+            if adm.admin_type <= AdminType.FULL.value:
+                full_adm = True
+            else:
+                grp_adm = True
         send_async(bot, chat_id=update.message.chat.id, text=MSG_ADMIN_WELCOME,
-                   reply_markup=generate_group_admin_markup())
+                   reply_markup=generate_admin_markup(full_adm, grp_adm))
 
 
 def check_bot_in_chats(bot: Bot, update: Update):

@@ -1,15 +1,12 @@
 from telegram import ReplyKeyboardMarkup, KeyboardButton
 
 
-def generate_standard_markup():
+def generate_admin_markup(full=False, grp=False):
     buttons = []
-    buttons.append([KeyboardButton('Приказы'), KeyboardButton('Статус'), KeyboardButton('Группы')])
+    buttons.append([KeyboardButton('Приказы')])
+    if full:
+        buttons.append([KeyboardButton('Статус'), KeyboardButton('Группы')])
+    if grp:
+        buttons.append([KeyboardButton('Заявки в отряд'), KeyboardButton('Чистка отряда')])
     buttons.append([KeyboardButton('Список отряда')])
-    return ReplyKeyboardMarkup(buttons, True)
-
-
-def generate_group_admin_markup():
-    buttons = []
-    buttons.append([KeyboardButton('Приказы'), KeyboardButton('Заявки в отряд'), KeyboardButton('Список отряда')])
-    buttons.append([KeyboardButton('Чистка отряда')])
     return ReplyKeyboardMarkup(buttons, True)
