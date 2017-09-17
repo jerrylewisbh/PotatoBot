@@ -37,5 +37,5 @@ def fill_char_template(msg: str, user: User, char: Character, squad_request=Fals
     else:
         msg = msg.replace('%pet%', 'Животины нет')
     if squad_request:
-        msg += 'Хочет вступить в отряд {}'.format(user.member.squad.squad_name)
+        msg += '\n\nХочет вступить в отряд {}'.format(user.member.squad.squad_name)
     return msg
