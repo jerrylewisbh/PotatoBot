@@ -141,7 +141,7 @@ def list_squad_requests(bot: Bot, update: Update):
             count += 1
             markup = generate_squad_request_answer(member.user_id)
             send_async(bot, chat_id=update.message.chat.id,
-                       text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character),
+                       text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character, True),
                        reply_markup=markup)
     if count == 0:
         send_async(bot, chat_id=update.message.chat.id,
