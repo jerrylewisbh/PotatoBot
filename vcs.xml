@@ -18,6 +18,10 @@
           <option name="url" value="https://github.com/ruckus-dj/JesterBot.git" />
           <option name="userName" value="" />
         </UrlAndUserName>
+        <UrlAndUserName>
+          <option name="url" value="https://github.com/ruckus-dj/HelperBot.git" />
+          <option name="userName" value="" />
+        </UrlAndUserName>
       </list>
     </option>
     <option name="cloneParentDir" value="C:\Users\rucku\PycharmProjects" />
