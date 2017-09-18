@@ -28,25 +28,34 @@ def activity(squad, days=0, hours=0):
 @admin(adm_type=AdminType.GROUP)
 def day_activity(bot: Bot, update: Update):
     session = Session()
-    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-    if squad is not None:
-        msg = activity(squad, days=1)
-        send_async(bot, chat_id=update.message.chat.id, text=msg)
+    try:
+        squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+        if squad is not None:
+            msg = activity(squad, days=1)
+            send_async(bot, chat_id=update.message.chat.id, text=msg)
+    except:
+        session.rollback()
 
 
 @admin(adm_type=AdminType.GROUP)
 def week_activity(bot: Bot, update: Update):
     session = Session()
-    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-    if squad is not None:
-        msg = activity(squad, days=7)
-        send_async(bot, chat_id=update.message.chat.id, text=msg)
+    try:
+        squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+        if squad is not None:
+            msg = activity(squad, days=7)
+            send_async(bot, chat_id=update.message.chat.id, text=msg)
+    except:
+        session.rollback()
 
 
 @admin(adm_type=AdminType.GROUP)
 def battle_activity(bot: Bot, update: Update):
     session = Session()
-    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-    if squad is not None:
-        msg = activity(squad, hours=4)
-        send_async(bot, chat_id=update.message.chat.id, text=msg)
+    try:
+        squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+        if squad is not None:
+            msg = activity(squad, hours=4)
+            send_async(bot, chat_id=update.message.chat.id, text=msg)
+    except:
+        session.rollback()

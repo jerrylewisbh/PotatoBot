@@ -258,22 +258,25 @@ def admin(adm_type=AdminType.FULL):
     def decorate(func):
         def wrapper(bot, update, *args, **kwargs):
             session = Session()
-            adms = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
-            allowed = False
-            for adm in adms:
-                if adm is not None and adm.admin_type <= adm_type.value and \
-                        (adm.admin_group in [0, update.message.chat.id] or
-                         update.message.chat.id == update.message.from_user.id):
-                    if adm.admin_group != 0:
-                        group = session.query(Group).filter_by(id=adm.admin_group).first()
-                        if group and group.bot_in_group:
+            try:
+                adms = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+                allowed = False
+                for adm in adms:
+                    if adm is not None and adm.admin_type <= adm_type.value and \
+                            (adm.admin_group in [0, update.message.chat.id] or
+                             update.message.chat.id == update.message.from_user.id):
+                        if adm.admin_group != 0:
+                            group = session.query(Group).filter_by(id=adm.admin_group).first()
+                            if group and group.bot_in_group:
+                                allowed = True
+                                break
+                        else:
                             allowed = True
                             break
-                    else:
-                        allowed = True
-                        break
-            if allowed:
-                func(bot, update, *args, **kwargs)
+                if allowed:
+                    func(bot, update, *args, **kwargs)
+            except Exception as e:
+                session.rollback()
         return wrapper
     return decorate
 
