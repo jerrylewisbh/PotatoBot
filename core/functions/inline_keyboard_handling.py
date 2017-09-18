@@ -370,12 +370,12 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
             order.text = chat_data['order']
             order.chat_id = data['id']
             order.date = datetime.now()
-            order.confirmed_msg = 0
+            order.confirmed_msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY).result().message_id
             session.add(order)
             session.commit()
             markup = generate_ok_markup(order.id, 0)
             msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result().result()
-            if chat_data['pin']:
+            if 'pin' in chat_data and chat_data['pin'] or 'pin' not in chat_data:
                 try:
                     bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': order.chat_id,
                                                                         'message_id': msg.message_id,
@@ -389,12 +389,12 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                 order.text = chat_data['order']
                 order.chat_id = item.chat_id
                 order.date = datetime.now()
-                order.confirmed_msg = 0
+                order.confirmed_msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY).result().message_id
                 session.add(order)
                 session.commit()
                 markup = generate_ok_markup(order.id, 0)
                 msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result().result()
-                if chat_data['pin']:
+                if 'pin' in chat_data and chat_data['pin'] or 'pin' not in chat_data:
                     try:
                         bot.request.post(bot.base_url + '/pinChatMessage',
                                          {'chat_id': order.chat_id, 'message_id': msg.message_id,
@@ -418,6 +418,12 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
                         order_ok.user_id = update.callback_query.from_user.id
                         session.add(order_ok)
                         session.commit()
+                        if order.confirmed_msg != 0:
+                            confirmed = order.cleared
+                            msg = MSG_ORDER_CLEARED_BY_HEADER
+                            for confirm in confirmed:
+                                msg += str(confirm.user) + '\n'
+                            bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
                         update.callback_query.answer(text=MSG_ORDER_CLEARED)
                     else:
                         update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
