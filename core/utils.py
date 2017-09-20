@@ -1,33 +1,39 @@
+import http.client
+
 from telegram import Bot
-from telegram.ext.dispatcher import run_async
-from core.types import Session, User, Group
 from telegram.error import ChatMigrated
+from telegram.ext.dispatcher import run_async
+
+from core.types import Session, User, Group
 
 
 @run_async
 def send_async(bot: Bot, *args, **kwargs):
     try:
         return bot.sendMessage(*args, **kwargs)
-    except ChatMigrated as e:
+
+    except ChatMigrated as err:
         session = Session()
         group = session.query(Group).filter_by(id=kwargs['chat_id']).first()
         if group is not None:
             group.bot_in_group = False
             session.add(group)
             session.commit()
-        kwargs['chat_id'] = e.new_chat_id
+        kwargs['chat_id'] = err.new_chat_id
         return bot.sendMessage(*args, **kwargs)
-    except Exception as e:
-        print(e)
+
+    # FIX: слишком общая ошибка
+    except Exception as err:
+        print(err)
 
 
 def send_pin_async(bot: Bot, *args, **kwargs):
     try:
         msg = bot.sendMessage(*args, **kwargs)
-    except ChatMigrated as e:
-        kwargs['chat_id'] = e.new_chat_id
+    except ChatMigrated as err:
+        kwargs['chat_id'] = err.new_chat_id
         msg = bot.sendMessage(*args, **kwargs)
-    import http.client
+
     conn = http.client.HTTPConnection("127.0.0.1")
     conn.request("GET", "/{}/{}/".format(msg.message_id, msg.chat.id))
 
@@ -56,7 +62,9 @@ def add_user(tg_user):
                 session.add(user)
         session.commit()
         return user
-    except Exception as e:
+
+    # FIX: слишком общая ошибка
+    except Exception:
         session.rollback()
 
 
@@ -69,6 +77,7 @@ def update_group(grp):
                 group = Group(id=grp.id, title=grp.title,
                               username=grp.username)
                 session.add(group)
+
             else:
                 updated = False
                 if group.username != grp.username:
@@ -82,8 +91,11 @@ def update_group(grp):
                     updated = True
                 if updated:
                     session.add(group)
+
             session.commit()
             return group
         return None
-    except Exception as e:
+
+    # FIX: слишком общая ошибка
+    except Exception:
         session.rollback()

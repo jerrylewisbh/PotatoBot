@@ -1,23 +1,26 @@
+from datetime import datetime, timedelta
+from enum import Enum
 import json
+from json import loads
+import logging
+from multiprocessing.pool import ThreadPool
 
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
 from telegram.ext.dispatcher import run_async
 
-from core.template import fill_char_template
-from core.types import User, Group, Admin, Session, admin, Order, OrderGroup, OrderGroupItem, OrderCleared, Squad, \
-    Character, Session, SquadMember, MessageType
-from core.utils import send_async, update_group, add_user
-from core.functions.admins import del_adm
-from enum import Enum
 from core.enums import Castle, Icons
-import logging
-from core.types import AdminType
-from datetime import datetime, timedelta
+from core.functions.admins import del_adm
+from core.template import fill_char_template
+from core.types import (
+    User, Group, Admin, Session, admin, Order, OrderGroup,
+    OrderGroupItem, OrderCleared, Squad,
+    Character, Session, SquadMember, MessageType, AdminType
+)
 from core.texts import *
-from multiprocessing.pool import ThreadPool
-from json import loads
+from core.utils import send_async, update_group, add_user
 
-logger = logging.getLogger('MyApp')
+
+LOGGER = logging.getLogger('MyApp')
 
 
 class QueryType(Enum):
@@ -343,7 +346,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict):
     update_group(update.callback_query.message.chat)
     user = add_user(update.callback_query.from_user)
     data = json.loads(update.callback_query.data)
-    logger.warning(data)
+    LOGGER.warning(data)
     if data['t'] == QueryType.GroupList.value:
         msg = MSG_GROUP_STATUS_CHOOSE_CHAT
         squads = session.query(Squad).all()
