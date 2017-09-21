@@ -31,9 +31,9 @@ sudo mysql -u root -h localhost -p
 CREATE USER 'myuser'@'localhost' IDENTIFIED BY 'mypass';
 ```
 5)give the  privileges to the new user:
-'''
+```
 GRANT ALL PRIVILEGES ON * . * TO 'myuser'@'localhost';
-'''
+```
 6)log in to your new user as shown in (3).
 
 7)create the new database
