@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger
-from sqlalchemy.dialects.mysql import DATETIME
-from datetime import datetime, timedelta
-from sqlalchemy.orm import sessionmaker, relationship, scoped_session
-from sqlalchemy import event
-from sqlalchemy.pool import Pool
-import logging
+from datetime import datetime
 from enum import Enum
-from config import DB
+import logging
 import requests
-from json import loads
-from core.enums import Castle
 import threading
+
+from sqlalchemy import (
+    create_engine, event,
+    Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger
+)
+from sqlalchemy.dialects.mysql import DATETIME
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session
+from sqlalchemy.pool import Pool
+
+from config import DB
 
 
 class AdminType(Enum):
@@ -35,11 +36,16 @@ class MessageType(Enum):
     PHOTO = 9
 
 
-engine = create_engine(DB, echo=False, pool_size=200, max_overflow=50, isolation_level="READ UNCOMMITTED")
-logger = logging.getLogger('sqlalchemy.engine')
+ENGINE = create_engine(DB,
+                       echo=False,
+                       pool_size=200,
+                       max_overflow=50,
+                       isolation_level="READ UNCOMMITTED")
+
+# FIX: имена констант?
+LOGGER = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
-Session = scoped_session(sessionmaker(bind=engine))
-last_update = datetime.now() - timedelta(minutes=10)
+Session = scoped_session(sessionmaker(bind=ENGINE))
 
 
 @event.listens_for(Pool, "connect")
@@ -47,14 +53,16 @@ def set_unicode(dbapi_conn, conn_record):
     cursor = dbapi_conn.cursor()
     try:
         cursor.execute("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'")
-    except Exception as e:
-        logger.error(e)
+
+    # FIX: слишком общая ошибка
+    except Exception as err:
+        LOGGER.error(err)
 
 
 class Group(Base):
     __tablename__ = 'groups'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger, primary_key=True)  # FIX: invalid name
     username = Column(UnicodeText(250))
     title = Column(UnicodeText(250))
     welcome_enabled = Column(Boolean, default=False)
@@ -76,11 +84,22 @@ class User(Base):
     last_name = Column(UnicodeText(250))
     date_added = Column(DateTime, default=datetime.now())
 
-    character = relationship('Character', back_populates='user', order_by='Character.date.desc()', uselist=False)
+    character = relationship('Character',
+                             back_populates='user',
+                             order_by='Character.date.desc()',
+                             uselist=False)
+
     orders_confirmed = relationship('OrderCleared', back_populates='user')
     member = relationship('SquadMember', back_populates='user', uselist=False)
-    equip = relationship('Equip', back_populates='user', order_by='Equip.date.desc()', uselist=False)
-    stock = relationship('Stock', back_populates='user', order_by='Stock.date.desc()', uselist=False)
+    equip = relationship('Equip',
+                         back_populates='user',
+                         order_by='Equip.date.desc()',
+                         uselist=False)
+
+    stock = relationship('Stock',
+                         back_populates='user',
+                         order_by='Stock.date.desc()',
+                         uselist=False)
 
     def __repr__(self):
         user = ''
@@ -281,4 +300,4 @@ def admin(adm_type=AdminType.FULL):
     return decorate
 
 
-Base.metadata.create_all(engine)
+Base.metadata.create_all(ENGINE)

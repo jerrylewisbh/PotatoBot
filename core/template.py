@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from core.texts import MSG_NO_SQUAD
-from core.types import *
+from core.texts import MSG_NO_SQUAD, MSG_WANTS_TO_JOIN
+from core.types import User, Character
 
 
 def fill_template(msg: str, user: User):
@@ -33,9 +33,10 @@ def fill_char_template(msg: str, user: User, char: Character, squad_request=Fals
     else:
         msg = msg.replace('%squad%', MSG_NO_SQUAD)
     if char.pet is not None:
-        msg = msg.replace('%pet%', '{} {} lvl'.format(str(char.pet), str(char.petLevel)))
+        msg = msg.replace('%pet%', '{} {} lvl'.format(str(char.pet),
+                                                      str(char.petLevel)))
     else:
         msg = msg.replace('%pet%', 'Животины нет')
     if squad_request:
-        msg += '\n\nХочет вступить в отряд {}'.format(user.member.squad.squad_name)
+        msg += MSG_WANTS_TO_JOIN.format(user.member.squad.squad_name)
     return msg
