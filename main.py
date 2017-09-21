@@ -165,8 +165,6 @@ def ready_to_battle(bot, job_queue):
     try:
         group = session.query(Squad).all()
         for item in group:
-            if item.chat_id == -1001062678288:
-                continue
             order = Order()
             order.text = 'К битве готовсь!'
             order.chat_id = item.chat_id
