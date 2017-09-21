@@ -18,36 +18,36 @@ e.g. for GNU/Linux:
 ```
 sudo apt-get install mysql-server
 ```
-
 2)create root user (if it was not created during installation process)
 ```
 sudo mysqladmin -u root password 'mynewpassword'
 ```
-
 3)open mysql command line as root:
 ```
 sudo mysql -u root -h localhost -p
 ```
-
 4)create the new user:
 ```
 CREATE USER 'myuser'@'localhost' IDENTIFIED BY 'mypass';
 ```
+5)give the  privileges to the new user:
+'''
+GRANT ALL PRIVILEGES ON * . * TO 'myuser'@'localhost';
+'''
+6)log in to your new user as shown in (3).
 
-5)log in to your new user as shown in (3).
-
-6)create the new database
+7)create the new database
 ```
 CREATE DATABASE 'test';
 ```
 
-7)exit to CLI
+8)exit to CLI
 ```
 exit
 ```
-8)open the file 'config.py.sample', enter your new database user's credentials, your database name and your telegram bot API token
+9)open the file 'config.py.sample', enter your new database user's credentials, your database name and your telegram bot API token
 
-9)launch the bot:
+10)launch the bot:
 ```
 python3 main.py
 ```
