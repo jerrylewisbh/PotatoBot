@@ -1,14 +1,17 @@
-from telegram import Update, Bot, ParseMode, TelegramError
+from datetime import datetime
+from enum import Enum
 import logging
+
+from telegram import Update, Bot, ParseMode, TelegramError
+
 from core.functions.triggers import trigger_decorator
+from core.functions.reply_markup import generate_admin_markup
+from core.texts import *
 from core.types import AdminType, Admin, Stock, admin, Session, Group
 from core.utils import send_async, add_user
-from core.functions.reply_markup import generate_admin_markup
-from enum import Enum
-from datetime import datetime
-from core.texts import *
 
-logger = logging.getLogger(__name__)
+
+LOGGER = logging.getLogger(__name__)
 
 
 class StockType(Enum):
@@ -18,7 +21,7 @@ class StockType(Enum):
 
 def error(bot: Bot, update, error, **kwargs):
     """ Error handling """
-    logger.error("An error (%s) occurred: %s"
+    LOGGER.error("An error (%s) occurred: %s"
                  % (type(error), error.message))
 
 
@@ -32,6 +35,7 @@ def start(bot: Bot, update: Update):
 def admin_panel(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         session = Session()
+        # FIX: переопределение admin
         admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         full_adm = False
         grp_adm = False
