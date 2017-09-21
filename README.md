@@ -40,7 +40,6 @@ GRANT ALL PRIVILEGES ON * . * TO 'myuser'@'localhost';
 ```
 CREATE DATABASE 'test';
 ```
-
 8)exit to CLI
 ```
 exit
