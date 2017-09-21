@@ -42,7 +42,9 @@ CREATE DATABASE 'test';
 ```
 
 7)exit to CLI
-
+```
+exit
+```
 8)open the file 'config.py.sample', enter your new database user's credentials, your database name and your telegram bot API token
 
 9)launch the bot:
