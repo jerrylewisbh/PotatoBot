@@ -208,10 +208,7 @@ def ready_to_battle(bot):
     try:
         group = session.query(Squad).all()
         for item in group:
-            if item.chat_id == -1001062678288:
-                continue
-
-            order = Order()   # FIX: переопределяется order #22
+            order = Order()
             order.text = 'К битве готовсь!'
             order.chat_id = item.chat_id
             order.date = datetime.now()
