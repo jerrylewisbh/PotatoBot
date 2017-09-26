@@ -1,8 +1,10 @@
+from datetime import datetime, timedelta
+
 from telegram import Update, Bot
+
+from core.texts import MSG_ORDER_STATISTIC, MSG_ORDER_STATISTIC_OUT_FORMAT
 from core.types import AdminType, admin, Session, Squad
 from core.utils import send_async
-from datetime import datetime, timedelta
-from core.texts import *
 
 
 def activity(squad, days=0, hours=0):
@@ -33,7 +35,9 @@ def day_activity(bot: Bot, update: Update):
         if squad is not None:
             msg = activity(squad, days=1)
             send_async(bot, chat_id=update.message.chat.id, text=msg)
-    except:
+
+    #FIX: слишком общая ошибка
+    except Exception:
         session.rollback()
 
 
@@ -45,7 +49,9 @@ def week_activity(bot: Bot, update: Update):
         if squad is not None:
             msg = activity(squad, days=7)
             send_async(bot, chat_id=update.message.chat.id, text=msg)
-    except:
+
+    #FIX: слишком общая ошибка
+    except Exception:
         session.rollback()
 
 
@@ -57,5 +63,7 @@ def battle_activity(bot: Bot, update: Update):
         if squad is not None:
             msg = activity(squad, hours=4)
             send_async(bot, chat_id=update.message.chat.id, text=msg)
-    except:
+
+    #FIX: слишком общая ошибка
+    except Exception:
         session.rollback()
