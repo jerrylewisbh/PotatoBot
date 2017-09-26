@@ -1,4 +1,5 @@
 from telegram import Update, Bot
+
 from core.functions.triggers import trigger_decorator
 from core.utils import send_async, update_group
 
