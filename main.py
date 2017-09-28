@@ -149,8 +149,6 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             open_hiring(bot, update)
         elif text == 'закрыть набор':
             close_hiring(bot, update)
-        elif update.message.text:
-            trigger_show(bot, update)
         elif update.message.reply_to_message is not None:
             if text == 'пин':
                 pin(bot, update)
@@ -160,11 +158,12 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 delete_msg(bot, update)
             elif text == 'свали':
                 delete_user(bot, update)
-
         elif 'твои результаты в бою:' in text:
             if update.message.forward_from.id == 265204902:
                 job_queue.run_once(del_msg, 2, (update.message.chat.id,
                                                 update.message.message_id))
+        elif update.message.text:
+            trigger_show(bot, update)
 
     elif update.message.chat.type == 'private':
         if update.message.text:
