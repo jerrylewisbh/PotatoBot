@@ -199,6 +199,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 elif from_id == 278525885:
                     if '📦твой склад с материалами:' in text:
                         trade_compare(bot, update, chat_data)
+            else:
+                order(bot, update, chat_data)
         else:
             order(bot, update, chat_data)
 

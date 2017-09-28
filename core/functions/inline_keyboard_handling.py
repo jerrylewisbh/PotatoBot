@@ -364,7 +364,9 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
     elif data['t'] == QueryType.DelAdm.value:
-        del_adm(bot, data['gid'], data['uid'], session)
+        admin_user = session.query(User).filter_by(id=data['uid']).first()
+        if admin_user:
+            del_adm(bot, data['gid'], admin_user, session)
         msg, inline_markup = generate_group_info(data['gid'], session)
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
