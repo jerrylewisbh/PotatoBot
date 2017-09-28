@@ -14,6 +14,7 @@ from telegram.ext import (
     Filters, CallbackQueryHandler
 )
 from telegram.ext.dispatcher import run_async
+from telegram.error import TelegramError
 
 from config import TOKEN, GOVERNMENT_CHAT
 from core.functions.activity import (
@@ -56,8 +57,10 @@ from core.regexp import PROFILE, HERO
 from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL
 )
-from core.types import Session, Order, Squad, Admin
+from core.types import Session, Order, Squad, Admin, user
 from core.utils import add_user, send_async
+
+from sqlalchemy.exc import SQLAlchemyError
 
 last_welcome = 0
 logging.basicConfig(
@@ -79,92 +82,94 @@ def del_msg(bot, job):
 
 
 @run_async
-def manage_all(bot: Bot, update: Update, chat_data, job_queue):
-    try:
-        add_user(update.message.from_user)
-        if update.message.chat.type in ['group', 'supergroup', 'channel']:
-            session = Session()
-            squad = session.query(Squad).filter_by(
-                chat_id=update.message.chat.id).first()
-            admin = session.query(Admin).filter(
-                Admin.user_id == update.message.from_user.id and
-                Admin.admin_group in [update.message.chat.id, 0]).first()
+@user
+def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
+    add_user(update.message.from_user, session)
+    if update.message.chat.type in ['group', 'supergroup', 'channel']:
+        squad = session.query(Squad).filter_by(
+            chat_id=update.message.chat.id).first()
+        admin = session.query(Admin).filter(
+            Admin.user_id == update.message.from_user.id and
+            Admin.admin_group in [update.message.chat.id, 0]).first()
 
-            if squad is not None and admin is None and battle_time():
-                bot.delete_message(update.message.chat.id,
-                                   update.message.message_id)
+        if squad is not None and admin is None and battle_time():
+            bot.delete_message(update.message.chat.id,
+                               update.message.message_id)
 
-            if not update.message.text:
-                return
+        if not update.message.text:
+            return
 
+        text = update.message.text.lower()
+
+        if text.startswith('приветствие:'):
+            set_welcome(bot, update)
+        elif text == 'помощь':
+            help_msg(bot, update)
+        elif text == 'покажи приветствие':
+            show_welcome(bot, update)
+        elif text == 'включи приветствие':
+            enable_welcome(bot, update)
+        elif text == 'выключи приветствие':
+            disable_welcome(bot, update)
+        elif text.startswith('затриггерь:'):
+            set_trigger(bot, update)
+        elif text.startswith('разтриггерь:'):
+            del_trigger(bot, update)
+        elif text == 'список триггеров':
+            list_triggers(bot, update)
+        elif text == 'список админов':
+            list_admins(bot, update)
+        elif text == 'пинг':
+            ping(bot, update)
+        elif text == 'статистика за день':
+            day_activity(bot, update)
+        elif text == 'cтатистика за неделю':
+            week_activity(bot, update)
+        elif text == 'cтатистика за бой':
+            battle_activity(bot, update)
+        elif text == 'разрешить триггерить всем':
+            enable_trigger_all(bot, update)
+        elif text == 'запретить триггерить всем':
+            disable_trigger_all(bot, update)
+        elif text in ['админы', 'офицер']:
+            admins_for_users(bot, update)
+        elif text == 'пинят все':
+            pin_all(bot, update)
+        elif text == 'хорош пинить':
+            not_pin_all(bot, update)
+        elif text in ['бандит', 'краб']:
+            boss_leader(bot, update)
+        elif text in ['жало', 'королева роя']:
+            boss_zhalo(bot, update)
+        elif text in ['циклоп', 'борода']:
+            boss_monoeye(bot, update)
+        elif text in ['гидра', 'лич']:
+            boss_hydra(bot, update)
+        elif text == 'открыть набор':
+            open_hiring(bot, update)
+        elif text == 'закрыть набор':
+            close_hiring(bot, update)
+        elif update.message.text:
+            trigger_show(bot, update)
+        elif update.message.reply_to_message is not None:
+            if text == 'пин':
+                pin(bot, update)
+            elif text == 'сайлентпин':
+                silent_pin(bot, update)
+            elif text == 'удоли':
+                delete_msg(bot, update)
+            elif text == 'свали':
+                delete_user(bot, update)
+
+        elif 'твои результаты в бою:' in text:
+            if update.message.forward_from.id == 265204902:
+                job_queue.run_once(del_msg, 2, (update.message.chat.id,
+                                                update.message.message_id))
+
+    elif update.message.chat.type == 'private':
+        if update.message.text:
             text = update.message.text.lower()
 
-            if text.startswith('приветствие:'):
-                set_welcome(bot, update)
-            elif text == 'помощь':
-                help_msg(bot, update)
-            elif text == 'покажи приветствие':
-                show_welcome(bot, update)
-            elif text == 'включи приветствие':
-                enable_welcome(bot, update)
-            elif text == 'выключи приветствие':
-                disable_welcome(bot, update)
-            elif text.startswith('затриггерь:'):
-                set_trigger(bot, update)
-            elif text.startswith('разтриггерь:'):
-                del_trigger(bot, update)
-            elif text == 'список триггеров':
-                list_triggers(bot, update)
-            elif text == 'список админов':
-                list_admins(bot, update)
-            elif text == 'пинг':
-                ping(bot, update)
-            elif text == 'статистика за день':
-                day_activity(bot, update)
-            elif text == 'cтатистика за неделю':
-                week_activity(bot, update)
-            elif text == 'cтатистика за бой':
-                battle_activity(bot, update)
-            elif text == 'разрешить триггерить всем':
-                enable_trigger_all(bot, update)
-            elif text == 'запретить триггерить всем':
-                disable_trigger_all(bot, update)
-            elif text in ['админы', 'офицер']:
-                admins_for_users(bot, update)
-            elif text == 'пинят все':
-                pin_all(bot, update)
-            elif text == 'хорош пинить':
-                not_pin_all(bot, update)
-            elif text in ['бандит', 'краб']:
-                boss_leader(bot, update)
-            elif text in ['жало', 'королева роя']:
-                boss_zhalo(bot, update)
-            elif text in ['циклоп', 'борода']:
-                boss_monoeye(bot, update)
-            elif text in ['гидра', 'лич']:
-                boss_hydra(bot, update)
-            elif text == 'открыть набор':
-                open_hiring(bot, update)
-            elif text == 'закрыть набор':
-                close_hiring(bot, update)
-            elif update.message.text:
-                trigger_show(bot, update)
-            elif update.message.reply_to_message is not None:
-                if text == 'пин':
-                    pin(bot, update)
-                elif text == 'сайлентпин':
-                    silent_pin(bot, update)
-                elif text == 'удоли':
-                    delete_msg(bot, update)
-                elif text == 'свали':
-                    delete_user(bot, update)
-
-            elif 'твои результаты в бою:' in text:
-                if update.message.forward_from.id == 265204902:
-                    job_queue.run_once(del_msg, 2, (update.message.chat.id,
-                                                    update.message.message_id))
-
-        elif update.message.chat.type == 'private':
             if text == 'статус':
                 send_status(bot, update)
             elif text == 'хочу в отряд':
@@ -194,16 +199,12 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                 elif from_id == 278525885:
                     if '📦твой склад с материалами:' in text:
                         trade_compare(bot, update, chat_data)
-            else:
-                order(bot, update, chat_data)
-
-    # FIX: слишком общая ошибка
-    except Exception:
-        Session.rollback()
+        else:
+            order(bot, update, chat_data)
 
 
 @run_async
-def ready_to_battle(bot):
+def ready_to_battle(bot: Bot):
     session = Session()
     try:
         group = session.query(Squad).all()
@@ -231,18 +232,16 @@ def ready_to_battle(bot):
                                   'message_id': msg.message_id,
                                   'disable_notification': False})
 
-            # FIX: слишком общая ошибка
-            except Exception as err:
-                print(err)
+            except TelegramError as err:
+                bot.logger(err.message)
 
-
-    # FIX: слишком общая ошибка
-    except Exception:
+    except SQLAlchemyError as err:
+        bot.logger(str(err))
         Session.rollback()
 
 
 @run_async
-def ready_to_battle_result(bot):
+def ready_to_battle_result(bot: Bot):
     session = Session()
     try:
         group = session.query(Squad).all()
@@ -283,7 +282,6 @@ def ready_to_battle_result(bot):
                                                        attack,
                                                        defence)
 
-
         full_text += MSG_FULL_TEXT_TOTAL.format(full_count,
                                                 full_attack,
                                                 full_defence)
@@ -293,10 +291,9 @@ def ready_to_battle_result(bot):
                    text=full_text,
                    parse_mode=ParseMode.HTML)
 
-    # FIX: слишком общая ошибка
-    except Exception:
+    except SQLAlchemyError as err:
+        bot.logger(str(err))
         Session.rollback()
-
 
 
 def main():
