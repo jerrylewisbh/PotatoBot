@@ -31,7 +31,7 @@ from core.functions.orders import order, orders
 from core.functions.common import (
     help_msg, ping, start, error, kick,
     admin_panel, stock_compare, trade_compare,
-    check_bot_in_chats, delete_msg, delete_user
+    delete_msg, delete_user
 )
 from core.functions.inline_keyboard_handling import (
     callback_query, send_status, send_order, QueryType
@@ -57,7 +57,7 @@ from core.regexp import PROFILE, HERO
 from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL
 )
-from core.types import Session, Order, Squad, Admin, user
+from core.types import Session, Order, Squad, Admin, user_allowed
 from core.utils import add_user, send_async
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -82,7 +82,7 @@ def del_msg(bot, job):
 
 
 @run_async
-@user
+@user_allowed
 def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
     add_user(update.message.from_user, session)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
@@ -209,26 +209,26 @@ def ready_to_battle(bot: Bot):
     try:
         group = session.query(Squad).all()
         for item in group:
-            order = Order()
-            order.text = 'К битве готовсь!'
-            order.chat_id = item.chat_id
-            order.date = datetime.now()
-            order.confirmed_msg = 0
-            session.add(order)
+            new_order = Order()
+            new_order.text = 'К битве готовсь!'
+            new_order.chat_id = item.chat_id
+            new_order.date = datetime.now()
+            new_order.confirmed_msg = 0
+            session.add(new_order)
             session.commit()
 
             callback_data = json.dumps(
-                {'t': QueryType.OrderOk.value, 'id': order.id})
+                {'t': QueryType.OrderOk.value, 'id': new_order.id})
             markup = InlineKeyboardMarkup([
                 [InlineKeyboardButton('ГРАБЬНАСИЛУЙУБИВАЙ!',
                                       callback_data=callback_data)]])
 
-            msg = send_order(bot, order.text, 0, order.chat_id, markup)
+            msg = send_order(bot, new_order.text, 0, new_order.chat_id, markup)
 
             try:
                 msg = msg.result().result()
                 bot.request.post(bot.base_url + '/pinChatMessage',
-                                 {'chat_id': order.chat_id,
+                                 {'chat_id': new_order.chat_id,
                                   'message_id': msg.message_id,
                                   'disable_notification': False})
 
@@ -251,20 +251,19 @@ def ready_to_battle_result(bot: Bot):
         full_count = 0
 
         for item in group:
-            # FIX: переопределяется order #22
-            order = session.query(Order).filter_by(
+            ready_order = session.query(Order).filter_by(
                 chat_id=item.chat_id,
                 text='К битве готовсь!').order_by(Order.date.desc()).first()
 
-            if order is not None:
+            if ready_order is not None:
                 attack = 0
                 defence = 0
-                for clear in order.cleared:
+                for clear in ready_order.cleared:
                     if clear.user.character:
                         attack += clear.user.character.attack
                         defence += clear.user.character.defence
 
-                text = MSG_SQUAD_READY.format(len(order.cleared),
+                text = MSG_SQUAD_READY.format(len(ready_order.cleared),
                                               item.squad_name,
                                               attack,
                                               defence)
@@ -276,9 +275,9 @@ def ready_to_battle_result(bot: Bot):
 
                 full_attack += attack
                 full_defence += defence
-                full_count += len(order.cleared)
+                full_count += len(ready_order.cleared)
                 full_text += MSG_FULL_TEXT_LINE.format(item.squad_name,
-                                                       len(order.cleared),
+                                                       len(ready_order.cleared),
                                                        attack,
                                                        defence)
 
@@ -329,7 +328,6 @@ def main():
     disp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     disp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
     disp.add_handler(CommandHandler("me", char_show))
-    disp.add_handler(CommandHandler("check_bot_in_chats", check_bot_in_chats))
 
     disp.add_handler(CommandHandler("add_squad", add_squad))
     disp.add_handler(CommandHandler("del_squad", del_squad))

@@ -264,28 +264,33 @@ class LocalTrigger(Base):
     message_type = Column(Integer, default=0)
 
 
-def admin(adm_type=AdminType.FULL):
+def check_admin(update, session, adm_type):
+    allowed = False
+    if adm_type == AdminType.NOT_ADMIN:
+        allowed = True
+    else:
+        admins = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        for adm in admins:
+            if adm is not None and adm.admin_type <= adm_type.value and \
+                    (adm.admin_group in [0, update.message.chat.id] or
+                     update.message.chat.id == update.message.from_user.id):
+                if adm.admin_group != 0:
+                    group = session.query(Group).filter_by(id=adm.admin_group).first()
+                    if group and group.bot_in_group:
+                        allowed = True
+                        break
+                else:
+                    allowed = True
+                    break
+    return allowed
+
+
+def admin_allowed(adm_type=AdminType.FULL):
     def decorate(func):
         def wrapper(bot: Bot, update, *args, **kwargs):
             session = Session()
             try:
-                allowed = False
-                if adm_type == AdminType.NOT_ADMIN:
-                    allowed = True
-                else:
-                    admins = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
-                    for adm in admins:
-                        if adm is not None and adm.admin_type <= adm_type.value and \
-                                (adm.admin_group in [0, update.message.chat.id] or
-                                 update.message.chat.id == update.message.from_user.id):
-                            if adm.admin_group != 0:
-                                group = session.query(Group).filter_by(id=adm.admin_group).first()
-                                if group and group.bot_in_group:
-                                    allowed = True
-                                    break
-                            else:
-                                allowed = True
-                                break
+                allowed = check_admin(update, session, adm_type)
                 if allowed:
                     func(bot, update, session, *args, **kwargs)
             except SQLAlchemyError as err:
@@ -295,8 +300,8 @@ def admin(adm_type=AdminType.FULL):
     return decorate
 
 
-def user(func):
-    admin(AdminType.NOT_ADMIN)(func)
+def user_allowed(func):
+    admin_allowed(AdminType.NOT_ADMIN)(func)
 
 
 Base.metadata.create_all(ENGINE)
