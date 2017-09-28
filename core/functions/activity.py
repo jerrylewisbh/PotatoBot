@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from telegram import Update, Bot
 
 from core.texts import MSG_ORDER_STATISTIC, MSG_ORDER_STATISTIC_OUT_FORMAT
-from core.types import AdminType, admin, Session, Squad
+from core.types import AdminType, admin_allowed, Squad
 from core.utils import send_async
 
 
@@ -27,43 +27,25 @@ def activity(squad, days=0, hours=0):
     return msg
 
 
-@admin(adm_type=AdminType.GROUP)
-def day_activity(bot: Bot, update: Update):
-    session = Session()
-    try:
-        squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-        if squad is not None:
-            msg = activity(squad, days=1)
-            send_async(bot, chat_id=update.message.chat.id, text=msg)
-
-    #FIX: слишком общая ошибка
-    except Exception:
-        session.rollback()
+@admin_allowed(adm_type=AdminType.GROUP)
+def day_activity(bot: Bot, update: Update, session):
+    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    if squad is not None:
+        msg = activity(squad, days=1)
+        send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
-@admin(adm_type=AdminType.GROUP)
-def week_activity(bot: Bot, update: Update):
-    session = Session()
-    try:
-        squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-        if squad is not None:
-            msg = activity(squad, days=7)
-            send_async(bot, chat_id=update.message.chat.id, text=msg)
-
-    #FIX: слишком общая ошибка
-    except Exception:
-        session.rollback()
+@admin_allowed(adm_type=AdminType.GROUP)
+def week_activity(bot: Bot, update: Update, session):
+    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    if squad is not None:
+        msg = activity(squad, days=7)
+        send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
-@admin(adm_type=AdminType.GROUP)
-def battle_activity(bot: Bot, update: Update):
-    session = Session()
-    try:
-        squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-        if squad is not None:
-            msg = activity(squad, hours=4)
-            send_async(bot, chat_id=update.message.chat.id, text=msg)
-
-    #FIX: слишком общая ошибка
-    except Exception:
-        session.rollback()
+@admin_allowed(adm_type=AdminType.GROUP)
+def battle_activity(bot: Bot, update: Update, session):
+    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    if squad is not None:
+        msg = activity(squad, hours=4)
+        send_async(bot, chat_id=update.message.chat.id, text=msg)
