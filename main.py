@@ -205,7 +205,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
 
 
 @run_async
-def ready_to_battle(bot: Bot):
+def ready_to_battle(bot: Bot, job_queue):
     session = Session()
     try:
         group = session.query(Squad).all()
@@ -242,7 +242,7 @@ def ready_to_battle(bot: Bot):
 
 
 @run_async
-def ready_to_battle_result(bot: Bot):
+def ready_to_battle_result(bot: Bot, job_queue):
     session = Session()
     try:
         group = session.query(Squad).all()
