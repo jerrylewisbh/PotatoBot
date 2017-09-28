@@ -2,8 +2,7 @@ from telegram import ReplyKeyboardMarkup, KeyboardButton
 
 
 def generate_admin_markup(full=False, grp=False):
-    buttons = []
-    buttons.append([KeyboardButton('Приказы')])
+    buttons = [[KeyboardButton('Приказы')]]
     if full:
         buttons.append([KeyboardButton('Статус'), KeyboardButton('Группы')])
     if grp:

@@ -5,8 +5,8 @@ from core.utils import send_async, update_group
 
 
 @trigger_decorator
-def boss_leader(bot: Bot, update: Update):
-    group = update_group(update.message.chat)
+def boss_leader(bot: Bot, update: Update, session):
+    group = update_group(update.message.chat, session)
     if len(group.squad) == 1:
         members = []
         for member in group.squad[0].members:
@@ -18,8 +18,8 @@ def boss_leader(bot: Bot, update: Update):
 
 
 @trigger_decorator
-def boss_zhalo(bot: Bot, update: Update):
-    group = update_group(update.message.chat)
+def boss_zhalo(bot: Bot, update: Update, session):
+    group = update_group(update.message.chat, session)
     if len(group.squad) == 1:
         members = []
         for member in group.squad[0].members:
@@ -31,8 +31,8 @@ def boss_zhalo(bot: Bot, update: Update):
 
 
 @trigger_decorator
-def boss_monoeye(bot: Bot, update: Update):
-    group = update_group(update.message.chat)
+def boss_monoeye(bot: Bot, update: Update, session):
+    group = update_group(update.message.chat, session)
     if len(group.squad) == 1:
         members = []
         for member in group.squad[0].members:
@@ -44,8 +44,8 @@ def boss_monoeye(bot: Bot, update: Update):
 
 
 @trigger_decorator
-def boss_hydra(bot: Bot, update: Update):
-    group = update_group(update.message.chat)
+def boss_hydra(bot: Bot, update: Update, session):
+    group = update_group(update.message.chat, session)
     if len(group.squad) == 1:
         members = []
         for member in group.squad[0].members:

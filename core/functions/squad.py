@@ -1,8 +1,7 @@
-from sqlalchemy.orm import scoped_session
 from telegram import Update, Bot
 
 from core.template import fill_char_template
-from core.types import User, AdminType, Admin, admin, Group, Squad, Session, SquadMember
+from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed
 from core.utils import send_async
 from core.functions.inline_keyboard_handling import generate_squad_list, \
     generate_leave_squad, generate_squad_request, generate_squad_request_answer, generate_fire_up, \
@@ -10,10 +9,9 @@ from core.functions.inline_keyboard_handling import generate_squad_list, \
 from core.texts import *
 
 
-@admin()
-def add_squad(bot: Bot, update: Update):
+@admin_allowed()
+def add_squad(bot: Bot, update: Update, session):
     if update.message.chat.type == 'supergroup':
-        session = Session()
         squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
         if squad is None:
             squad = Squad()
@@ -30,9 +28,8 @@ def add_squad(bot: Bot, update: Update):
             send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NEW.format(squad.squad_name))
 
 
-@admin()
-def set_invite_link(bot: Bot, update: Update):
-    session = Session()
+@admin_allowed()
+def set_invite_link(bot: Bot, update: Update, session):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if update.message.chat.type == 'supergroup' and squad is not None:
         msg = update.message.text.split(' ', 1)
@@ -43,9 +40,8 @@ def set_invite_link(bot: Bot, update: Update):
             send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LINK_SAVED)
 
 
-@admin()
-def set_squad_name(bot: Bot, update: Update):
-    session = Session()
+@admin_allowed()
+def set_squad_name(bot: Bot, update: Update, session):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if update.message.chat.type == 'supergroup' and squad is not None:
         msg = update.message.text.split(' ', 1)
@@ -56,9 +52,8 @@ def set_squad_name(bot: Bot, update: Update):
             send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_RENAMED.format(squad.squad_name))
 
 
-@admin()
-def del_squad(bot: Bot, update: Update):
-    session = Session()
+@admin_allowed()
+def del_squad(bot: Bot, update: Update, session):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if update.message.chat.type == 'supergroup' and squad is not None:
         for member in squad.members:
@@ -68,9 +63,8 @@ def del_squad(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_DELETE)
 
 
-@admin(AdminType.GROUP)
-def enable_thorns(bot: Bot, update: Update):
-    session = Session()
+@admin_allowed(AdminType.GROUP)
+def enable_thorns(bot: Bot, update: Update, session):
     group = session.query(Group).filter_by(id=update.message.chat.id).first()
     if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
         group.squad[0].thorns_enabled = True
@@ -79,9 +73,8 @@ def enable_thorns(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_THORNS_ENABLED)
 
 
-@admin(AdminType.GROUP)
-def disable_thorns(bot: Bot, update: Update):
-    session = Session()
+@admin_allowed(AdminType.GROUP)
+def disable_thorns(bot: Bot, update: Update, session):
     group = session.query(Group).filter_by(id=update.message.chat.id).first()
     if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
         group.squad[0].thorns_enabled = False
@@ -90,9 +83,8 @@ def disable_thorns(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_THORNS_DISABLED)
 
 
-@admin(AdminType.GROUP)
-def squad_list(bot: Bot, update: Update):
-    session = scoped_session(Session)()
+@admin_allowed(AdminType.GROUP)
+def squad_list(bot: Bot, update: Update, session):
     admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     global_adm = False
     for adm in admin:
@@ -111,8 +103,8 @@ def squad_list(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LIST, reply_markup=markup)
 
 
-def squad_request(bot: Bot, update: Update):
-    session = Session()
+@user_allowed
+def squad_request(bot: Bot, update: Update, session):
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if user is not None:
         if user.character:
@@ -120,15 +112,14 @@ def squad_request(bot: Bot, update: Update):
                 markup = generate_leave_squad(user.id)
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
             else:
-                markup = generate_squad_request()
+                markup = generate_squad_request(session)
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
         else:
             send_async(bot, chat_id=update.message.chat.id, text='Сначала дай мне профиль!')
 
 
-@admin(AdminType.GROUP)
-def list_squad_requests(bot: Bot, update: Update):
-    session = Session()
+@admin_allowed(AdminType.GROUP)
+def list_squad_requests(bot: Bot, update: Update, session):
     admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     group_admin = []
     for adm in admin:
@@ -148,9 +139,8 @@ def list_squad_requests(bot: Bot, update: Update):
                    text=MSG_SQUAD_REQUEST_EMPTY)
 
 
-@admin(AdminType.GROUP)
-def open_hiring(bot: Bot, update: Update):
-    session = Session()
+@admin_allowed(AdminType.GROUP)
+def open_hiring(bot: Bot, update: Update, session):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         squad.hiring = True
@@ -159,9 +149,8 @@ def open_hiring(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text='Набор открыт')
 
 
-@admin(AdminType.GROUP)
-def close_hiring(bot: Bot, update: Update):
-    session = Session()
+@admin_allowed(AdminType.GROUP)
+def close_hiring(bot: Bot, update: Update, session):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         squad.hiring = False
@@ -170,9 +159,8 @@ def close_hiring(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text='Набор закрыт')
 
 
-@admin(AdminType.GROUP)
-def remove_from_squad(bot: Bot, update: Update):
-    session = Session()
+@admin_allowed(AdminType.GROUP)
+def remove_from_squad(bot: Bot, update: Update, session):
     admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     group_admin = []
     for adm in admin:
@@ -188,9 +176,8 @@ def remove_from_squad(bot: Bot, update: Update):
                    reply_markup=markup)
 
 
-@admin(AdminType.GROUP)
-def add_to_squad(bot: Bot, update: Update):
-    session = Session()
+@admin_allowed(AdminType.GROUP)
+def add_to_squad(bot: Bot, update: Update, session):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         username = update.message.text.split(' ', 1)
