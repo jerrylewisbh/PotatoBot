@@ -12,7 +12,7 @@ def group_list(bot: Bot, update: Update, session):
 
 
 @admin_allowed(AdminType.FULL)
-def add_group(bot: Bot, update: Update, chat_data, session):
+def add_group(bot: Bot, update: Update, session, chat_data):
     chat_data['wait_group_name'] = False
     group = OrderGroup()
     group.name = update.message.text

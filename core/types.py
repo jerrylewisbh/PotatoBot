@@ -301,7 +301,7 @@ def admin_allowed(adm_type=AdminType.FULL):
 
 
 def user_allowed(func):
-    admin_allowed(AdminType.NOT_ADMIN)(func)
+    return admin_allowed(AdminType.NOT_ADMIN)(func)
 
 
 Base.metadata.create_all(ENGINE)
