@@ -1,19 +1,17 @@
 from telegram import Update, Bot
 
 from core.functions.inline_keyboard_handling import generate_profile_buttons
-from core.regexp import hero, profile
-from core.types import Character, User, admin, Session, Equip
+from core.regexp import HERO, PROFILE
+from core.types import Character, User, admin_allowed, Equip, user_allowed
 from core.utils import send_async
 from datetime import timedelta
 import re
-from core import regexp
 from core.template import fill_char_template
 from core.texts import *
 
 
-def parse_profile(profile, user_id, date):
-    session = Session()
-    parsed_data = re.search(regexp.profile, profile)
+def parse_profile(profile, user_id, date, session):
+    parsed_data = re.search(PROFILE, profile)
     char = session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
         char = Character()
@@ -38,9 +36,8 @@ def parse_profile(profile, user_id, date):
     return char
 
 
-def parse_hero(profile, user_id, date):
-    session = Session()
-    parsed_data = re.search(regexp.hero, profile)
+def parse_hero(profile, user_id, date, session):
+    parsed_data = re.search(HERO, profile)
     char = session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
         char = Character()
@@ -71,37 +68,42 @@ def parse_hero(profile, user_id, date):
     return char
 
 
-def char_update(bot: Bot, update: Update):
+@user_allowed
+def char_update(bot: Bot, update: Update, session):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
     else:
         char = None
-        if re.search(hero, update.message.text):
-            char = parse_hero(update.message.text, update.message.from_user.id, update.message.forward_date)
-        elif re.search(profile, update.message.text):
-            char = parse_profile(update.message.text, update.message.from_user.id, update.message.forward_date)
+        if re.search(HERO, update.message.text):
+            char = parse_hero(update.message.text,
+                              update.message.from_user.id,
+                              update.message.forward_date,
+                              session)
+        elif re.search(PROFILE, update.message.text):
+            char = parse_profile(update.message.text,
+                                 update.message.from_user.id,
+                                 update.message.forward_date,
+                                 session)
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name))
 
 
-def char_show(bot: Bot, update: Update):
+@user_allowed
+def char_show(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
-        session = Session()
         user = session.query(User).filter_by(id=update.message.from_user.id).first()
         if user is not None and user.character is not None:
-            char =user.character
+            char = user.character
             text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
             btns = generate_profile_buttons(user)
             send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns)
 
 
-#@data_update
-@admin()
-def find_by_username(bot: Bot, update: Update):
+@admin_allowed()
+def find_by_username(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg != '':
-            session = Session()
             user = session.query(User).filter_by(username=msg).first()
             if user is not None and user.character:
                 char = user.character
