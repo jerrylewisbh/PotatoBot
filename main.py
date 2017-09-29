@@ -67,7 +67,6 @@ chatwars_id = 265204902
 tradebot_id = 278525885
 # -------------------
 
-last_welcome = 0
 logging.basicConfig(
     level=logging.WARNING,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
