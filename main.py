@@ -62,10 +62,10 @@ from core.utils import add_user, send_async
 
 from sqlalchemy.exc import SQLAlchemyError
 
-#-----constants----
+# -----constants----
 chatwars_id = 265204902
 tradebot_id = 278525885
-#-------------------
+# -------------------
 
 last_welcome = 0
 logging.basicConfig(
