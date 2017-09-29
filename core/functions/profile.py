@@ -85,6 +85,8 @@ def parse_reports(report, user_id, date, session):
         char.earned_exp = int(parsed_data.group(6))
         char.earned_gold = int(parsed_data.group(7))
         char.earned_stock = int(parsed_data.group(8))
+        session.add(char)
+        session.commit()
     return char
 
 @user_allowed
