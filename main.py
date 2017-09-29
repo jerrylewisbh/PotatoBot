@@ -31,8 +31,8 @@ from core.functions.orders import order, orders
 from core.functions.common import (
     help_msg, ping, start, error, kick,
     admin_panel, stock_compare, trade_compare,
-    delete_msg, delete_user
-)
+    delete_msg, delete_user,
+    user_panel)
 from core.functions.inline_keyboard_handling import (
     callback_query, send_status, send_order, QueryType
 )
@@ -199,6 +199,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                     if '📦твой склад с материалами:' in text:
                         trade_compare(bot, update, chat_data)
             else:
+                user_panel(bot, update)
                 order(bot, update, chat_data)
         else:
             order(bot, update, chat_data)
