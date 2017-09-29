@@ -92,9 +92,9 @@ class User(Base):
                          order_by='Stock.date.desc()',
                          uselist=False)
 
-    reports = relationship('reports',
+    report = relationship('Report',
                            back_populates='user',
-                           order_by='Character.date.desc()')
+                           order_by='Report.date.desc()')
 
     def __repr__(self):
         user = ''
@@ -223,7 +223,7 @@ class Character(Base):
     user = relationship('User', back_populates='character')
 
 
-class Reports(Base):
+class Report(Base):
     __tablename__ = 'reports'
 
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
@@ -237,7 +237,7 @@ class Reports(Base):
     earned_gold = Column(Integer)
     earned_stock = Column(Integer)
 
-    user = relationship('User', back_populates='reports')
+    user = relationship('User', back_populates='report')
 
 
 class Squad(Base):

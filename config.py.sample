@@ -4,3 +4,4 @@ TOKEN = '<SOME_TOKEN>' # Токен телеграмбота (получаетс
 DB = 'mysql+pymysql://<username>:<password>@<host>/<dbname>?charset=utf8mb4' # Строчка подключения к базе данных (поддерживается только MySql, о формате можно прочитать тут http://docs.sqlalchemy.org/en/latest/dialects/mysql.html)
 API_PORT = 88 # Порт, по которому будет доступен внешний апи бота (REST)
 GOVERNMENT_CHAT = -1001149271906 # Чат, в который бот будет слать отчёты
+SUPER_ADMIN_ID = #id супер админа
