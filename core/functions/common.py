@@ -5,7 +5,7 @@ import logging
 from telegram import Update, Bot, ParseMode
 
 from core.functions.triggers import trigger_decorator
-from core.functions.reply_markup import generate_admin_markup
+from core.functions.reply_markup import generate_admin_markup, generate_user_markup
 from core.texts import *
 from core.types import AdminType, Admin, Stock, admin_allowed, user_allowed
 from core.utils import send_async, add_user
@@ -45,6 +45,18 @@ def admin_panel(bot: Bot, update: Update, session):
                 grp_adm = True
         send_async(bot, chat_id=update.message.chat.id, text=MSG_ADMIN_WELCOME,
                    reply_markup=generate_admin_markup(full_adm, grp_adm))
+
+
+@user_allowed
+def user_panel(bot: Bot, update: Update, session):
+    if update.message.chat.type == 'private':
+        admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        is_admin = False
+        for _ in admin:
+            is_admin = True
+            break
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME,
+                   reply_markup=generate_user_markup(is_admin))
 
 
 @admin_allowed()

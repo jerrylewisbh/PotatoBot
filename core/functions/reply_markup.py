@@ -9,3 +9,11 @@ def generate_admin_markup(full=False, grp=False):
         buttons.append([KeyboardButton('Заявки в отряд'), KeyboardButton('Чистка отряда')])
     buttons.append([KeyboardButton('Список отряда')])
     return ReplyKeyboardMarkup(buttons, True)
+
+
+def generate_user_markup(is_admin=False):
+    buttons = [[KeyboardButton('Герой'), KeyboardButton('Топ')],
+               [KeyboardButton('Отряд'), KeyboardButton('Статистика')],
+               [KeyboardButton('Стройка'), KeyboardButton('Связь')]]
+    if is_admin:
+        buttons.append([KeyboardButton('/admin')])
