@@ -80,8 +80,6 @@ def parse_reports(report, user_id, date, session):
         char.attack = str(parsed_data.group(3))
         char.defence = str(parsed_data.group(4))
         char.level = int(parsed_data.group(5))
-        char.level = int(parsed_data.group(5))
-        char.level = int(parsed_data.group(5))
         char.earned_exp = int(parsed_data.group(6))
         char.earned_gold = int(parsed_data.group(7))
         char.earned_stock = int(parsed_data.group(8))
