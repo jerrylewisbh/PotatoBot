@@ -2,7 +2,7 @@ from telegram import Update, Bot
 
 from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.regexp import HERO, PROFILE, REPORT
-from core.types import Character, User, admin_allowed, Equip, user_allowed
+from core.types import Character, Reports, User, admin_allowed, Equip, user_allowed
 from core.utils import send_async
 from datetime import timedelta
 import re
@@ -70,9 +70,9 @@ def parse_hero(profile, user_id, date, session):
 
 def parse_reports(report, user_id, date, session):
     parsed_data = re.search(REPORT, report)
-    char = session.query(Character).filter_by(user_id=user_id, date=date).first()
+    char = session.query(Reports).filter_by(user_id=user_id, date=date).first()
     if char is None:
-        char = Character()
+        char = Reports()
         char.user_id = user_id
         char.date = date
         char.castle = str(parsed_data.group(1))
