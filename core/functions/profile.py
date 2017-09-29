@@ -68,7 +68,7 @@ def parse_hero(profile, user_id, date, session):
     return char
 
 
-def parse_reports(report, user_id, date, session)
+def parse_reports(report, user_id, date, session):
     parsed_data = re.search(REPORT, report)
     char = session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
@@ -82,9 +82,9 @@ def parse_reports(report, user_id, date, session)
         char.level = int(parsed_data.group(5))
         char.level = int(parsed_data.group(5))
         char.level = int(parsed_data.group(5))
-        char.earned_exp = int(pased_data.group(6))
-        char.earned_gold = int(pased_data.group(7))
-        char.earned_stock = int(pased_data.group(8))
+        char.earned_exp = int(parsed_data.group(6))
+        char.earned_gold = int(parsed_data.group(7))
+        char.earned_stock = int(parsed_data.group(8))
     return char
 
 @user_allowed
