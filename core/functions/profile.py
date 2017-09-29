@@ -68,8 +68,8 @@ def parse_hero(profile, user_id, date, session):
     return char
 
 
-def parse_reports(profile, user_id, date, session)
-    parsed_data = re.search(REPORT, profile)
+def parse_reports(report, user_id, date, session)
+    parsed_data = re.search(REPORT, report)
     char = session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
         char = Character()
