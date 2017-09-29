@@ -93,10 +93,9 @@ class User(Base):
                          uselist=False)
 
     reports = relationship('reports',
-                         back_populates='user',
-                         order_by='Character.date.desc()')
+                           back_populates='user',
+                           order_by='Character.date.desc()')
 
-    
     def __repr__(self):
         user = ''
         if self.first_name:
@@ -239,6 +238,7 @@ class Reports(Base):
     earned_stock = Column(Integer)
 
     user = relationship('User', back_populates='reports')
+
 
 class Squad(Base):
     __tablename__ = 'squads'
