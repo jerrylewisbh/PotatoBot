@@ -92,6 +92,11 @@ class User(Base):
                          order_by='Stock.date.desc()',
                          uselist=False)
 
+    reports = relationship('reports',
+                         back_populates='user',
+                         order_by='Character.date.desc()')
+
+    
     def __repr__(self):
         user = ''
         if self.first_name:
@@ -218,6 +223,22 @@ class Character(Base):
 
     user = relationship('User', back_populates='character')
 
+
+class Reports(Base):
+    __tablename__ = 'reports'
+
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+    date = Column(DATETIME(fsp=6), primary_key=True)
+    name = Column(UnicodeText(250))
+    level = Column(Integer)
+    attack = Column(Integer)
+    defence = Column(Integer)
+    castle = Column(UnicodeText(100))
+    earned_exp = Column(Integer)
+    earned_gold = Column(Integer)
+    earned_stock = Column(Integer)
+
+    user = relationship('User', back_populates='reports')
 
 class Squad(Base):
     __tablename__ = 'squads'
