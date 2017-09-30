@@ -5,9 +5,10 @@ from core.utils import send_async
 from core.texts import *
 from config import ACADEM_CHAT_ID, CASTLE_CHAT_ID
 
-if ACADEM_CHAT_ID and CASTLE_CHAT_ID:
     @user_allowed
+
     def newbie(bot: Bot, update: Update, session):
+        if ACADEM_CHAT_ID and CASTLE_CHAT_ID:
         if update.message.chat.id in [CASTLE_CHAT_ID]:
             if update.message.new_chat_member is not None:
                 user = session.query(User).filter(User.id == update.message.new_chat_member.id).first()
