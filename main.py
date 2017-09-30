@@ -196,7 +196,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 if from_id == CWBOT_ID:
                     if text.startswith('📦содержимое склада'):
                         stock_compare(bot, update, chat_data)
-                    elif re.search(PROFILE, text) or re.search(HERO, text):
+                    elif re.search(PROFILE, update.message.text) or re.search(HERO, update.message.text):
                         char_update(bot, update)
 
                 elif from_id == TRADEBOT_ID:
