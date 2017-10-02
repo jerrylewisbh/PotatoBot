@@ -12,7 +12,7 @@ from core.texts import (
 )
 from core.types import User, AdminType, Admin, admin_allowed, user_allowed
 from core.utils import send_async
-
+from config import SUPER_ADMIN_ID
 
 @admin_allowed()
 def set_admin(bot: Bot, update: Update, session):
@@ -165,7 +165,7 @@ def set_super_admin(bot: Bot, update: Update, session):
                        text=MSG_USER_UNKNOWN)
 
         else:
-            if user.id == 79612802 and update.message.from_user.id == 79612802:
+            if user.id == SUPER_ADMIN_ID and update.message.from_user.id == SUPER_ADMIN_ID:
                 adm = session.query(Admin).filter_by(user_id=user.id, admin_group=0).first()
                 if adm is not None:
                     if adm.admin_type == AdminType.SUPER.value:

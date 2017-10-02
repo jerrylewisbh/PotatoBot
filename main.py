@@ -62,7 +62,11 @@ from core.utils import add_user, send_async
 
 from sqlalchemy.exc import SQLAlchemyError
 
-last_welcome = 0
+# -----constants----
+CWBOT_ID = 265204902
+TRADEBOT_ID = 278525885
+# -------------------
+
 logging.basicConfig(
     level=logging.WARNING,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -159,7 +163,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             elif text == 'свали':
                 delete_user(bot, update)
         elif 'твои результаты в бою:' in text:
-            if update.message.forward_from.id == 265204902:
+            if update.message.forward_from.id == CWBOT_ID:
                 job_queue.run_once(del_msg, 2, (update.message.chat.id,
                                                 update.message.message_id))
         elif update.message.text:
@@ -189,13 +193,13 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             elif update.message.forward_from:
                 from_id = update.message.forward_from.id
 
-                if from_id == 265204902:
+                if from_id == CWBOT_ID:
                     if text.startswith('📦содержимое склада'):
                         stock_compare(bot, update, chat_data)
                     elif re.search(PROFILE, update.message.text) or re.search(HERO, update.message.text):
                         char_update(bot, update)
 
-                elif from_id == 278525885:
+                elif from_id == TRADEBOT_ID:
                     if '📦твой склад с материалами:' in text:
                         trade_compare(bot, update, chat_data)
             else:
