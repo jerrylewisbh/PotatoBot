@@ -70,22 +70,23 @@ def parse_hero(profile, user_id, date, session):
 
 def parse_reports(report, user_id, date, session):
     parsed_data = re.search(REPORT, report)
-    char = session.query(Reports).filter_by(user_id=user_id, date=date).first()
-    if char is None:
-        char = Report()
-        char.user_id = user_id
-        char.date = date
-        char.castle = str(parsed_data.group(1))
-        char.name = str(parsed_data.group(2))
-        char.attack = str(parsed_data.group(3))
-        char.defence = str(parsed_data.group(4))
-        char.level = int(parsed_data.group(5))
-        char.earned_exp = int(parsed_data.group(6))
-        char.earned_gold = int(parsed_data.group(7))
-        char.earned_stock = int(parsed_data.group(8))
-        session.add(char)
+    report = session.query(Report).filter_by(user_id=user_id, date=date).first()
+    if report is None:
+        report = Report()
+        report.user_id = user_id
+        report.date = date
+        report.castle = str(parsed_data.group(1))
+        report.name = str(parsed_data.group(2))
+        report.attack = str(parsed_data.group(3))
+        report.defence = str(parsed_data.group(4))
+        report.level = int(parsed_data.group(5))
+        report.earned_exp = int(parsed_data.group(6))
+        report.earned_gold = int(parsed_data.group(7))
+        report.earned_stock = int(parsed_data.group(8))
+        session.add(report)
         session.commit()
-    return char
+    return report
+
 
 @user_allowed
 def char_update(bot: Bot, update: Update, session):
