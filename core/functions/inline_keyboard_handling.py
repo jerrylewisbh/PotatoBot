@@ -14,8 +14,8 @@ from core.template import fill_char_template
 from core.types import (
     User, Group, Admin, admin_allowed, Order, OrderGroup,
     OrderGroupItem, OrderCleared, Squad, user_allowed,
-    Character, SquadMember, MessageType, AdminType
-)
+    Character, SquadMember, MessageType, AdminType,
+    Session)
 from core.texts import *
 from core.utils import send_async, update_group, add_user
 
@@ -205,15 +205,12 @@ def generate_profile_buttons(user):
     return InlineKeyboardMarkup(inline_keys)
 
 
-def generate_squad_list_key(squad, session):
+def generate_squad_list_key(squad):
     attack = 0
     defence = 0
-    members = session.query(SquadMember).filter_by(squad_id=squad.chat_id).all()
+    members = squad.members
     for member in members:
-        character = session.query(Character).\
-            filter_by(user_id=member.user_id).\
-            order_by(Character.date.desc()).\
-            limit(1).first()
+        character = member.user.character
         attack += character.attack
         defence += character.defence
     return [InlineKeyboardButton(
@@ -228,12 +225,8 @@ def generate_squad_list_key(squad, session):
 
 def generate_squad_list(squads):
     inline_keys = []
-    pool = ThreadPool(processes=10)
-    threads = []
     for squad in squads:
-        threads.append(pool.apply_async(generate_squad_list_key, (squad,)))
-    for thread in threads:
-        inline_keys.append(thread.get())
+        inline_keys.append(generate_squad_list_key(squad))
     return InlineKeyboardMarkup(inline_keys)
 
 
