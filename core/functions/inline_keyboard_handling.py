@@ -212,8 +212,10 @@ def generate_squad_list_key(squad, session):
     user_ids = []
     for member in members:
         user_ids.append(member.user_id)
-    characters = session.query(Character).filter(Character.user_id in user_ids).\
-        group_by(Character.user_id).having(func.max(Character.date)).all()
+    characters = session.query(Character).filter((Character.user_id, Character.date) in
+                                                 session.query(Character.user_id, func.max(Character.date)).
+                                                 filter(Character.user_id in user_ids).
+                                                 group_by(Character.user_id).all()).all()
     for character in characters:
         attack += character.attack
         defence += character.defence
