@@ -353,7 +353,6 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
     update_group(update.callback_query.message.chat, session)
     user = add_user(update.callback_query.from_user, session)
     data = json.loads(update.callback_query.data)
-    LOGGER.warning(data)
     if data['t'] == QueryType.GroupList.value:
         msg = MSG_GROUP_STATUS_CHOOSE_CHAT
         squads = session.query(Squad).all()
