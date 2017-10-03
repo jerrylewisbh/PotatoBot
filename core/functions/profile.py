@@ -1,8 +1,8 @@
 from telegram import Update, Bot
 
 from core.functions.inline_keyboard_handling import generate_profile_buttons
-from core.regexp import HERO, PROFILE
-from core.types import Character, User, admin_allowed, Equip, user_allowed
+from core.regexp import HERO, PROFILE, REPORT
+from core.types import Character, Report, User, admin_allowed, Equip, user_allowed
 from core.utils import send_async
 from datetime import timedelta
 import re
@@ -66,6 +66,26 @@ def parse_hero(profile, user_id, date, session):
         session.add(char)
         session.commit()
     return char
+
+
+def parse_reports(report, user_id, date, session):
+    parsed_data = re.search(REPORT, report)
+    report = session.query(Report).filter_by(user_id=user_id, date=date).first()
+    if report is None:
+        report = Report()
+        report.user_id = user_id
+        report.date = date
+        report.castle = str(parsed_data.group(1))
+        report.name = str(parsed_data.group(2))
+        report.attack = str(parsed_data.group(3))
+        report.defence = str(parsed_data.group(4))
+        report.level = int(parsed_data.group(5))
+        report.earned_exp = int(parsed_data.group(6))
+        report.earned_gold = int(parsed_data.group(7))
+        report.earned_stock = int(parsed_data.group(8))
+        session.add(report)
+        session.commit()
+    return report
 
 
 @user_allowed
