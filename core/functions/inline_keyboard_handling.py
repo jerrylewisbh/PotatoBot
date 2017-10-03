@@ -303,10 +303,10 @@ def generate_squad_request_answer(user_id):
 
 
 def generate_squad_invite_answer(user_id):
-    inline_keys = [InlineKeyboardButton('✅Зелёное Да',
+    inline_keys = [InlineKeyboardButton(MSG_SQUAD_GREEN_INLINE_BUTTON,
                                         callback_data=json.dumps(
                                             {'t': QueryType.InviteSquadAccept.value, 'id': user_id})),
-                   InlineKeyboardButton('❌Красное Да',
+                   InlineKeyboardButton(MSG_SQUAD_RED_INLINE_BUTTON,
                                         callback_data=json.dumps(
                                             {'t': QueryType.InviteSquadDecline.value, 'id': user_id}))]
     return InlineKeyboardMarkup([inline_keys])
