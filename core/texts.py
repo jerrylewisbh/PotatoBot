@@ -148,14 +148,6 @@ MSG_MAIN_INLINE_BATTLE = 'ГРАБЬНАСИЛУЙУБИВАЙ!'
 MSG_MAIN_READY_TO_BATTLE = 'К битве готовсь!'
 # -----------------------
 
-# reply_markup buttons
-MSG_ORDER_BUTTON = 'Приказы'
-MSG_STATUS_BUTTON = 'Статус'
-MSG_GROUP_BUTTON = 'Группы'
-MSG_CLAIM_BUTTON = 'Заявки в отряд'
-MSG_CLEAN_BUTTON = 'Чистка отряда'
-MSG_SQUAD_LIST_BUTTON = 'Список отряда'
-# ------------------------
 
 MSG_PROFILE_NOT_FOUND = 'В мятных записях ещё нет данных об этом герое'
 MSG_SQUAD_REQUEST_EMPTY = 'На данный момент к вам никто не хочет.'
@@ -164,7 +156,7 @@ MSG_NO_PROFILE_IN_BOT = 'Сначала дай мне профиль!'
 MSG_SQUAD_RECRUITING_ENABLED = 'Набор открыт!'
 MSG_SQUAD_RECRUITING_DISABLED = 'Набор закрыт!'
 MSG_SQUAD_NO_PROFILE = 'Сначала пусть даст профиль!'
-MSG_SQUAD_GREEN_INLINE_BUTTON ='✅Зелёное Да'
+MSG_SQUAD_GREEN_INLINE_BUTTON = '✅Зелёное Да'
 MSG_SQUAD_RED_INLINE_BUTTON = '❌Красное Да'
 MSG_SQUAD_NEW = """Теперь здесь будет обитать отряд {}!
 Не забудьте задать ссылку для приглашения новых участников."""
