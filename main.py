@@ -16,6 +16,8 @@ from telegram.ext.dispatcher import run_async
 from telegram.error import TelegramError
 
 from config import TOKEN, GOVERNMENT_CHAT
+from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COMMAND_ORDER, ADMIN_COMMAND_SQUAD_LIST, \
+    ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME
 from core.functions.activity import (
     day_activity, week_activity, battle_activity
 )
@@ -169,23 +171,28 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             trigger_show(bot, update)
 
     elif update.message.chat.type == 'private':
-        if update.message.text:
+        if 'order_wait' in chat_data and chat_data['order_wait']:
+            order(bot, update, chat_data)
+
+        elif update.message.text:
             text = update.message.text.lower()
 
-            if text == 'статус':
+            if text == ADMIN_COMMAND_STATUS.lower():
                 send_status(bot, update)
             elif text == 'хочу в отряд':
                 squad_request(bot, update)
-            elif text == 'заявки в отряд':
+            elif text == ADMIN_COMMAND_RECRUIT.lower():
                 list_squad_requests(bot, update)
-            elif text in ['приказы', 'пин']:
+            elif text == ADMIN_COMMAND_ORDER.lower():
                 orders(bot, update, chat_data)
-            elif text in ['список отряда', 'список']:
+            elif text == ADMIN_COMMAND_SQUAD_LIST.lower():
                 squad_list(bot, update)
-            elif text == 'группы':
+            elif text == ADMIN_COMMAND_GROUPS.lower():
                 group_list(bot, update)
-            elif text == 'чистка отряда':
+            elif text == ADMIN_COMMAND_FIRE_UP.lower():
                 remove_from_squad(bot, update)
+            elif text == USER_COMMAND_ME.lower():
+                char_show(bot, update)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
                 add_group(bot, update, chat_data)
 
@@ -203,9 +210,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                         trade_compare(bot, update, chat_data)
             else:
                 user_panel(bot, update)
-                order(bot, update, chat_data)
         else:
-            order(bot, update, chat_data)
+            user_panel(bot, update)
 
 
 @run_async
