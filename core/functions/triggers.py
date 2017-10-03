@@ -161,8 +161,8 @@ def list_triggers(bot: Bot, update: Update, session):
     triggers = session.query(Trigger).all()
     local_triggers = session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id).all()
     msg = MSG_TRIGGER_LIST_HEADER + \
-          '<b>Глобальные:</b>\n' + ('\n'.join([trigger.trigger for trigger in triggers]) or MSG_EMPTY) + \
-          '\n<b>Локальные:</b>\n' + ('\n'.join([trigger.trigger for trigger in local_triggers]) or MSG_EMPTY)
+          MSG_TRIGGER_GLOBAL + ('\n'.join([trigger.trigger for trigger in triggers]) or MSG_EMPTY) + \
+          MSG_TRIGGER_LOCAL + ('\n'.join([trigger.trigger for trigger in local_triggers]) or MSG_EMPTY)
     send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
 
 
