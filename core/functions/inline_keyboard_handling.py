@@ -3,7 +3,6 @@ from enum import Enum
 import json
 from json import loads
 import logging
-from multiprocessing.pool import ThreadPool
 
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
 from telegram.ext.dispatcher import run_async
@@ -14,10 +13,11 @@ from core.template import fill_char_template
 from core.types import (
     User, Group, Admin, admin_allowed, Order, OrderGroup,
     OrderGroupItem, OrderCleared, Squad, user_allowed,
-    Character, SquadMember, MessageType, AdminType,
-    Session)
+    Character, SquadMember, MessageType, AdminType)
 from core.texts import *
 from core.utils import send_async, update_group, add_user
+
+from sqlalchemy import func
 
 
 LOGGER = logging.getLogger('MyApp')
@@ -205,12 +205,16 @@ def generate_profile_buttons(user):
     return InlineKeyboardMarkup(inline_keys)
 
 
-def generate_squad_list_key(squad):
+def generate_squad_list_key(squad, session):
     attack = 0
     defence = 0
     members = squad.members
+    user_ids = []
     for member in members:
-        character = member.user.character
+        user_ids.append(member.user_id)
+    characters = session.query(Character).filter(Character.user_id in user_ids).\
+        group_by(Character.user_id).having(func.max(Character.date)).all()
+    for character in characters:
         attack += character.attack
         defence += character.defence
     return [InlineKeyboardButton(
@@ -223,10 +227,10 @@ def generate_squad_list_key(squad):
         callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))]
 
 
-def generate_squad_list(squads):
+def generate_squad_list(squads, session):
     inline_keys = []
     for squad in squads:
-        inline_keys.append(generate_squad_list_key(squad))
+        inline_keys.append(generate_squad_list_key(squad, session))
     return InlineKeyboardMarkup(inline_keys)
 
 

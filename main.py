@@ -4,7 +4,6 @@ from datetime import datetime, time
 import json
 import logging
 import re
-from threading import Thread
 
 from telegram import (
     Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
@@ -182,7 +181,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             elif text in ['приказы', 'пин']:
                 orders(bot, update, chat_data)
             elif text in ['список отряда', 'список']:
-                Thread(target=squad_list, args=(bot, update)).start()
+                squad_list(bot, update)
             elif text == 'группы':
                 group_list(bot, update)
             elif text == 'чистка отряда':
