@@ -314,7 +314,7 @@ def main():
     disp = updater.dispatcher
 
     # on different commands - answer in Telegram
-    disp.add_handler(CommandHandler("start", start))
+    disp.add_handler(CommandHandler("start", user_panel))
     disp.add_handler(CommandHandler("admin", admin_panel))
     disp.add_handler(CommandHandler("help", help_msg))
     disp.add_handler(CommandHandler("ping", ping))
