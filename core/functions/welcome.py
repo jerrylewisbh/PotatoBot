@@ -23,7 +23,7 @@ def welcome(bot: Bot, update: Update, session):
                 if adm.admin_type == AdminType.FULL.value:
                     allow_anywhere = True
                     break
-            if len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != 386494081 and \
+            if len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != bot.id and \
                     (user.member or user.member not in group.squad[0].members) and not allow_anywhere:
                 send_async(bot, chat_id=update.message.chat.id,
                            text=MSG_THORNS.format(str(user)))
