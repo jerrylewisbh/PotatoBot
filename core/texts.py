@@ -160,8 +160,6 @@ MSG_SQUAD_LIST_BUTTON = 'Список отряда'
 MSG_PROFILE_NOT_FOUND = 'В мятных записях ещё нет данных об этом герое'
 MSG_SQUAD_REQUEST_EMPTY = 'На данный момент к вам никто не хочет.'
 
-MSG_READY_FOR_BATTLE = 'К битве готовсь!'
-
 MSG_NO_PROFILE_IN_BOT = 'Сначала дай мне профиль!'
 MSG_SQUAD_RECRUITING_ENABLED = 'Набор открыт!'
 MSG_SQUAD_RECRUITING_DISABLED = 'Набор закрыт!'
