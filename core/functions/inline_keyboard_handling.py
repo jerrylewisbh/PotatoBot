@@ -4,7 +4,7 @@ import json
 from json import loads
 import logging
 
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError, Message
 from telegram.ext.dispatcher import run_async
 
 from core.enums import Castle, Icons
@@ -47,6 +47,7 @@ class QueryType(Enum):
     InviteSquadAccept = 20
     InviteSquadDecline = 21
     TriggerOrderPin = 22
+    SquadList = 23
 
 
 @admin_allowed()
@@ -193,15 +194,21 @@ def generate_group_manage(group_id, session):
     return InlineKeyboardMarkup(inline_keys)
 
 
-def generate_profile_buttons(user):
+def generate_profile_buttons(user, back_key=False):
     inline_keys = [[InlineKeyboardButton('🏅Герой', callback_data=json.dumps(
-        {'t': QueryType.ShowHero.value, 'id': user.id}))]]
+        {'t': QueryType.ShowHero.value, 'id': user.id, 'b': back_key}))]]
     if user.stock:
         inline_keys.append([InlineKeyboardButton('📦Склад', callback_data=json.dumps(
-            {'t': QueryType.ShowStock.value, 'id': user.id}))])
+            {'t': QueryType.ShowStock.value, 'id': user.id, 'b': back_key}))])
     if user.equip:
         inline_keys.append([InlineKeyboardButton('🎽Экипировка', callback_data=json.dumps(
-            {'t': QueryType.ShowEquip.value, 'id': user.id}))])
+            {'t': QueryType.ShowEquip.value, 'id': user.id, 'b': back_key}))])
+    if back_key:
+        inline_keys.append(
+            [InlineKeyboardButton(MSG_BACK,
+                                  callback_data=json.dumps(
+                                      {'t': QueryType.MemberList.value, 'id': user.member.squad_id}
+                                  ))])
     return InlineKeyboardMarkup(inline_keys)
 
 
@@ -272,8 +279,14 @@ def generate_squad_members(members, session):
                                          character.defence),
                                   callback_data=json.dumps(
                                       {'t': QueryType.ShowHero.value,
-                                       'id': character.user_id}
+                                       'id': character.user_id,
+                                       'b': True}
                                   ))])
+    inline_keys.append(
+        [InlineKeyboardButton(MSG_BACK,
+                              callback_data=json.dumps(
+                                  {'t': QueryType.SquadList.value}
+                              ))])
     return InlineKeyboardMarkup(inline_keys)
 
 
@@ -541,26 +554,32 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
     elif data['t'] == QueryType.ShowEquip.value:
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
+        back = data['b'] if 'b' in data else False
         bot.editMessageText('{}\n🕑 Последнее обновление {}'.format(user.equip.equip, user.equip.date),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
-                            reply_markup=generate_profile_buttons(user))
+                            reply_markup=generate_profile_buttons(user, back)
+                            )
     elif data['t'] == QueryType.ShowStock.value:
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
+        back = data['b'] if 'b' in data else False
         bot.editMessageText('{}\n🕑 Последнее обновление {}'.
                             format(user.stock.stock, user.stock.date.strftime("%Y-%m-%d %H:%M:%S")),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
-                            reply_markup=generate_profile_buttons(user))
+                            reply_markup=generate_profile_buttons(user, back)
+                            )
     elif data['t'] == QueryType.ShowHero.value:
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
+        back = data['b'] if 'b' in data else False
         bot.editMessageText(fill_char_template(MSG_PROFILE_SHOW_FORMAT,
                                                user, user.character),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
-                            reply_markup=generate_profile_buttons(user))
+                            reply_markup=generate_profile_buttons(user, back)
+                            )
     elif data['t'] == QueryType.MemberList.value:
         squad = session.query(Squad).filter_by(chat_id=data['id']).first()
         markup = generate_squad_members(squad.members, session)
@@ -681,3 +700,22 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
                                 reply_markup=markup)
+    elif data['t'] == QueryType.SquadList.value:
+        admin = session.query(Admin).filter_by(user_id=update.callback_query.from_user.id).all()
+        global_adm = False
+        for adm in admin:
+            if adm.admin_type <= AdminType.FULL.value:
+                global_adm = True
+                break
+        if global_adm:
+            squads = session.query(Squad).all()
+        else:
+            group_ids = []
+            for adm in admin:
+                group_ids.append(adm.admin_group)
+            squads = session.query(Squad).filter(Squad.chat_id in group_ids).all()
+        markup = generate_squad_list(squads, session)
+        bot.editMessageText(MSG_SQUAD_LIST,
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)
