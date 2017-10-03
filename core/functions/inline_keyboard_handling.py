@@ -377,9 +377,12 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
     elif data['t'] == QueryType.Order.value:
+        order_text = chat_data['order']
+        order_type = chat_data['order_type']
+        order_pin = True if 'pin' in chat_data and chat_data['pin'] or 'pin' not in chat_data else False
         if not data['g']:
             order = Order()
-            order.text = chat_data['order']
+            order.text = order_text
             order.chat_id = data['id']
             order.date = datetime.now()
             msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY).result()
@@ -390,8 +393,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             session.add(order)
             session.commit()
             markup = generate_ok_markup(order.id, 0)
-            msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result().result()
-            if 'pin' in chat_data and chat_data['pin'] or 'pin' not in chat_data:
+            msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
+            if order_pin and msg:
                 try:
                     bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': order.chat_id,
                                                                         'message_id': msg.message_id,
@@ -402,7 +405,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             group = session.query(OrderGroup).filter_by(id=data['id']).first()
             for item in group.items:
                 order = Order()
-                order.text = chat_data['order']
+                order.text = order_text
                 order.chat_id = item.chat_id
                 order.date = datetime.now()
                 msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY).result()
@@ -413,8 +416,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                 session.add(order)
                 session.commit()
                 markup = generate_ok_markup(order.id, 0)
-                msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result().result()
-                if 'pin' in chat_data and chat_data['pin'] or 'pin' not in chat_data:
+                msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
+                if order_pin and msg:
                     try:
                         bot.request.post(bot.base_url + '/pinChatMessage',
                                          {'chat_id': order.chat_id, 'message_id': msg.message_id,
