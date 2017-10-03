@@ -3,7 +3,7 @@ import json
 
 import flask
 from werkzeug.routing import IntegerConverter as BaseIntegerConverter
-from core.texts import MSG_READY_FOR_BATTLE
+from core.texts import MSG_MAIN_READY_TO_BATTLE
 from core.types import Order, Session, Squad, SquadMember, OrderCleared
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -26,13 +26,13 @@ def new_ready_to_battle(chat_id):
         order = Order()
         order.chat_id = chat_id
         order.confirmed_msg = 0
-        order.text = MSG_READY_FOR_BATTLE
+        order.text = MSG_MAIN_READY_TO_BATTLE
         order.date = datetime.now()
         session.add(order)
         session.commit()
         order = session.query(Order).filter_by(chat_id=chat_id,
                                                date=order.date,
-                                               text=MSG_READY_FOR_BATTLE).first()
+                                               text=MSG_MAIN_READY_TO_BATTLE).first()
 
         return flask.Response(status=200,
                               mimetype="application/json",
