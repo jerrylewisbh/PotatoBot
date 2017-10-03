@@ -270,13 +270,15 @@ def generate_squad_members(members, session):
         filter(Character.user_id.in_(user_ids)). \
         group_by(Character.user_id).all()
     characters = session.query(Character).filter(Character.user_id.in_([a[0] for a in actual_profiles]),
-                                                 Character.date.in_([a[1] for a in actual_profiles])).all()
+                                                 Character.date.in_([a[1] for a in actual_profiles]))\
+        .order_by(Character.level.desc()).all()
     for character in characters:
         inline_keys.append(
-            [InlineKeyboardButton('{}: {}⚔ {}🛡'.
+            [InlineKeyboardButton('{}: {}⚔ {}🛡 {}🏅'.
                                   format(character.name,
                                          character.attack,
-                                         character.defence),
+                                         character.defence,
+                                         character.level),
                                   callback_data=json.dumps(
                                       {'t': QueryType.ShowHero.value,
                                        'id': character.user_id,
