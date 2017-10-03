@@ -91,15 +91,14 @@ def squad_list(bot: Bot, update: Update, session):
         if adm.admin_type <= AdminType.FULL.value:
             global_adm = True
             break
-    squads = []
     if global_adm:
         squads = session.query(Squad).all()
     else:
+        group_ids = []
         for adm in admin:
-            group = session.query(Group).filter_by(id=adm.admin_group).first()
-            if len(group.squad) and group.squad[0]:
-                squads.append(group.squad[0])
-    markup = generate_squad_list(squads)
+            group_ids.append(adm.admin_group)
+        squads = session.query(Squad).filter(Squad.chat_id.in_(group_ids)).all()
+    markup = generate_squad_list(squads, session)
     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LIST, reply_markup=markup)
 
 
@@ -115,7 +114,7 @@ def squad_request(bot: Bot, update: Update, session):
                 markup = generate_squad_request(session)
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
         else:
-            send_async(bot, chat_id=update.message.chat.id, text='Сначала дай мне профиль!')
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_NO_PROFILE_IN_BOT)
 
 
 @admin_allowed(AdminType.GROUP)
@@ -146,7 +145,7 @@ def open_hiring(bot: Bot, update: Update, session):
         squad.hiring = True
         session.add(squad)
         session.commit()
-        send_async(bot, chat_id=update.message.chat.id, text='Набор открыт')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_RECRUITING_ENABLED)
 
 
 @admin_allowed(AdminType.GROUP)
@@ -156,7 +155,7 @@ def close_hiring(bot: Bot, update: Update, session):
         squad.hiring = False
         session.add(squad)
         session.commit()
-        send_async(bot, chat_id=update.message.chat.id, text='Набор закрыт')
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_RECRUITING_DISABLED)
 
 
 @admin_allowed(AdminType.GROUP)
@@ -193,4 +192,4 @@ def add_to_squad(bot: Bot, update: Update, session):
                 send_async(bot, chat_id=update.message.chat.id,
                            text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
             elif user.character is None:
-                send_async(bot, chat_id=update.message.chat.id, text='Сначала пусть даст профиль!')
+                send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)

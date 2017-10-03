@@ -4,7 +4,6 @@ from datetime import datetime, time
 import json
 import logging
 import re
-from threading import Thread
 
 from telegram import (
     Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
@@ -55,14 +54,18 @@ from core.functions.welcome import (
 )
 from core.regexp import PROFILE, HERO
 from core.texts import (
-    MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL
-)
+    MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL,
+    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE)
 from core.types import Session, Order, Squad, Admin, user_allowed
 from core.utils import add_user, send_async
 
 from sqlalchemy.exc import SQLAlchemyError
 
-last_welcome = 0
+# -----constants----
+CWBOT_ID = 265204902
+TRADEBOT_ID = 278525885
+# -------------------
+
 logging.basicConfig(
     level=logging.WARNING,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -159,7 +162,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             elif text == 'свали':
                 delete_user(bot, update)
         elif 'твои результаты в бою:' in text:
-            if update.message.forward_from.id == 265204902:
+            if update.message.forward_from.id == CWBOT_ID:
                 job_queue.run_once(del_msg, 2, (update.message.chat.id,
                                                 update.message.message_id))
         elif update.message.text:
@@ -178,7 +181,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             elif text in ['приказы', 'пин']:
                 orders(bot, update, chat_data)
             elif text in ['список отряда', 'список']:
-                Thread(target=squad_list, args=(bot, update)).start()
+                squad_list(bot, update)
             elif text == 'группы':
                 group_list(bot, update)
             elif text == 'чистка отряда':
@@ -189,13 +192,13 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             elif update.message.forward_from:
                 from_id = update.message.forward_from.id
 
-                if from_id == 265204902:
+                if from_id == CWBOT_ID:
                     if text.startswith('📦содержимое склада'):
                         stock_compare(bot, update, chat_data)
-                    elif re.search(PROFILE, text) or re.search(HERO, text):
+                    elif re.search(PROFILE, update.message.text) or re.search(HERO, update.message.text):
                         char_update(bot, update)
 
-                elif from_id == 278525885:
+                elif from_id == TRADEBOT_ID:
                     if '📦твой склад с материалами:' in text:
                         trade_compare(bot, update, chat_data)
             else:
@@ -212,7 +215,7 @@ def ready_to_battle(bot: Bot, job_queue):
         group = session.query(Squad).all()
         for item in group:
             new_order = Order()
-            new_order.text = 'К битве готовсь!'
+            new_order.text = MSG_MAIN_READY_TO_BATTLE
             new_order.chat_id = item.chat_id
             new_order.date = datetime.now()
             new_order.confirmed_msg = 0
@@ -222,7 +225,7 @@ def ready_to_battle(bot: Bot, job_queue):
             callback_data = json.dumps(
                 {'t': QueryType.OrderOk.value, 'id': new_order.id})
             markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton('ГРАБЬНАСИЛУЙУБИВАЙ!',
+                [InlineKeyboardButton(MSG_MAIN_INLINE_BATTLE,
                                       callback_data=callback_data)]])
 
             msg = send_order(bot, new_order.text, 0, new_order.chat_id, markup)

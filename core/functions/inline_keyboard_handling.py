@@ -3,9 +3,8 @@ from enum import Enum
 import json
 from json import loads
 import logging
-from multiprocessing.pool import ThreadPool
 
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError, Message
 from telegram.ext.dispatcher import run_async
 
 from core.enums import Castle, Icons
@@ -14,10 +13,11 @@ from core.template import fill_char_template
 from core.types import (
     User, Group, Admin, admin_allowed, Order, OrderGroup,
     OrderGroupItem, OrderCleared, Squad, user_allowed,
-    Character, SquadMember, MessageType, AdminType
-)
+    Character, SquadMember, MessageType, AdminType)
 from core.texts import *
 from core.utils import send_async, update_group, add_user
+
+from sqlalchemy import func
 
 
 LOGGER = logging.getLogger('MyApp')
@@ -47,6 +47,7 @@ class QueryType(Enum):
     InviteSquadAccept = 20
     InviteSquadDecline = 21
     TriggerOrderPin = 22
+    SquadList = 23
 
 
 @admin_allowed()
@@ -193,27 +194,37 @@ def generate_group_manage(group_id, session):
     return InlineKeyboardMarkup(inline_keys)
 
 
-def generate_profile_buttons(user):
+def generate_profile_buttons(user, back_key=False):
     inline_keys = [[InlineKeyboardButton('🏅Герой', callback_data=json.dumps(
-        {'t': QueryType.ShowHero.value, 'id': user.id}))]]
+        {'t': QueryType.ShowHero.value, 'id': user.id, 'b': back_key}))]]
     if user.stock:
         inline_keys.append([InlineKeyboardButton('📦Склад', callback_data=json.dumps(
-            {'t': QueryType.ShowStock.value, 'id': user.id}))])
+            {'t': QueryType.ShowStock.value, 'id': user.id, 'b': back_key}))])
     if user.equip:
         inline_keys.append([InlineKeyboardButton('🎽Экипировка', callback_data=json.dumps(
-            {'t': QueryType.ShowEquip.value, 'id': user.id}))])
+            {'t': QueryType.ShowEquip.value, 'id': user.id, 'b': back_key}))])
+    if back_key:
+        inline_keys.append(
+            [InlineKeyboardButton(MSG_BACK,
+                                  callback_data=json.dumps(
+                                      {'t': QueryType.MemberList.value, 'id': user.member.squad_id}
+                                  ))])
     return InlineKeyboardMarkup(inline_keys)
 
 
 def generate_squad_list_key(squad, session):
     attack = 0
     defence = 0
-    members = session.query(SquadMember).filter_by(squad_id=squad.chat_id).all()
+    members = squad.members
+    user_ids = []
     for member in members:
-        character = session.query(Character).\
-            filter_by(user_id=member.user_id).\
-            order_by(Character.date.desc()).\
-            limit(1).first()
+        user_ids.append(member.user_id)
+    actual_profiles = session.query(Character.user_id, func.max(Character.date)).\
+        filter(Character.user_id.in_(user_ids)).\
+        group_by(Character.user_id).all()
+    characters = session.query(Character).filter(Character.user_id.in_([a[0] for a in actual_profiles]),
+                                                 Character.date.in_([a[1] for a in actual_profiles])).all()
+    for character in characters:
         attack += character.attack
         defence += character.defence
     return [InlineKeyboardButton(
@@ -226,14 +237,10 @@ def generate_squad_list_key(squad, session):
         callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))]
 
 
-def generate_squad_list(squads):
+def generate_squad_list(squads, session):
     inline_keys = []
-    pool = ThreadPool(processes=10)
-    threads = []
     for squad in squads:
-        threads.append(pool.apply_async(generate_squad_list_key, (squad,)))
-    for thread in threads:
-        inline_keys.append(thread.get())
+        inline_keys.append(generate_squad_list_key(squad, session))
     return InlineKeyboardMarkup(inline_keys)
 
 
@@ -254,20 +261,34 @@ def generate_squad_request(session):
     return InlineKeyboardMarkup(inline_keys)
 
 
-def generate_squad_members(members):
+def generate_squad_members(members, session):
     inline_keys = []
+    user_ids = []
     for member in members:
-        user = member.user
-        character = user.character
+        user_ids.append(member.user_id)
+    actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+        filter(Character.user_id.in_(user_ids)). \
+        group_by(Character.user_id).all()
+    characters = session.query(Character).filter(Character.user_id.in_([a[0] for a in actual_profiles]),
+                                                 Character.date.in_([a[1] for a in actual_profiles]))\
+        .order_by(Character.level.desc()).all()
+    for character in characters:
         inline_keys.append(
-            [InlineKeyboardButton('{}: {}⚔ {}🛡'.
-                                  format(user,
+            [InlineKeyboardButton('{}: {}⚔ {}🛡 {}🏅'.
+                                  format(character.name,
                                          character.attack,
-                                         character.defence),
+                                         character.defence,
+                                         character.level),
                                   callback_data=json.dumps(
                                       {'t': QueryType.ShowHero.value,
-                                       'id': member.user_id}
+                                       'id': character.user_id,
+                                       'b': True}
                                   ))])
+    inline_keys.append(
+        [InlineKeyboardButton(MSG_BACK,
+                              callback_data=json.dumps(
+                                  {'t': QueryType.SquadList.value}
+                              ))])
     return InlineKeyboardMarkup(inline_keys)
 
 
@@ -282,10 +303,10 @@ def generate_squad_request_answer(user_id):
 
 
 def generate_squad_invite_answer(user_id):
-    inline_keys = [InlineKeyboardButton('✅Зелёное Да',
+    inline_keys = [InlineKeyboardButton(MSG_SQUAD_GREEN_INLINE_BUTTON,
                                         callback_data=json.dumps(
                                             {'t': QueryType.InviteSquadAccept.value, 'id': user_id})),
-                   InlineKeyboardButton('❌Красное Да',
+                   InlineKeyboardButton(MSG_SQUAD_RED_INLINE_BUTTON,
                                         callback_data=json.dumps(
                                             {'t': QueryType.InviteSquadDecline.value, 'id': user_id}))]
     return InlineKeyboardMarkup([inline_keys])
@@ -347,7 +368,6 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
     update_group(update.callback_query.message.chat, session)
     user = add_user(update.callback_query.from_user, session)
     data = json.loads(update.callback_query.data)
-    LOGGER.warning(data)
     if data['t'] == QueryType.GroupList.value:
         msg = MSG_GROUP_STATUS_CHOOSE_CHAT
         squads = session.query(Squad).all()
@@ -371,9 +391,12 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
     elif data['t'] == QueryType.Order.value:
+        order_text = chat_data['order']
+        order_type = chat_data['order_type']
+        order_pin = True if 'pin' in chat_data and chat_data['pin'] or 'pin' not in chat_data else False
         if not data['g']:
             order = Order()
-            order.text = chat_data['order']
+            order.text = order_text
             order.chat_id = data['id']
             order.date = datetime.now()
             msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY).result()
@@ -384,8 +407,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             session.add(order)
             session.commit()
             markup = generate_ok_markup(order.id, 0)
-            msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result().result()
-            if 'pin' in chat_data and chat_data['pin'] or 'pin' not in chat_data:
+            msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
+            if order_pin and msg:
                 try:
                     bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': order.chat_id,
                                                                         'message_id': msg.message_id,
@@ -396,7 +419,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             group = session.query(OrderGroup).filter_by(id=data['id']).first()
             for item in group.items:
                 order = Order()
-                order.text = chat_data['order']
+                order.text = order_text
                 order.chat_id = item.chat_id
                 order.date = datetime.now()
                 msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY).result()
@@ -407,8 +430,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                 session.add(order)
                 session.commit()
                 markup = generate_ok_markup(order.id, 0)
-                msg = send_order(bot, order.text, chat_data['order_type'], order.chat_id, markup).result().result()
-                if 'pin' in chat_data and chat_data['pin'] or 'pin' not in chat_data:
+                msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
+                if order_pin and msg:
                     try:
                         bot.request.post(bot.base_url + '/pinChatMessage',
                                          {'chat_id': order.chat_id, 'message_id': msg.message_id,
@@ -533,29 +556,35 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
     elif data['t'] == QueryType.ShowEquip.value:
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
+        back = data['b'] if 'b' in data else False
         bot.editMessageText('{}\n🕑 Последнее обновление {}'.format(user.equip.equip, user.equip.date),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
-                            reply_markup=generate_profile_buttons(user))
+                            reply_markup=generate_profile_buttons(user, back)
+                            )
     elif data['t'] == QueryType.ShowStock.value:
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
+        back = data['b'] if 'b' in data else False
         bot.editMessageText('{}\n🕑 Последнее обновление {}'.
                             format(user.stock.stock, user.stock.date.strftime("%Y-%m-%d %H:%M:%S")),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
-                            reply_markup=generate_profile_buttons(user))
+                            reply_markup=generate_profile_buttons(user, back)
+                            )
     elif data['t'] == QueryType.ShowHero.value:
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
+        back = data['b'] if 'b' in data else False
         bot.editMessageText(fill_char_template(MSG_PROFILE_SHOW_FORMAT,
                                                user, user.character),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
-                            reply_markup=generate_profile_buttons(user))
+                            reply_markup=generate_profile_buttons(user, back)
+                            )
     elif data['t'] == QueryType.MemberList.value:
         squad = session.query(Squad).filter_by(chat_id=data['id']).first()
-        markup = generate_squad_members(squad.members)
+        markup = generate_squad_members(squad.members, session)
         bot.editMessageText(squad.squad_name,
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
@@ -673,3 +702,22 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
                                 reply_markup=markup)
+    elif data['t'] == QueryType.SquadList.value:
+        admin = session.query(Admin).filter_by(user_id=update.callback_query.from_user.id).all()
+        global_adm = False
+        for adm in admin:
+            if adm.admin_type <= AdminType.FULL.value:
+                global_adm = True
+                break
+        if global_adm:
+            squads = session.query(Squad).all()
+        else:
+            group_ids = []
+            for adm in admin:
+                group_ids.append(adm.admin_group)
+            squads = session.query(Squad).filter(Squad.chat_id in group_ids).all()
+        markup = generate_squad_list(squads, session)
+        bot.editMessageText(MSG_SQUAD_LIST,
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)
