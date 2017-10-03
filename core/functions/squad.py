@@ -97,7 +97,7 @@ def squad_list(bot: Bot, update: Update, session):
         group_ids = []
         for adm in admin:
             group_ids.append(adm.admin_group)
-        squads = session.query(Squad).filter(Squad.chat_id in group_ids).all()
+        squads = session.query(Squad).filter(Squad.chat_id.in_(group_ids)).all()
     markup = generate_squad_list(squads, session)
     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LIST, reply_markup=markup)
 
