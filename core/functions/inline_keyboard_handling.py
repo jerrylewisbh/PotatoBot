@@ -212,10 +212,11 @@ def generate_squad_list_key(squad, session):
     user_ids = []
     for member in members:
         user_ids.append(member.user_id)
-    characters = session.query(Character).filter((Character.user_id, Character.date) in
-                                                 session.query(Character.user_id, func.max(Character.date)).
-                                                 filter(Character.user_id in user_ids).
-                                                 group_by(Character.user_id).all()).all()
+    actual_profiles = session.query(Character.user_id, func.max(Character.date)).\
+        filter(Character.user_id.in_(user_ids)).\
+        group_by(Character.user_id).all()
+    characters = session.query(Character).filter(Character.user_id.in_([a[0] for a in actual_profiles]),
+                                                 Character.date.in_([a[1] for a in actual_profiles])).all()
     for character in characters:
         attack += character.attack
         defence += character.defence
@@ -253,19 +254,25 @@ def generate_squad_request(session):
     return InlineKeyboardMarkup(inline_keys)
 
 
-def generate_squad_members(members):
+def generate_squad_members(members, session):
     inline_keys = []
+    user_ids = []
     for member in members:
-        user = member.user
-        character = user.character
+        user_ids.append(member.user_id)
+    actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+        filter(Character.user_id.in_(user_ids)). \
+        group_by(Character.user_id).all()
+    characters = session.query(Character).filter(Character.user_id.in_([a[0] for a in actual_profiles]),
+                                                 Character.date.in_([a[1] for a in actual_profiles])).all()
+    for character in characters:
         inline_keys.append(
             [InlineKeyboardButton('{}: {}⚔ {}🛡'.
-                                  format(user,
+                                  format(character.name,
                                          character.attack,
                                          character.defence),
                                   callback_data=json.dumps(
                                       {'t': QueryType.ShowHero.value,
-                                       'id': member.user_id}
+                                       'id': character.user_id}
                                   ))])
     return InlineKeyboardMarkup(inline_keys)
 
@@ -554,7 +561,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                             reply_markup=generate_profile_buttons(user))
     elif data['t'] == QueryType.MemberList.value:
         squad = session.query(Squad).filter_by(chat_id=data['id']).first()
-        markup = generate_squad_members(squad.members)
+        markup = generate_squad_members(squad.members, session)
         bot.editMessageText(squad.squad_name,
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
