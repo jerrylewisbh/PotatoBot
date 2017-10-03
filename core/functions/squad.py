@@ -91,15 +91,14 @@ def squad_list(bot: Bot, update: Update, session):
         if adm.admin_type <= AdminType.FULL.value:
             global_adm = True
             break
-    squads = []
     if global_adm:
         squads = session.query(Squad).all()
     else:
+        group_ids = []
         for adm in admin:
-            group = session.query(Group).filter_by(id=adm.admin_group).first()
-            if len(group.squad) and group.squad[0]:
-                squads.append(group.squad[0])
-    markup = generate_squad_list(squads)
+            group_ids.append(adm.admin_group)
+        squads = session.query(Squad).filter(Squad.chat_id in group_ids).all()
+    markup = generate_squad_list(squads, session)
     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LIST, reply_markup=markup)
 
 
