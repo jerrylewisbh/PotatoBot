@@ -231,10 +231,11 @@ def ready_to_battle(bot: Bot, job_queue):
 
             try:
                 msg = msg.result().result()
-                bot.request.post(bot.base_url + '/pinChatMessage',
-                                 {'chat_id': new_order.chat_id,
-                                  'message_id': msg.message_id,
-                                  'disable_notification': False})
+                if msg is not None:
+                    bot.request.post(bot.base_url + '/pinChatMessage',
+                                     {'chat_id': new_order.chat_id,
+                                      'message_id': msg.message_id,
+                                      'disable_notification': False})
 
             except TelegramError as err:
                 bot.logger.error(err.message)
