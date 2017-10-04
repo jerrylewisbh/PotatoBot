@@ -257,7 +257,7 @@ def ready_to_battle_result(bot: Bot, job_queue):
         for item in group:
             ready_order = session.query(Order).filter_by(
                 chat_id=item.chat_id,
-                text='К битве готовсь!').order_by(Order.date.desc()).first()
+                text=MSG_MAIN_READY_TO_BATTLE).order_by(Order.date.desc()).first()
 
             if ready_order is not None:
                 attack = 0
