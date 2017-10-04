@@ -237,10 +237,10 @@ def ready_to_battle(bot: Bot, job_queue):
                                   'disable_notification': False})
 
             except TelegramError as err:
-                bot.logger(err.message)
+                bot.logger.error(err.message)
 
     except SQLAlchemyError as err:
-        bot.logger(str(err))
+        bot.logger.error(str(err))
         Session.rollback()
 
 
@@ -295,7 +295,7 @@ def ready_to_battle_result(bot: Bot, job_queue):
                    parse_mode=ParseMode.HTML)
 
     except SQLAlchemyError as err:
-        bot.logger(str(err))
+        bot.logger.error(str(err))
         Session.rollback()
 
 
