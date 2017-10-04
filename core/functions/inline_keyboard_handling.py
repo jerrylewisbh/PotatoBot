@@ -48,6 +48,7 @@ class QueryType(Enum):
     InviteSquadDecline = 21
     TriggerOrderPin = 22
     SquadList = 23
+    GroupDelete = 24
 
 
 @admin_allowed()
@@ -82,6 +83,8 @@ def generate_group_info(group_id, session):
                                   MSG_ON if group.welcome_enabled else MSG_OFF,
                                   MSG_ON if group.allow_trigger_all else MSG_OFF,
                                   MSG_ON if len(group.squad) and group.squad[0].thorns_enabled else MSG_OFF)
+    adm_del_keys.append([InlineKeyboardButton(MSG_ORDER_GROUP_DEL, callback_data=json.dumps(
+        {'t': QueryType.GroupDelete.value, 'gid': group_id}))])
     adm_del_keys.append([InlineKeyboardButton(MSG_BACK, callback_data=json.dumps(
         {'t': QueryType.GroupList.value}))])
     inline_markup = InlineKeyboardMarkup(adm_del_keys)
@@ -721,3 +724,21 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
                             reply_markup=markup)
+    elif data['t'] == QueryType.GroupDelete.value:
+        squad = session.query(Squad).filter_by(chat_id=data['gid']).first()
+        if squad is not None:
+            for member in squad.members:
+                session.delete(member)
+            session.delete(squad)
+            session.commit()
+            send_async(bot, chat_id=data['gid'], text=MSG_SQUAD_DELETE)
+        msg = MSG_GROUP_STATUS_CHOOSE_CHAT
+        squads = session.query(Squad).all()
+        inline_keys = []
+        for squad in squads:
+            inline_keys.append(InlineKeyboardButton(squad.squad_name,
+                                                    callback_data=json.dumps({'t': QueryType.GroupInfo.value,
+                                                                              'id': squad.chat_id})))
+        inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
+        bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
+                            reply_markup=inline_markup)
