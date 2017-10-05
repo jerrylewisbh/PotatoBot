@@ -161,11 +161,13 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 delete_msg(bot, update)
             elif text == 'свали':
                 delete_user(bot, update)
+            else:
+                trigger_show(bot, update)
         elif 'твои результаты в бою:' in text:
             if update.message.forward_from.id == CWBOT_ID:
                 job_queue.run_once(del_msg, 2, (update.message.chat.id,
                                                 update.message.message_id))
-        elif update.message.text:
+        else:
             trigger_show(bot, update)
 
     elif update.message.chat.type == 'private':
