@@ -163,11 +163,13 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 delete_msg(bot, update)
             elif text == 'свали':
                 delete_user(bot, update)
+            else:
+                trigger_show(bot, update)
         elif 'твои результаты в бою:' in text:
             if update.message.forward_from.id == CWBOT_ID:
                 job_queue.run_once(del_msg, 2, (update.message.chat.id,
                                                 update.message.message_id))
-        elif update.message.text:
+        else:
             trigger_show(bot, update)
 
     elif update.message.chat.type == 'private':
@@ -238,16 +240,17 @@ def ready_to_battle(bot: Bot, job_queue):
 
             try:
                 msg = msg.result().result()
-                bot.request.post(bot.base_url + '/pinChatMessage',
-                                 {'chat_id': new_order.chat_id,
-                                  'message_id': msg.message_id,
-                                  'disable_notification': False})
+                if msg is not None:
+                    bot.request.post(bot.base_url + '/pinChatMessage',
+                                     {'chat_id': new_order.chat_id,
+                                      'message_id': msg.message_id,
+                                      'disable_notification': False})
 
             except TelegramError as err:
-                bot.logger(err.message)
+                bot.logger.error(err.message)
 
     except SQLAlchemyError as err:
-        bot.logger(str(err))
+        bot.logger.error(str(err))
         Session.rollback()
 
 
@@ -264,7 +267,7 @@ def ready_to_battle_result(bot: Bot, job_queue):
         for item in group:
             ready_order = session.query(Order).filter_by(
                 chat_id=item.chat_id,
-                text='К битве готовсь!').order_by(Order.date.desc()).first()
+                text=MSG_MAIN_READY_TO_BATTLE).order_by(Order.date.desc()).first()
 
             if ready_order is not None:
                 attack = 0
@@ -302,7 +305,7 @@ def ready_to_battle_result(bot: Bot, job_queue):
                    parse_mode=ParseMode.HTML)
 
     except SQLAlchemyError as err:
-        bot.logger(str(err))
+        bot.logger.error(str(err))
         Session.rollback()
 
 
