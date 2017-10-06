@@ -17,8 +17,8 @@ from telegram.error import TelegramError
 
 from config import TOKEN, GOVERNMENT_CHAT
 from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COMMAND_ORDER, ADMIN_COMMAND_SQUAD_LIST, \
-    ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS,\
-    USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP
+    ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, \
+    USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP, USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK
 from core.functions.activity import (
     day_activity, week_activity, battle_activity
 )
@@ -188,7 +188,9 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
 
             if text == ADMIN_COMMAND_STATUS.lower():
                 send_status(bot, update)
-            elif text == 'хочу в отряд':
+            elif text == USER_COMMAND_BACK.lower():
+                user_panel(bot, update)
+            elif text == USER_COMMAND_SQUAD_REQUEST.lower():
                 squad_request(bot, update)
             elif text == ADMIN_COMMAND_RECRUIT.lower():
                 list_squad_requests(bot, update)
