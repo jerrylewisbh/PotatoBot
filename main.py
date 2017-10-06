@@ -17,7 +17,8 @@ from telegram.error import TelegramError
 
 from config import TOKEN, GOVERNMENT_CHAT
 from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COMMAND_ORDER, ADMIN_COMMAND_SQUAD_LIST, \
-    ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME
+    ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS,\
+    USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP
 from core.functions.activity import (
     day_activity, week_activity, battle_activity
 )
@@ -57,7 +58,7 @@ from core.functions.welcome import (
 from core.regexp import PROFILE, HERO
 from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL,
-    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE)
+    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV)
 from core.types import Session, Order, Squad, Admin, user_allowed
 from core.utils import add_user, send_async
 
@@ -173,6 +174,12 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             trigger_show(bot, update)
 
     elif update.message.chat.type == 'private':
+        admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        is_admin = False
+        for _ in admin:
+            is_admin = True
+            break
+
         if 'order_wait' in chat_data and chat_data['order_wait']:
             order(bot, update, chat_data)
 
@@ -195,6 +202,31 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 remove_from_squad(bot, update)
             elif text == USER_COMMAND_ME.lower():
                 char_show(bot, update)
+            elif text == USER_COMMAND_BUILD.lower():
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_IN_DEV,
+                           parse_mode=ParseMode.HTML)
+            elif text == USER_COMMAND_TOP.lower():
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_IN_DEV,
+                           parse_mode=ParseMode.HTML)
+            elif text == USER_COMMAND_STATISTICS.lower():
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_IN_DEV,
+                           parse_mode=ParseMode.HTML)
+            elif text == USER_COMMAND_SQUAD.lower():
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_IN_DEV,
+                           parse_mode=ParseMode.HTML)
+            elif text == USER_COMMAND_CONTACTS.lower():
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_IN_DEV,
+                           parse_mode=ParseMode.HTML)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
                 add_group(bot, update, chat_data)
 
@@ -210,10 +242,14 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 elif from_id == TRADEBOT_ID:
                     if '📦твой склад с материалами:' in text:
                         trade_compare(bot, update, chat_data)
-            else:
+            elif not is_admin:
                 user_panel(bot, update)
-        else:
+            else:
+                order(bot, update, chat_data)
+        elif not is_admin:
             user_panel(bot, update)
+        else:
+            order(bot, update, chat_data)
 
 
 @run_async
