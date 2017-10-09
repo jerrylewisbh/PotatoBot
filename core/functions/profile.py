@@ -89,7 +89,7 @@ def parse_reports(report, user_id, date, session):
 
 
 @user_allowed
-def report_recieved(bot: Bot, update: Update, session):
+def report_received(bot: Bot, update: Update, session):
     # if datetime.now() - update.message.forward_date > timedelta(minutes=1):
     #     send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
     # else:
