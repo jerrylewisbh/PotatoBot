@@ -276,9 +276,20 @@ def generate_squad_members(members, session):
                                                  Character.date.in_([a[1] for a in actual_profiles]))\
         .order_by(Character.level.desc()).all()
     for character in characters:
+        time_passed = datetime.now() - character.date
+        status_emoji = ''
+        if time_passed > timedelta(days=7):
+            status_emoji = '⁉'
+        if time_passed > timedelta(days=4):
+            status_emoji = '‼'
+        if time_passed > timedelta(days=3):
+            status_emoji = '❗'
+        elif time_passed < timedelta(days=1):
+            status_emoji = '🕐'
         inline_keys.append(
-            [InlineKeyboardButton('{}: {}⚔ {}🛡 {}🏅'.
-                                  format(character.name,
+            [InlineKeyboardButton('{}{}: {}⚔ {}🛡 {}🏅'.
+                                  format(status_emoji,
+                                         character.name,
                                          character.attack,
                                          character.defence,
                                          character.level),
