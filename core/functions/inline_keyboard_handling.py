@@ -277,7 +277,7 @@ def generate_squad_members(members, session):
         .order_by(Character.level.desc()).all()
     for character in characters:
         time_passed = datetime.now() - character.date
-        status_emoji = ''
+        status_emoji = '❇'
         if time_passed > timedelta(days=7):
             status_emoji = '⁉'
         elif time_passed > timedelta(days=4):
