@@ -4,7 +4,7 @@ from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.regexp import HERO, PROFILE, REPORT
 from core.types import Character, Report, User, admin_allowed, Equip, user_allowed
 from core.utils import send_async
-from datetime import timedelta
+from datetime import timedelta, datetime
 import re
 from core.template import fill_char_template
 from core.texts import *
@@ -87,6 +87,14 @@ def parse_reports(report, user_id, date, session):
         session.commit()
     return report
 
+
+@user_allowed
+def report_recieved(bot: Bot, update: Update, session):
+    if datetime.now() - update.message.forward_date > timedelta(minutes=1):
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
+    else:
+        if re.search(REPORT, update.message.text):
+            print('success')
 
 @user_allowed
 def char_update(bot: Bot, update: Update, session):

@@ -40,7 +40,7 @@ from core.functions.inline_keyboard_handling import (
 )
 from core.functions.order_groups import group_list, add_group
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
-from core.functions.profile import char_update, char_show, find_by_username
+from core.functions.profile import char_update, char_show, find_by_username, report_recieved
 from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
     enable_thorns, disable_thorns,
@@ -55,7 +55,7 @@ from core.functions.triggers import (
 from core.functions.welcome import (
     welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 )
-from core.regexp import PROFILE, HERO
+from core.regexp import PROFILE, HERO, REPORT
 from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL,
     MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV)
@@ -168,6 +168,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 trigger_show(bot, update)
         elif 'твои результаты в бою:' in text:
             if update.message.forward_from.id == CWBOT_ID:
+                report_recieved(bot, update)
                 job_queue.run_once(del_msg, 2, (update.message.chat.id,
                                                 update.message.message_id))
         else:
@@ -240,6 +241,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                         stock_compare(bot, update, chat_data)
                     elif re.search(PROFILE, update.message.text) or re.search(HERO, update.message.text):
                         char_update(bot, update)
+                    elif re.search(REPORT, update.message.text):
+                        report_recieved(bot, update)
 
                 elif from_id == TRADEBOT_ID:
                     if '📦твой склад с материалами:' in text:
