@@ -84,7 +84,10 @@ def battle_time():
 
 
 def del_msg(bot, job):
-    bot.delete_message(job.context[0], job.context[1])
+    try:
+        bot.delete_message(job.context[0], job.context[1])
+    except TelegramError:
+        pass
 
 
 @run_async
