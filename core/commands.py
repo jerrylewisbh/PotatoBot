@@ -1,4 +1,4 @@
-ADMIN_COMMAND_ORDER = '⚔️Приказы'
+ADMIN_COMMAND_ORDER = '⚔Приказы'
 ADMIN_COMMAND_STATUS = '🔎Статус'
 ADMIN_COMMAND_GROUPS = '👥Группы'
 ADMIN_COMMAND_RECRUIT = '📬Заявки в отряд'
@@ -8,7 +8,7 @@ ADMIN_COMMAND_ADMINPANEL = '/admin'
 
 USER_COMMAND_ME = '🏅Герой'
 USER_COMMAND_TOP = '🌟Топ'
-USER_COMMAND_SQUAD = '️Отряд'
+USER_COMMAND_SQUAD = '⚜Отряд'
 USER_COMMAND_STATISTICS = '📊Статистика'
 USER_COMMAND_BUILD = '🚧Стройка'
 USER_COMMAND_CONTACTS = '💬Связь'
