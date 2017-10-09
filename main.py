@@ -129,7 +129,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             ping(bot, update)
         elif text == 'статистика за день':
             day_activity(bot, update)
-        elif text == 'cтатистика за неделю':
+        elif text == 'статистика за неделю':
             week_activity(bot, update)
         elif text == 'cтатистика за бой':
             battle_activity(bot, update)
