@@ -280,9 +280,9 @@ def generate_squad_members(members, session):
         status_emoji = ''
         if time_passed > timedelta(days=7):
             status_emoji = '⁉'
-        if time_passed > timedelta(days=4):
+        elif time_passed > timedelta(days=4):
             status_emoji = '‼'
-        if time_passed > timedelta(days=3):
+        elif time_passed > timedelta(days=3):
             status_emoji = '❗'
         elif time_passed < timedelta(days=1):
             status_emoji = '🕐'
