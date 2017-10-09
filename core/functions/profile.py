@@ -4,7 +4,7 @@ from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.regexp import HERO, PROFILE, REPORT
 from core.types import Character, Report, User, admin_allowed, Equip, user_allowed
 from core.utils import send_async
-from datetime import timedelta
+from datetime import timedelta, datetime
 import re
 from core.template import fill_char_template
 from core.texts import *
@@ -86,6 +86,27 @@ def parse_reports(report, user_id, date, session):
         session.add(report)
         session.commit()
     return report
+
+
+@user_allowed
+def report_received(bot: Bot, update: Update, session):
+    # if datetime.now() - update.message.forward_date > timedelta(minutes=1):
+    #     send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
+    # else:
+    report = re.search(REPORT, update.message.text)
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if report and user.character and str(report.group(2)) == user.character.name:
+        time_from = datetime(update.message.forward_date.year, update.message.forward_date.month,
+                             update.message.forward_date.day, int(update.message.forward_date.hour / 4) * 4, 0, 0)
+        time_to = datetime(update.message.forward_date.year, update.message.forward_date.month,
+                           update.message.forward_date.day + (1 if update.message.forward_date.hour >= 20 else 0),
+                           int(update.message.forward_date.hour / 4 + 1) * 4 % 24, 0, 0)
+        report = session.query(Report).filter(Report.date > time_from, Report.date < time_to).all()
+        if len(report) == 0:
+            parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
+        else:
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
 
 
 @user_allowed
