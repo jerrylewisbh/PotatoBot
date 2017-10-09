@@ -131,7 +131,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             day_activity(bot, update)
         elif text == 'статистика за неделю':
             week_activity(bot, update)
-        elif text == 'cтатистика за бой':
+        elif text == 'статистика за бой':
             battle_activity(bot, update)
         elif text == 'разрешить триггерить всем':
             enable_trigger_all(bot, update)
