@@ -90,11 +90,25 @@ def parse_reports(report, user_id, date, session):
 
 @user_allowed
 def report_recieved(bot: Bot, update: Update, session):
-    if datetime.now() - update.message.forward_date > timedelta(minutes=1):
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
-    else:
-        if re.search(REPORT, update.message.text):
+    # if datetime.now() - update.message.forward_date > timedelta(minutes=1):
+    #     send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
+    # else:
+    report = re.search(REPORT, update.message.text)
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if report and user.character and str(report.group(2)) == user.character.name:
+        time_from = datetime(update.message.forward_date.year, update.message.forward_date.month,
+                             update.message.forward_date.day, int(update.message.forward_date.hour / 4) * 4, 0, 0)
+        time_to = datetime(update.message.forward_date.year, update.message.forward_date.month,
+                           update.message.forward_date.day + (1 if update.message.forward_date.hour >= 20 else 0),
+                           int(update.message.forward_date.hour / 4 + 1) * 4 % 24, 0, 0)
+        report = session.query(Report).filter(Report.date > time_from, Report.date < time_to).all()
+        if len(report) == 0:
             print('success')
+            parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
+        else:
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
+
 
 @user_allowed
 def char_update(bot: Bot, update: Update, session):
