@@ -227,3 +227,5 @@ MSG_FULL_TEXT_LINE = '<b>{}</b>: {}👥 {}⚔ {}🛡\n'
 MSG_FULL_TEXT_TOTAL = '\n<b>Всего</b>: {}👥 {}⚔ {}🛡'
 
 MSG_IN_DEV = 'Функция находится в разработке =('
+
+MSG_TOP_ABOUT = '🏆 Топы 🏆'

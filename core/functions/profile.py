@@ -80,9 +80,18 @@ def parse_reports(report, user_id, date, session):
         report.attack = str(parsed_data.group(3))
         report.defence = str(parsed_data.group(4))
         report.level = int(parsed_data.group(5))
-        report.earned_exp = int(parsed_data.group(6))
-        report.earned_gold = int(parsed_data.group(7))
-        report.earned_stock = int(parsed_data.group(8))
+        if parsed_data.group(6):
+            report.earned_exp = int(parsed_data.group(6))
+        else:
+            report.earned_exp = 0
+        if parsed_data.group(7):
+            report.earned_gold = int(parsed_data.group(7))
+        else:
+            report.earned_gold = 0
+        if parsed_data.group(8):
+            report.earned_stock = int(parsed_data.group(8))
+        else:
+            report.earned_stock = 0
         session.add(report)
         session.commit()
     return report
@@ -101,7 +110,8 @@ def report_received(bot: Bot, update: Update, session):
         time_to = datetime(update.message.forward_date.year, update.message.forward_date.month,
                            update.message.forward_date.day + (1 if update.message.forward_date.hour >= 20 else 0),
                            int(update.message.forward_date.hour / 4 + 1) * 4 % 24, 0, 0)
-        report = session.query(Report).filter(Report.date > time_from, Report.date < time_to).all()
+        report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
+                                              Report.user_id == update.message.from_user.id).all()
         if len(report) == 0:
             parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
