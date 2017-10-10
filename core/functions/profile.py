@@ -80,9 +80,18 @@ def parse_reports(report, user_id, date, session):
         report.attack = str(parsed_data.group(3))
         report.defence = str(parsed_data.group(4))
         report.level = int(parsed_data.group(5))
-        report.earned_exp = int(parsed_data.group(6))
-        report.earned_gold = int(parsed_data.group(7))
-        report.earned_stock = int(parsed_data.group(8))
+        if parsed_data.group(6):
+            report.earned_exp = int(parsed_data.group(6))
+        else:
+            report.earned_exp = 0
+        if parsed_data.group(7):
+            report.earned_gold = int(parsed_data.group(7))
+        else:
+            report.earned_gold = 0
+        if parsed_data.group(8):
+            report.earned_stock = int(parsed_data.group(8))
+        else:
+            report.earned_stock = 0
         session.add(report)
         session.commit()
     return report
