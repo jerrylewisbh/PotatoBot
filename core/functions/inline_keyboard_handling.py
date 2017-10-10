@@ -667,12 +667,12 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
-            admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+            admin = session.query(Admin).filter_by(user_id=member.user_id).all()
             is_admin = False
             for _ in admin:
                 is_admin = True
                 break
-            squad_member = session.query(SquadMember).filter_by(user_id=update.message.from_user.id).first()
+            squad_member = session.query(SquadMember).filter_by(user_id=member.user_id).first()
             send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_ACCEPTED_ANSWER,
                        reply_markup=generate_user_markup(is_admin, True if squad_member else False))
             send_async(bot, chat_id=member.squad_id, text=MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username))
