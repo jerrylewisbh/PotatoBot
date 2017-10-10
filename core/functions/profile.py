@@ -101,7 +101,8 @@ def report_received(bot: Bot, update: Update, session):
         time_to = datetime(update.message.forward_date.year, update.message.forward_date.month,
                            update.message.forward_date.day + (1 if update.message.forward_date.hour >= 20 else 0),
                            int(update.message.forward_date.hour / 4 + 1) * 4 % 24, 0, 0)
-        report = session.query(Report).filter(Report.date > time_from, Report.date < time_to).all()
+        report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
+                                              Report.user_id == update.message.from_user.id).all()
         if len(report) == 0:
             parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
