@@ -15,3 +15,7 @@ USER_COMMAND_CONTACTS = '💬Связь'
 USER_COMMAND_SQUAD_REQUEST = '⚜Хочу в отряд'
 
 USER_COMMAND_BACK = '🔙Назад'
+
+TOP_COMMAND_ATTACK = '⚔'
+TOP_COMMAND_DEFENCE = '🛡'
+TOP_COMMAND_EXP = '🔥'
