@@ -9,6 +9,7 @@ from telegram.ext.dispatcher import run_async
 
 from core.enums import Castle, Icons
 from core.functions.admins import del_adm
+from core.functions.reply_markup import generate_user_markup
 from core.template import fill_char_template
 from core.types import (
     User, Group, Admin, admin_allowed, Order, OrderGroup,
@@ -666,7 +667,14 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
-            send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_ACCEPTED_ANSWER)
+            admin = session.query(Admin).filter_by(user_id=member.user_id).all()
+            is_admin = False
+            for _ in admin:
+                is_admin = True
+                break
+            squad_member = session.query(SquadMember).filter_by(user_id=member.user_id).first()
+            send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_ACCEPTED_ANSWER,
+                       reply_markup=generate_user_markup(is_admin, True if squad_member else False))
             send_async(bot, chat_id=member.squad_id, text=MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username))
     elif data['t'] == QueryType.RequestSquadDecline.value:
         member = session.query(SquadMember).filter_by(user_id=data['id']).first()
