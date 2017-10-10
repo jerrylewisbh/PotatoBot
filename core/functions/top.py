@@ -3,7 +3,7 @@ from telegram import Update, Bot
 
 from core.functions.reply_markup import generate_top_markup
 from core.texts import MSG_TOP_ABOUT
-from core.types import user_allowed, Character, SquadMember
+from core.types import user_allowed, Character
 from core.utils import send_async
 
 
