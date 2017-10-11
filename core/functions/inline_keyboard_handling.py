@@ -4,7 +4,7 @@ import json
 from json import loads
 import logging
 
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError, Message
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
 from telegram.ext.dispatcher import run_async
 
 from core.enums import Castle, Icons
@@ -18,7 +18,7 @@ from core.types import (
 from core.texts import *
 from core.utils import send_async, update_group, add_user
 
-from sqlalchemy import func
+from sqlalchemy import func, tuple_
 
 
 LOGGER = logging.getLogger('MyApp')
@@ -226,8 +226,8 @@ def generate_squad_list_key(squad, session):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)).\
         filter(Character.user_id.in_(user_ids)).\
         group_by(Character.user_id).all()
-    characters = session.query(Character).filter(Character.user_id.in_([a[0] for a in actual_profiles]),
-                                                 Character.date.in_([a[1] for a in actual_profiles])).all()
+    characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
+                                                 .in_([(a[0], a[1]) for a in actual_profiles])).all()
     for character in characters:
         attack += character.attack
         defence += character.defence
@@ -273,8 +273,8 @@ def generate_squad_members(members, session):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         filter(Character.user_id.in_(user_ids)). \
         group_by(Character.user_id).all()
-    characters = session.query(Character).filter(Character.user_id.in_([a[0] for a in actual_profiles]),
-                                                 Character.date.in_([a[1] for a in actual_profiles]))\
+    characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
+                                                 .in_([(a[0], a[1]) for a in actual_profiles]))\
         .order_by(Character.level.desc()).all()
     for character in characters:
         time_passed = datetime.now() - character.date
