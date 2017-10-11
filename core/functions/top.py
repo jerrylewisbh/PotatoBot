@@ -8,6 +8,8 @@ from core.utils import send_async
 
 from config import CASTLE
 
+from datetime import datetime, timedelta
+
 
 @user_allowed
 def top_about(bot: Bot, update: Update, session):
@@ -24,6 +26,7 @@ def get_top(condition, session, header, field_name, icon, user_id, additional_fi
     actual_profiles = actual_profiles.all()
     characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                  .in_([(a[0], a[1]) for a in actual_profiles]),
+                                                 Character.date > datetime.now() - timedelta(days=7),
                                                  additional_filter)\
         .order_by(condition)
     if CASTLE:
