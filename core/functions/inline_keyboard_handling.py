@@ -426,7 +426,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             session.add(order)
             session.commit()
             markup = generate_ok_markup(order.id, 0)
-            msg = send_order(bot, order.text, order_type, order.chat_id, markup).result()
+            msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
             if order_pin and msg:
                 try:
                     bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': order.chat_id,
