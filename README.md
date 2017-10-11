@@ -47,7 +47,12 @@ exit
 ```
 9)open the file 'config.py.sample', enter your new database user's credentials, database name and your telegram bot API token
 
-10)launch the bot:
+10)You have to install python3-tk (if not yet installed) to properly run matplotlib requirement.
+```
+sudo apt-get install python3-tk
+```
+
+11)launch the bot:
 ```
 python3 main.py
 ```
