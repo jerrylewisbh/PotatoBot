@@ -2,7 +2,7 @@ from sqlalchemy import func, text as text_, tuple_
 from telegram import Update, Bot
 
 from core.functions.reply_markup import generate_top_markup
-from core.texts import MSG_TOP_ABOUT
+from core.texts import MSG_TOP_ABOUT, MSG_TOP_FORMAT,MSG_TOP_ATTACK, MSG_TOP_DEFENCE, MSG_TOP_EXPERIENCE
 from core.types import user_allowed, Character
 from core.utils import send_async
 
@@ -33,7 +33,7 @@ def get_top(condition, session, header, field_name, icon, user_id, additional_fi
         characters = characters.filter_by(castle=CASTLE)
     characters = characters.all()
     text = header
-    str_format = '{}. {} ({}🌟) - {}{}\n'
+    str_format = MSG_TOP_FORMAT
     for i in range(min(10, len(characters))):
         text += str_format.format(i + 1, characters[i].name, characters[i].level,
                                   getattr(characters[i], field_name), icon)
@@ -55,7 +55,7 @@ def get_top(condition, session, header, field_name, icon, user_id, additional_fi
 
 @user_allowed
 def attack_top(bot: Bot, update: Update, session):
-    text = get_top(Character.attack.desc(), session, '⚔Топ атакеры:\n', 'attack', '⚔', update.message.from_user.id)
+    text = get_top(Character.attack.desc(), session, MSG_TOP_ATTACK, 'attack', '⚔', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
                text=text)
@@ -63,7 +63,7 @@ def attack_top(bot: Bot, update: Update, session):
 
 @user_allowed
 def def_top(bot: Bot, update: Update, session):
-    text = get_top(Character.defence.desc(), session, '🛡Топ дэферы:\n', 'defence', '🛡', update.message.from_user.id)
+    text = get_top(Character.defence.desc(), session, MSG_TOP_DEFENCE, 'defence', '🛡', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
                text=text)
@@ -71,7 +71,7 @@ def def_top(bot: Bot, update: Update, session):
 
 @user_allowed
 def exp_top(bot: Bot, update: Update, session):
-    text = get_top(Character.exp.desc(), session, '🔥Топ качки:\n', 'exp', '🔥', update.message.from_user.id)
+    text = get_top(Character.exp.desc(), session, MSG_TOP_EXPERIENCE, 'exp', '🔥', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
                text=text)
