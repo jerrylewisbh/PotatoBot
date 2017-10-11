@@ -1,10 +1,12 @@
-from sqlalchemy import func, text as text_
+from sqlalchemy import func, text as text_, tuple_
 from telegram import Update, Bot
 
 from core.functions.reply_markup import generate_top_markup
 from core.texts import MSG_TOP_ABOUT
 from core.types import user_allowed, Character
 from core.utils import send_async
+
+from config import CASTLE
 
 
 @user_allowed
@@ -18,11 +20,15 @@ def top_about(bot: Bot, update: Update, session):
 
 def get_top(condition, session, header, field_name, icon, user_id, additional_filter=text_('')):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
-        group_by(Character.user_id).all()
-    characters = session.query(Character).filter(Character.user_id.in_([a[0] for a in actual_profiles]),
-                                                 Character.date.in_([a[1] for a in actual_profiles]),
+        group_by(Character.user_id)
+    actual_profiles = actual_profiles.all()
+    characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
+                                                 .in_([(a[0], a[1]) for a in actual_profiles]),
                                                  additional_filter)\
-        .order_by(condition).all()
+        .order_by(condition)
+    if CASTLE:
+        characters = characters.filter_by(castle=CASTLE)
+    characters = characters.all()
     text = header
     str_format = '{}. {} ({}🌟) - {}{}\n'
     for i in range(min(10, len(characters))):
