@@ -29,7 +29,7 @@ def error(bot: Bot, update, error, **kwargs):
 def start(bot: Bot, update: Update, session):
     add_user(update.message.from_user, session)
     if update.message.chat.type == 'private':
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME, parse_mode=ParseMode.HTML)
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
@@ -56,7 +56,7 @@ def user_panel(bot: Bot, update: Update, session):
             is_admin = True
             break
         squad_member = session.query(SquadMember).filter_by(user_id=update.message.from_user.id).first()
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME,
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME, parse_mode=ParseMode.HTML,
                    reply_markup=generate_user_markup(is_admin, True if squad_member else False))
 
 
@@ -145,7 +145,7 @@ def stock_compare(bot: Bot, update: Update, session, chat_data: dict):
             msg += MSG_EMPTY
         send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
     else:
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT, parse_mode=ParseMode.HTML)
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
@@ -201,4 +201,4 @@ def trade_compare(bot: Bot, update: Update, session, chat_data: dict):
             msg += MSG_EMPTY
         send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
     else:
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT, parse_mode=ParseMode.HTML)

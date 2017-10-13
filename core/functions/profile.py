@@ -1,4 +1,4 @@
-from telegram import Update, Bot
+from telegram import Update, Bot, ParseMode
 
 from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.regexp import HERO, PROFILE, REPORT
@@ -139,12 +139,14 @@ def char_update(bot: Bot, update: Update, session):
                                  session)
         if CASTLE:
             if char and char.castle == CASTLE:
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name))
+                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
+                           parse_mode=ParseMode.HTML)
             else:
                 send_async(bot, chat_id=update.message.chat.id,
-                           text=MSG_PROFILE_CASTLE_MISTAKE)
+                           text=MSG_PROFILE_CASTLE_MISTAKE, parse_mode=ParseMode.HTML)
         else:
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name))
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
+                       parse_mode=ParseMode.HTML)
 
 
 @user_allowed
@@ -177,4 +179,4 @@ def find_by_username(bot: Bot, update: Update, session):
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns)
             else:
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND)
+                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
