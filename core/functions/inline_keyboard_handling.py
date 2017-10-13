@@ -4,7 +4,7 @@ import json
 from json import loads
 import logging
 
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError, ParseMode
 from telegram.ext.dispatcher import run_async
 
 from core.enums import Castle, Icons
@@ -621,13 +621,13 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                     send_async(bot, chat_id=adm.user_id,
                                text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name))
             send_async(bot, chat_id=member.squad_id,
-                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name))
+                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
             send_async(bot, chat_id=member.user_id,
-                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name))
+                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
             if data['id'] == update.callback_query.from_user.id:
                 bot.editMessageText(MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
                                     update.callback_query.message.chat.id,
-                                    update.callback_query.message.message_id)
+                                    update.callback_query.message.message_id, parse_mode=ParseMode.HTML)
             else:
                 members = session.query(SquadMember).filter_by(squad_id=member.squad_id).all()
                 bot.editMessageText(update.callback_query.message.text,
@@ -635,7 +635,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                                     update.callback_query.message.message_id,
                                     reply_markup=generate_fire_up(members))
         else:
-            update.callback_query.answer(text='Этот пользователь уже выпилен из отряда, кнопка больше не работает =(')
+            update.callback_query.answer(text=MSG_SQUAD_ALREADY_DELETED)
     elif data['t'] == QueryType.RequestSquad.value:
         member = session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
         if member is None:
@@ -648,7 +648,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             usernames = ['@' + session.query(User).filter_by(id=admin.user_id).first().username for admin in admins]
             bot.editMessageText(MSG_SQUAD_REQUESTED.format(member.squad.squad_name, ', '.join(usernames)),
                                 update.callback_query.message.chat.id,
-                                update.callback_query.message.message_id)
+                                update.callback_query.message.message_id, parse_mode=ParseMode.HTML)
             admins = session.query(Admin).filter_by(admin_group=member.squad.chat_id).all()
             for adm in admins:
                 send_async(bot, chat_id=adm.user_id, text=MSG_SQUAD_REQUEST_NEW)

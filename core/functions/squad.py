@@ -1,4 +1,4 @@
-from telegram import Update, Bot
+from telegram import Update, Bot, ParseMode
 
 from core.template import fill_char_template
 from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed
@@ -25,7 +25,8 @@ def add_squad(bot: Bot, update: Update, session):
                 squad.squad_name = group.title
             session.add(squad)
             session.commit()
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NEW.format(squad.squad_name))
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NEW.format(squad.squad_name),
+                       parse_mode=ParseMode.HTML)
 
 
 @admin_allowed()
@@ -49,7 +50,8 @@ def set_squad_name(bot: Bot, update: Update, session):
             squad.squad_name = msg[1]
             session.add(squad)
             session.commit()
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_RENAMED.format(squad.squad_name))
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_RENAMED.format(squad.squad_name),
+                       parse_mode=ParseMode.HTML)
 
 
 @admin_allowed()
@@ -172,7 +174,7 @@ def remove_from_squad(bot: Bot, update: Update, session):
         squad = session.query(Squad).filter_by(chat_id=adm.admin_group).first()
         send_async(bot, chat_id=update.message.chat.id,
                    text=MSG_SQUAD_CLEAN.format(squad.squad_name),
-                   reply_markup=markup)
+                   reply_markup=markup, parse_mode=ParseMode.HTML)
 
 
 @admin_allowed(AdminType.GROUP)
