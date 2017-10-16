@@ -619,7 +619,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             for adm in admins:
                 if adm.user_id != update.callback_query.from_user.id:
                     send_async(bot, chat_id=adm.user_id,
-                               text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name))
+                               text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
             send_async(bot, chat_id=member.squad_id,
                        text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
             send_async(bot, chat_id=member.user_id,
