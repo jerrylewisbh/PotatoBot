@@ -18,6 +18,9 @@ class StockType(Enum):
     Stock = 0
     TradeBot = 1
 
+class BuildType(Enum):
+    Build = 1
+    Repair = 0
 
 def error(bot: Bot, update, error, **kwargs):
     """ Error handling """
