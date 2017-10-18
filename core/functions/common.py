@@ -19,11 +19,6 @@ class StockType(Enum):
     TradeBot = 1
 
 
-class BuildType(Enum):
-    Build = 1
-    Repair = 0
-
-
 def error(bot: Bot, update, error, **kwargs):
     """ Error handling """
     LOGGER.error("An error (%s) occurred: %s"
