@@ -98,13 +98,12 @@ class User(Base):
                          uselist=False)
 
     report = relationship('Report',
-                           back_populates='user',
-                           order_by='Report.date.desc()')
+                          back_populates='user',
+                          order_by='Report.date.desc()')
 
     build_report = relationship('BuildReport',
                                 back_populates='user',
                                 order_by='BuildReport.date.desc()')
-
 
     def __repr__(self):
         user = ''
@@ -245,6 +244,7 @@ class BuildReport(Base):
     report_type = Column(Integer)
 
     user = relationship('User', back_populates='build_report')
+
 
 class Report(Base):
     __tablename__ = 'reports'
