@@ -38,6 +38,11 @@ class MessageType(Enum):
     PHOTO = 9
 
 
+class BuildType(Enum):
+    Build = 1
+    Repair = 0
+
+
 ENGINE = create_engine(DB,
                        echo=False,
                        pool_size=200,
@@ -95,6 +100,11 @@ class User(Base):
     report = relationship('Report',
                            back_populates='user',
                            order_by='Report.date.desc()')
+
+    build_report = relationship('BuildReport',
+                                back_populates='user',
+                                order_by='BuildReport.date.desc()')
+
 
     def __repr__(self):
         user = ''
@@ -223,8 +233,8 @@ class Character(Base):
     user = relationship('User', back_populates='character')
 
 
-class TradeReport(Base):
-    __tablename__ = 'trade_reports'
+class BuildReport(Base):
+    __tablename__ = 'build_reports'
 
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
     date = Column(DATETIME(fsp=6), primary_key=True)
@@ -234,6 +244,7 @@ class TradeReport(Base):
     report_count = Column(Integer)
     report_type = Column(Integer)
 
+    user = relationship('User', back_populates='build_report')
 
 class Report(Base):
     __tablename__ = 'reports'
