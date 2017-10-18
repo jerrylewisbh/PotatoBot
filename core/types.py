@@ -223,6 +223,18 @@ class Character(Base):
     user = relationship('User', back_populates='character')
 
 
+class TradeReport(Base):
+    __tablename__ = 'trade_reports'
+
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+    date = Column(DATETIME(fsp=6), primary_key=True)
+    name = Column(UnicodeText(250))
+    building = Column(UnicodeText(250))
+    progress_percent = Column(Integer)
+    report_count = Column(Integer)
+    report_type = Column(Integer)
+
+
 class Report(Base):
     __tablename__ = 'reports'
 
