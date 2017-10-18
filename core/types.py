@@ -237,10 +237,8 @@ class BuildReport(Base):
 
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
     date = Column(DATETIME(fsp=6), primary_key=True)
-    name = Column(UnicodeText(250))
     building = Column(UnicodeText(250))
     progress_percent = Column(Integer)
-    report_count = Column(Integer)
     report_type = Column(Integer)
 
     user = relationship('User', back_populates='build_report')
