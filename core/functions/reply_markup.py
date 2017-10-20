@@ -4,7 +4,7 @@ from core.commands import ADMIN_COMMAND_ORDER, ADMIN_COMMAND_STATUS, ADMIN_COMMA
     ADMIN_COMMAND_FIRE_UP, ADMIN_COMMAND_SQUAD_LIST, USER_COMMAND_ME, USER_COMMAND_TOP, USER_COMMAND_SQUAD, \
     USER_COMMAND_STATISTICS, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, ADMIN_COMMAND_ADMINPANEL, \
     USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, \
-    STATISTICS_COMMAND_EXP
+    STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE
 
 
 def generate_admin_markup(full=False, grp=False):
@@ -39,5 +39,11 @@ def generate_top_markup():
 
 def generate_statistics_markup():
     buttons = [[KeyboardButton(STATISTICS_COMMAND_EXP)],
+               [KeyboardButton(USER_COMMAND_BACK)]]
+    return ReplyKeyboardMarkup(buttons, True)
+
+
+def generate_squad_markup():
+    buttons = [[KeyboardButton(USER_COMMAND_SQUAD_LEAVE)],
                [KeyboardButton(USER_COMMAND_BACK)]]
     return ReplyKeyboardMarkup(buttons, True)

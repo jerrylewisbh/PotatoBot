@@ -19,7 +19,7 @@ from config import TOKEN, GOVERNMENT_CHAT
 from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COMMAND_ORDER, ADMIN_COMMAND_SQUAD_LIST, \
     ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, \
     USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP, USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, \
-    TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP
+    TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE
 from core.functions.activity import (
     day_activity, week_activity, battle_activity
 )
@@ -46,8 +46,8 @@ from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
     enable_thorns, disable_thorns,
     squad_list, squad_request, list_squad_requests,
-    open_hiring, close_hiring, remove_from_squad, add_to_squad
-)
+    open_hiring, close_hiring, remove_from_squad, add_to_squad,
+    leave_squad)
 from core.functions.statistics import statistic_about, exp_statistic
 from core.functions.top import top_about, attack_top, exp_top, def_top
 from core.functions.triggers import (
@@ -233,6 +233,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                            chat_id=update.message.chat.id,
                            text=MSG_IN_DEV,
                            parse_mode=ParseMode.HTML)
+            elif text == USER_COMMAND_SQUAD_LEAVE.lower:
+                leave_squad(bot, update)
             elif text == USER_COMMAND_CONTACTS.lower():
                 send_async(bot,
                            chat_id=update.message.chat.id,
@@ -353,6 +355,16 @@ def ready_to_battle_result(bot: Bot, job_queue):
                    text=full_text,
                    parse_mode=ParseMode.HTML)
 
+    except SQLAlchemyError as err:
+        bot.logger.error(str(err))
+        Session.rollback()
+
+
+@run_async
+def fresh_profiles(bot: Bot, job_queue):
+    session = Session()
+    try:
+        pass
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
         Session.rollback()
