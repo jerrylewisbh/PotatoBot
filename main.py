@@ -230,7 +230,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 exp_statistic(bot, update)
             elif text == USER_COMMAND_SQUAD.lower():
                 squad_about(bot, update)
-            elif text == USER_COMMAND_SQUAD_LEAVE.lower:
+            elif text == USER_COMMAND_SQUAD_LEAVE.lower():
                 leave_squad(bot, update)
             elif text == USER_COMMAND_CONTACTS.lower():
                 send_async(bot,
