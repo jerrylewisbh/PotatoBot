@@ -47,7 +47,7 @@ from core.functions.squad import (
     enable_thorns, disable_thorns,
     squad_list, squad_request, list_squad_requests,
     open_hiring, close_hiring, remove_from_squad, add_to_squad,
-    leave_squad)
+    leave_squad, squad_about)
 from core.functions.statistics import statistic_about, exp_statistic
 from core.functions.top import top_about, attack_top, exp_top, def_top
 from core.functions.triggers import (
@@ -229,10 +229,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             elif text == STATISTICS_COMMAND_EXP.lower():
                 exp_statistic(bot, update)
             elif text == USER_COMMAND_SQUAD.lower():
-                send_async(bot,
-                           chat_id=update.message.chat.id,
-                           text=MSG_IN_DEV,
-                           parse_mode=ParseMode.HTML)
+                squad_about(bot, update)
             elif text == USER_COMMAND_SQUAD_LEAVE.lower:
                 leave_squad(bot, update)
             elif text == USER_COMMAND_CONTACTS.lower():
