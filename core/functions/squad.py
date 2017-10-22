@@ -1,5 +1,6 @@
 from telegram import Update, Bot, ParseMode
 
+from core.functions.reply_markup import generate_squad_markup
 from core.template import fill_char_template
 from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed
 from core.utils import send_async
@@ -7,6 +8,15 @@ from core.functions.inline_keyboard_handling import generate_squad_list, \
     generate_leave_squad, generate_squad_request, generate_squad_request_answer, generate_fire_up, \
     generate_squad_invite_answer
 from core.texts import *
+
+
+@user_allowed
+def squad_about(bot: Bot, update: Update, session):
+    markup = generate_squad_markup()
+    send_async(bot,
+               chat_id=update.message.chat.id,
+               text=MSG_SQUAD_ABOUT,
+               reply_markup=markup)
 
 
 @admin_allowed()
@@ -175,6 +185,29 @@ def remove_from_squad(bot: Bot, update: Update, session):
         send_async(bot, chat_id=update.message.chat.id,
                    text=MSG_SQUAD_CLEAN.format(squad.squad_name),
                    reply_markup=markup, parse_mode=ParseMode.HTML)
+
+
+@user_allowed
+def leave_squad(bot: Bot, update: Update, session):
+    member = session.query(SquadMember).filter_by(user_id=update.message.from_user.id).first()
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if member:
+        squad = member.squad
+        session.delete(member)
+        session.commit()
+        admins = session.query(Admin).filter_by(admin_group=squad.chat_id).all()
+        for adm in admins:
+            if adm.user_id != update.message.from_user.id:
+                send_async(bot, chat_id=adm.user_id,
+                           text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
+                           parse_mode=ParseMode.HTML)
+        send_async(bot, chat_id=member.squad_id,
+                   text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
+        send_async(bot, chat_id=member.user_id,
+                   text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
+    else:
+        send_async(bot, chat_id=user.id,
+                   text=MSG_SQUAD_NONE, parse_mode=ParseMode.HTML)
 
 
 @admin_allowed(AdminType.GROUP)

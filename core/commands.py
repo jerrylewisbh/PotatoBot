@@ -13,6 +13,7 @@ USER_COMMAND_STATISTICS = '📊Статистика'
 USER_COMMAND_BUILD = '🚧Стройка'
 USER_COMMAND_CONTACTS = '💬Связь'
 USER_COMMAND_SQUAD_REQUEST = '⚜Хочу в отряд'
+USER_COMMAND_SQUAD_LEAVE = '☄Покинуть отряд'
 
 USER_COMMAND_BACK = '🔙Назад'
 
