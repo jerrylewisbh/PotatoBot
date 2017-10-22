@@ -367,8 +367,8 @@ def fresh_profiles(bot: Bot, job_queue):
         actual_profiles = actual_profiles.all()
         characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                      .in_([(a[0], a[1]) for a in actual_profiles]),
-                                                     datetime.now() - timedelta(days=3) > Character.date
-                                                     > datetime.now() - timedelta(days=14))
+                                                     datetime.now() - timedelta(days=3) > Character.date,
+                                                     Character.date > datetime.now() - timedelta(days=14))
         if CASTLE:
             characters = characters.filter_by(castle=CASTLE)
         characters = characters.all()
@@ -472,7 +472,7 @@ def main():
     updater.job_queue.run_daily(fresh_profiles,
                                 time(hour=19, minute=40))
     updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=23, minute=40))
+                                time(hour=15, minute=28))
 
     # Start the Bot
     updater.start_polling()
