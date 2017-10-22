@@ -219,6 +219,7 @@ def generate_profile_buttons(user, back_key=False):
 def generate_squad_list_key(squad, session):
     attack = 0
     defence = 0
+    level = 0
     members = squad.members
     user_ids = []
     for member in members:
@@ -231,12 +232,14 @@ def generate_squad_list_key(squad, session):
     for character in characters:
         attack += character.attack
         defence += character.defence
+        level += character.level
     return [InlineKeyboardButton(
-        '{} : {}⚔ {}🛡 {}👥'.format(
+        '{} : {}⚔ {}🛡 {}👥 {}🏅'.format(
             squad.squad_name,
             attack,
             defence,
-            len(members)
+            len(members),
+            int(level/len(members))
         ),
         callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))]
 
