@@ -239,7 +239,7 @@ def generate_squad_list_key(squad, session):
             attack,
             defence,
             len(members),
-            int(level/len(members))
+            int(level/(len(members) or 1))
         ),
         callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))]
 
