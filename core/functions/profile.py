@@ -109,8 +109,10 @@ def parse_build_reports(report, user_id, date, session):
         report.building = str(parsed_data.group(1))
         report.progress_percent = str(parsed_data.group(2))
         report.report_type = 1
-    session.add(report)
-    session.commit()
+        session.add(report)
+        session.commit()
+    return report
+
 
 def parse_repair_reports(report, user_id, date, session):
     parsed_data = re.search(REPAIR_REPORT, report)
@@ -121,8 +123,10 @@ def parse_repair_reports(report, user_id, date, session):
         report.date = date
         report.building = str(parsed_data.group(1))
         report.report_type = 0
-    session.add(report)
-    session.commit()
+        session.add(report)
+        session.commit()
+    return report
+
 
 @user_allowed
 def build_report_received(bot: Bot, update: Update, session):
