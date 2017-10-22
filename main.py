@@ -472,7 +472,7 @@ def main():
     updater.job_queue.run_daily(fresh_profiles,
                                 time(hour=19, minute=40))
     updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=15, minute=28))
+                                time(hour=23, minute=40))
 
     # Start the Bot
     updater.start_polling()
