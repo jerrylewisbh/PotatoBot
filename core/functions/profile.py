@@ -8,8 +8,14 @@ from datetime import timedelta, datetime
 import re
 from core.template import fill_char_template
 from core.texts import *
+from enum import Enum
 
 from config import CASTLE
+
+
+class BuildType(Enum):
+    Build = 1
+    Repair = 0
 
 
 def parse_profile(profile, user_id, date, session):
@@ -108,7 +114,7 @@ def parse_build_reports(report, user_id, date, session):
         report.date = date
         report.building = str(parsed_data.group(1))
         report.progress_percent = str(parsed_data.group(2))
-        report.report_type = 1
+        report.report_type = BuildType.Build.value
         session.add(report)
         session.commit()
     return report
@@ -122,7 +128,7 @@ def parse_repair_reports(report, user_id, date, session):
         report.user_id = user_id
         report.date = date
         report.building = str(parsed_data.group(1))
-        report.report_type = 0
+        report.report_type = BuildType.Repair.value
         session.add(report)
         session.commit()
     return report
@@ -132,7 +138,7 @@ def parse_repair_reports(report, user_id, date, session):
 def build_report_received(bot: Bot, update: Update, session):
     report = re.search(BUILD_REPORT, update.message.text)
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
-    if report:
+    if report and user.character:
         parse_build_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
         send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
     else:
@@ -143,7 +149,7 @@ def build_report_received(bot: Bot, update: Update, session):
 def repair_report_received(bot: Bot, update: Update, session):
     report = re.search(REPAIR_REPORT, update.message.text)
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
-    if report:
+    if report and user.character:
         parse_repair_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
         send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
     else:

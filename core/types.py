@@ -38,11 +38,6 @@ class MessageType(Enum):
     PHOTO = 9
 
 
-class BuildType(Enum):
-    Build = 1
-    Repair = 0
-
-
 ENGINE = create_engine(DB,
                        echo=False,
                        pool_size=200,
