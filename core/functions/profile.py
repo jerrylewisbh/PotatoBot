@@ -1,8 +1,8 @@
 from telegram import Update, Bot, ParseMode
 
 from core.functions.inline_keyboard_handling import generate_profile_buttons
-from core.regexp import HERO, PROFILE, REPORT
-from core.types import Character, Report, User, admin_allowed, Equip, user_allowed
+from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT
+from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport
 from core.utils import send_async
 from datetime import timedelta, datetime
 import re
@@ -97,6 +97,53 @@ def parse_reports(report, user_id, date, session):
         session.add(report)
         session.commit()
     return report
+
+
+def parse_build_reports(report, user_id, date, session):
+    parsed_data = re.search(BUILD_REPORT, report)
+    report = session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
+    if report is None:
+        report = BuildReport()
+        report.user_id = user_id
+        report.date = date
+        report.building = str(parsed_data.group(1))
+        report.progress_percent = str(parsed_data.group(2))
+        report.report_type = 1
+    session.add(report)
+    session.commit()
+
+def parse_repair_reports(report, user_id, date, session):
+    parsed_data = re.search(REPAIR_REPORT, report)
+    report = session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
+    if report is None:
+        report = BuildReport()
+        report.user_id = user_id
+        report.date = date
+        report.building = str(parsed_data.group(1))
+        report.report_type = 0
+    session.add(report)
+    session.commit()
+
+@user_allowed
+def build_report_received(bot: Bot, update: Update, session):
+    report = re.search(BUILD_REPORT, update.message.text)
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if report:
+        parse_build_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
+    else:
+        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
+
+
+@user_allowed
+def repair_report_received(bot: Bot, update: Update, session):
+    report = re.search(REPAIR_REPORT, update.message.text)
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if report:
+        parse_repair_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
+    else:
+        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
 
 
 @user_allowed
