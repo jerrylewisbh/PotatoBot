@@ -99,7 +99,7 @@ def parse_reports(report, user_id, date, session):
     return report
 
 
-@user_allowed
+@user_allowed(False)
 def report_received(bot: Bot, update: Update, session):
     # if datetime.now() - update.message.forward_date > timedelta(minutes=1):
     #     send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
@@ -121,7 +121,7 @@ def report_received(bot: Bot, update: Update, session):
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
 
 
-@user_allowed
+@user_allowed(False)
 def char_update(bot: Bot, update: Update, session):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)

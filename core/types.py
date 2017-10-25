@@ -285,6 +285,15 @@ class LocalTrigger(Base):
     message_type = Column(Integer, default=0)
 
 
+class Ban(Base):
+    __tablename__ = 'banned_users'
+
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+    reason = Column(UnicodeText(2500))
+    from_date = Column(DATETIME(fsp=6))
+    to_date = Column(DATETIME(fsp=6))
+
+
 def check_admin(update, session, adm_type):
     allowed = False
     if adm_type == AdminType.NOT_ADMIN:
@@ -306,12 +315,22 @@ def check_admin(update, session, adm_type):
     return allowed
 
 
-def admin_allowed(adm_type=AdminType.FULL):
+def check_ban(update, session):
+    ban = session.query(Ban).filter_by(user_id=update.message.from_user.id).first()
+    if ban is None or ban.to_date < datetime.now():
+        return True
+    else:
+        return False
+
+
+def admin_allowed(adm_type=AdminType.FULL, ban_enable=True):
     def decorate(func):
         def wrapper(bot: Bot, update, *args, **kwargs):
             session = Session()
             try:
                 allowed = check_admin(update, session, adm_type)
+                if ban_enable:
+                    allowed &= check_ban(update, session)
                 if allowed:
                     func(bot, update, session, *args, **kwargs)
             except SQLAlchemyError as err:
@@ -321,8 +340,13 @@ def admin_allowed(adm_type=AdminType.FULL):
     return decorate
 
 
-def user_allowed(func):
-    return admin_allowed(AdminType.NOT_ADMIN)(func)
+def user_allowed(ban_enable=True):
+    if callable(ban_enable):
+        return admin_allowed(AdminType.NOT_ADMIN)(ban_enable)
+    else:
+        def wrap(func):
+            return admin_allowed(AdminType.NOT_ADMIN, ban_enable)(func)
+    return wrap
 
 
 Base.metadata.create_all(ENGINE)
