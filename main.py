@@ -180,12 +180,6 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 report_received(bot, update)
                 job_queue.run_once(del_msg, 2, (update.message.chat.id,
                                                 update.message.message_id))
-        elif 'Ты вернулся со стройки:' in text:
-            if update.message.forward_from.id == CWBOT_ID:
-                build_report_received(bot, update)
-        elif 'Здание отремонтировано:' in text:
-            if update.message.forward_from.id == CWBOT_ID:
-                repair_report_received(bot, update)
         else:
             trigger_show(bot, update)
 
