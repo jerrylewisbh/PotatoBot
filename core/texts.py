@@ -147,6 +147,9 @@ MSG_PROFILE_SHOW_FORMAT = """\
 MSG_MAIN_INLINE_BATTLE = 'ГРАБЬНАСИЛУЙУБИВАЙ!'
 MSG_MAIN_READY_TO_BATTLE = 'К битве готовсь!'
 # -----------------------
+MSG_BUILD_REPORT_EXISTS = 'Ты уже кидал этот репорт!'
+MSG_BUILD_REPORT_OK = 'Спасибо за помощь на стройке! Это твой {} репорт.'
+MSG_BUILD_REPORT_FORWARDED = 'Больше не присылай мне репорты с твинков!!!'
 
 MSG_REPORT_OLD = 'Твой репорт уже попахивает, в следующий раз постарайся прислать его в течении минуты после получения.'
 MSG_REPORT_EXISTS = 'Репорт за эту битву уже внесён.'
