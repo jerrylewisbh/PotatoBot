@@ -1,15 +1,21 @@
 from telegram import Update, Bot, ParseMode
 
 from core.functions.inline_keyboard_handling import generate_profile_buttons
-from core.regexp import HERO, PROFILE, REPORT
-from core.types import Character, Report, User, admin_allowed, Equip, user_allowed
+from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT
+from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport
 from core.utils import send_async
 from datetime import timedelta, datetime
 import re
 from core.template import fill_char_template
 from core.texts import *
+from enum import Enum
 
 from config import CASTLE
+
+
+class BuildType(Enum):
+    Build = 1
+    Repair = 0
 
 
 def parse_profile(profile, user_id, date, session):
@@ -97,6 +103,57 @@ def parse_reports(report, user_id, date, session):
         session.add(report)
         session.commit()
     return report
+
+
+def parse_build_reports(report, user_id, date, session):
+    parsed_data = re.search(BUILD_REPORT, report)
+    report = session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
+    if report is None:
+        report = BuildReport()
+        report.user_id = user_id
+        report.date = date
+        report.building = str(parsed_data.group(1))
+        report.progress_percent = str(parsed_data.group(2))
+        report.report_type = BuildType.Build.value
+        session.add(report)
+        session.commit()
+    return report
+
+
+def parse_repair_reports(report, user_id, date, session):
+    parsed_data = re.search(REPAIR_REPORT, report)
+    report = session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
+    if report is None:
+        report = BuildReport()
+        report.user_id = user_id
+        report.date = date
+        report.building = str(parsed_data.group(1))
+        report.report_type = BuildType.Repair.value
+        session.add(report)
+        session.commit()
+    return report
+
+
+@user_allowed(False)
+def build_report_received(bot: Bot, update: Update, session):
+    report = re.search(BUILD_REPORT, update.message.text)
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if report and user.character:
+        parse_build_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
+    else:
+        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
+
+
+@user_allowed(False)
+def repair_report_received(bot: Bot, update: Update, session):
+    report = re.search(REPAIR_REPORT, update.message.text)
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if report and user.character:
+        parse_repair_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
+    else:
+        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
 
 
 @user_allowed(False)
