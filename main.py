@@ -381,8 +381,8 @@ def fresh_profiles(bot: Bot, job_queue):
         characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                      .in_([(a[0], a[1]) for a in actual_profiles]),
                                                      Character.date < datetime.now() - timedelta(days=14)).all()
-        members = session.query(SquadMember).filter(SquadMember.user_id in
-                                                    [character.user_id for character in characters]).all()
+        members = session.query(SquadMember).filter(SquadMember.user_id
+                                                    .in_([character.user_id for character in characters])).all()
         for member in members:
             session.delete(member)
             send_async(bot,
