@@ -153,7 +153,7 @@ def set_global_admin(bot: Bot, update: Update, session):
                            text=MSG_NEW_GLOBAL_ADMIN_EXISTS.format(user.username))
 
 
-@user_allowed
+@user_allowed(False)
 def set_super_admin(bot: Bot, update: Update, session):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')

@@ -106,7 +106,7 @@ def get_diff(dict_one, dict_two):
     return resource_diff_add, resource_diff_del
 
 
-@user_allowed
+@user_allowed(False)
 def stock_compare(bot: Bot, update: Update, session, chat_data: dict):
     old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
                                                stock_type=StockType.Stock.value).order_by(Stock.date.desc()).first()
@@ -160,7 +160,7 @@ def delete_user(bot: Bot, update: Update, session):
     bot.unbanChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
 
 
-@user_allowed
+@user_allowed(False)
 def trade_compare(bot: Bot, update: Update, session, chat_data: dict):
     old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
                                                stock_type=StockType.TradeBot.value).order_by(Stock.date.desc()).first()
