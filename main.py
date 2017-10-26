@@ -393,6 +393,7 @@ def fresh_profiles(bot: Bot, job_queue):
                        chat_id=member.user_id,
                        text=MSG_SQUAD_DELETE_OUTDATED,
                        parse_mode=ParseMode.HTML)
+        session.commit()
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
         Session.rollback()
