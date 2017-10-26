@@ -28,6 +28,7 @@ from core.functions.admins import (
     list_admins, admins_for_users, set_admin, del_admin,
     set_global_admin, set_super_admin, del_global_admin
 )
+from core.functions.ban import unban, ban
 from core.functions.bosses import (
     boss_leader, boss_zhalo, boss_monoeye, boss_hydra)
 from core.functions.orders import order, orders
@@ -445,6 +446,8 @@ def main():
     disp.add_handler(CommandHandler("set_invite_link", set_invite_link))
     disp.add_handler(CommandHandler("find", find_by_username))
     disp.add_handler(CommandHandler("add", add_to_squad))
+    disp.add_handler(CommandHandler("ban", ban))
+    disp.add_handler(CommandHandler("unban", unban))
 
     disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True))
 
