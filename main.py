@@ -64,7 +64,8 @@ from core.functions.welcome import (
 from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT
 from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL,
-    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED)
+    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
+    MSG_SQUAD_DELETE_OUTDATED_EXT)
 from core.types import Session, Order, Squad, Admin, user_allowed, Character, SquadMember
 from core.utils import add_user, send_async
 
@@ -178,8 +179,6 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         elif 'твои результаты в бою:' in text:
             if update.message.forward_from.id == CWBOT_ID:
                 report_received(bot, update)
-                job_queue.run_once(del_msg, 2, (update.message.chat.id,
-                                                update.message.message_id))
         else:
             trigger_show(bot, update)
 
@@ -389,6 +388,15 @@ def fresh_profiles(bot: Bot, job_queue):
                                                     .in_([character.user_id for character in characters])).all()
         for member in members:
             session.delete(member)
+            admins = session.query(Admin).filter_by(admin_group=member.squad_id).all()
+            for adm in admins:
+                send_async(bot, chat_id=adm.user_id,
+                           text=MSG_SQUAD_DELETE_OUTDATED_EXT
+                           .format(member.user.character.name, member.squad.squad_name),
+                           parse_mode=ParseMode.HTML)
+            send_async(bot, chat_id=member.squad_id,
+                       text=MSG_SQUAD_DELETE_OUTDATED_EXT.format(member.user.character.name, member.squad.squad_name),
+                       parse_mode=ParseMode.HTML)
             send_async(bot,
                        chat_id=member.user_id,
                        text=MSG_SQUAD_DELETE_OUTDATED,
