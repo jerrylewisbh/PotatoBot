@@ -139,10 +139,15 @@ def build_report_received(bot: Bot, update: Update, session):
     report = re.search(BUILD_REPORT, update.message.text)
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if report and user.character:
-        parse_build_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
-        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
-    else:
-        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
+        old_report = session.query(BuildReport) \
+            .filter(BuildReport.user_id == user.id,
+                    BuildReport.date > update.message.forward_date - timedelta(minutes=5),
+                    BuildReport.date < update.message.forward_date + timedelta(minutes=5)).first()
+        if old_report is None:
+            parse_build_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
+        else:
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
 
 
 @user_allowed(False)
@@ -150,10 +155,15 @@ def repair_report_received(bot: Bot, update: Update, session):
     report = re.search(REPAIR_REPORT, update.message.text)
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if report and user.character:
-        parse_repair_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
-        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
-    else:
-        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
+        old_report = session.query(BuildReport) \
+            .filter(BuildReport.user_id == user.id,
+                    BuildReport.date > update.message.forward_date - timedelta(minutes=5),
+                    BuildReport.date < update.message.forward_date + timedelta(minutes=5)).first()
+        if old_report is None:
+            parse_repair_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
+        else:
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
 
 
 @user_allowed(False)
