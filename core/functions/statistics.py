@@ -39,6 +39,6 @@ def exp_statistic(bot: Bot, update: Update, session):
         plot.savefig(file, format='png')
     with open(filename, 'rb') as file:
         bot.sendPhoto(update.message.chat.id, file, 'В среднем {} опыта в день'
-                      .format(int((y[-1] - y[0])/(x[-1] - x[0]).days)))
+                      .format(int((y[-1] - y[0])/((x[-1] - x[0]) or 1).days)))
     plot.clf()
     os.remove(filename)
