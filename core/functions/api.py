@@ -1,8 +1,13 @@
-import json
 from datetime import datetime, timedelta
+import json
+
 import flask
-from core.types import Order, Session, Squad, SquadMember, OrderCleared
 from werkzeug.routing import IntegerConverter as BaseIntegerConverter
+from core.texts import MSG_MAIN_READY_TO_BATTLE
+from core.types import Order, Session, Squad, SquadMember, OrderCleared
+
+from sqlalchemy.exc import SQLAlchemyError
+
 
 app = flask.Flask(__name__)
 
@@ -21,13 +26,18 @@ def new_ready_to_battle(chat_id):
         order = Order()
         order.chat_id = chat_id
         order.confirmed_msg = 0
-        order.text = 'К битве готовсь!'
+        order.text = MSG_MAIN_READY_TO_BATTLE
         order.date = datetime.now()
         session.add(order)
         session.commit()
-        order = session.query(Order).filter_by(chat_id=chat_id, date=order.date, text='К битве готовсь!').first()
-        return flask.Response(status=200, mimetype="application/json", response=json.dumps({'order_id': order.id}))
-    except:
+        order = session.query(Order).filter_by(chat_id=chat_id,
+                                               date=order.date,
+                                               text=MSG_MAIN_READY_TO_BATTLE).first()
+
+        return flask.Response(status=200,
+                              mimetype="application/json",
+                              response=json.dumps({'order_id': order.id}))
+    except SQLAlchemyError:
         Session.rollback()
         return flask.Response(status=400)
 
@@ -42,26 +52,32 @@ def new_order_click(order_id, user_id):
             if squad is not None:
                 squad_member = session.query(SquadMember).filter_by(squad_id=squad.chat_id,
                                                                     user_id=user_id)
+
                 if squad_member is not None:
                     order_ok = session.query(OrderCleared).filter_by(order_id=order_id,
                                                                      user_id=user_id).first()
+
                     if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
                         order_ok = OrderCleared()
                         order_ok.order_id = order_id
                         order_ok.user_id = user_id
                         session.add(order_ok)
                         session.commit()
+
             else:
                 order_ok = session.query(OrderCleared).filter_by(order_id=order_id,
                                                                  user_id=user_id).first()
+
                 if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
                     order_ok = OrderCleared()
                     order_ok.order_id = order_id
                     order_ok.user_id = user_id
                     session.add(order_ok)
                     session.commit()
+
         return flask.Response(status=200)
-    except:
+
+    except SQLAlchemyError:
         Session.rollback()
         return flask.Response(status=400)
 
@@ -74,10 +90,15 @@ def order_status(order_id):
         if order is not None:
             users = []
             for order_ok in order.cleared:
-                users.append({'username': order_ok.user.username, 'id': order_ok.user.id,
+                users.append({'username': order_ok.user.username,
+                              'id': order_ok.user.id,
                               'attack': order_ok.user.character.attack if order_ok.user.character else 0,
                               'defence': order_ok.user.character.defence if order_ok.user.character else 0})
-            return flask.Response(status=200, mimetype="application/json", response=json.dumps({'users': users}))
-    except:
+
+            return flask.Response(status=200,
+                                  mimetype="application/json",
+                                  response=json.dumps({'users': users}))
+
+    except SQLAlchemyError:
         Session.rollback()
         return flask.Response(status=400)

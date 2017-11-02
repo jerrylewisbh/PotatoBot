@@ -1,25 +1,28 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger
-from sqlalchemy.dialects.mysql import DATETIME
-from datetime import datetime, timedelta
-from sqlalchemy.orm import sessionmaker, relationship, scoped_session
-from sqlalchemy import event
-from sqlalchemy.pool import Pool
-import logging
+from datetime import datetime
 from enum import Enum
+import logging
+
+from sqlalchemy import (
+    create_engine,
+    Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger
+)
+from sqlalchemy.dialects.mysql import DATETIME
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session
+from sqlalchemy.exc import SQLAlchemyError
+
+from telegram import Bot
+
 from config import DB
-import requests
-from json import loads
-from core.enums import Castle
-import threading
 
 
 class AdminType(Enum):
     SUPER = 0
     FULL = 1
     GROUP = 2
+
+    NOT_ADMIN = 100
 
 
 class MessageType(Enum):
@@ -35,26 +38,22 @@ class MessageType(Enum):
     PHOTO = 9
 
 
-engine = create_engine(DB, echo=False, pool_size=200, max_overflow=50, isolation_level="READ UNCOMMITTED")
-logger = logging.getLogger('sqlalchemy.engine')
+ENGINE = create_engine(DB,
+                       echo=False,
+                       pool_size=200,
+                       max_overflow=50,
+                       isolation_level="READ UNCOMMITTED")
+
+# FIX: имена констант?
+LOGGER = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
-Session = scoped_session(sessionmaker(bind=engine))
-last_update = datetime.now() - timedelta(minutes=10)
-
-
-@event.listens_for(Pool, "connect")
-def set_unicode(dbapi_conn, conn_record):
-    cursor = dbapi_conn.cursor()
-    try:
-        cursor.execute("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'")
-    except Exception as e:
-        logger.error(e)
+Session = scoped_session(sessionmaker(bind=ENGINE))
 
 
 class Group(Base):
     __tablename__ = 'groups'
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger, primary_key=True)  # FIX: invalid name
     username = Column(UnicodeText(250))
     title = Column(UnicodeText(250))
     welcome_enabled = Column(Boolean, default=False)
@@ -76,11 +75,30 @@ class User(Base):
     last_name = Column(UnicodeText(250))
     date_added = Column(DateTime, default=datetime.now())
 
-    character = relationship('Character', back_populates='user', order_by='Character.date.desc()', uselist=False)
+    character = relationship('Character',
+                             back_populates='user',
+                             order_by='Character.date.desc()',
+                             uselist=False)
+
     orders_confirmed = relationship('OrderCleared', back_populates='user')
     member = relationship('SquadMember', back_populates='user', uselist=False)
-    equip = relationship('Equip', back_populates='user', order_by='Equip.date.desc()', uselist=False)
-    stock = relationship('Stock', back_populates='user', order_by='Stock.date.desc()', uselist=False)
+    equip = relationship('Equip',
+                         back_populates='user',
+                         order_by='Equip.date.desc()',
+                         uselist=False)
+
+    stock = relationship('Stock',
+                         back_populates='user',
+                         order_by='Stock.date.desc()',
+                         uselist=False)
+
+    report = relationship('Report',
+                          back_populates='user',
+                          order_by='Report.date.desc()')
+
+    build_report = relationship('BuildReport',
+                                back_populates='user',
+                                order_by='BuildReport.date.desc()')
 
     def __repr__(self):
         user = ''
@@ -209,6 +227,35 @@ class Character(Base):
     user = relationship('User', back_populates='character')
 
 
+class BuildReport(Base):
+    __tablename__ = 'build_reports'
+
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+    date = Column(DATETIME(fsp=6), primary_key=True)
+    building = Column(UnicodeText(250))
+    progress_percent = Column(Integer)
+    report_type = Column(Integer)
+
+    user = relationship('User', back_populates='build_report')
+
+
+class Report(Base):
+    __tablename__ = 'reports'
+
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+    date = Column(DATETIME(fsp=6), primary_key=True)
+    name = Column(UnicodeText(250))
+    level = Column(Integer)
+    attack = Column(Integer)
+    defence = Column(Integer)
+    castle = Column(UnicodeText(100))
+    earned_exp = Column(Integer)
+    earned_gold = Column(Integer)
+    earned_stock = Column(Integer)
+
+    user = relationship('User', back_populates='report')
+
+
 class Squad(Base):
     __tablename__ = 'squads'
 
@@ -254,31 +301,69 @@ class LocalTrigger(Base):
     message_type = Column(Integer, default=0)
 
 
-def admin(adm_type=AdminType.FULL):
+class Ban(Base):
+    __tablename__ = 'banned_users'
+
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+    reason = Column(UnicodeText(2500))
+    from_date = Column(DATETIME(fsp=6))
+    to_date = Column(DATETIME(fsp=6))
+
+
+def check_admin(update, session, adm_type):
+    allowed = False
+    if adm_type == AdminType.NOT_ADMIN:
+        allowed = True
+    else:
+        admins = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        for adm in admins:
+            if adm is not None and adm.admin_type <= adm_type.value and \
+                    (adm.admin_group in [0, update.message.chat.id] or
+                     update.message.chat.id == update.message.from_user.id):
+                if adm.admin_group != 0:
+                    group = session.query(Group).filter_by(id=adm.admin_group).first()
+                    if group and group.bot_in_group:
+                        allowed = True
+                        break
+                else:
+                    allowed = True
+                    break
+    return allowed
+
+
+def check_ban(update, session):
+    ban = session.query(Ban).filter_by(user_id=update.message.from_user.id
+                                       if update.message else update.callback_query.from_user.id).first()
+    if ban is None or ban.to_date < datetime.now():
+        return True
+    else:
+        return False
+
+
+def admin_allowed(adm_type=AdminType.FULL, ban_enable=True):
     def decorate(func):
-        def wrapper(bot, update, *args, **kwargs):
+        def wrapper(bot: Bot, update, *args, **kwargs):
             session = Session()
             try:
-                adms = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
-                allowed = False
-                for adm in adms:
-                    if adm is not None and adm.admin_type <= adm_type.value and \
-                            (adm.admin_group in [0, update.message.chat.id] or
-                             update.message.chat.id == update.message.from_user.id):
-                        if adm.admin_group != 0:
-                            group = session.query(Group).filter_by(id=adm.admin_group).first()
-                            if group and group.bot_in_group:
-                                allowed = True
-                                break
-                        else:
-                            allowed = True
-                            break
+                allowed = check_admin(update, session, adm_type)
+                if ban_enable:
+                    allowed &= check_ban(update, session)
                 if allowed:
-                    func(bot, update, *args, **kwargs)
-            except Exception as e:
+                    func(bot, update, session, *args, **kwargs)
+            except SQLAlchemyError as err:
+                bot.logger.error(str(err))
                 session.rollback()
         return wrapper
     return decorate
 
 
-Base.metadata.create_all(engine)
+def user_allowed(ban_enable=True):
+    if callable(ban_enable):
+        return admin_allowed(AdminType.NOT_ADMIN)(ban_enable)
+    else:
+        def wrap(func):
+            return admin_allowed(AdminType.NOT_ADMIN, ban_enable)(func)
+    return wrap
+
+
+Base.metadata.create_all(ENGINE)
