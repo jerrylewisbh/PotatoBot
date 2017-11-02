@@ -50,7 +50,7 @@ from core.functions.squad import (
     enable_thorns, disable_thorns,
     squad_list, squad_request, list_squad_requests,
     open_hiring, close_hiring, remove_from_squad, add_to_squad,
-    leave_squad, squad_about)
+    leave_squad, squad_about, call_squad)
 from core.functions.statistics import statistic_about, exp_statistic
 from core.functions.top import top_about, attack_top, exp_top, def_top
 from core.functions.triggers import (
@@ -121,6 +121,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             set_welcome(bot, update)
         elif text == 'помощь':
             help_msg(bot, update)
+        elif text == 'отряд':
+            call_squad(bot, update)
         elif text == 'покажи приветствие':
             show_welcome(bot, update)
         elif text == 'включи приветствие':

@@ -230,3 +230,15 @@ def add_to_squad(bot: Bot, update: Update, session):
                            text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
             elif user.character is None:
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
+
+
+@admin_allowed(AdminType.GROUP)
+def call_squad(bot: Bot, update: Update, session):
+    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    if squad is not None:
+        users = session.query(User).join(SquadMember).filter(User.id == SquadMember.user_id)\
+            .filter(SquadMember.squad_id == squad.chat_id).all()
+        msg = 'Все сюда!\n'
+        for user in users:
+            msg += '@' + user.username + ' '
+        send_async(bot, chat_id=update.message.chat.id, text=msg)
