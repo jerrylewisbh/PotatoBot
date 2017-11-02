@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from sqlalchemy import or_, and_
 from telegram import Update, Bot, ParseMode
 
 from core.functions.reply_markup import generate_squad_markup
@@ -260,16 +261,15 @@ def battle_reports_show(bot: Bot, update: Update, session):
         now = datetime.now()
         time_from = datetime(now.year, now.month,
                              now.day, int(now.hour / 4) * 4, 0, 0)
-        reports = session.query(User, Report).outerjoin(Report).join(SquadMember, Report.user_id == SquadMember.user_id)\
-            .filter(SquadMember.squad_id == adm.admin_group,
-                    User.id == SquadMember.user_id,
-                    Report.user_id == SquadMember.user_id,
-                    Report.date > time_from).all()
+        reports = session.query(User, Report) \
+            .join(SquadMember) \
+            .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from)) \
+            .filter(SquadMember.squad_id == adm.admin_group).all()
         text = 'Репорты отряда {} за битву {}\n'.format(squad.squad_name, time_from)
         for user, report in reports:
             if report:
-                text += '{} ({}): 🔥{} 💰{} 📦{}\n'.format(report.name, user.username,
+                text += '{} (@{}): 🔥{} 💰{} 📦{}\n'.format(report.name, user.username,
                                                           report.earned_exp, report.earned_gold, report.earned_stock)
             else:
-                text += '{} ({}): проспал\n'.format(user.character.name, user.username)
+                text += '{} (@{}): проспал\n'.format(user.character.name, user.username)
         send_async(bot, chat_id=update.message.chat.id, text=text)
