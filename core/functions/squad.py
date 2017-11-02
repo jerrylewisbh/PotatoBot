@@ -260,7 +260,7 @@ def battle_reports_show(bot: Bot, update: Update, session):
         now = datetime.now()
         time_from = datetime(now.year, now.month,
                              now.day, int(now.hour / 4) * 4, 0, 0)
-        reports = session.query(Report, User).join(SquadMember)\
+        reports = session.query(Report, User).join(SquadMember, Report.user_id == SquadMember.user_id)\
             .filter(SquadMember.squad_id == adm.admin_group,
                     User.id == SquadMember.user_id,
                     Report.user_id == SquadMember.user_id,
