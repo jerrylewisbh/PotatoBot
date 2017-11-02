@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from telegram import Update, Bot, ParseMode
 
 from core.functions.reply_markup import generate_squad_markup
 from core.template import fill_char_template
-from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed
+from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed, Report, Character
 from core.utils import send_async
 from core.functions.inline_keyboard_handling import generate_squad_list, \
     generate_leave_squad, generate_squad_request, generate_squad_request_answer, generate_fire_up, \
@@ -242,3 +244,30 @@ def call_squad(bot: Bot, update: Update, session):
         for user in users:
             msg += '@' + user.username + ' '
         send_async(bot, chat_id=update.message.chat.id, text=msg)
+
+
+@admin_allowed(AdminType.GROUP)
+def battle_reports_show(bot: Bot, update: Update, session):
+    admin = session.query(Admin, Squad).filter(Admin.user_id == update.message.from_user.id,
+                                               Squad.chat_id == Admin.admin_group).all()
+    group_admin = []
+    for adm, squad in admin:
+        if squad is not None:
+            group_admin.append([adm, squad])
+    for adm, squad in group_admin:
+        now = datetime.now()
+        time_from = datetime(now.year, now.month,
+                             now.day, int(now.hour / 4) * 4, 0, 0)
+        reports = session.query(Report, User).join(SquadMember)\
+            .filter(SquadMember.squad_id == adm.admin_group,
+                    User.id == SquadMember.user_id,
+                    Report.user_id == SquadMember.user_id,
+                    Report.date > time_from).all()
+        text = 'Репорты отряда {} за битву {}\n'.format(squad.squad_name, time_from)
+        for report, user in reports:
+            if report:
+                text += '{} ({}): 🔥{} 💰{} 📦{}\n'.format(report.name, user.username,
+                                                          report.earned_exp, report.earned_gold, report.earned_stock)
+            else:
+                text += '{} ({}): проспал\n'.format(user.character.name, user.username)
+        send_async(bot, chat_id=update.message.chat.id, text=text)
