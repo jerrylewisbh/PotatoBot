@@ -501,6 +501,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                 else:
                     update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
     elif data['t'] == QueryType.Orders.value:
+        chat_data['order_wait'] = False
         if 'txt' in data and len(data['txt']):
             if data['txt'] == Icons.LES.value:
                 chat_data['order'] = Castle.LES.value
