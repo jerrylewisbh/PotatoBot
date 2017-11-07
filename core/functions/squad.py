@@ -264,12 +264,12 @@ def battle_reports_show(bot: Bot, update: Update, session):
         reports = session.query(User, Report) \
             .join(SquadMember) \
             .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from)) \
-            .filter(SquadMember.squad_id == adm.admin_group).all()
+            .filter(SquadMember.squad_id == adm.admin_group).order_by(Report.date.desc()).all()
         text = 'Репорты отряда {} за битву {}\n'.format(squad.squad_name, time_from)
         for user, report in reports:
             if report:
-                text += '{} (@{}): 🔥{} 💰{} 📦{}\n'.format(report.name, user.username,
-                                                          report.earned_exp, report.earned_gold, report.earned_stock)
+                text += '<b>{}</b> (@{})\n🔥{} 💰{} 📦{}\n'.format(report.name, user.username,
+                                                           report.earned_exp, report.earned_gold, report.earned_stock)
             else:
-                text += '{} (@{}): проспал\n'.format(user.character.name, user.username)
-        send_async(bot, chat_id=update.message.chat.id, text=text)
+                text += '<b>{}</b> (@{}) ❗\n'.format(user.character.name, user.username)
+        send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML)
