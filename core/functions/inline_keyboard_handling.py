@@ -536,6 +536,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                             update.callback_query.message.message_id,
                             reply_markup=markup)
     elif data['t'] == QueryType.OrderGroup.value:
+        chat_data['order_wait'] = False
         if 'txt' in data and len(data['txt']):
             chat_data['order_type'] = MessageType.TEXT
             if data['txt'] == Icons.LES.value:
