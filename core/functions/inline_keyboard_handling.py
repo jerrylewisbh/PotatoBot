@@ -51,6 +51,7 @@ class QueryType(Enum):
     SquadList = 23
     GroupDelete = 24
     TriggerOrderButton = 25
+    OtherReport = 26
 
 
 @admin_allowed()
