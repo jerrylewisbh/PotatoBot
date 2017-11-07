@@ -265,11 +265,29 @@ def battle_reports_show(bot: Bot, update: Update, session):
             .join(SquadMember) \
             .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from)) \
             .filter(SquadMember.squad_id == adm.admin_group).order_by(Report.date.desc()).all()
-        text = 'Репорты отряда {} за битву {}\n'.format(squad.squad_name, time_from)
+        text = ''
+        full_def = 0
+        full_atk = 0
+        full_exp = 0
+        full_gold = 0
+        full_stock = 0
         for user, report in reports:
             if report:
-                text += '<b>{}</b> (@{})\n🔥{} 💰{} 📦{}\n'.format(report.name, user.username,
-                                                           report.earned_exp, report.earned_gold, report.earned_stock)
+                text += '<b>{}</b> (@{})\n⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'.format(
+                    report.name, user.username, report.attack, report.defence,
+                    report.earned_exp, report.earned_gold, report.earned_stock)
+                full_atk += report.attack
+                full_def += report.defence
+                full_exp += report.earned_exp
+                full_gold += report.earned_gold
+                full_stock += report.earned_stock
             else:
                 text += '<b>{}</b> (@{}) ❗\n'.format(user.character.name, user.username)
+        text = 'Репорты отряда {} за битву {}\n' \
+               '<b>Общие</b>\n' \
+               'Атака: ⚔{}\n' \
+               'Защита: 🛡{}\n' \
+               'Профит: 🔥{} 💰{} 📦{}\n\n' \
+               '<b>Личные</b>\n'.format(squad.squad_name, time_from, full_atk, full_def, full_exp, full_gold,
+                                        full_stock) + text
         send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML)
