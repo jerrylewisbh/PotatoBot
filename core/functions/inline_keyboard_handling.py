@@ -14,12 +14,11 @@ from core.template import fill_char_template
 from core.types import (
     User, Group, Admin, admin_allowed, Order, OrderGroup,
     OrderGroupItem, OrderCleared, Squad, user_allowed,
-    Character, SquadMember, MessageType, AdminType)
+    Character, SquadMember, MessageType, AdminType, Report)
 from core.texts import *
 from core.utils import send_async, update_group, add_user
 
-from sqlalchemy import func, tuple_
-
+from sqlalchemy import func, tuple_, and_
 
 LOGGER = logging.getLogger('MyApp')
 
@@ -277,6 +276,21 @@ def generate_squad_request(session):
         inline_keys.append([InlineKeyboardButton(squad.squad_name,
                                                  callback_data=json.dumps(
                                                      {'t': QueryType.RequestSquad.value, 'id': squad.chat_id}))])
+    return InlineKeyboardMarkup(inline_keys)
+
+
+def generate_other_reports(time: datetime, squad_id):
+    inline_keys = [[InlineKeyboardButton('<< ' + str(time - timedelta(hours=4)),
+                                         callback_data=json.dumps(
+                                                     {'t': QueryType.OtherReport.value,
+                                                      'ts': (time - timedelta(hours=4)).timestamp(),
+                                                      'c': squad_id}))]]
+    if time + timedelta(hours=4) < datetime.now():
+        inline_keys[0].append(InlineKeyboardButton(str(time + timedelta(hours=4)) + ' >>',
+                                                   callback_data=json.dumps(
+                                                     {'t': QueryType.OtherReport.value,
+                                                      'ts': (time + timedelta(hours=4)).timestamp(),
+                                                      'c': squad_id})))
     return InlineKeyboardMarkup(inline_keys)
 
 
@@ -813,3 +827,39 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
         inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
         bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=inline_markup)
+    elif data['t'] == QueryType.OtherReport.value:
+        squad = session.query(Squad).filter(Squad.chat_id == data['c']).first()
+        time_from = datetime.fromtimestamp(data['ts'])
+        time_to = time_from + timedelta(hours=4)
+        reports = session.query(User, Report) \
+            .join(SquadMember) \
+            .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from, Report.date < time_to)) \
+            .filter(SquadMember.squad_id == data['c']).order_by(Report.date.desc()).all()
+        text = ''
+        full_def = 0
+        full_atk = 0
+        full_exp = 0
+        full_gold = 0
+        full_stock = 0
+        for user, report in reports:
+            if report:
+                text += '<b>{}</b> (@{})\n⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'.format(
+                    report.name, user.username, report.attack, report.defence,
+                    report.earned_exp, report.earned_gold, report.earned_stock)
+                full_atk += report.attack
+                full_def += report.defence
+                full_exp += report.earned_exp
+                full_gold += report.earned_gold
+                full_stock += report.earned_stock
+            else:
+                text += '<b>{}</b> (@{}) ❗\n'.format(user.character.name, user.username)
+        text = 'Репорты отряда {} за битву {}\n' \
+               '<b>Общие</b>\n' \
+               'Атака: ⚔{}\n' \
+               'Защита: 🛡{}\n' \
+               'Профит: 🔥{} 💰{} 📦{}\n\n' \
+               '<b>Личные</b>\n'.format(squad.squad_name, time_from, full_atk, full_def, full_exp, full_gold,
+                                        full_stock) + text
+        markup = generate_other_reports(time_from, squad.chat_id)
+        bot.editMessageText(text, update.callback_query.message.chat.id, update.callback_query.message.message_id,
+                            parse_mode=ParseMode.HTML, reply_markup=markup)

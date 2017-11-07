@@ -9,7 +9,7 @@ from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, Squa
 from core.utils import send_async
 from core.functions.inline_keyboard_handling import generate_squad_list, \
     generate_leave_squad, generate_squad_request, generate_squad_request_answer, generate_fire_up, \
-    generate_squad_invite_answer
+    generate_squad_invite_answer, generate_other_reports
 from core.texts import *
 
 
@@ -290,4 +290,5 @@ def battle_reports_show(bot: Bot, update: Update, session):
                'Профит: 🔥{} 💰{} 📦{}\n\n' \
                '<b>Личные</b>\n'.format(squad.squad_name, time_from, full_atk, full_def, full_exp, full_gold,
                                         full_stock) + text
-        send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML)
+        markup = generate_other_reports(time_from, squad.chat_id)
+        send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
