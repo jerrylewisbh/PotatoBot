@@ -104,6 +104,8 @@ MSG_ORDER_TO_SQUADS = 'По отрядам'
 MSG_ORDER_ACCEPT = 'Принято!'
 MSG_ORDER_PIN = '✅Пинить'
 MSG_ORDER_NO_PIN = '❌Не Пинить'
+MSG_ORDER_BUTTON = '✅С кнопкой'
+MSG_ORDER_NO_BUTTON = '❌Без кнопки'
 
 MSG_ORDER_CLEARED_BY_HEADER = 'Приказ выполнили:\n'
 
