@@ -444,7 +444,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                 markup = generate_ok_markup(order.id, 0)
                 msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
             else:
-                msg = send_order(bot, order_text, order_type, data['id']).result().result()
+                msg = send_order(bot, order_text, order_type, data['id'], None).result().result()
             if order_pin and msg:
                 try:
                     bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': data['id'],
@@ -470,7 +470,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                     markup = generate_ok_markup(order.id, 0)
                     msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
                 else:
-                    msg = send_order(bot, order_text, order_type, item.chat_id).result().result()
+                    msg = send_order(bot, order_text, order_type, item.chat_id, None).result().result()
                 if order_pin and msg:
                     try:
                         bot.request.post(bot.base_url + '/pinChatMessage',
