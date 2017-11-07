@@ -9,7 +9,8 @@ from core.texts import *
 def order(bot: Bot, update: Update, session, chat_data):
     chat_data['order_wait'] = False
     admin_user = session.query(Admin).filter(Admin.user_id == update.message.from_user.id).all()
-    markup = generate_order_groups_markup(session, admin_user, chat_data['pin'] if 'pin' in chat_data else True)
+    markup = generate_order_groups_markup(session, admin_user, chat_data['pin'] if 'pin' in chat_data else True,
+                                          chat_data['btn'] if 'btn' in chat_data else True)
     msg = update.message
     if msg.audio:
         chat_data['order'] = msg.audio.file_id
