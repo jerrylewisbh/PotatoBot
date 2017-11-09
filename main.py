@@ -20,7 +20,8 @@ from config import TOKEN, GOVERNMENT_CHAT, CASTLE
 from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COMMAND_ORDER, ADMIN_COMMAND_SQUAD_LIST, \
     ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, \
     USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP, USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, \
-    TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE
+    TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, \
+    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL
 from core.functions.activity import (
     day_activity, week_activity, battle_activity
 )
@@ -50,7 +51,7 @@ from core.functions.squad import (
     enable_thorns, disable_thorns,
     squad_list, squad_request, list_squad_requests,
     open_hiring, close_hiring, remove_from_squad, add_to_squad,
-    leave_squad, squad_about)
+    leave_squad, squad_about, call_squad, battle_reports_show)
 from core.functions.statistics import statistic_about, exp_statistic
 from core.functions.top import top_about, attack_top, exp_top, def_top
 from core.functions.triggers import (
@@ -121,6 +122,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             set_welcome(bot, update)
         elif text == 'помощь':
             help_msg(bot, update)
+        elif text == 'отряд':
+            call_squad(bot, update)
         elif text == 'покажи приветствие':
             show_welcome(bot, update)
         elif text == 'включи приветствие':
@@ -209,6 +212,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 squad_list(bot, update)
             elif text == ADMIN_COMMAND_GROUPS.lower():
                 group_list(bot, update)
+            elif text == ADMIN_COMMAND_REPORTS.lower():
+                battle_reports_show(bot, update)
             elif text == ADMIN_COMMAND_FIRE_UP.lower():
                 remove_from_squad(bot, update)
             elif text == USER_COMMAND_ME.lower():
@@ -239,6 +244,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                            chat_id=update.message.chat.id,
                            text=MSG_IN_DEV,
                            parse_mode=ParseMode.HTML)
+            elif text == ADMIN_COMMAND_ADMINPANEL.lower():
+                admin_panel(bot, update)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
                 add_group(bot, update, chat_data)
 
