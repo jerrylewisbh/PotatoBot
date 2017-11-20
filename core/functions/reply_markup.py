@@ -18,13 +18,10 @@ def generate_admin_markup(full=False, grp=False):
     return ReplyKeyboardMarkup(buttons, True)
 
 
-def generate_user_markup(is_admin=False, in_squad=False):
-    buttons = [[KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)]]
-    if not in_squad:
-        buttons.append([KeyboardButton(USER_COMMAND_SQUAD_REQUEST), KeyboardButton(USER_COMMAND_STATISTICS)])
-    else:
-        buttons.append([KeyboardButton(USER_COMMAND_SQUAD), KeyboardButton(USER_COMMAND_STATISTICS)])
-    buttons.append([KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)])
+def generate_user_markup(is_admin=False):
+    buttons = [[KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)],
+               [KeyboardButton(USER_COMMAND_SQUAD), KeyboardButton(USER_COMMAND_STATISTICS)],
+               [KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)]]
     if is_admin:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ADMINPANEL)])
     return ReplyKeyboardMarkup(buttons, True)
@@ -43,8 +40,11 @@ def generate_statistics_markup():
     return ReplyKeyboardMarkup(buttons, True)
 
 
-def generate_squad_markup(is_group_admin=False):
-    buttons = [[KeyboardButton(USER_COMMAND_SQUAD_LEAVE)]]
+def generate_squad_markup(is_group_admin=False, in_squad=False):
+    if in_squad:
+        buttons = [[KeyboardButton(USER_COMMAND_SQUAD_LEAVE)]]
+    else:
+        buttons = [[KeyboardButton(USER_COMMAND_SQUAD_REQUEST)]]
     if is_group_admin:
         buttons.append([KeyboardButton(ADMIN_COMMAND_REPORTS)])
     buttons.append([KeyboardButton(USER_COMMAND_BACK)])
