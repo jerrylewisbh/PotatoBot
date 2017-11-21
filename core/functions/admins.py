@@ -14,6 +14,7 @@ from core.types import User, AdminType, Admin, admin_allowed, user_allowed
 from core.utils import send_async
 from config import SUPER_ADMIN_ID
 
+
 @admin_allowed()
 def set_admin(bot: Bot, update: Update, session):
     msg = update.message.text.split(' ', 1)[1]
