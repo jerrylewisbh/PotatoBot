@@ -145,7 +145,8 @@ def build_report_received(bot: Bot, update: Update, session):
                     BuildReport.date < update.message.forward_date + timedelta(minutes=5)).first()
         if old_report is None:
             parse_build_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
-            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
+            user_builds = session.query(BuildReport).filter_by(user_id=user.id).count()
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK.format(user_builds))
         else:
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
 
@@ -161,7 +162,8 @@ def repair_report_received(bot: Bot, update: Update, session):
                     BuildReport.date < update.message.forward_date + timedelta(minutes=5)).first()
         if old_report is None:
             parse_repair_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
-            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK)
+            user_builds = session.query(BuildReport).filter_by(user_id=user.id).count()
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK.format(user_builds))
         else:
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
 
