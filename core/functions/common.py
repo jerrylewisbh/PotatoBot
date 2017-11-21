@@ -37,14 +37,11 @@ def admin_panel(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
         admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         full_adm = False
-        grp_adm = False
         for adm in admin:
             if adm.admin_type <= AdminType.FULL.value:
                 full_adm = True
-            else:
-                grp_adm = True
         send_async(bot, chat_id=update.message.chat.id, text=MSG_ADMIN_WELCOME,
-                   reply_markup=generate_admin_markup(full_adm, grp_adm))
+                   reply_markup=generate_admin_markup(full_adm))
 
 
 @user_allowed
