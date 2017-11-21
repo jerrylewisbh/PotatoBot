@@ -17,7 +17,8 @@ from core.texts import *
 def squad_about(bot: Bot, update: Update, session):
     admin = session.query(Admin).filter(Admin.user_id == update.message.from_user.id,
                                         Admin.admin_group != 0).first()
-    markup = generate_squad_markup(is_group_admin=admin is not None)
+    squad_member = session.query(SquadMember).filter_by(user_id=update.message.from_user.id).first()
+    markup = generate_squad_markup(is_group_admin=admin is not None, in_squad=True if squad_member else False)
     send_async(bot,
                chat_id=update.message.chat.id,
                text=MSG_SQUAD_ABOUT,

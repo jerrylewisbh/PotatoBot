@@ -7,24 +7,19 @@ from core.commands import ADMIN_COMMAND_ORDER, ADMIN_COMMAND_STATUS, ADMIN_COMMA
     STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, ADMIN_COMMAND_REPORTS
 
 
-def generate_admin_markup(full=False, grp=False):
+def generate_admin_markup(full=False):
     buttons = [[KeyboardButton(ADMIN_COMMAND_ORDER)]]
     if full:
         buttons.append([KeyboardButton(ADMIN_COMMAND_STATUS), KeyboardButton(ADMIN_COMMAND_GROUPS)])
-    if grp:
-        buttons.append([KeyboardButton(ADMIN_COMMAND_RECRUIT), KeyboardButton(ADMIN_COMMAND_FIRE_UP)])
     buttons.append([KeyboardButton(ADMIN_COMMAND_SQUAD_LIST)])
     buttons.append([KeyboardButton(USER_COMMAND_BACK)])
     return ReplyKeyboardMarkup(buttons, True)
 
 
-def generate_user_markup(is_admin=False, in_squad=False):
-    buttons = [[KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)]]
-    if not in_squad:
-        buttons.append([KeyboardButton(USER_COMMAND_SQUAD_REQUEST), KeyboardButton(USER_COMMAND_STATISTICS)])
-    else:
-        buttons.append([KeyboardButton(USER_COMMAND_SQUAD), KeyboardButton(USER_COMMAND_STATISTICS)])
-    buttons.append([KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)])
+def generate_user_markup(is_admin=False):
+    buttons = [[KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)],
+               [KeyboardButton(USER_COMMAND_SQUAD), KeyboardButton(USER_COMMAND_STATISTICS)],
+               [KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)]]
     if is_admin:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ADMINPANEL)])
     return ReplyKeyboardMarkup(buttons, True)
@@ -43,9 +38,13 @@ def generate_statistics_markup():
     return ReplyKeyboardMarkup(buttons, True)
 
 
-def generate_squad_markup(is_group_admin=False):
-    buttons = [[KeyboardButton(USER_COMMAND_SQUAD_LEAVE)]]
+def generate_squad_markup(is_group_admin=False, in_squad=False):
+    if in_squad:
+        buttons = [[KeyboardButton(USER_COMMAND_SQUAD_LEAVE)]]
+    else:
+        buttons = [[KeyboardButton(USER_COMMAND_SQUAD_REQUEST)]]
     if is_group_admin:
-        buttons.append([KeyboardButton(ADMIN_COMMAND_REPORTS)])
+        buttons.append([KeyboardButton(ADMIN_COMMAND_REPORTS), KeyboardButton(ADMIN_COMMAND_RECRUIT)])
+        buttons.append([KeyboardButton(ADMIN_COMMAND_SQUAD_LIST), KeyboardButton(ADMIN_COMMAND_FIRE_UP)])
     buttons.append([KeyboardButton(USER_COMMAND_BACK)])
     return ReplyKeyboardMarkup(buttons, True)
