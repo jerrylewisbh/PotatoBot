@@ -171,7 +171,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         elif update.message.reply_to_message is not None:
             if text == 'пин':
                 pin(bot, update)
-            elif text == 'сайлентпин':
+            elif text == 'спин':
                 silent_pin(bot, update)
             elif text == 'удоли':
                 delete_msg(bot, update)
