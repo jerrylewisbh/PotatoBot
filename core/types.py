@@ -310,6 +310,17 @@ class Ban(Base):
     to_date = Column(DATETIME(fsp=6))
 
 
+class Log(Base):
+    __tablename__ = 'log'
+
+    id = Column(BigInteger, autoincrement=True, primary_key=True)
+    user_id = Column(BigInteger, ForeignKey(User.id))
+    chat_id = Column(BigInteger)
+    date = Column(DATETIME(fsp=6))
+    func_name = Column(UnicodeText(2500))
+    args = Column(UnicodeText(2500))
+
+
 def check_admin(update, session, adm_type):
     allowed = False
     if adm_type == AdminType.NOT_ADMIN:
@@ -340,6 +351,17 @@ def check_ban(update, session):
         return False
 
 
+def log(session, user_id, chat_id, func_name, args):
+    log_item = Log()
+    log_item.date = datetime.now()
+    log_item.user_id = user_id
+    log_item.chat_id = chat_id
+    log_item.func_name = func_name
+    log_item.args = args
+    session.add(log_item)
+    session.commit()
+
+
 def admin_allowed(adm_type=AdminType.FULL, ban_enable=True):
     def decorate(func):
         def wrapper(bot: Bot, update, *args, **kwargs):
@@ -349,6 +371,10 @@ def admin_allowed(adm_type=AdminType.FULL, ban_enable=True):
                 if ban_enable:
                     allowed &= check_ban(update, session)
                 if allowed:
+                    if func.__name__ not in ['manage_all', 'trigger_show', 'user_panel']:
+                        log(session, update.effective_user.id, update.effective_chat.id, func.__name__,
+                            update.message.text if update.message else None or
+                            update.callback_query.data if update.callback_query else None)
                     func(bot, update, session, *args, **kwargs)
             except SQLAlchemyError as err:
                 bot.logger.error(str(err))
