@@ -38,7 +38,7 @@ from core.functions.common import (
     help_msg, ping, start, error, kick,
     admin_panel, stock_compare, trade_compare,
     delete_msg, delete_user,
-    user_panel)
+    user_panel, web_auth)
 from core.functions.inline_keyboard_handling import (
     callback_query, send_status, send_order, QueryType
 )
@@ -240,10 +240,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             elif text == USER_COMMAND_SQUAD_LEAVE.lower():
                 leave_squad(bot, update)
             elif text == USER_COMMAND_CONTACTS.lower():
-                send_async(bot,
-                           chat_id=update.message.chat.id,
-                           text=MSG_IN_DEV,
-                           parse_mode=ParseMode.HTML)
+                web_auth(bot, update)
             elif text == ADMIN_COMMAND_ADMINPANEL.lower():
                 admin_panel(bot, update)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
