@@ -5,7 +5,7 @@ import logging
 
 from sqlalchemy import (
     create_engine,
-    Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger
+    Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger, Text
 )
 from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
@@ -319,6 +319,13 @@ class Log(Base):
     date = Column(DATETIME(fsp=6))
     func_name = Column(UnicodeText(2500))
     args = Column(UnicodeText(2500))
+
+
+class Auth(Base):
+    __tablename__ = 'auth'
+
+    id = Column(Text(length=32))
+    user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
 
 
 def check_admin(update, session, adm_type):

@@ -82,6 +82,8 @@ MSG_STOCK_COMPARE_LOST = '\n📦<b>Потеряно:</b>\n'
 MSG_STOCK_COMPARE_FORMAT = '{} ({})\n'
 MSG_STOCK_COMPARE_WAIT = 'Жду с чем сравнивать...'
 
+MSG_PERSONAL_SITE_LINK = 'Твоя персональная ссылка на сайт: {}'
+
 MSG_GROUP_STATUS_CHOOSE_CHAT = 'Выбери чат'
 MSG_GROUP_STATUS = """Группа: {}
 
