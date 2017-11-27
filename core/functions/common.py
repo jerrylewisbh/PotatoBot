@@ -211,5 +211,5 @@ def web_auth(bot: Bot, update: Update, session):
         auth.user_id = user.id
         session.add(auth)
         session.commit()
-    link = 'https://dusk.ruckus.dj/token={}'.format(auth.id)
+    link = 'https://dusk.ruckus.dj/?token={}'.format(auth.id)
     send_async(bot, chat_id=update.message.chat.id, text=MSG_PERSONAL_SITE_LINK.format(link), parse_mode=ParseMode.HTML)
