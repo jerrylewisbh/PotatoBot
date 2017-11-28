@@ -659,7 +659,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             for adm in admins:
                 if adm.user_id != update.callback_query.from_user.id:
                     send_async(bot, chat_id=adm.user_id,
-                               text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
+                               text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
+                               parse_mode=ParseMode.HTML)
             send_async(bot, chat_id=member.squad_id,
                        text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
             send_async(bot, chat_id=member.user_id,
@@ -712,9 +713,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
             for _ in admin:
                 is_admin = True
                 break
-            squad_member = session.query(SquadMember).filter_by(user_id=member.user_id).first()
             send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_ACCEPTED_ANSWER,
-                       reply_markup=generate_user_markup(is_admin, True if squad_member else False))
+                       reply_markup=generate_user_markup(is_admin))
             send_async(bot, chat_id=member.squad_id, text=MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username))
     elif data['t'] == QueryType.RequestSquadDecline.value:
         member = session.query(SquadMember).filter_by(user_id=data['id']).first()
