@@ -90,7 +90,7 @@ def global_build_top(bot: Bot, update: Update, session):
         .outerjoin(BuildReport, BuildReport.user_id == Character.user_id).group_by(Character)\
         .order_by(func.count(BuildReport.user_id).desc())
     if CASTLE:
-        builds = builds.filter_by(castle=CASTLE)
+        builds = builds.filter(Character.castle == CASTLE)
     builds = builds.all()
     text = MSG_TOP_GLOBAL_BUILDERS
     str_format = MSG_TOP_FORMAT
