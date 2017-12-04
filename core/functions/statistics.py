@@ -30,6 +30,7 @@ def exp_statistic(bot: Bot, update: Update, session):
     plot.ylabel('Опыт')
     x = [profile.date for profile in profiles]
     y = [profile.exp for profile in profiles]
+    need_exp = profiles[-1].needExp
     x.append(datetime.now())
     y.append(y[-1])
     plot.plot(x, y)
@@ -48,14 +49,11 @@ def exp_statistic(bot: Bot, update: Update, session):
             prev_exp = exp
             break
     delta = now_date - prev_date
-    if not delta.days:
-        day_exp = now_exp - prev_exp
-    else:
-        interval = delta.days * 86400 + delta.seconds
-        day_exp = (now_exp - prev_exp) * 86400 / interval
+    interval = (delta.days * 86400 + delta.seconds) or 1
+    day_exp = (now_exp - prev_exp) * 86400 / interval
 
     with open(filename, 'rb') as file:
-        bot.sendPhoto(update.message.chat.id, file, 'В среднем {} опыта в день'
-                      .format(int(day_exp)))
+        bot.sendPhoto(update.message.chat.id, file, 'В среднем {} опыта в день. До следующего уровня осталось {} дней'
+                      .format(int(day_exp), round((need_exp - now_exp)/(day_exp or 1))))
     plot.clf()
     os.remove(filename)
