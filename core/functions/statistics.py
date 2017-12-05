@@ -39,9 +39,9 @@ def exp_statistic(bot: Bot, update: Update, session):
     with open(filename, 'wb') as file:
         plot.savefig(file, format='png')
 
-    now_date = x[-1]
+    now_date = x[-2]
     prev_date = x[0]
-    now_exp = y[-1]
+    now_exp = y[-2]
     prev_exp = y[0]
     for date, exp in zip(reversed(x), reversed(y)):
         if date <= datetime.now() - timedelta(days=3):
