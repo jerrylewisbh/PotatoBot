@@ -23,4 +23,7 @@ TOP_COMMAND_DEFENCE = '🛡'
 TOP_COMMAND_EXP = '🔥'
 TOP_COMMAND_GLOBAL_BUILD = '⚒'
 
+TOP_COMMAND_WEEK_BUILD = '⚒ Неделя стройки ⚒'
+TOP_COMMAND_WEEK_BATTLES = '⚔ Неделя битв 🛡'
+
 STATISTICS_COMMAND_EXP = '🔥Опыт'
