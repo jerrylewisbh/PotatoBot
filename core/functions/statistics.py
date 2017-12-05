@@ -48,16 +48,16 @@ def exp_statistic(bot: Bot, update: Update, session):
             prev_date = date
             prev_exp = exp
             break
-            
+
     delta = now_date - prev_date
     interval = (delta.days * 86400 + delta.seconds) or 1
     day_exp = (now_exp - prev_exp) * 86400 / interval
     delta_exp = need_exp - now_exp
     delta_days = round((need_exp - now_exp) / (day_exp or 1)) or 1
 
-    if (delta_days % 10 == 0) or (delta_days % 10 >= 5) or (delta_days == 11):
+    if (delta_days % 10 == 0) or (delta_days % 10 >= 5) or ((delta_days % 100) in (11, 12, 13, 14)):
         days_text = 'дней'
-    elif delta_days % 10 in (2, 3, 4):
+    elif (delta_days % 10) in (2, 3, 4):
         days_text = 'дня'
     else:
         days_text = 'день'
