@@ -39,9 +39,9 @@ def exp_statistic(bot: Bot, update: Update, session):
     with open(filename, 'wb') as file:
         plot.savefig(file, format='png')
 
-    now_date = x[-1]
+    now_date = x[-2]
     prev_date = x[0]
-    now_exp = y[-1]
+    now_exp = y[-2]
     prev_exp = y[0]
     for date, exp in zip(reversed(x), reversed(y)):
         if date <= datetime.now() - timedelta(days=3):
@@ -53,18 +53,21 @@ def exp_statistic(bot: Bot, update: Update, session):
     interval = (delta.days * 86400 + delta.seconds) or 1
     day_exp = (now_exp - prev_exp) * 86400 / interval
     delta_exp = need_exp - now_exp
-    delta_days = round((need_exp - now_exp) / (day_exp or 1)) or 1
 
-    if (delta_days % 10 == 0) or (delta_days % 10 >= 5) or ((delta_days % 100) in (11, 12, 13, 14)):
-        days_text = 'дней'
-    elif (delta_days % 10) in (2, 3, 4):
-        days_text = 'дня'
-    else:
-        days_text = 'день'
+    text = ''
+    if day_exp:
+        delta_days = round(delta_exp / day_exp) or 1
+        if (delta_days % 10 == 0) or (delta_days % 10 >= 5) or ((delta_days % 100) in (11, 12, 13, 14)):
+            days_text = 'дней'
+        elif (delta_days % 10) in (2, 3, 4):
+            days_text = 'дня'
+        else:
+            days_text = 'день'
+        text = ('и {} {}'.format(delta_days, days_text))
 
     with open(filename, 'rb') as file:
         bot.sendPhoto(update.message.chat.id, file, 'В среднем {} опыта в день. '
-                                                    'До следующего уровня осталось {} опыта и {} {}'
-                      .format(int(day_exp), delta_exp, delta_days, days_text))
+                                                    'До следующего уровня осталось {} опыта {}'
+                      .format(int(day_exp), delta_exp, text))
     plot.clf()
     os.remove(filename)
