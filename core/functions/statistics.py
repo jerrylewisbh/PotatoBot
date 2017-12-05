@@ -48,12 +48,23 @@ def exp_statistic(bot: Bot, update: Update, session):
             prev_date = date
             prev_exp = exp
             break
+            
     delta = now_date - prev_date
     interval = (delta.days * 86400 + delta.seconds) or 1
     day_exp = (now_exp - prev_exp) * 86400 / interval
+    delta_exp = need_exp - now_exp
+    delta_days = round((need_exp - now_exp) / (day_exp or 1)) or 1
+
+    if (delta_days % 10 == 0) or (delta_days % 10 >= 5) or (delta_days == 11):
+        days_text = 'дней'
+    elif delta_days % 10 in (2, 3, 4):
+        days_text = 'дня'
+    else:
+        days_text = 'день'
 
     with open(filename, 'rb') as file:
-        bot.sendPhoto(update.message.chat.id, file, 'В среднем {} опыта в день. До следующего уровня осталось {} дней'
-                      .format(int(day_exp), round((need_exp - now_exp)/(day_exp or 1))))
+        bot.sendPhoto(update.message.chat.id, file, 'В среднем {} опыта в день. '
+                                                    'До следующего уровня осталось {} опыта и {} {}'
+                      .format(int(day_exp), delta_exp, delta_days, days_text))
     plot.clf()
     os.remove(filename)
