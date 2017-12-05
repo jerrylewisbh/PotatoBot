@@ -43,8 +43,8 @@ def exp_statistic(bot: Bot, update: Update, session):
     prev_date = x[0]
     now_exp = y[-2]
     prev_exp = y[0]
-    for date, exp in zip(reversed(x), reversed(y)):
-        if date <= datetime.now() - timedelta(days=3):
+    for date, exp in zip(x[-3::-1], y[-3::-1]):
+        if date <= now_date - timedelta(days=3):
             prev_date = date
             prev_exp = exp
             break

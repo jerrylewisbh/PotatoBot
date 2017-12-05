@@ -51,6 +51,13 @@ class QueryType(Enum):
     GroupDelete = 24
     TriggerOrderButton = 25
     OtherReport = 26
+    GlobalBuildTop = 27
+    WeekBuildTop = 28
+    SquadGlobalBuildTop = 29
+    SquadWeekBuildTop = 30
+    BattleGlobalTop = 31
+    BattleWeekTop = 32
+
 
 
 @admin_allowed()
@@ -863,3 +870,15 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
         markup = generate_other_reports(time_from, squad.chat_id)
         bot.editMessageText(text, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             parse_mode=ParseMode.HTML, reply_markup=markup)
+    elif data['t'] == QueryType.GlobalBuildTop.value:
+        pass
+    elif data['t'] == QueryType.WeekBuildTop.value:
+        pass
+    elif data['t'] == QueryType.SquadGlobalBuildTop.value:
+        pass
+    elif data['t'] == QueryType.SquadWeekBuildTop.value:
+        pass
+    elif data['t'] == QueryType.BattleGlobalTop.value:
+        pass
+    elif data['t'] == QueryType.BattleWeekTop.value:
+        pass
