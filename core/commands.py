@@ -21,9 +21,8 @@ USER_COMMAND_BACK = '🔙Назад'
 TOP_COMMAND_ATTACK = '⚔'
 TOP_COMMAND_DEFENCE = '🛡'
 TOP_COMMAND_EXP = '🔥'
-TOP_COMMAND_GLOBAL_BUILD = '⚒'
+TOP_COMMAND_BUILD = '⚒'
 
-TOP_COMMAND_WEEK_BUILD = '⚒ Неделя стройки ⚒'
-TOP_COMMAND_WEEK_BATTLES = '⚔ Неделя битв 🛡'
+TOP_COMMAND_BATTLES = '⚔🛡'
 
 STATISTICS_COMMAND_EXP = '🔥Опыт'

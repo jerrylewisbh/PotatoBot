@@ -242,6 +242,7 @@ MSG_STATISTICS_ABOUT = '📈Статистика📈'
 MSG_SQUAD_ABOUT = '⚜Отряд⚜'
 
 MSG_TOP_FORMAT = '{}. {} ({}🌟) - {}{}\n'
+MSG_SQUAD_TOP_FORMAT = '{}. {} ({}👥) - {}{} ({}{}/👤)\n'
 MSG_TOP_DEFENCE = '🛡Топ дэферы:\n'
 MSG_TOP_ATTACK = '⚔Топ атакеры:\n'
 MSG_TOP_EXPERIENCE = '🔥Топ качки:\n'
