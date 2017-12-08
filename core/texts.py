@@ -242,10 +242,13 @@ MSG_STATISTICS_ABOUT = '📈Статистика📈'
 MSG_SQUAD_ABOUT = '⚜Отряд⚜'
 
 MSG_TOP_FORMAT = '{}. {} ({}🌟) - {}{}\n'
+MSG_SQUAD_TOP_FORMAT = '{}. {} ({}👥) - {}{} ({}{}/👤)\n'
 MSG_TOP_DEFENCE = '🛡Топ дэферы:\n'
 MSG_TOP_ATTACK = '⚔Топ атакеры:\n'
 MSG_TOP_EXPERIENCE = '🔥Топ качки:\n'
 MSG_TOP_GLOBAL_BUILDERS = '⚒Топ строители:\n'
+MSG_TOP_WEEK_BUILDERS = '⚒Топ строители недели:\n'
+MSG_TOP_WEEK_WARRIORS = '⚔🛡Топ по участию в битвах:\n'
 
 MSG_UPDATE_PROFILE = 'Пришли свежий игровой профиль (🏅 команда "/hero"), пока я не выгнал тебя с отряда.'
 MSG_SQUAD_DELETE_OUTDATED = 'Ты был изгнан из отряда за то, что давно не обновлял свой профиль.'

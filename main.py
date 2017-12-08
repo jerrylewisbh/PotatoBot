@@ -21,7 +21,8 @@ from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COM
     ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, \
     USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP, USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, \
     TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, \
-    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, TOP_COMMAND_GLOBAL_BUILD
+    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, TOP_COMMAND_BUILD, \
+    TOP_COMMAND_BATTLES
 from core.functions.activity import (
     day_activity, week_activity, battle_activity
 )
@@ -40,8 +41,9 @@ from core.functions.common import (
     delete_msg, delete_user,
     user_panel, web_auth)
 from core.functions.inline_keyboard_handling import (
-    callback_query, send_status, send_order, QueryType
+    callback_query, send_status, send_order
 )
+from core.functions.inline_markup import QueryType
 from core.functions.order_groups import group_list, add_group
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.profile import char_update, char_show, find_by_username, report_received, build_report_received, \
@@ -53,7 +55,8 @@ from core.functions.squad import (
     open_hiring, close_hiring, remove_from_squad, add_to_squad,
     leave_squad, squad_about, call_squad, battle_reports_show)
 from core.functions.statistics import statistic_about, exp_statistic
-from core.functions.top import top_about, attack_top, exp_top, def_top, global_build_top
+from core.functions.top import top_about, attack_top, exp_top, def_top, global_build_top, week_build_top, \
+    week_battle_top
 from core.functions.triggers import (
     set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all,
     disable_trigger_all, trigger_show,
@@ -226,8 +229,10 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 def_top(bot, update)
             elif text == TOP_COMMAND_EXP.lower():
                 exp_top(bot, update)
-            elif text == TOP_COMMAND_GLOBAL_BUILD.lower():
-                global_build_top(bot, update)
+            elif text == TOP_COMMAND_BUILD.lower():
+                week_build_top(bot, update)
+            elif text == TOP_COMMAND_BATTLES.lower():
+                week_battle_top(bot, update)
             elif text == USER_COMMAND_BUILD.lower():
                 send_async(bot,
                            chat_id=update.message.chat.id,
