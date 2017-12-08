@@ -7,9 +7,8 @@ from core.functions.reply_markup import generate_squad_markup
 from core.template import fill_char_template
 from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed, Report, Character
 from core.utils import send_async
-from core.functions.inline_keyboard_handling import generate_squad_list, \
-    generate_leave_squad, generate_squad_request, generate_squad_request_answer, generate_fire_up, \
-    generate_squad_invite_answer, generate_other_reports
+from core.functions.inline_markup import generate_squad_list, generate_leave_squad, generate_squad_request, \
+    generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, generate_fire_up
 from core.texts import *
 
 
