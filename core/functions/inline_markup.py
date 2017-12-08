@@ -5,6 +5,7 @@ from enum import Enum
 from sqlalchemy import func, tuple_
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+from config import CASTLE
 from core.enums import Castle, Icons
 from core.texts import MSG_GROUP_STATUS_ADMIN_FORMAT, MSG_GROUP_STATUS_DEL_ADMIN, MSG_GROUP_STATUS, MSG_ON, MSG_OFF, \
     MSG_ORDER_GROUP_DEL, MSG_BACK, MSG_ORDER_PIN, MSG_ORDER_NO_PIN, MSG_ORDER_BUTTON, MSG_ORDER_NO_BUTTON, \
@@ -77,27 +78,44 @@ def generate_group_info(group_id, session):
 
 
 def generate_flag_orders():
-    flag_btns = [[InlineKeyboardButton(Castle.BLACK.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Castle.BLACK.value})),
-                  InlineKeyboardButton(Castle.WHITE.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Castle.WHITE.value})),
-                  InlineKeyboardButton(Castle.BLUE.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Castle.BLUE.value}))],
-                 [InlineKeyboardButton(Castle.YELLOW.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Castle.YELLOW.value})),
-                  InlineKeyboardButton(Castle.RED.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Castle.RED.value})),
-                  InlineKeyboardButton(Castle.DUSK.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Castle.DUSK.value}))],
-                 [InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Castle.MINT.value})),
-                  InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
-                  InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value}))],
-                 [InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))]]
-    inline_markup = InlineKeyboardMarkup(flag_btns)
+    flag_btns = [InlineKeyboardButton(Castle.BLACK.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.BLACK.value})),
+                 InlineKeyboardButton(Castle.WHITE.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.WHITE.value})),
+                 InlineKeyboardButton(Castle.BLUE.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.BLUE.value})),
+                 InlineKeyboardButton(Castle.YELLOW.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.YELLOW.value})),
+                 InlineKeyboardButton(Castle.RED.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.RED.value})),
+                 InlineKeyboardButton(Castle.DUSK.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.DUSK.value})),
+                 InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.MINT.value})),
+                 InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
+                 InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value})),
+                 InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))]
+    btns = []
+    i = 0
+    for btn in flag_btns:
+        if CASTLE:
+            if btn.text == CASTLE:
+                continue
+        if i % 3 == 0:
+            btns.append([])
+        btns[-1].append(btn)
+        i += 1
+
+    if CASTLE:
+        btns.append([])
+        for btn in flag_btns:
+            if btn.text == CASTLE:
+                btns[-1].append(btn)
+
+    inline_markup = InlineKeyboardMarkup(btns)
     return inline_markup
 
 
