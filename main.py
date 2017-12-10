@@ -76,7 +76,7 @@ from core.utils import add_user, send_async
 from sqlalchemy.exc import SQLAlchemyError
 
 # -----constants----
-CWBOT_ID = 265204902
+CWBOT_ID = 408101137
 TRADEBOT_ID = 278525885
 # -------------------
 
