@@ -153,7 +153,7 @@ def week_build_top(bot: Bot, update: Update, session):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
-    today = datetime.today()
+    today = datetime.today().date()
     builds = session.query(Character, func.count(BuildReport.user_id))\
         .filter(tuple_(Character.user_id, Character.date)
                 .in_([(a[0], a[1]) for a in actual_profiles]),
@@ -185,7 +185,7 @@ def week_squad_build_top(bot: Bot, update: Update, session):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
-    today = datetime.today()
+    today = datetime.today().date()
     builds = session.query(Squad, func.count(BuildReport.user_id))\
         .join(SquadMember).join(Character, SquadMember.user_id == Character.user_id)\
         .filter(tuple_(Character.user_id, Character.date)
@@ -242,7 +242,7 @@ def week_battle_top(bot: Bot, update: Update, session):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
-    today = datetime.today()
+    today = datetime.today().date()
     battles = session.query(Character, func.count(Report.user_id))\
         .filter(tuple_(Character.user_id, Character.date)
                 .in_([(a[0], a[1]) for a in actual_profiles]),
