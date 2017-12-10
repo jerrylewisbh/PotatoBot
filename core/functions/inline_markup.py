@@ -92,12 +92,13 @@ def generate_flag_orders():
                      {'t': QueryType.OrderGroup.value, 'txt': Castle.DUSK.value})),
                  InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
                      {'t': QueryType.OrderGroup.value, 'txt': Castle.MINT.value})),
-                 InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
-                 InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value})),
-                 InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))]
+                 # InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
+                 #     {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
+                 # InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
+                 #     {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value})),
+                 # InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
+                 #     {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))
+                 ]
     btns = []
     i = 0
     for btn in flag_btns:
