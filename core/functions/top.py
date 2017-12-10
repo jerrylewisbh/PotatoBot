@@ -136,7 +136,7 @@ def global_build_top(bot: Bot, update: Update, session):
     if update.message:
         user_id = update.message.from_user.id
     elif update.callback_query:
-        user_id = update.callback_query.message.from_user.id
+        user_id = update.callback_query.from_user.id
     text = gen_top_msg(builds, user_id, MSG_TOP_GLOBAL_BUILDERS, '⚒')
     markup = generate_build_top()
     if update.message:
@@ -168,7 +168,7 @@ def week_build_top(bot: Bot, update: Update, session):
     if update.message:
         user_id = update.message.from_user.id
     elif update.callback_query:
-        user_id = update.callback_query.message.from_user.id
+        user_id = update.callback_query.from_user.id
     text = gen_top_msg(builds, user_id, MSG_TOP_WEEK_BUILDERS, '⚒')
     markup = generate_build_top()
     if update.message:
@@ -258,7 +258,7 @@ def week_battle_top(bot: Bot, update: Update, session):
     if update.message:
         user_id = update.message.from_user.id
     elif update.callback_query:
-        user_id = update.callback_query.message.from_user.id
+        user_id = update.callback_query.from_user.id
     text = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⚔🛡')
     markup = generate_battle_top()
     if update.message:
@@ -290,7 +290,7 @@ def global_battle_top(bot: Bot, update: Update, session):
     if update.message:
         user_id = update.message.from_user.id
     elif update.callback_query:
-        user_id = update.callback_query.message.from_user.id
+        user_id = update.callback_query.from_user.id
     text = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⚔🛡')
     markup = generate_battle_top()
     if update.message:
