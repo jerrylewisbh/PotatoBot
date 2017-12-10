@@ -136,7 +136,7 @@ def parse_repair_reports(report, user_id, date, session):
 
 @user_allowed(False)
 def build_report_received(bot: Bot, update: Update, session):
-    if datetime.now() - update.message.forward_date > timedelta(minutes=5):
+    if datetime.now() - update.message.forward_date > timedelta(minutes=10):
         send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_TOO_OLD)
         return
     report = re.search(BUILD_REPORT, update.message.text)
@@ -156,7 +156,7 @@ def build_report_received(bot: Bot, update: Update, session):
 
 @user_allowed(False)
 def repair_report_received(bot: Bot, update: Update, session):
-    if datetime.now() - update.message.forward_date > timedelta(minutes=5):
+    if datetime.now() - update.message.forward_date > timedelta(minutes=10):
         send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_TOO_OLD)
         return
     report = re.search(REPAIR_REPORT, update.message.text)
