@@ -12,7 +12,7 @@ from config import CASTLE
 
 from datetime import datetime, timedelta
 
-TOP_START_DATE = datetime(2017, 11, 11)
+TOP_START_DATE = datetime(2017, 12, 11)
 
 
 @user_allowed

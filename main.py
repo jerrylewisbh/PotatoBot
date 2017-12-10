@@ -465,7 +465,7 @@ def main():
     disp.add_handler(CommandHandler("ban", ban))
     disp.add_handler(CommandHandler("unban", unban))
 
-    disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True))
+    disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True, pass_job_queue=True))
 
     # on noncommand i.e message - echo the message on Telegram
     disp.add_handler(MessageHandler(Filters.status_update, welcome))
