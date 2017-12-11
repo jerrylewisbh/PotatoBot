@@ -10,6 +10,7 @@ from core.utils import send_async
 from core.functions.inline_markup import generate_squad_list, generate_leave_squad, generate_squad_request, \
     generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, generate_fire_up
 from core.texts import *
+from core.constants import *
 
 
 @user_allowed
@@ -126,12 +127,16 @@ def squad_request(bot: Bot, update: Update, session):
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if user is not None:
         if user.character:
-            if user.member:
-                markup = generate_leave_squad(user.id)
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
+            if user.character.level < MINIMUM_SQUAD_MEMBER_LEVEL:
+                send_async(bot, chat_id=update.message.chat.id,
+                                text=MSG_SQUAD_LEVEL_TOO_LOW.format(MINIMUM_SQUAD_MEMBER_LEVEL))
             else:
-                markup = generate_squad_request(session)
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
+                if user.member:
+                    markup = generate_leave_squad(user.id)
+                    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
+                else:
+                    markup = generate_squad_request(session)
+                    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
         else:
             send_async(bot, chat_id=update.message.chat.id, text=MSG_NO_PROFILE_IN_BOT)
 
