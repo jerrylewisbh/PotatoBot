@@ -125,7 +125,9 @@ def squad_list(bot: Bot, update: Update, session):
 def squad_request(bot: Bot, update: Update, session):
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if user is not None:
-        if user.character:
+        if user.username is None:
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_NO_USERNAME)
+        elif user.character:
             if user.member:
                 markup = generate_leave_squad(user.id)
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
