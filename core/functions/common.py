@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from enum import Enum
 import logging
@@ -7,7 +8,7 @@ from telegram import Update, Bot, ParseMode
 from core.functions.triggers import trigger_decorator
 from core.functions.reply_markup import generate_admin_markup, generate_user_markup
 from core.texts import *
-from core.types import AdminType, Admin, Stock, admin_allowed, user_allowed, SquadMember
+from core.types import AdminType, Admin, Stock, admin_allowed, user_allowed, SquadMember, Auth
 from core.utils import send_async, add_user
 
 
@@ -198,3 +199,18 @@ def trade_compare(bot: Bot, update: Update, session, chat_data: dict):
         send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT, parse_mode=ParseMode.HTML)
+
+
+@user_allowed
+def web_auth(bot: Bot, update: Update, session):
+    user = add_user(update.message.from_user, session)
+    auth = session.query(Auth).filter_by(user_id=user.id).first()
+    if auth is None:
+        auth = Auth()
+        auth.id = uuid.uuid4().hex
+        auth.user_id = user.id
+        session.add(auth)
+        session.commit()
+    link = 'https://dusk.ruckus.dj/?token={}'.format(auth.id)
+    send_async(bot, chat_id=update.message.chat.id, text=MSG_PERSONAL_SITE_LINK.format(link),
+               parse_mode=ParseMode.HTML, disable_web_page_preview=True)
