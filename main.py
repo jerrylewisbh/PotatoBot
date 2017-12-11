@@ -21,7 +21,8 @@ from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COM
     ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, \
     USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP, USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, \
     TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, \
-    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL
+    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, TOP_COMMAND_BUILD, \
+    TOP_COMMAND_BATTLES
 from core.functions.activity import (
     day_activity, week_activity, battle_activity
 )
@@ -38,10 +39,11 @@ from core.functions.common import (
     help_msg, ping, start, error, kick,
     admin_panel, stock_compare, trade_compare,
     delete_msg, delete_user,
-    user_panel)
+    user_panel, web_auth)
 from core.functions.inline_keyboard_handling import (
-    callback_query, send_status, send_order, QueryType
+    callback_query, send_status, send_order
 )
+from core.functions.inline_markup import QueryType
 from core.functions.order_groups import group_list, add_group
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.profile import char_update, char_show, find_by_username, report_received, build_report_received, \
@@ -53,7 +55,8 @@ from core.functions.squad import (
     open_hiring, close_hiring, remove_from_squad, add_to_squad,
     leave_squad, squad_about, call_squad, battle_reports_show)
 from core.functions.statistics import statistic_about, exp_statistic
-from core.functions.top import top_about, attack_top, exp_top, def_top
+from core.functions.top import top_about, attack_top, exp_top, def_top, global_build_top, week_build_top, \
+    week_battle_top
 from core.functions.triggers import (
     set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all,
     disable_trigger_all, trigger_show,
@@ -67,7 +70,7 @@ from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL,
     MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
     MSG_SQUAD_DELETE_OUTDATED_EXT)
-from core.types import Session, Order, Squad, Admin, user_allowed, Character, SquadMember
+from core.types import Session, Order, Squad, Admin, user_allowed, Character, SquadMember, User
 from core.utils import add_user, send_async
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -226,6 +229,10 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 def_top(bot, update)
             elif text == TOP_COMMAND_EXP.lower():
                 exp_top(bot, update)
+            elif text == TOP_COMMAND_BUILD.lower():
+                week_build_top(bot, update)
+            elif text == TOP_COMMAND_BATTLES.lower():
+                week_battle_top(bot, update)
             elif text == USER_COMMAND_BUILD.lower():
                 send_async(bot,
                            chat_id=update.message.chat.id,
@@ -240,10 +247,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             elif text == USER_COMMAND_SQUAD_LEAVE.lower():
                 leave_squad(bot, update)
             elif text == USER_COMMAND_CONTACTS.lower():
-                send_async(bot,
-                           chat_id=update.message.chat.id,
-                           text=MSG_IN_DEV,
-                           parse_mode=ParseMode.HTML)
+                web_auth(bot, update)
             elif text == ADMIN_COMMAND_ADMINPANEL.lower():
                 admin_panel(bot, update)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
@@ -391,18 +395,20 @@ def fresh_profiles(bot: Bot, job_queue):
         characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                      .in_([(a[0], a[1]) for a in actual_profiles]),
                                                      Character.date < datetime.now() - timedelta(days=14)).all()
-        members = session.query(SquadMember).filter(SquadMember.user_id
-                                                    .in_([character.user_id for character in characters])).all()
-        for member in members:
+        members = session.query(SquadMember, User).filter(SquadMember.user_id
+                                                          .in_([character.user_id for character in characters])) \
+            .join(User, User.id == SquadMember.user_id).all()
+        for member, user in members:
             session.delete(member)
             admins = session.query(Admin).filter_by(admin_group=member.squad_id).all()
             for adm in admins:
                 send_async(bot, chat_id=adm.user_id,
                            text=MSG_SQUAD_DELETE_OUTDATED_EXT
-                           .format(member.user.character.name, member.squad.squad_name),
+                           .format(member.user.character.name, member.user.username, member.squad.squad_name),
                            parse_mode=ParseMode.HTML)
             send_async(bot, chat_id=member.squad_id,
-                       text=MSG_SQUAD_DELETE_OUTDATED_EXT.format(member.user.character.name, member.squad.squad_name),
+                       text=MSG_SQUAD_DELETE_OUTDATED_EXT.format(member.user.character.name, member.user.username,
+                                                                 member.squad.squad_name),
                        parse_mode=ParseMode.HTML)
             send_async(bot,
                        chat_id=member.user_id,

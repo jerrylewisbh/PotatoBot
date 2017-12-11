@@ -1,7 +1,7 @@
 from telegram import Update, Bot
 from core.types import AdminType, Admin, admin_allowed, MessageType
 from core.utils import send_async
-from core.functions.inline_keyboard_handling import generate_order_groups_markup, generate_flag_orders
+from core.functions.inline_markup import generate_order_groups_markup, generate_flag_orders
 from core.texts import *
 
 
