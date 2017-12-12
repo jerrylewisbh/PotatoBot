@@ -550,8 +550,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                'Атака: ⚔{}\n' \
                'Защита: 🛡{}\n' \
                'Профит: 🔥{} 💰{} 📦{}\n\n' \
-               '<b>Личные</b>\n'.format(squad.squad_name, time_from, full_atk, full_def, full_exp, full_gold,
-                                        full_stock) + text
+               '<b>Личные</b>\n'.format(squad.squad_name, time_from.strftime('dd-mm-yyyy hh:mm'), full_atk, full_def,
+                                        full_exp, full_gold, full_stock) + text
         markup = generate_other_reports(time_from, squad.chat_id)
         bot.editMessageText(text, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             parse_mode=ParseMode.HTML, reply_markup=markup)

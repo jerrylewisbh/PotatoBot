@@ -295,7 +295,7 @@ def battle_reports_show(bot: Bot, update: Update, session):
                'Атака: ⚔{}\n' \
                'Защита: 🛡{}\n' \
                'Профит: 🔥{} 💰{} 📦{}\n\n' \
-               '<b>Личные</b>\n'.format(squad.squad_name, time_from, total_reports, total_members, full_atk, full_def, full_exp, full_gold,
-                                        full_stock) + text
+               '<b>Личные</b>\n'.format(squad.squad_name, time_from.strftime('dd-mm-yyyy hh:mm'), total_reports,
+                                        total_members, full_atk, full_def, full_exp, full_gold, full_stock) + text
         markup = generate_other_reports(time_from, squad.chat_id)
         send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
