@@ -259,7 +259,7 @@ def week_battle_top(bot: Bot, update: Update, session):
         user_id = update.message.from_user.id
     elif update.callback_query:
         user_id = update.callback_query.from_user.id
-    text = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⚔🛡')
+    text = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⛳️')
     markup = generate_battle_top()
     if update.message:
         send_async(bot,
@@ -291,7 +291,7 @@ def global_battle_top(bot: Bot, update: Update, session):
         user_id = update.message.from_user.id
     elif update.callback_query:
         user_id = update.callback_query.from_user.id
-    text = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⚔🛡')
+    text = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⛳️')
     markup = generate_battle_top()
     if update.message:
         send_async(bot,
