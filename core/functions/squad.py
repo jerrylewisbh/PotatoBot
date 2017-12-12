@@ -230,16 +230,23 @@ def add_to_squad(bot: Bot, update: Update, session):
         if len(username) == 2:
             username = username[1].replace('@', '')
             user = session.query(User).filter_by(username=username).first()
-            if user is not None and user.character is not None and user.member is None:
-                markup = generate_squad_invite_answer(user.id)
-                send_async(bot, chat_id=update.message.chat.id,
-                           text=MSG_SQUAD_ADD.format('@' + username),
-                           reply_markup=markup)
-            elif user.member is not None:
-                send_async(bot, chat_id=update.message.chat.id,
-                           text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
-            elif user.character is None:
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
+            if user is not None:
+                if user.character is None:
+                    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
+                elif user.character.level < MINIMUM_SQUAD_MEMBER_LEVEL:
+                    send_async(bot, chat_id=update.message.chat.id,
+                                    text=MSG_SQUAD_CANDIDATE_LEVEL_TOO_LOW.format(MINIMUM_SQUAD_MEMBER_LEVEL,
+                                        user.character.level))
+                elif user.member is not None:
+                    send_async(bot, chat_id=update.message.chat.id,
+                            text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
+                else:
+                    markup = generate_squad_invite_answer(user.id)
+                    send_async(bot, chat_id=update.message.chat.id,
+                            text=MSG_SQUAD_ADD.format('@' + username),
+                            reply_markup=markup)
+
+
 
 
 @admin_allowed(AdminType.GROUP)
