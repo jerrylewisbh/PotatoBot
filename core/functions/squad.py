@@ -127,13 +127,14 @@ def squad_request(bot: Bot, update: Update, session):
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if user is not None:
         if user.character:
-            if user.character.level < MINIMUM_SQUAD_MEMBER_LEVEL:
+            if user.member:
+                markup = generate_leave_squad(user.id)
                 send_async(bot, chat_id=update.message.chat.id,
-                                text=MSG_SQUAD_LEVEL_TOO_LOW.format(MINIMUM_SQUAD_MEMBER_LEVEL))
+                                text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
             else:
-                if user.member:
-                    markup = generate_leave_squad(user.id)
-                    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
+                if user.character.level < MINIMUM_SQUAD_MEMBER_LEVEL:
+                    send_async(bot, chat_id=update.message.chat.id,
+                                    text=MSG_SQUAD_LEVEL_TOO_LOW.format(MINIMUM_SQUAD_MEMBER_LEVEL))
                 else:
                     markup = generate_squad_request(session)
                     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
@@ -233,10 +234,6 @@ def add_to_squad(bot: Bot, update: Update, session):
             if user is not None:
                 if user.character is None:
                     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
-                elif user.character.level < MINIMUM_SQUAD_MEMBER_LEVEL:
-                    send_async(bot, chat_id=update.message.chat.id,
-                                    text=MSG_SQUAD_CANDIDATE_LEVEL_TOO_LOW.format(MINIMUM_SQUAD_MEMBER_LEVEL,
-                                        user.character.level))
                 elif user.member is not None:
                     send_async(bot, chat_id=update.message.chat.id,
                             text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
