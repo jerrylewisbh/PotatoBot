@@ -182,7 +182,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 delete_user(bot, update)
             else:
                 trigger_show(bot, update)
-        elif 'твои результаты в бою:' in text:
+        elif re.search(REPORT, update.message.text):
             if update.message.forward_from.id == CWBOT_ID:
                 report_received(bot, update)
         else:
