@@ -271,7 +271,8 @@ def battle_reports_show(bot: Bot, update: Update, session):
     for adm, squad in group_admin:
         now = datetime.now()
         time_from = datetime(now.year, now.month,
-                             now.day, int(now.hour / 4) * 4, 0, 0)
+                             now.day + (-1 if now.hour < 3 else 0),
+                             (int(now.hour / 4) * 4 - 1 + 24) % 24, 0, 0)
         reports = session.query(User, Report) \
             .join(SquadMember) \
             .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from)) \
