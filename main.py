@@ -479,29 +479,29 @@ def main():
 
     updater.job_queue.run_daily(ready_to_battle, time(hour=7, minute=50))
     updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=7, minute=55))
+                                time(hour=6, minute=55))
     updater.job_queue.run_daily(ready_to_battle, time(hour=11, minute=50))
     updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=11, minute=55))
+                                time(hour=10, minute=55))
     updater.job_queue.run_daily(ready_to_battle, time(hour=15, minute=50))
     updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=15, minute=55))
+                                time(hour=14, minute=55))
     updater.job_queue.run_daily(ready_to_battle, time(hour=19, minute=50))
     updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=19, minute=55))
+                                time(hour=18, minute=55))
     updater.job_queue.run_daily(ready_to_battle, time(hour=23, minute=50))
     updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=23, minute=55))
+                                time(hour=22, minute=55))
     updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=7, minute=40))
+                                time(hour=6, minute=40))
     updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=11, minute=40))
+                                time(hour=10, minute=40))
     updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=15, minute=40))
+                                time(hour=14, minute=40))
     updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=19, minute=40))
+                                time(hour=18, minute=40))
     updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=23, minute=40))
+                                time(hour=22, minute=40))
 
     # Start the Bot
     updater.start_polling()
