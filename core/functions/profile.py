@@ -183,10 +183,11 @@ def report_received(bot: Bot, update: Update, session):
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if report and user.character and str(report.group(2)) == user.character.name:
         time_from = datetime(update.message.forward_date.year, update.message.forward_date.month,
-                             update.message.forward_date.day, int(update.message.forward_date.hour / 4) * 4, 0, 0)
+                             update.message.forward_date.day + (-1 if update.message.forward_date.hour < 3 else 0),
+                             (int(update.message.forward_date.hour / 4) * 4 - 1 + 24) % 24, 0, 0)
         time_to = datetime(update.message.forward_date.year, update.message.forward_date.month,
                            update.message.forward_date.day + (1 if update.message.forward_date.hour >= 20 else 0),
-                           int(update.message.forward_date.hour / 4 + 1) * 4 % 24, 0, 0)
+                           (int(update.message.forward_date.hour / 4 + 1) * 4 - 1) % 24, 0, 0)
         report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
                                               Report.user_id == update.message.from_user.id).all()
         if len(report) == 0:
