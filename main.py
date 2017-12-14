@@ -481,19 +481,19 @@ def main():
     # log all errors
     disp.add_error_handler(error)
 
-    updater.job_queue.run_daily(ready_to_battle, time(hour=7, minute=50))
+    updater.job_queue.run_daily(ready_to_battle, time(hour=6, minute=50))
     updater.job_queue.run_daily(ready_to_battle_result,
                                 time(hour=6, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=11, minute=50))
+    updater.job_queue.run_daily(ready_to_battle, time(hour=10, minute=50))
     updater.job_queue.run_daily(ready_to_battle_result,
                                 time(hour=10, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=15, minute=50))
+    updater.job_queue.run_daily(ready_to_battle, time(hour=14, minute=50))
     updater.job_queue.run_daily(ready_to_battle_result,
                                 time(hour=14, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=19, minute=50))
+    updater.job_queue.run_daily(ready_to_battle, time(hour=18, minute=50))
     updater.job_queue.run_daily(ready_to_battle_result,
                                 time(hour=18, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=23, minute=50))
+    updater.job_queue.run_daily(ready_to_battle, time(hour=22, minute=50))
     updater.job_queue.run_daily(ready_to_battle_result,
                                 time(hour=22, minute=55))
     updater.job_queue.run_daily(fresh_profiles,
