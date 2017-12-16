@@ -573,3 +573,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
     elif data['t'] == QueryType.BattleWeekTop.value:
         update.callback_query.answer(text='Генерируем топ')
         week_battle_top(bot, update)
+    elif data['t'] == QueryType.Yes.value:
+        print('yes')
+    elif data['t'] == QueryType.No.value:
+        print('no')
