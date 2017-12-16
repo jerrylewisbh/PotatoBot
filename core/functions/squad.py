@@ -8,7 +8,8 @@ from core.template import fill_char_template
 from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed, Report, Character
 from core.utils import send_async
 from core.functions.inline_markup import generate_squad_list, generate_leave_squad, generate_squad_request, \
-    generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, generate_fire_up
+    generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, generate_fire_up, \
+    generate_yes_no
 from core.texts import *
 from core.constants import *
 
@@ -207,19 +208,25 @@ def leave_squad(bot: Bot, update: Update, session):
     member = session.query(SquadMember).filter_by(user_id=update.message.from_user.id).first()
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if member:
+        delete = False
         squad = member.squad
-        session.delete(member)
-        session.commit()
-        admins = session.query(Admin).filter_by(admin_group=squad.chat_id).all()
-        for adm in admins:
-            if adm.user_id != update.message.from_user.id:
-                send_async(bot, chat_id=adm.user_id,
-                           text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
-                           parse_mode=ParseMode.HTML)
-        send_async(bot, chat_id=member.squad_id,
-                   text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
+        markup = generate_yes_no(user_id=user.id)
         send_async(bot, chat_id=member.user_id,
-                   text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
+                   text=MSG_SQUAD_LEAVE_ASK.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML,
+                   reply_markup=markup)
+        if delete:  # тут будет условие если прожата кнопка "да" в переспрашивалке
+            session.delete(member)
+            session.commit()
+            admins = session.query(Admin).filter_by(admin_group=squad.chat_id).all()
+            for adm in admins:
+                if adm.user_id != update.message.from_user.id:
+                    send_async(bot, chat_id=adm.user_id,
+                               text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
+                               parse_mode=ParseMode.HTML)
+            send_async(bot, chat_id=member.squad_id,
+                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
+            send_async(bot, chat_id=member.user_id,
+                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
     else:
         send_async(bot, chat_id=user.id,
                    text=MSG_SQUAD_NONE, parse_mode=ParseMode.HTML)
