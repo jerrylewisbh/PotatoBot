@@ -14,6 +14,7 @@ from core.functions.inline_markup import generate_group_info, generate_order_cha
     generate_leave_squad, generate_other_reports, generate_squad_members, generate_fire_up, generate_build_top, \
     generate_battle_top, QueryType
 from core.functions.reply_markup import generate_user_markup
+from core.functions.squad import leave_squad
 from core.functions.top import global_build_top, week_build_top, week_battle_top, global_battle_top, \
     week_squad_build_top, global_squad_build_top
 from core.template import fill_char_template
@@ -574,6 +575,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
         update.callback_query.answer(text='Генерируем топ')
         week_battle_top(bot, update)
     elif data['t'] == QueryType.Yes.value:
-        print('yes')
+        leave_squad(bot, update)
+        bot.editMessageText(MSG_SQUAD_LEAVE_ASK,
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id)
     elif data['t'] == QueryType.No.value:
-        print('no')
+        bot.editMessageText(MSG_SQUAD_LEAVE_DECLINE,
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id)
