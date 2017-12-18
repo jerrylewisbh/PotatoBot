@@ -576,8 +576,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
         week_battle_top(bot, update)
     elif data['t'] == QueryType.Yes.value:
         leave_squad(bot, update)
-        bot.editMessageText(MSG_SQUAD_LEAVE_ASK,
-                            update.callback_query.message.chat.id,
+        bot.delete_message(update.callback_query.message.chat.id,
                             update.callback_query.message.message_id)
     elif data['t'] == QueryType.No.value:
         bot.editMessageText(MSG_SQUAD_LEAVE_DECLINE,
