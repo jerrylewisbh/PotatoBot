@@ -4,6 +4,7 @@ from json import loads
 import logging
 
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError, ParseMode
+from telegram.ext import JobQueue, Job
 from telegram.ext.dispatcher import run_async
 
 from core.enums import Castle, Icons
@@ -26,6 +27,9 @@ from core.utils import send_async, update_group, add_user
 from sqlalchemy import and_
 
 LOGGER = logging.getLogger('MyApp')
+
+
+order_updated = {}
 
 
 @admin_allowed()
@@ -85,9 +89,18 @@ def send_order(bot, order, order_type, chat_id, markup):
         return None
 
 
+def update_confirmed(bot: Bot, job: Job):
+    order = job.context
+    confirmed = order.cleared
+    msg = MSG_ORDER_CLEARED_BY_HEADER
+    for confirm in confirmed:
+        msg += str(confirm.user) + '\n'
+    bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
+
+
 @run_async
 @user_allowed
-def callback_query(bot: Bot, update: Update, session, chat_data: dict):
+def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue: JobQueue):
     update_group(update.callback_query.message.chat, session)
     user = add_user(update.callback_query.from_user, session)
     data = json.loads(update.callback_query.data)
@@ -186,11 +199,10 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                         session.add(order_ok)
                         session.commit()
                         if order.confirmed_msg != 0:
-                            confirmed = order.cleared
-                            msg = MSG_ORDER_CLEARED_BY_HEADER
-                            for confirm in confirmed:
-                                msg += str(confirm.user) + '\n'
-                            bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
+                            if order.id not in order_updated or \
+                                    datetime.now() - order_updated[order.id] > timedelta(seconds=4):
+                                order_updated[order.id] = datetime.now()
+                                job_queue.run_once(update_confirmed, 5, order)
                         update.callback_query.answer(text=MSG_ORDER_CLEARED)
                     else:
                         update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
@@ -205,6 +217,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                     order_ok.user_id = update.callback_query.from_user.id
                     session.add(order_ok)
                     session.commit()
+                    if order.confirmed_msg != 0:
+                        if order.id not in order_updated or \
+                                datetime.now() - order_updated[order.id] > timedelta(seconds=4):
+                            order_updated[order.id] = datetime.now()
+                            job_queue.run_once(update_confirmed, 5, order)
                     update.callback_query.answer(text=MSG_ORDER_CLEARED)
                 else:
                     update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
@@ -533,8 +550,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict):
                'Атака: ⚔{}\n' \
                'Защита: 🛡{}\n' \
                'Профит: 🔥{} 💰{} 📦{}\n\n' \
-               '<b>Личные</b>\n'.format(squad.squad_name, time_from, full_atk, full_def, full_exp, full_gold,
-                                        full_stock) + text
+               '<b>Личные</b>\n'.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), full_atk, full_def,
+                                        full_exp, full_gold, full_stock) + text
         markup = generate_other_reports(time_from, squad.chat_id)
         bot.editMessageText(text, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             parse_mode=ParseMode.HTML, reply_markup=markup)

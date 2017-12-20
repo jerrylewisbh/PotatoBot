@@ -23,6 +23,7 @@ from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COM
     TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, \
     ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, TOP_COMMAND_BUILD, \
     TOP_COMMAND_BATTLES
+from core.constants import DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
 from core.functions.activity import (
     day_activity, week_activity, battle_activity
 )
@@ -182,7 +183,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 delete_user(bot, update)
             else:
                 trigger_show(bot, update)
-        elif 'твои результаты в бою:' in text:
+        elif re.search(REPORT, update.message.text):
             if update.message.forward_from.id == CWBOT_ID:
                 report_received(bot, update)
         else:
@@ -382,8 +383,10 @@ def fresh_profiles(bot: Bot, job_queue):
         actual_profiles = actual_profiles.all()
         characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                      .in_([(a[0], a[1]) for a in actual_profiles]),
-                                                     datetime.now() - timedelta(days=3) > Character.date,
-                                                     Character.date > datetime.now() - timedelta(days=14))
+                                                     datetime.now() - timedelta(
+                                                         days=DAYS_PROFILE_REMIND) > Character.date,
+                                                     Character.date > datetime.now() - timedelta(
+                                                         days=DAYS_OLD_PROFILE_KICK))
         if CASTLE:
             characters = characters.filter_by(castle=CASTLE)
         characters = characters.all()
@@ -394,7 +397,8 @@ def fresh_profiles(bot: Bot, job_queue):
                        parse_mode=ParseMode.HTML)
         characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                      .in_([(a[0], a[1]) for a in actual_profiles]),
-                                                     Character.date < datetime.now() - timedelta(days=14)).all()
+                                                     Character.date < datetime.now() - timedelta(
+                                                         days=DAYS_OLD_PROFILE_KICK)).all()
         members = session.query(SquadMember, User).filter(SquadMember.user_id
                                                           .in_([character.user_id for character in characters])) \
             .join(User, User.id == SquadMember.user_id).all()
@@ -465,7 +469,7 @@ def main():
     disp.add_handler(CommandHandler("ban", ban))
     disp.add_handler(CommandHandler("unban", unban))
 
-    disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True))
+    disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True, pass_job_queue=True))
 
     # on noncommand i.e message - echo the message on Telegram
     disp.add_handler(MessageHandler(Filters.status_update, welcome))
