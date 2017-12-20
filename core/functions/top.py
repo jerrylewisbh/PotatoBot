@@ -12,7 +12,7 @@ from config import CASTLE
 
 from datetime import datetime, timedelta
 
-TOP_START_DATE = datetime(2017, 11, 11)
+TOP_START_DATE = datetime(2017, 12, 11)
 
 
 @user_allowed
@@ -136,7 +136,7 @@ def global_build_top(bot: Bot, update: Update, session):
     if update.message:
         user_id = update.message.from_user.id
     elif update.callback_query:
-        user_id = update.callback_query.message.from_user.id
+        user_id = update.callback_query.from_user.id
     text = gen_top_msg(builds, user_id, MSG_TOP_GLOBAL_BUILDERS, '⚒')
     markup = generate_build_top()
     if update.message:
@@ -153,7 +153,7 @@ def week_build_top(bot: Bot, update: Update, session):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
-    today = datetime.today()
+    today = datetime.today().date()
     builds = session.query(Character, func.count(BuildReport.user_id))\
         .filter(tuple_(Character.user_id, Character.date)
                 .in_([(a[0], a[1]) for a in actual_profiles]),
@@ -168,7 +168,7 @@ def week_build_top(bot: Bot, update: Update, session):
     if update.message:
         user_id = update.message.from_user.id
     elif update.callback_query:
-        user_id = update.callback_query.message.from_user.id
+        user_id = update.callback_query.from_user.id
     text = gen_top_msg(builds, user_id, MSG_TOP_WEEK_BUILDERS, '⚒')
     markup = generate_build_top()
     if update.message:
@@ -185,7 +185,7 @@ def week_squad_build_top(bot: Bot, update: Update, session):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
-    today = datetime.today()
+    today = datetime.today().date()
     builds = session.query(Squad, func.count(BuildReport.user_id))\
         .join(SquadMember).join(Character, SquadMember.user_id == Character.user_id)\
         .filter(tuple_(Character.user_id, Character.date)
@@ -242,7 +242,7 @@ def week_battle_top(bot: Bot, update: Update, session):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
-    today = datetime.today()
+    today = datetime.today().date()
     battles = session.query(Character, func.count(Report.user_id))\
         .filter(tuple_(Character.user_id, Character.date)
                 .in_([(a[0], a[1]) for a in actual_profiles]),
@@ -258,8 +258,8 @@ def week_battle_top(bot: Bot, update: Update, session):
     if update.message:
         user_id = update.message.from_user.id
     elif update.callback_query:
-        user_id = update.callback_query.message.from_user.id
-    text = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⚔🛡')
+        user_id = update.callback_query.from_user.id
+    text = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⛳️')
     markup = generate_battle_top()
     if update.message:
         send_async(bot,
@@ -290,8 +290,8 @@ def global_battle_top(bot: Bot, update: Update, session):
     if update.message:
         user_id = update.message.from_user.id
     elif update.callback_query:
-        user_id = update.callback_query.message.from_user.id
-    text = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⚔🛡')
+        user_id = update.callback_query.from_user.id
+    text = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⛳️')
     markup = generate_battle_top()
     if update.message:
         send_async(bot,

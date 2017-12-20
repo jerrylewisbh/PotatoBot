@@ -10,6 +10,7 @@ from core.utils import send_async
 from core.functions.inline_markup import generate_squad_list, generate_leave_squad, generate_squad_request, \
     generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, generate_fire_up
 from core.texts import *
+from core.constants import *
 
 
 @user_allowed
@@ -125,13 +126,20 @@ def squad_list(bot: Bot, update: Update, session):
 def squad_request(bot: Bot, update: Update, session):
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if user is not None:
-        if user.character:
+        if user.username is None:
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_NO_USERNAME)
+        elif user.character:
             if user.member:
                 markup = generate_leave_squad(user.id)
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
+                send_async(bot, chat_id=update.message.chat.id,
+                                text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
             else:
-                markup = generate_squad_request(session)
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
+                if user.character.level < MINIMUM_SQUAD_MEMBER_LEVEL:
+                    send_async(bot, chat_id=update.message.chat.id,
+                                    text=MSG_SQUAD_LEVEL_TOO_LOW.format(MINIMUM_SQUAD_MEMBER_LEVEL))
+                else:
+                    markup = generate_squad_request(session)
+                    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
         else:
             send_async(bot, chat_id=update.message.chat.id, text=MSG_NO_PROFILE_IN_BOT)
 
@@ -225,16 +233,19 @@ def add_to_squad(bot: Bot, update: Update, session):
         if len(username) == 2:
             username = username[1].replace('@', '')
             user = session.query(User).filter_by(username=username).first()
-            if user is not None and user.character is not None and user.member is None:
-                markup = generate_squad_invite_answer(user.id)
-                send_async(bot, chat_id=update.message.chat.id,
-                           text=MSG_SQUAD_ADD.format('@' + username),
-                           reply_markup=markup)
-            elif user.member is not None:
-                send_async(bot, chat_id=update.message.chat.id,
-                           text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
-            elif user.character is None:
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
+            if user is not None:
+                if user.character is None:
+                    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
+                elif user.member is not None:
+                    send_async(bot, chat_id=update.message.chat.id,
+                            text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
+                else:
+                    markup = generate_squad_invite_answer(user.id)
+                    send_async(bot, chat_id=update.message.chat.id,
+                            text=MSG_SQUAD_ADD.format('@' + username),
+                            reply_markup=markup)
+
+
 
 
 @admin_allowed(AdminType.GROUP)
@@ -293,7 +304,7 @@ def battle_reports_show(bot: Bot, update: Update, session):
                'Атака: ⚔{}\n' \
                'Защита: 🛡{}\n' \
                'Профит: 🔥{} 💰{} 📦{}\n\n' \
-               '<b>Личные</b>\n'.format(squad.squad_name, time_from, total_reports, total_members, full_atk, full_def, full_exp, full_gold,
-                                        full_stock) + text
+               '<b>Личные</b>\n'.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports,
+                                        total_members, full_atk, full_def, full_exp, full_gold, full_stock) + text
         markup = generate_other_reports(time_from, squad.chat_id)
         send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
