@@ -90,7 +90,7 @@ logging.basicConfig(
 def battle_time():
     """ Определяет, наступило ли время битвы """
     now = datetime.now().time()
-    if now.hour % 4 == 3 and now.minute >= 57:
+    if (now.hour + 1) % 4 == 3 and now.minute >= 57:
         return True
     return False
 
