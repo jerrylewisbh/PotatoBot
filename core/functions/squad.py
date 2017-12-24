@@ -8,7 +8,8 @@ from core.template import fill_char_template
 from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed, Report, Character
 from core.utils import send_async
 from core.functions.inline_markup import generate_squad_list, generate_leave_squad, generate_squad_request, \
-    generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, generate_fire_up
+    generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, generate_fire_up, \
+    generate_yes_no
 from core.texts import *
 from core.constants import *
 
@@ -17,7 +18,7 @@ from core.constants import *
 def squad_about(bot: Bot, update: Update, session):
     admin = session.query(Admin).filter(Admin.user_id == update.message.from_user.id,
                                         Admin.admin_group != 0).first()
-    squad_member = session.query(SquadMember).filter_by(user_id=update.message.from_user.id).first()
+    squad_member = session.query(SquadMember).filter_by(user_id=update.message.from_user.id, approved=True).first()
     markup = generate_squad_markup(is_group_admin=admin is not None, in_squad=True if squad_member else False)
     send_async(bot,
                chat_id=update.message.chat.id,
@@ -194,7 +195,7 @@ def remove_from_squad(bot: Bot, update: Update, session):
         if squad is not None:
             group_admin.append(adm)
     for adm in group_admin:
-        members = session.query(SquadMember).filter_by(squad_id=adm.admin_group)
+        members = session.query(SquadMember).filter_by(squad_id=adm.admin_group, approved=True).all()
         markup = generate_fire_up(members)
         squad = session.query(Squad).filter_by(chat_id=adm.admin_group).first()
         send_async(bot, chat_id=update.message.chat.id,
@@ -203,21 +204,37 @@ def remove_from_squad(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def leave_squad(bot: Bot, update: Update, session):
+def leave_squad_request(bot: Bot, update: Update, session):
     member = session.query(SquadMember).filter_by(user_id=update.message.from_user.id).first()
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if member:
+        squad = member.squad
+        markup = generate_yes_no(user_id=user.id)
+        send_async(bot, chat_id=member.user_id,
+                   text=MSG_SQUAD_LEAVE_ASK.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML,
+                   reply_markup=markup)
+    else:
+        send_async(bot, chat_id=user.id,
+                   text=MSG_SQUAD_NONE, parse_mode=ParseMode.HTML)
+
+
+@user_allowed
+def leave_squad(bot: Bot, update: Update, session):
+    member = session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
+    user = session.query(User).filter_by(id=update.callback_query.from_user.id).first()
     if member:
         squad = member.squad
         session.delete(member)
         session.commit()
         admins = session.query(Admin).filter_by(admin_group=squad.chat_id).all()
-        for adm in admins:
-            if adm.user_id != update.message.from_user.id:
-                send_async(bot, chat_id=adm.user_id,
-                           text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
-                           parse_mode=ParseMode.HTML)
-        send_async(bot, chat_id=member.squad_id,
-                   text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
+        if member.approved:
+            for adm in admins:
+                if adm.user_id != update.callback_query.from_user.id:
+                    send_async(bot, chat_id=adm.user_id,
+                               text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
+                               parse_mode=ParseMode.HTML)
+            send_async(bot, chat_id=member.squad_id,
+                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
         send_async(bot, chat_id=member.user_id,
                    text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
     else:
@@ -244,8 +261,6 @@ def add_to_squad(bot: Bot, update: Update, session):
                     send_async(bot, chat_id=update.message.chat.id,
                             text=MSG_SQUAD_ADD.format('@' + username),
                             reply_markup=markup)
-
-
 
 
 @admin_allowed(AdminType.GROUP)

@@ -48,6 +48,8 @@ class QueryType(Enum):
     SquadWeekBuildTop = 30
     BattleGlobalTop = 31
     BattleWeekTop = 32
+    Yes = 100
+    No = 200
 
 
 def generate_group_info(group_id, session):
@@ -255,6 +257,16 @@ def generate_squad_list_key(squad, session):
             int(level/(len(members) or 1))
         ),
         callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))]
+
+
+def generate_yes_no(user_id):
+    inline_keys = [InlineKeyboardButton('✅Да',
+                                        callback_data=json.dumps(
+                                            {'t': QueryType.Yes.value, 'id': user_id})),
+                   InlineKeyboardButton('❌Нет',
+                                        callback_data=json.dumps(
+                                            {'t': QueryType.No.value, 'id': user_id}))]
+    return InlineKeyboardMarkup([inline_keys])
 
 
 def generate_squad_list(squads, session):
