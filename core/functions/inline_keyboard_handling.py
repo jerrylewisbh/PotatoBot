@@ -14,6 +14,7 @@ from core.functions.inline_markup import generate_group_info, generate_order_cha
     generate_leave_squad, generate_other_reports, generate_squad_members, generate_fire_up, generate_build_top, \
     generate_battle_top, QueryType
 from core.functions.reply_markup import generate_user_markup
+from core.functions.squad import leave_squad
 from core.functions.top import global_build_top, week_build_top, week_battle_top, global_battle_top, \
     week_squad_build_top, global_squad_build_top
 from core.template import fill_char_template
@@ -188,7 +189,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             squad = session.query(Squad).filter_by(chat_id=order.chat_id).first()
             if squad is not None:
                 squad_member = session.query(SquadMember).filter_by(squad_id=squad.chat_id,
-                                                                    user_id=update.callback_query.from_user.id).first()
+                                                                    user_id=update.callback_query.from_user.id,
+                                                                    approved=True).first()
                 if squad_member is not None:
                     order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
                                                                      user_id=squad_member.user_id).first()
@@ -348,21 +350,25 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             session.delete(member)
             session.commit()
             admins = session.query(Admin).filter_by(admin_group=squad.chat_id).all()
-            for adm in admins:
-                if adm.user_id != update.callback_query.from_user.id:
-                    send_async(bot, chat_id=adm.user_id,
-                               text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
-                               parse_mode=ParseMode.HTML)
-            send_async(bot, chat_id=member.squad_id,
-                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
-            send_async(bot, chat_id=member.user_id,
-                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
+            if member.approved:
+                for adm in admins:
+                    if adm.user_id != update.callback_query.from_user.id:
+                        send_async(bot, chat_id=adm.user_id,
+                                   text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
+                                   parse_mode=ParseMode.HTML)
+                send_async(bot, chat_id=member.squad_id,
+                           text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
+                           parse_mode=ParseMode.HTML)
+
             if data['id'] == update.callback_query.from_user.id:
                 bot.editMessageText(MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
                                     update.callback_query.message.chat.id,
                                     update.callback_query.message.message_id, parse_mode=ParseMode.HTML)
             else:
-                members = session.query(SquadMember).filter_by(squad_id=member.squad_id).all()
+                send_async(bot, chat_id=member.user_id,
+                           text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
+                           parse_mode=ParseMode.HTML)
+                members = session.query(SquadMember).filter_by(squad_id=member.squad_id, approved=True).all()
                 bot.editMessageText(update.callback_query.message.text,
                                     update.callback_query.message.chat.id,
                                     update.callback_query.message.message_id,
@@ -392,7 +398,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                 update.callback_query.message.message_id,
                                 reply_markup=markup)
     elif data['t'] == QueryType.RequestSquadAccept.value:
-        member = session.query(SquadMember).filter_by(user_id=data['id']).first()
+        member = session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
         if member:
             member.approved = True
             session.add(member)
@@ -409,7 +415,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                        reply_markup=generate_user_markup(is_admin))
             send_async(bot, chat_id=member.squad_id, text=MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username))
     elif data['t'] == QueryType.RequestSquadDecline.value:
-        member = session.query(SquadMember).filter_by(user_id=data['id']).first()
+        member = session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
         if member:
             bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + member.user.username),
                                 update.callback_query.message.chat.id,
@@ -426,8 +432,6 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             member = SquadMember()
             member.user_id = user.id
             member.squad_id = update.callback_query.message.chat.id
-            session.add(member)
-            session.commit()
             member.approved = True
             session.add(member)
             session.commit()
@@ -573,3 +577,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
     elif data['t'] == QueryType.BattleWeekTop.value:
         update.callback_query.answer(text='Генерируем топ')
         week_battle_top(bot, update)
+    elif data['t'] == QueryType.Yes.value:
+        leave_squad(bot, update)
+        bot.delete_message(update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id)
+    elif data['t'] == QueryType.No.value:
+        bot.editMessageText(MSG_SQUAD_LEAVE_DECLINE,
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id)
