@@ -103,7 +103,7 @@ def update_confirmed(bot: Bot, job: Job):
 @user_allowed
 def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue: JobQueue):
     update_group(update.callback_query.message.chat, session)
-    user = add_user(update.callback_query.from_user, session)
+    user = add_user(update.effective_user, session)
     data = json.loads(update.callback_query.data)
     if data['t'] == QueryType.GroupList.value:
         msg = MSG_GROUP_STATUS_CHOOSE_CHAT
@@ -344,37 +344,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                             reply_markup=markup)
     elif data['t'] == QueryType.LeaveSquad.value:
         member = session.query(SquadMember).filter_by(user_id=data['id']).first()
-        if member:
-            squad = member.squad
-            user = member.user
-            session.delete(member)
-            session.commit()
-            admins = session.query(Admin).filter_by(admin_group=squad.chat_id).all()
-            if member.approved:
-                for adm in admins:
-                    if adm.user_id != update.callback_query.from_user.id:
-                        send_async(bot, chat_id=adm.user_id,
-                                   text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
-                                   parse_mode=ParseMode.HTML)
-                send_async(bot, chat_id=member.squad_id,
-                           text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
-                           parse_mode=ParseMode.HTML)
-
-            if data['id'] == update.callback_query.from_user.id:
-                bot.editMessageText(MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
-                                    update.callback_query.message.chat.id,
-                                    update.callback_query.message.message_id, parse_mode=ParseMode.HTML)
-            else:
-                send_async(bot, chat_id=member.user_id,
-                           text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
-                           parse_mode=ParseMode.HTML)
-                members = session.query(SquadMember).filter_by(squad_id=member.squad_id, approved=True).all()
-                bot.editMessageText(update.callback_query.message.text,
-                                    update.callback_query.message.chat.id,
-                                    update.callback_query.message.message_id,
-                                    reply_markup=generate_fire_up(members))
-        else:
-            update.callback_query.answer(text=MSG_SQUAD_ALREADY_DELETED)
+        leave_squad(bot, user, member, update.effective_message, session)
     elif data['t'] == QueryType.RequestSquad.value:
         member = session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
         if member is None:
@@ -578,9 +548,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
         update.callback_query.answer(text='Генерируем топ')
         week_battle_top(bot, update)
     elif data['t'] == QueryType.Yes.value:
-        leave_squad(bot, update)
-        bot.delete_message(update.callback_query.message.chat.id,
-                            update.callback_query.message.message_id)
+        leave_squad(bot, user, user.member, update.effective_message, session)
     elif data['t'] == QueryType.No.value:
         bot.editMessageText(MSG_SQUAD_LEAVE_DECLINE,
                             update.callback_query.message.chat.id,

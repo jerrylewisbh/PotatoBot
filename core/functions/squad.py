@@ -218,28 +218,43 @@ def leave_squad_request(bot: Bot, update: Update, session):
                    text=MSG_SQUAD_NONE, parse_mode=ParseMode.HTML)
 
 
-@user_allowed
-def leave_squad(bot: Bot, update: Update, session):
-    member = session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
-    user = session.query(User).filter_by(id=update.callback_query.from_user.id).first()
+def leave_squad(bot: Bot, user: User, member: SquadMember, message, session):
     if member:
         squad = member.squad
+        member_user = member.user
         session.delete(member)
         session.commit()
-        admins = session.query(Admin).filter_by(admin_group=squad.chat_id).all()
         if member.approved:
+            admins = session.query(Admin).filter_by(admin_group=squad.chat_id).all()
             for adm in admins:
-                if adm.user_id != update.callback_query.from_user.id:
+                if adm.user_id != user.id:
                     send_async(bot, chat_id=adm.user_id,
-                               text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name),
+                               text=MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
                                parse_mode=ParseMode.HTML)
             send_async(bot, chat_id=member.squad_id,
-                       text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
-        send_async(bot, chat_id=member.user_id,
-                   text=MSG_SQUAD_LEAVED.format(user.character.name, squad.squad_name), parse_mode=ParseMode.HTML)
+                       text=MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
+                       parse_mode=ParseMode.HTML)
+        bot.kick_chat_member(message.chat.id, member.user_id)
+
+        if member.user_id == user.id:
+            bot.editMessageText(MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
+                                message.chat.id,
+                                message.message_id, parse_mode=ParseMode.HTML)
+        else:
+            send_async(bot, chat_id=member.user_id,
+                       text=MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
+                       parse_mode=ParseMode.HTML)
+            members = session.query(SquadMember).filter_by(squad_id=member.squad_id, approved=True).all()
+            bot.editMessageText(message.text,
+                                message.chat.id,
+                                message.message_id,
+                                reply_markup=generate_fire_up(members))
     else:
-        send_async(bot, chat_id=user.id,
-                   text=MSG_SQUAD_NONE, parse_mode=ParseMode.HTML)
+        if member.user_id == user.id:
+            send_async(bot, chat_id=user.id,
+                       text=MSG_SQUAD_NONE, parse_mode=ParseMode.HTML)
+        else:
+            send_async(bot, chat_id=user.id, text=MSG_SQUAD_ALREADY_DELETED)
 
 
 @admin_allowed(AdminType.GROUP)
