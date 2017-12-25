@@ -11,8 +11,7 @@ from core.enums import Castle, Icons
 from core.functions.admins import del_adm
 from core.functions.inline_markup import generate_group_info, generate_order_chats_markup, generate_order_groups_markup, \
     generate_ok_markup, generate_groups_manage, generate_group_manage, generate_profile_buttons, generate_squad_list, \
-    generate_leave_squad, generate_other_reports, generate_squad_members, generate_fire_up, generate_build_top, \
-    generate_battle_top, QueryType
+    generate_leave_squad, generate_other_reports, generate_squad_members, QueryType
 from core.functions.reply_markup import generate_user_markup
 from core.functions.squad import leave_squad
 from core.functions.top import global_build_top, week_build_top, week_battle_top, global_battle_top, \
