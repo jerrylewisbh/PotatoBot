@@ -284,7 +284,7 @@ def call_squad(bot: Bot, update: Update, session):
     if squad is not None:
         users = session.query(User).join(SquadMember).filter(User.id == SquadMember.user_id)\
             .filter(SquadMember.squad_id == squad.chat_id).all()
-        msg = 'Все сюда!\n'
+        msg = MSG_SQUAD_CALL_HEADER
         for user in users:
             msg += '@' + user.username + ' '
         send_async(bot, chat_id=update.message.chat.id, text=msg)
@@ -317,7 +317,7 @@ def battle_reports_show(bot: Bot, update: Update, session):
         for user, report in reports:
             total_members += 1
             if report:
-                text += '<b>{}</b> (@{})\n⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'.format(
+                text += MSG_REPORT_SUMMARY_ROW.format(
                     report.name, user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
                 full_atk += report.attack
@@ -327,14 +327,9 @@ def battle_reports_show(bot: Bot, update: Update, session):
                 full_stock += report.earned_stock
                 total_reports += 1
             else:
-                text += '<b>{}</b> (@{}) ❗\n'.format(user.character.name, user.username)
-        text = 'Репорты отряда {} за битву {}\n' \
-               'Репорты: {} из {}\n' \
-               '<b>Общие</b>\n' \
-               'Атака: ⚔{}\n' \
-               'Защита: 🛡{}\n' \
-               'Профит: 🔥{} 💰{} 📦{}\n\n' \
-               '<b>Личные</b>\n'.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports,
-                                        total_members, full_atk, full_def, full_exp, full_gold, full_stock) + text
+                text += MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
+        text = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports,
+                                                total_members, full_atk, full_def, full_exp, full_gold,
+                                                full_stock) + text
         markup = generate_other_reports(time_from, squad.chat_id)
         send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)

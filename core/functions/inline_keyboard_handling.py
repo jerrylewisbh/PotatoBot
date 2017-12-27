@@ -309,7 +309,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
         back = data['b'] if 'b' in data else False
-        bot.editMessageText('{}\n🕑 Последнее обновление {}'.format(user.equip.equip, user.equip.date),
+        bot.editMessageText('{}\n{} {}'.format(user.equip.equip, MSG_LAST_UPDATE, user.equip.date),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
                             reply_markup=generate_profile_buttons(user, back)
@@ -318,8 +318,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
         user = session.query(User).filter_by(id=data['id']).first()
         update.callback_query.answer(text=MSG_CLEARED)
         back = data['b'] if 'b' in data else False
-        bot.editMessageText('{}\n🕑 Последнее обновление {}'.
-                            format(user.stock.stock, user.stock.date.strftime("%Y-%m-%d %H:%M:%S")),
+        bot.editMessageText('{}\n{} {}'.
+                            format(user.stock.stock, MSG_LAST_UPDATE, user.stock.date.strftime("%Y-%m-%d %H:%M:%S")),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
                             reply_markup=generate_profile_buttons(user, back)
@@ -394,7 +394,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_DECLINED_ANSWER)
     elif data['t'] == QueryType.InviteSquadAccept.value:
         if update.callback_query.from_user.id != data['id']:
-            update.callback_query.answer(text='Пшёл вон!')
+            update.callback_query.answer(text=MSG_GO_AWAY)
             return
         member = session.query(SquadMember).filter_by(user_id=data['id']).first()
         if member is None:
@@ -409,7 +409,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                 update.callback_query.message.message_id)
     elif data['t'] == QueryType.InviteSquadDecline.value:
         if update.callback_query.from_user.id != data['id']:
-            update.callback_query.answer(text='Пшёл вон!')
+            update.callback_query.answer(text=MSG_GO_AWAY)
             return
         user = session.query(User).filter_by(id=data['id']).first()
         bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + user.username),
@@ -508,7 +508,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
         full_stock = 0
         for user, report in reports:
             if report:
-                text += '<b>{}</b> (@{})\n⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'.format(
+                text += MSG_REPORT_SUMMARY_ROW.format(
                     report.name, user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
                 full_atk += report.attack
@@ -517,34 +517,29 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 full_gold += report.earned_gold
                 full_stock += report.earned_stock
             else:
-                text += '<b>{}</b> (@{}) ❗\n'.format(user.character.name, user.username)
-        text = 'Репорты отряда {} за битву {}\n' \
-               '<b>Общие</b>\n' \
-               'Атака: ⚔{}\n' \
-               'Защита: 🛡{}\n' \
-               'Профит: 🔥{} 💰{} 📦{}\n\n' \
-               '<b>Личные</b>\n'.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), full_atk, full_def,
+                text += MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
+        text = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), full_atk, full_def,
                                         full_exp, full_gold, full_stock) + text
         markup = generate_other_reports(time_from, squad.chat_id)
         bot.editMessageText(text, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             parse_mode=ParseMode.HTML, reply_markup=markup)
     elif data['t'] == QueryType.GlobalBuildTop.value:
-        update.callback_query.answer(text='Генерируем топ')
+        update.callback_query.answer(text=MSG_TOP_GENERATING)
         global_build_top(bot, update)
     elif data['t'] == QueryType.WeekBuildTop.value:
-        update.callback_query.answer(text='Генерируем топ')
+        update.callback_query.answer(text=MSG_TOP_GENERATING)
         week_build_top(bot, update)
     elif data['t'] == QueryType.SquadGlobalBuildTop.value:
-        update.callback_query.answer(text='Генерируем топ')
+        update.callback_query.answer(text=MSG_TOP_GENERATING)
         global_squad_build_top(bot, update)
     elif data['t'] == QueryType.SquadWeekBuildTop.value:
-        update.callback_query.answer(text='Генерируем топ')
+        update.callback_query.answer(text=MSG_TOP_GENERATING)
         week_squad_build_top(bot, update)
     elif data['t'] == QueryType.BattleGlobalTop.value:
-        update.callback_query.answer(text='Генерируем топ')
+        update.callback_query.answer(text=MSG_TOP_GENERATING)
         global_battle_top(bot, update)
     elif data['t'] == QueryType.BattleWeekTop.value:
-        update.callback_query.answer(text='Генерируем топ')
+        update.callback_query.answer(text=MSG_TOP_GENERATING)
         week_battle_top(bot, update)
     elif data['t'] == QueryType.Yes.value:
         leave_squad(bot, user, user.member, update.effective_message, session)
