@@ -116,7 +116,7 @@ MSG_ORDER_CLEARED_BY_HEADER = 'Order accepted by:\n'
 MSG_ORDER_SENT = 'Message is sent'
 
 MSG_ORDER_CLEARED = 'Recorded, soldier!'
-MSG_ORDER_CLEARED_ERROR = 'Please stop it!!!!'
+MSG_ORDER_CLEARED_ERROR = 'Please stop!!!!'
 
 MSG_ORDER_SEND_HEADER = 'Where to send?'
 
