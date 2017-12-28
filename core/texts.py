@@ -117,9 +117,8 @@ MSG_ORDER_SENT = 'Message is sent'
 
 MSG_ORDER_CLEARED = 'Recorded, soldier!'
 
+
 MSG_ORDER_CLEARED_ERROR = 'Please stop it!!!!'
-
-
 MSG_ORDER_SEND_HEADER = 'Where to send?'
 
 MSG_ORDER_GROUP_CONFIG_HEADER = 'Group settings: {}'
