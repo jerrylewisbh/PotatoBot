@@ -1,152 +1,152 @@
 """ Строки """
 
-MSG_ORDER_STATISTIC = 'Статистика выполнения приказов за {} дней:\n'
+MSG_ORDER_STATISTIC = 'Statistics of following the orders for {} days:\n'
 MSG_ORDER_STATISTIC_OUT_FORMAT = '{}: {}/{}\n'
-MSG_USER_UNKNOWN = 'Не знаю таких'
+MSG_USER_UNKNOWN = 'No such user'
 
-MSG_NEW_GROUP_ADMIN = """Приветствуйте нового админа: @{}!
-Для списка команд бота используй /help"""
-MSG_NEW_GROUP_ADMIN_EXISTS = '@{} и без тебя тут правит!'
+MSG_NEW_GROUP_ADMIN = """Welcome our new administrator: @{}!
+Check the commands list with /help command"""
+MSG_NEW_GROUP_ADMIN_EXISTS = '@{} already has administrator rights'
 
-MSG_DEL_GROUP_ADMIN_NOT_EXIST = 'У @{} здесь нет власти!'
-MSG_DEL_GROUP_ADMIN = '@{}, тебя разжаловали.'
+MSG_DEL_GROUP_ADMIN_NOT_EXIST = '@{} never had any power here!'
+MSG_DEL_GROUP_ADMIN = '@{}, now you have no power here!'
 
-MSG_NEW_GLOBAL_ADMIN = 'Новый глобальный админ: @{}!'
-MSG_NEW_GLOBAL_ADMIN_EXISTS = '@{} и без тебя админ!'
+MSG_NEW_GLOBAL_ADMIN = 'New global administrator: @{}!'
+MSG_NEW_GLOBAL_ADMIN_EXISTS = '@{} already has global administrator rights'
 
-MSG_DEL_GLOBAL_ADMIN_NOT_EXIST = 'У @{} нет власти!'
-MSG_DEL_GLOBAL_ADMIN = '@{} разжалован.'
+MSG_DEL_GLOBAL_ADMIN_NOT_EXIST = '{} never had any global rights!'
+MSG_DEL_GLOBAL_ADMIN = '@{} now you have no global rights'
 
-MSG_NEW_SUPER_ADMIN = 'Новый суперадмин: @{}!'
-MSG_NEW_SUPER_ADMIN_EXISTS = '@{} уже суперадмин!'
+MSG_NEW_SUPER_ADMIN = 'New super administrator: @{}!'
+MSG_NEW_SUPER_ADMIN_EXISTS = '@{} is already a super administrator!'
 
-MSG_LIST_ADMINS_HEADER = 'Список здешних админов:\n'
+MSG_LIST_ADMINS_HEADER = 'Administrators list:\n'
 MSG_LIST_ADMINS_FORMAT = '{} @{} {} {}\n'
 MSG_LIST_ADMINS_USER_FORMAT = '@{} {} {}\n'
 
 MSG_EMPTY = '[Пусто]\n'
 
-MSG_START_WELCOME = 'Привет! Я - бот 🌑Замка Лунного Света. Перешли мне свой игровой профиль из @chtwrsbot (🏅 команда "/hero").'
-MSG_ADMIN_WELCOME = 'Да здравствует админ!'
+MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato castle! Please send me your game profile from @chtwrsbot ("/hero" command).'
+MSG_ADMIN_WELCOME = 'Welcome, master!'
 
-MSG_HELP_GLOBAL_ADMIN = """Команды приветствия:
-/enable_welcome — включить приветствие.
-/disable_welcome — выключить приветствие.
-/set_welcome <текст> — установить текст приветствия. \
-Может содержать %username% — будет заменено на @username, \
-если не установлено на Имя Фамилия, %first_name% — на имя, 
-%last_name% — на фамилию, %id% — на id.
-/show_welcome — показать текущий текст приветствия для данного чата.
+MSG_HELP_GLOBAL_ADMIN = """Welcome commands:
+/enable_welcome — enable welcome message.
+/disable_welcome — disable welcome message.
+/set_welcome <text> — set welcome message. \
+Can contain %username% — will be shown as @username, \
+if not set to First and Last name, or ID, 
+using %last_name%, %first_name%, %id%.
+/show_welcome — show welcome message.
 
-Команды триггеров:
-присылаем фаил, ответом на него присылаем команду /set_trigger <сообщение> — \
-установить сообщение, которое бот будет отправлять по триггеру. /установить тригер
-/add_trigger <триггер>::<сообщение> — \
-добавить сообщение, которое бот будет отправлять по триггеру. \
-Старое сообщение не заменяется./добавить триггер
+Trigger commands:
+Reply to a message or file with /set_trigger <trigger text> — \
+set message to reply with on a trigger.
+/add_trigger <trigger text>::<reply text> — \
+add message to reply with on a trigger. \
+Old messages can't be replaced.
 
-/del_trigger <триггер> — удалить триггер.
-/list_triggers — показать все триггеры.
+/del_trigger <trigger> — delete trigger.
+/list_triggers — show all triggers.
 
-Команды суперадмина:
-/add_admin <пользователь> — добавить админа для текущего чата.
-/del_admin <пользователь> — забрать привилегии у админа текущего чата.
-/list_admins — показать список админов в чате.
-/enable_trigger — разрешить триггерить всем в группе.
-/disable_trigger — запретить триггерить всем в группе.
+Super administrator commands:
+/add_admin <user> — add administrator to current chat.
+/del_admin <user> — delete administrator from current chat.
+/list_admins — show list of current chat administrators.
+/enable_trigger — allow everyone to call trigger.
+/disable_trigger — forbid everyone to call trigger.
 """
 
-MSG_HELP_GROUP_ADMIN = """Команды приветствия:
-/enable_welcome — включить приветствие.
-/disable_welcome — выключить приветствие.
-/set_welcome <текст> — установить текст приветствия. \
-Может содержать %username% — будет заменено на @username, \
-если не установлено на Имя Фамилия, %first_name% — на имя, 
-%last_name% — на фамилию, %id% — на id.
-/show_welcome — показать текущий текст приветствия для данного чата.
+MSG_HELP_GROUP_ADMIN = """Welcome commands:
+/enable_welcome — enable welcome message.
+/disable_welcome — disable welcome message.
+/set_welcome <text> — set welcome message. \
+Can contain %username% — will be shown as @username, \
+if not set to First and Last name, or ID, 
+using %last_name%, %first_name%, %id%.
+/show_welcome — show welcome message.
 
 Команды триггеров:
-/add_trigger <триггер>::<сообщение> — \
-добавить сообщение, которое бот будет отправлять по триггеру. \
-Старое сообщение не заменяется.
-/list_triggers — показать список триггеров.
-/enable_trigger — разрешить триггерить всем в группе.
-/disable_trigger — запретить триггерить всем в группе.
+/add_trigger <trigger text>::<reply text> — \
+add message to reply with on a trigger. \
+Old messages can't be replaced.
+/list_triggers — show all triggers.
+/enable_trigger — allow everyone to call trigger.
+/disable_trigger — forbid everyone to call trigger.
 """
 
-MSG_HELP_USER = "/list_triggers — показать список триггеров."
+MSG_HELP_USER = "/list_triggers — show all triggers."
 
-MSG_PING = 'Иди освежись, @{}!'
+MSG_PING = 'Go and dig some potatoes, @{}!'
 
-MSG_STOCK_COMPARE_HARVESTED = '📦<b>Награблено:</b>\n'
-MSG_STOCK_COMPARE_LOST = '\n📦<b>Потеряно:</b>\n'
+MSG_STOCK_COMPARE_HARVESTED = '📦<b>You got:</b>\n'
+MSG_STOCK_COMPARE_LOST = '\n📦<b>You lost:</b>\n'
 MSG_STOCK_COMPARE_FORMAT = '{} ({})\n'
-MSG_STOCK_COMPARE_WAIT = 'Жду с чем сравнивать...'
+MSG_STOCK_COMPARE_WAIT = 'Waiting for data to compare...'
 
-MSG_PERSONAL_SITE_LINK = 'Твоя персональная ссылка на сайт: {}'
+MSG_PERSONAL_SITE_LINK = 'Your personal link: {}'
 
-MSG_GROUP_STATUS_CHOOSE_CHAT = 'Выбери чат'
-MSG_GROUP_STATUS = """Группа: {}
+MSG_GROUP_STATUS_CHOOSE_CHAT = 'Choose chat'
+MSG_GROUP_STATUS = """Group: {}
 
-Админы:
+Admins:
 {}
-Приветствие: {}
-Триггерят все: {}
-Тернии: {}"""
+Welcome: {}
+Trigger allowrd: {}
+Thorns: {}"""
 
 MSG_GROUP_STATUS_ADMIN_FORMAT = '{} @{} {} {}\n'
-MSG_GROUP_STATUS_DEL_ADMIN = 'Разжаловать {} {}'
+MSG_GROUP_STATUS_DEL_ADMIN = 'Bust {} {}'
 
-MSG_ON = 'Включено'
-MSG_OFF = 'Выключено'
+MSG_ON = 'Enabled'
+MSG_OFF = 'Disabled'
 MSG_SYMBOL_ON = '✅'
 MSG_SYMBOL_OFF = '❌'
-MSG_BACK = '🔙Назад'
+MSG_BACK = '🔙Back'
 
-MSG_ORDER_TO_SQUADS = 'По орденам'
-MSG_ORDER_ACCEPT = 'Принято!'
-MSG_ORDER_PIN = '✅Пинить'
-MSG_ORDER_NO_PIN = '❌Не Пинить'
-MSG_ORDER_BUTTON = '✅С кнопкой'
-MSG_ORDER_NO_BUTTON = '❌Без кнопки'
+MSG_ORDER_TO_SQUADS = 'To groups'
+MSG_ORDER_ACCEPT = 'Accepted!'
+MSG_ORDER_PIN = '✅Pin'
+MSG_ORDER_NO_PIN = '❌No pin'
+MSG_ORDER_BUTTON = '✅Button'
+MSG_ORDER_NO_BUTTON = '❌No button'
 
-MSG_ORDER_CLEARED_BY_HEADER = 'Приказ выполнили:\n'
+MSG_ORDER_CLEARED_BY_HEADER = 'Order accepted by:\n'
 
-MSG_ORDER_SENT = 'Ваше сообщение отправлено'
+MSG_ORDER_SENT = 'Message is sent'
 
-MSG_ORDER_CLEARED = 'Я тебя записал'
-MSG_ORDER_CLEARED_ERROR = 'Хорош тыкать, уже всё'
+MSG_ORDER_CLEARED = 'Recorded, soldier!'
+MSG_ORDER_CLEARED_ERROR = 'Please stahp!!!!'
 
-MSG_ORDER_SEND_HEADER = 'Куда слать?'
+MSG_ORDER_SEND_HEADER = 'Where to send?'
 
-MSG_ORDER_GROUP_CONFIG_HEADER = 'Настройки группы {}'
-MSG_ORDER_GROUP_NEW = 'Напиши мне название новой группы орденов'
-MSG_ORDER_GROUP_LIST = 'Список групп'
-MSG_ORDER_GROUP_ADD = '➕Добавить группу'
-MSG_ORDER_GROUP_DEL = '🔥🚨Удалить группу🚨🔥'
+MSG_ORDER_GROUP_CONFIG_HEADER = 'Group settings: {}'
+MSG_ORDER_GROUP_NEW = 'Send me the name of a new group of squads'
+MSG_ORDER_GROUP_LIST = 'List groups'
+MSG_ORDER_GROUP_ADD = '➕Add group'
+MSG_ORDER_GROUP_DEL = '🔥🚨Delete group🚨🔥'
 
-MSG_NEWBIE = """Новый игрок в замке!\n
-Все на вербовку %username%!"""
+MSG_NEWBIE = """There is a new player in castle!\n
+Hurry up to recruit %username%!"""
 
-MSG_FLAG_CHOOSE_HEADER = 'Выбери флаг из списка или отправь мне любой другой приказ'
+MSG_FLAG_CHOOSE_HEADER = 'Choose a flag or send me the order'
 
-MSG_PROFILE_OLD = 'Твой профиль перестал сиять, освети его лунный луной...'
-MSG_PROFILE_SAVED = """Твой профиль вновь сияет лунным светом, {}!
-Не забывай освещать свой профиль хотя бы раз в день. 🌑"""
+MSG_PROFILE_OLD = 'Your profile smells rotten...'
+MSG_PROFILE_SAVED = """Your profile now smells like a really good potato, {}!
+Don't forget to water it regularly 🥔 """
 MSG_PROFILE_CASTLE_MISTAKE = """\
-Перед тобой во всей красе предстала луна.
-Ты бесстрашно вошёл в её свет в надежде добраться до таинственных новых земель.
-Однако долгие часы скитаний не привели тебя ни к чему.
-Повезло хоть, что выбраться смог! Без проводника здесь делать нечего..."""
+You saw a beautiful potato field not far away from you.
+It was just fence between you.
+You decided to walk around and find a way in.
+Two hours later you returned to the same place you started at..."""
 MSG_PROFILE_SHOW_FORMAT = """\
 👤 %first_name% %last_name% (%username%)
 %castle% %name%
 🏅 %prof% %level% уровня
-⚜️ Орден %squad%
+⚜️ Squad %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
 💰 %gold% | 🔋 %maxStamina%
 %pet%
-🕑 Последнее обновление %date%"""
+🕑 Last update %date%"""
 
 # main.py texts
 MSG_MAIN_INLINE_BATTLE = 'ГРАБЬНАСИЛУЙУБИВАЙ!'
