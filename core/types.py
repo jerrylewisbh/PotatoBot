@@ -332,7 +332,7 @@ class Auth(Base):
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
 
 
-def check_admin(update, session, adm_type, allowed_types):
+def check_admin(update, session, adm_type, allowed_types=()):
     allowed = False
     if adm_type == AdminType.NOT_ADMIN:
         allowed = True
