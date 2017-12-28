@@ -26,7 +26,8 @@ MSG_LIST_ADMINS_USER_FORMAT = '@{} {} {}\n'
 
 MSG_EMPTY = '[Empty]\n'
 
-MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato castle! Please send me your game profile from @chtwrsbot ("/hero" command).'
+MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato castle! ' \
+                    'Please send me your game profile from @chtwrsbot ("/hero" command).'
 MSG_ADMIN_WELCOME = 'Welcome, master!'
 
 MSG_HELP_GLOBAL_ADMIN = """Welcome commands:
@@ -115,7 +116,9 @@ MSG_ORDER_CLEARED_BY_HEADER = 'Order accepted by:\n'
 MSG_ORDER_SENT = 'Message is sent'
 
 MSG_ORDER_CLEARED = 'Recorded, soldier!'
-MSG_ORDER_CLEARED_ERROR = 'Please stop!!!!'
+
+MSG_ORDER_CLEARED_ERROR = 'Please stop it!!!!'
+
 
 MSG_ORDER_SEND_HEADER = 'Where to send?'
 
@@ -139,9 +142,9 @@ There was just fence between you.
 You decided to walk around and find a way in.
 Two hours later you returned to the same place you started at..."""
 MSG_PROFILE_SHOW_FORMAT = """\
-👤 %first_name% %last_name% (%username%)
+👤 %first_name% %last_name% (%username%) of
 %castle% %name%
-🏅 %prof% %level% level of
+🏅 %prof% %level% level
 ⚜️ Squad %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
 💰 %gold% | 🔋 %maxStamina%
@@ -152,7 +155,7 @@ MSG_PROFILE_SHOW_FORMAT = """\
 MSG_MAIN_INLINE_BATTLE = 'ROB AND KILL!'
 MSG_MAIN_READY_TO_BATTLE = 'The battle is in 10 minutes, 🛡🥔 HOLD DEFENSE HIDE GOLD AND WAIT FOR COMMANDS'
 # -----------------------
-MSG_BUILD_REPORT_EXISTS = 'This repot already exists!'
+MSG_BUILD_REPORT_EXISTS = 'This report already exists!'
 MSG_BUILD_REPORT_OK = 'Thanks for the help! This is your {} report.'
 MSG_BUILD_REPORT_FORWARDED = 'Do not send me any more reports from alternative accounts !!! '
 MSG_BUILD_REPORT_TOO_OLD = 'This report is very old, I can not accept it.'
@@ -200,7 +203,7 @@ MSG_WELCOME_SET = 'The welcome text is set.'
 MSG_WELCOME_ENABLED = 'Welcome enabled'
 MSG_WELCOME_DISABLED = 'Welcome disabled'
 
-MSG_PIN_ALL_ENABLED = 'Enyone can pin'
+MSG_PIN_ALL_ENABLED = 'Anyone can pin'
 MSG_PIN_ALL_DISABLED = 'Do not suffer, now only admins can pin😡'
 
 MSG_ORDER_CLEARED_BY_DUMMY = 'The requested is order is being processed \
@@ -208,34 +211,34 @@ because of high server load due to continuous updates'
 
 MSG_NO_SQUAD = 'squadless parasite'
 MSG_NO_PET = 'No pets'
-MSG_WANTS_TO_JOIN = '\n\nWants to join{}'
+MSG_WANTS_TO_JOIN = '\n\nWants to join {}'
 
 MSG_CLEARED = 'Done'
 
 MSG_SQUAD_LIST = 'List of your squads:'
 MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter this squad. \
 Exit the current squad or cancel the request to create a new one. '
-MSG_SQUAD_REQUEST = 'Here are the requets you have receive:'
+MSG_SQUAD_REQUEST = 'Here are the requests you have receive:'
 MSG_SQUAD_LEAVED = '{} left the squad {}, now it is useless, \
 and no one will help him any more.'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
-MSG_SQUAD_REQUESTED = 'You requestedto join for the squad {}. \
+MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. \
 To speed up the decision-making process, you can write to the heads of the squad: {}.'
 MSG_SQUAD_REQUEST_ACCEPTED = 'The request from {} is accepted.'
 MSG_SQUAD_REQUEST_DECLINED = '{} is useless and no one cares.'
 MSG_SQUAD_REQUEST_NEW = 'There are new applications for your squad'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'You were accepted into the squad'
-MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'You apllication was rejected'
-MSG_SQUAD_CLEAN = """Cleaning the squad  {}.
-Guess Who is going to have a rest today? """
+MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'You application was rejected'
+MSG_SQUAD_CLEAN = """Harvesting in the squad {}.
+Guess who is going to have a rest later today? """
 MSG_SQUAD_ADD = '{}, Do you want to join the squad?'
 MSG_SQUAD_ADD_IN_SQUAD = '{} is already in a squad (perhaps not yours)'
 MSG_SQUAD_ADD_ACCEPTED = '{} Accepted the offer'
 MSG_SQUAD_ADD_DECLINED = '{} is useless and no one cares'
 MSG_SQUAD_NONE = 'It looks like you are not in a squad'
 
-MSG_SQUAD_READY = '{} The warriors of <b>{}</b> are ready to batle!\n{}⚔ {}🛡'
+MSG_SQUAD_READY = '{} warriors of <b>{}</b> are ready to battle!\n{}⚔ {}🛡'
 MSG_FULL_TEXT_LINE = '<b>{}</b>: {}👥 {}⚔ {}🛡\n'
 MSG_FULL_TEXT_TOTAL = '\n<b>Total</b>: {}👥 {}⚔ {}🛡'
 
@@ -248,11 +251,11 @@ MSG_SQUAD_ABOUT = '⚜Squad⚜'
 MSG_TOP_FORMAT = '{}. {} ({}🌟) - {}{}\n'
 MSG_SQUAD_TOP_FORMAT = '{}. {} ({}👥) - {}{} ({}{}/👤)\n'
 MSG_TOP_DEFENCE = '🛡Top Defenders:\n'
-MSG_TOP_ATTACK = '⚔Тop atackers:\n'
+MSG_TOP_ATTACK = '⚔Тop attackers:\n'
 MSG_TOP_EXPERIENCE = '🔥Top XP:\n'
 MSG_TOP_GLOBAL_BUILDERS = '⚒Top Builders:\n'
 MSG_TOP_WEEK_BUILDERS = '👷Top builders of the week:\n'
-MSG_TOP_WEEK_WARRIORS = '⛳️Top in the batle:\n'
+MSG_TOP_WEEK_WARRIORS = '⛳️Top in the battle:\n'
 
 MSG_UPDATE_PROFILE = 'Send me a new profile (🏅 command "/hero"), or you might be kicked of .'
 MSG_SQUAD_DELETE_OUTDATED = 'You were kicked from the squad for not updating your profile for a long time.'
@@ -296,7 +299,7 @@ BTN_NO = '❌NO'
 BTN_LEAVE = 'Leave'
 
 BTN_ACCEPT = '✅Accept'
-BTN_DECLINE = '❌Declne'
+BTN_DECLINE = '❌Decline'
 
 BTN_WEEK = "Week"
 BTN_ALL_TIME = "All Time"
