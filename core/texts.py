@@ -1,310 +1,311 @@
 """ Строки """
 
-MSG_ORDER_STATISTIC = 'Статистика выполнения приказов за {} дней:\n'
+MSG_ORDER_STATISTIC = 'Statistics of following the orders for {} days:\n'
 MSG_ORDER_STATISTIC_OUT_FORMAT = '{}: {}/{}\n'
-MSG_USER_UNKNOWN = 'Не знаю таких'
+MSG_USER_UNKNOWN = 'No such user'
 
-MSG_NEW_GROUP_ADMIN = """Приветствуйте нового админа: @{}!
-Для списка команд бота используй /help"""
-MSG_NEW_GROUP_ADMIN_EXISTS = '@{} и без тебя тут правит!'
+MSG_NEW_GROUP_ADMIN = """Welcome our new administrator: @{}!
+Check the commands list with /help command"""
+MSG_NEW_GROUP_ADMIN_EXISTS = '@{} already has administrator rights'
 
-MSG_DEL_GROUP_ADMIN_NOT_EXIST = 'У @{} здесь нет власти!'
-MSG_DEL_GROUP_ADMIN = '@{}, тебя разжаловали.'
+MSG_DEL_GROUP_ADMIN_NOT_EXIST = '@{} never had any power here!'
+MSG_DEL_GROUP_ADMIN = '@{}, now you have no power here!'
 
-MSG_NEW_GLOBAL_ADMIN = 'Новый глобальный админ: @{}!'
-MSG_NEW_GLOBAL_ADMIN_EXISTS = '@{} и без тебя админ!'
+MSG_NEW_GLOBAL_ADMIN = 'New global administrator: @{}!'
+MSG_NEW_GLOBAL_ADMIN_EXISTS = '@{} already has global administrator rights'
 
-MSG_DEL_GLOBAL_ADMIN_NOT_EXIST = 'У @{} нет власти!'
-MSG_DEL_GLOBAL_ADMIN = '@{} разжалован.'
+MSG_DEL_GLOBAL_ADMIN_NOT_EXIST = '{} never had any global rights!'
+MSG_DEL_GLOBAL_ADMIN = '@{} now you have no global rights'
 
-MSG_NEW_SUPER_ADMIN = 'Новый суперадмин: @{}!'
-MSG_NEW_SUPER_ADMIN_EXISTS = '@{} уже суперадмин!'
+MSG_NEW_SUPER_ADMIN = 'New super administrator: @{}!'
+MSG_NEW_SUPER_ADMIN_EXISTS = '@{} is already a super administrator!'
 
-MSG_LIST_ADMINS_HEADER = 'Список здешних админов:\n'
+MSG_LIST_ADMINS_HEADER = 'Administrators list:\n'
 MSG_LIST_ADMINS_FORMAT = '{} @{} {} {}\n'
 MSG_LIST_ADMINS_USER_FORMAT = '@{} {} {}\n'
 
-MSG_EMPTY = '[Пусто]\n'
+MSG_EMPTY = '[Empty]\n'
 
-MSG_START_WELCOME = 'Привет! Я - бот 🌑Замка Лунного Света. Перешли мне свой игровой профиль из @chtwrsbot (🏅 команда "/hero").'
-MSG_ADMIN_WELCOME = 'Да здравствует админ!'
+MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato castle! ' \
+                    'Please send me your game profile from @chtwrsbot ("/hero" command).'
+MSG_ADMIN_WELCOME = 'Welcome, master!'
 
-MSG_HELP_GLOBAL_ADMIN = """Команды приветствия:
-/enable_welcome — включить приветствие.
-/disable_welcome — выключить приветствие.
-/set_welcome <текст> — установить текст приветствия. \
-Может содержать %username% — будет заменено на @username, \
-если не установлено на Имя Фамилия, %first_name% — на имя, 
-%last_name% — на фамилию, %id% — на id.
-/show_welcome — показать текущий текст приветствия для данного чата.
+MSG_HELP_GLOBAL_ADMIN = """Welcome commands:
+/enable_welcome — enable welcome message.
+/disable_welcome — disable welcome message.
+/set_welcome <text> — set welcome message. \
+Can contain %username% — will be shown as @username, \
+if not set to First and Last name, or ID, 
+using %last_name%, %first_name%, %id%.
+/show_welcome — show welcome message.
 
-Команды триггеров:
-присылаем фаил, ответом на него присылаем команду /set_trigger <сообщение> — \
-установить сообщение, которое бот будет отправлять по триггеру. /установить тригер
-/add_trigger <триггер>::<сообщение> — \
-добавить сообщение, которое бот будет отправлять по триггеру. \
-Старое сообщение не заменяется./добавить триггер
+Trigger commands:
+Reply to a message or file with /set_trigger <trigger text> — \
+set message to reply with on a trigger.
+/add_trigger <trigger text>::<reply text> — \
+add message to reply with on a trigger. \
+Old messages can't be replaced.
 
-/del_trigger <триггер> — удалить триггер.
-/list_triggers — показать все триггеры.
+/del_trigger <trigger> — delete trigger.
+/list_triggers — show all triggers.
 
-Команды суперадмина:
-/add_admin <пользователь> — добавить админа для текущего чата.
-/del_admin <пользователь> — забрать привилегии у админа текущего чата.
-/list_admins — показать список админов в чате.
-/enable_trigger — разрешить триггерить всем в группе.
-/disable_trigger — запретить триггерить всем в группе.
+Super administrator commands:
+/add_admin <user> — add administrator to current chat.
+/del_admin <user> — delete administrator from current chat.
+/list_admins — show list of current chat administrators.
+/enable_trigger — allow everyone to call trigger.
+/disable_trigger — forbid everyone to call trigger.
 """
 
-MSG_HELP_GROUP_ADMIN = """Команды приветствия:
-/enable_welcome — включить приветствие.
-/disable_welcome — выключить приветствие.
-/set_welcome <текст> — установить текст приветствия. \
-Может содержать %username% — будет заменено на @username, \
-если не установлено на Имя Фамилия, %first_name% — на имя, 
-%last_name% — на фамилию, %id% — на id.
-/show_welcome — показать текущий текст приветствия для данного чата.
+MSG_HELP_GROUP_ADMIN = """Welcome commands:
+/enable_welcome — enable welcome message.
+/disable_welcome — disable welcome message.
+/set_welcome <text> — set welcome message. \
+Can contain %username% — will be shown as @username, \
+if not set to First and Last name, or ID, 
+using %last_name%, %first_name%, %id%.
+/show_welcome — show welcome message.
 
-Команды триггеров:
-/add_trigger <триггер>::<сообщение> — \
-добавить сообщение, которое бот будет отправлять по триггеру. \
-Старое сообщение не заменяется.
-/list_triggers — показать список триггеров.
-/enable_trigger — разрешить триггерить всем в группе.
-/disable_trigger — запретить триггерить всем в группе.
+Trigger Commands:
+/add_trigger <trigger text>::<reply text> — \
+add message to reply with on a trigger. \
+Old messages can't be replaced.
+/list_triggers — show all triggers.
+/enable_trigger — allow everyone to call trigger.
+/disable_trigger — forbid everyone to call trigger.
 """
 
-MSG_HELP_USER = "/list_triggers — показать список триггеров."
+MSG_HELP_USER = "/list_triggers — show all triggers."
 
-MSG_PING = 'Иди освежись, @{}!'
+MSG_PING = 'Go and dig some potatoes, @{}!'
 
-MSG_STOCK_COMPARE_HARVESTED = '📦<b>Награблено:</b>\n'
-MSG_STOCK_COMPARE_LOST = '\n📦<b>Потеряно:</b>\n'
+MSG_STOCK_COMPARE_HARVESTED = '📦<b>You got:</b>\n'
+MSG_STOCK_COMPARE_LOST = '\n📦<b>You lost:</b>\n'
 MSG_STOCK_COMPARE_FORMAT = '{} ({})\n'
-MSG_STOCK_COMPARE_WAIT = 'Жду с чем сравнивать...'
+MSG_STOCK_COMPARE_WAIT = 'Waiting for data to compare...'
 
-MSG_PERSONAL_SITE_LINK = 'Твоя персональная ссылка на сайт: {}'
+MSG_PERSONAL_SITE_LINK = 'Your personal link: {}'
 
-MSG_GROUP_STATUS_CHOOSE_CHAT = 'Выбери чат'
-MSG_GROUP_STATUS = """Группа: {}
+MSG_GROUP_STATUS_CHOOSE_CHAT = 'Choose chat'
+MSG_GROUP_STATUS = """Group: {}
 
-Админы:
+Admins:
 {}
-Приветствие: {}
-Триггерят все: {}
-Тернии: {}"""
+Welcome: {}
+Trigger allowed: {}
+Thorns: {}"""
 
 MSG_GROUP_STATUS_ADMIN_FORMAT = '{} @{} {} {}\n'
-MSG_GROUP_STATUS_DEL_ADMIN = 'Разжаловать {} {}'
+MSG_GROUP_STATUS_DEL_ADMIN = 'Bust {} {}'
 
-MSG_ON = 'Включено'
-MSG_OFF = 'Выключено'
+MSG_ON = 'Enabled'
+MSG_OFF = 'Disabled'
 MSG_SYMBOL_ON = '✅'
 MSG_SYMBOL_OFF = '❌'
-MSG_BACK = '🔙Назад'
+MSG_BACK = '🔙Back'
 
-MSG_ORDER_TO_SQUADS = 'По орденам'
-MSG_ORDER_ACCEPT = 'Принято!'
-MSG_ORDER_PIN = '✅Пинить'
-MSG_ORDER_NO_PIN = '❌Не Пинить'
-MSG_ORDER_BUTTON = '✅С кнопкой'
-MSG_ORDER_NO_BUTTON = '❌Без кнопки'
+MSG_ORDER_TO_SQUADS = 'To groups'
+MSG_ORDER_ACCEPT = 'Accepted!'
+MSG_ORDER_PIN = '✅Pin'
+MSG_ORDER_NO_PIN = '❌No pin'
+MSG_ORDER_BUTTON = '✅Button'
+MSG_ORDER_NO_BUTTON = '❌No button'
 
-MSG_ORDER_CLEARED_BY_HEADER = 'Приказ выполнили:\n'
+MSG_ORDER_CLEARED_BY_HEADER = 'Order accepted by:\n'
 
-MSG_ORDER_SENT = 'Ваше сообщение отправлено'
+MSG_ORDER_SENT = 'Message is sent'
 
-MSG_ORDER_CLEARED = 'Я тебя записал'
-MSG_ORDER_CLEARED_ERROR = 'Хорош тыкать, уже всё'
+MSG_ORDER_CLEARED = 'Recorded, soldier!'
+MSG_ORDER_CLEARED_ERROR = 'Please stop it!!!!'
 
-MSG_ORDER_SEND_HEADER = 'Куда слать?'
+MSG_ORDER_SEND_HEADER = 'Where to send?'
 
-MSG_ORDER_GROUP_CONFIG_HEADER = 'Настройки группы {}'
-MSG_ORDER_GROUP_NEW = 'Напиши мне название новой группы орденов'
-MSG_ORDER_GROUP_LIST = 'Список групп'
-MSG_ORDER_GROUP_ADD = '➕Добавить группу'
-MSG_ORDER_GROUP_DEL = '🔥🚨Удалить группу🚨🔥'
+MSG_ORDER_GROUP_CONFIG_HEADER = 'Group settings: {}'
+MSG_ORDER_GROUP_NEW = 'Send me the name of a new group of squads'
+MSG_ORDER_GROUP_LIST = 'List groups'
+MSG_ORDER_GROUP_ADD = '➕Add group'
+MSG_ORDER_GROUP_DEL = '🔥🚨Delete group🚨🔥'
 
-MSG_NEWBIE = """Новый игрок в замке!\n
-Все на вербовку %username%!"""
+MSG_NEWBIE = """There is a new player in castle!\n
+Hurry up to recruit %username%!"""
 
-MSG_FLAG_CHOOSE_HEADER = 'Выбери флаг из списка или отправь мне любой другой приказ'
+MSG_FLAG_CHOOSE_HEADER = 'Choose a flag or send me the order'
 
-MSG_PROFILE_OLD = 'Твой профиль перестал сиять, освети его лунный луной...'
-MSG_PROFILE_SAVED = """Твой профиль вновь сияет лунным светом, {}!
-Не забывай освещать свой профиль хотя бы раз в день. 🌑"""
+MSG_PROFILE_OLD = 'Your profile smells rotten...'
+MSG_PROFILE_SAVED = """Your profile now smells like a really good potato, {}!
+Don't forget to water it regularly 🥔 """
 MSG_PROFILE_CASTLE_MISTAKE = """\
-Перед тобой во всей красе предстала луна.
-Ты бесстрашно вошёл в её свет в надежде добраться до таинственных новых земель.
-Однако долгие часы скитаний не привели тебя ни к чему.
-Повезло хоть, что выбраться смог! Без проводника здесь делать нечего..."""
+You saw a beautiful potato field not far away from you.
+There was just fence between you.
+You decided to walk around and find a way in.
+Two hours later you returned to the same place you started at..."""
 MSG_PROFILE_SHOW_FORMAT = """\
 👤 %first_name% %last_name% (%username%)
 %castle% %name%
-🏅 %prof% %level% уровня
-⚜️ Орден %squad%
+🏅 %prof% %level% level of
+⚜️ Squad %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
 💰 %gold% | 🔋 %maxStamina%
 %pet%
-🕑 Последнее обновление %date%"""
+🕑 Last update %date%"""
 
 # main.py texts
-MSG_MAIN_INLINE_BATTLE = 'ГРАБЬНАСИЛУЙУБИВАЙ!'
-MSG_MAIN_READY_TO_BATTLE = 'Битва через 10 минут, 🛡🌑 обязательно встаньте в деф, слейте всё золото и ждите приказ'
+MSG_MAIN_INLINE_BATTLE = 'ROB AND KILL!'
+MSG_MAIN_READY_TO_BATTLE = 'The battle is in 10 minutes, 🛡🥔 HOLD DEFENSE HIDE GOLD AND WAIT FOR COMMANDS'
 # -----------------------
-MSG_BUILD_REPORT_EXISTS = 'Ты уже кидал этот репорт!'
-MSG_BUILD_REPORT_OK = 'Спасибо за помощь на стройке! Это твой {} репорт.'
-MSG_BUILD_REPORT_FORWARDED = 'Больше не присылай мне репорты с твинков!!!'
-MSG_BUILD_REPORT_TOO_OLD = 'Этот репорт очень стар, я не могу его принять.'
+MSG_BUILD_REPORT_EXISTS = 'This report already exists!'
+MSG_BUILD_REPORT_OK = 'Thanks for the help! This is your {} report.'
+MSG_BUILD_REPORT_FORWARDED = 'Do not send me any more reports from alternative accounts !!! '
+MSG_BUILD_REPORT_TOO_OLD = 'This report is very old, I can not accept it.'
 
-MSG_REPORT_OLD = 'Твой репорт уже попахивает, в следующий раз постарайся прислать его в течении минуты после получения.'
-MSG_REPORT_EXISTS = 'Репорт за эту битву уже внесён.'
-MSG_REPORT_OK = 'Спасибо. Не забывай кидать репорты каждую битву.'
+MSG_REPORT_OLD = 'Your report stinks like rotten potato, next time try to send it within a minute after receiving."'
+MSG_REPORT_EXISTS = 'The report for this battle has already been submitted.'
+MSG_REPORT_OK = 'Thank you. Do not forget to forward reports on every battle.'
 
-MSG_PROFILE_NOT_FOUND = 'В лунных записях ещё нет данных об этом герое'
-MSG_SQUAD_REQUEST_EMPTY = 'На данный момент к вам никто не хочет.'
+MSG_PROFILE_NOT_FOUND = 'In the potato plantation records there is still no data about this hero'
+MSG_SQUAD_REQUEST_EMPTY = 'At the moment no one wants to join you.'
 
-MSG_NO_PROFILE_IN_BOT = 'Сначала дай мне профиль!'
-MSG_SQUAD_RECRUITING_ENABLED = 'Набор открыт!'
-MSG_SQUAD_RECRUITING_DISABLED = 'Набор закрыт!'
-MSG_SQUAD_NO_PROFILE = 'Сначала пусть даст профиль!'
-MSG_SQUAD_GREEN_INLINE_BUTTON = '✅Да'
-MSG_SQUAD_RED_INLINE_BUTTON = '❌Нет'
-MSG_SQUAD_NEW = """Теперь здесь будет обитать орден {}!
-Не забудьте задать ссылку для приглашения новых участников."""
-MSG_SQUAD_LINK_SAVED = """Ссылка приглашений сохранена!
-Новые участники теперь не пройдут мимо!"""
-MSG_SQUAD_RENAMED = 'Теперь этот орден будет называться {}!'
-MSG_SQUAD_DELETE = 'Орден распущен'
-MSG_SQUAD_THORNS_ENABLED = 'Непроходимое лунная тень вокруг'
-MSG_SQUAD_THORNS_DISABLED = 'Тень луны исчезла, \
-теперь каждый может видеть происходящее'
-MSG_SQUAD_ALREADY_DELETED = 'Этот пользователь уже изгнан из ордена, кнопка больше не работает =('
-MSG_SQUAD_LEVEL_TOO_LOW = 'В отряды принимают воинов {} уровня и выше. Приходи, когда подкачаешься!'
+MSG_NO_PROFILE_IN_BOT = 'First give me a profile!'
+MSG_SQUAD_RECRUITING_ENABLED = 'Squad recruiting is enabled!'
+MSG_SQUAD_RECRUITING_DISABLED = 'Squad recruiting is disabled!'
+MSG_SQUAD_NO_PROFILE = 'First let him give the profile!'
+MSG_SQUAD_GREEN_INLINE_BUTTON = '✅Yes'
+MSG_SQUAD_RED_INLINE_BUTTON = '❌No'
+MSG_SQUAD_NEW = """Now the orders will be here {}!
+Do not forget to set a link to invite new members."""
+MSG_SQUAD_LINK_SAVED = """Invitation link saved!
+New members will not pass by now!"""
+MSG_SQUAD_RENAMED = 'Now this squad will be called{}!'
+MSG_SQUAD_DELETE = 'The squad is dissolved'
+MSG_SQUAD_THORNS_ENABLED = 'The straw man in around'
+MSG_SQUAD_THORNS_DISABLED = 'The straw man disappeared, \
+now everyone can see what is happening'
+MSG_SQUAD_ALREADY_DELETED = 'This user is already expelled from the squad, this button no longer works=('
+MSG_SQUAD_LEVEL_TOO_LOW = 'This squad takes soldiers at level {} and above. Come back when you get pumped!'
 
-MSG_TRIGGER_NEW = 'Триггер на фразу "{}" установлен.'
-MSG_TRIGGER_GLOBAL = '<b>Глобальные:</b>\n'
-MSG_TRIGGER_LOCAL = '\n<b>Локальные:</b>\n'
-MSG_TRIGGER_NEW_ERROR = 'Какие-то у тебя несвежие мысли, попробуй ещё раз.'
-MSG_TRIGGER_EXISTS = 'Триггер "{}" уже существует, выбери другой.'
-MSG_TRIGGER_ALL_ENABLED = 'Теперь триггерить могут все.'
-MSG_TRIGGER_ALL_DISABLED = 'Теперь триггерить могут только админы.'
-MSG_TRIGGER_DEL = 'Триггер на фразу "{}" удалён.'
-MSG_TRIGGER_DEL_ERROR = 'Где ты такой триггер видел? 0_о'
-MSG_TRIGGER_LIST_HEADER = 'Список текущих триггеров:\n'
+MSG_TRIGGER_NEW = 'The trigger for the phrase "{}" is set.'
+MSG_TRIGGER_GLOBAL = '<b>Global:</b>\n'
+MSG_TRIGGER_LOCAL = '\n<b>Local:</b>\n'
+MSG_TRIGGER_NEW_ERROR = 'You thoughts are not clear, try one more time'
+MSG_TRIGGER_EXISTS = 'Trigger "{}" already exists, select another one.'
+MSG_TRIGGER_ALL_ENABLED = 'now everything can be triggered.'
+MSG_TRIGGER_ALL_DISABLED = 'Now only admins can trigger.'
+MSG_TRIGGER_DEL = 'The trigger for "{}" has been deleted.'
+MSG_TRIGGER_DEL_ERROR = 'Where did you see such a trigger? 0_o'
+MSG_TRIGGER_LIST_HEADER = 'List of current triggers: \n'
 
-MSG_THORNS = 'Этот дурень {} забыл надеть скафандр, пусть луна ему будет пылью'
+MSG_THORNS = 'This fool {} does not look like a potato, let the straw man kick his ass'
 
-MSG_WELCOME_DEFAULT = 'Привет, %username%!'
-MSG_WELCOME_SET = 'Текст приветствия установлен.'
-MSG_WELCOME_ENABLED = 'Приветствие включено.'
-MSG_WELCOME_DISABLED = 'Приветствие выключено.'
+MSG_WELCOME_DEFAULT = 'Hi, %username%!'
+MSG_WELCOME_SET = 'The welcome text is set.'
+MSG_WELCOME_ENABLED = 'Welcome enabled'
+MSG_WELCOME_DISABLED = 'Welcome disabled'
 
-MSG_PIN_ALL_ENABLED = 'Пусть пинят...'
-MSG_PIN_ALL_DISABLED = 'Совсем уже распустились, вот мучайтесь теперь 😡'
+MSG_PIN_ALL_ENABLED = 'Anyone can pin'
+MSG_PIN_ALL_DISABLED = 'Do not suffer, now only admins can pin😡'
 
-MSG_ORDER_CLEARED_BY_DUMMY = 'Функция перерабатывается в связи с высокой \
-нагрузкой от постоянного обновления'
+MSG_ORDER_CLEARED_BY_DUMMY = 'The requested is order is being processed \
+because of high server load due to continuous updates'
 
-MSG_NO_SQUAD = 'Безотрядный тунеядец'
-MSG_NO_PET = 'Животины нет'
-MSG_WANTS_TO_JOIN = '\n\nХочет вступить в орден {}'
+MSG_NO_SQUAD = 'squadless parasite'
+MSG_NO_PET = 'No pets'
+MSG_WANTS_TO_JOIN = '\n\nWants to join{}'
 
-MSG_CLEARED = 'Выполнено'
+MSG_CLEARED = 'Done'
 
-MSG_SQUAD_LIST = 'Список ваших орденов:'
-MSG_SQUAD_REQUEST_EXISTS = 'Вы уже состоите в ордене или подали запрос. \
-Выйдите из текущего ордена или отмените запрос, чтобы создать новый.'
-MSG_SQUAD_REQUEST = 'Вот ордены, в которые тебя могут принять:'
-MSG_SQUAD_LEAVED = '{} покинул орден {}, теперь он бесполезен, \
-и никто ему больше не поможет.'
-MSG_SQUAD_LEAVE_ASK = 'Ты уверен, что хочешь покинуть отряд?'
-MSG_SQUAD_LEAVE_DECLINE = 'Передумал? Ну и славно, пусть это останется в секрете!'
-MSG_SQUAD_REQUESTED = 'Ты попросился в орден {}. \
-Чтобы ускорить процесс принятия решения, можешь написать главам ордена: {}.'
-MSG_SQUAD_REQUEST_ACCEPTED = 'Заявка от {} принята.'
-MSG_SQUAD_REQUEST_DECLINED = '{} бесполезен и никто ему не поможет.'
-MSG_SQUAD_REQUEST_NEW = 'К вам в орден есть новые заявки.'
-MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'Вас приняли в орден.'
-MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'Ваша заявка в орден отклонена.'
-MSG_SQUAD_CLEAN = """Чистка ордена {}.
-Кого сегодня отправим на покой?"""
-MSG_SQUAD_ADD = '{}, вас хотят в орден. А вы хотите?'
-MSG_SQUAD_ADD_IN_SQUAD = '{} уже в ордене (возможно не в вашем).'
-MSG_SQUAD_ADD_ACCEPTED = '{} принял предложение.'
-MSG_SQUAD_ADD_DECLINED = '{} бесполезен и никто ему не поможет.'
-MSG_SQUAD_NONE = 'Похоже ты не в ордене'
+MSG_SQUAD_LIST = 'List of your squads:'
+MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter this squad. \
+Exit the current squad or cancel the request to create a new one. '
+MSG_SQUAD_REQUEST = 'Here are the requests you have receive:'
+MSG_SQUAD_LEAVED = '{} left the squad {}, now it is useless, \
+and no one will help him any more.'
+MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
+MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
+MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. \
+To speed up the decision-making process, you can write to the heads of the squad: {}.'
+MSG_SQUAD_REQUEST_ACCEPTED = 'The request from {} is accepted.'
+MSG_SQUAD_REQUEST_DECLINED = '{} is useless and no one cares.'
+MSG_SQUAD_REQUEST_NEW = 'There are new applications for your squad'
+MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'You were accepted into the squad'
+MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'You application was rejected'
+MSG_SQUAD_CLEAN = """Cleaning the squad  {}.
+Guess Who is going to have a rest today? """
+MSG_SQUAD_ADD = '{}, Do you want to join the squad?'
+MSG_SQUAD_ADD_IN_SQUAD = '{} is already in a squad (perhaps not yours)'
+MSG_SQUAD_ADD_ACCEPTED = '{} Accepted the offer'
+MSG_SQUAD_ADD_DECLINED = '{} is useless and no one cares'
+MSG_SQUAD_NONE = 'It looks like you are not in a squad'
 
-MSG_SQUAD_READY = '{} бойцов ордена <b>{}</b> к битве готовы!\n{}⚔ {}🛡'
+MSG_SQUAD_READY = '{} warriors of <b>{}</b> are ready to battle!\n{}⚔ {}🛡'
 MSG_FULL_TEXT_LINE = '<b>{}</b>: {}👥 {}⚔ {}🛡\n'
-MSG_FULL_TEXT_TOTAL = '\n<b>Всего</b>: {}👥 {}⚔ {}🛡'
+MSG_FULL_TEXT_TOTAL = '\n<b>Total</b>: {}👥 {}⚔ {}🛡'
 
-MSG_IN_DEV = 'Функция находится в разработке =('
+MSG_IN_DEV = 'Under construction=('
 
-MSG_TOP_ABOUT = '🏆 Топы 🏆'
-MSG_STATISTICS_ABOUT = '📈Статистика📈'
-MSG_SQUAD_ABOUT = '⚜орден⚜'
+MSG_TOP_ABOUT = '🏆 Tops 🏆'
+MSG_STATISTICS_ABOUT = '📈Statistics📈'
+MSG_SQUAD_ABOUT = '⚜Squad⚜'
 
 MSG_TOP_FORMAT = '{}. {} ({}🌟) - {}{}\n'
 MSG_SQUAD_TOP_FORMAT = '{}. {} ({}👥) - {}{} ({}{}/👤)\n'
-MSG_TOP_DEFENCE = '🛡Топ дэферы:\n'
-MSG_TOP_ATTACK = '⚔Топ атакеры:\n'
-MSG_TOP_EXPERIENCE = '🔥Топ качки:\n'
-MSG_TOP_GLOBAL_BUILDERS = '⚒Топ строители:\n'
-MSG_TOP_WEEK_BUILDERS = '👷Топ строители недели:\n'
-MSG_TOP_WEEK_WARRIORS = '⛳️Топ по участию в битвах:\n'
+MSG_TOP_DEFENCE = '🛡Top Defenders:\n'
+MSG_TOP_ATTACK = '⚔Тop attackers:\n'
+MSG_TOP_EXPERIENCE = '🔥Top XP:\n'
+MSG_TOP_GLOBAL_BUILDERS = '⚒Top Builders:\n'
+MSG_TOP_WEEK_BUILDERS = '👷Top builders of the week:\n'
+MSG_TOP_WEEK_WARRIORS = '⛳️Top in the battle:\n'
 
-MSG_UPDATE_PROFILE = 'Пришли свежий игровой профиль (🏅 команда "/hero"), пока я не выгнал тебя из ордена.'
-MSG_SQUAD_DELETE_OUTDATED = 'Ты был изгнан из ордена за то, что давно не обновлял свой профиль.'
-MSG_SQUAD_DELETE_OUTDATED_EXT = '{} (@{}) был изгнан из ордена {} за то, что давно не обновлял свой профиль.'
+MSG_UPDATE_PROFILE = 'Send me a new profile (🏅 command "/hero"), or you might be kicked of .'
+MSG_SQUAD_DELETE_OUTDATED = 'You were kicked from the squad for not updating your profile for a long time.'
+MSG_SQUAD_DELETE_OUTDATED_EXT = '{} (@{}) was kicked from {} for not updating profile for a long time.'
 
-MSG_ALREADY_BANNED = 'Пользователь уже забанен. Причина: {2}.'
-MSG_USER_BANNED = 'Член нашего ордена {} был замечен в нарушении правил и был с позором изгнан из замка!'
-MSG_YOU_BANNED = 'Вас изгнали по причине: {}'
-MSG_BAN_COMPLETE = 'Изгнание завершено.'
-MSG_USER_NOT_BANNED = 'Мы не изгоняли этого господина.'
-MSG_USER_UNBANNED = '{} больше не изгнан.'
-MSG_YOU_UNBANNED = 'Мы снова можем пообщаться 🌚'
+MSG_ALREADY_BANNED = 'This user is already banned. The reason is: {2}.'
+MSG_USER_BANNED = 'A member of {} violated the rules and was kicked!'
+MSG_YOU_BANNED = 'You were banned because: {}'
+MSG_BAN_COMPLETE = 'Warrior successfully banned'
+MSG_USER_NOT_BANNED = 'This warrior is not banned'
+MSG_USER_UNBANNED = '{} is no longer banned.'
+MSG_YOU_UNBANNED = 'We can talk again 🌚'
 
-PLOT_X_LABEL = 'Дата'
-PLOT_Y_LABEL = 'Опыт'
+PLOT_X_LABEL = 'Date'
+PLOT_Y_LABEL = 'XP'
 
-MSG_DAY_SINGLE = 'день'
-MSG_DAY_PLURAL1 = 'дня'
-MSG_DAY_PLURAL2 = 'дней'
+MSG_DAY_SINGLE = 'Day'
+MSG_DAY_PLURAL1 = 'Day'
+MSG_DAY_PLURAL2 = 'Days'
 MSG_DATE_FORMAT = '{} {}'
-MSG_PLOT_DESCRIPTION = 'В среднем {} опыта в день. До следующего уровня осталось {} опыта и {}'
+MSG_PLOT_DESCRIPTION = 'On average {} of experience per day. For next level, you need {} experience and {}'
 
-MSG_SQUAD_CALL_HEADER = 'Все сюда!\n'
-MSG_REPORT_SUMMARY_HEADER = 'Репорты отряда {} за битву {}\n' \
-                            'Репорты: {} из {}\n' \
-                            '<b>Общие</b>\n' \
-                            'Атака: ⚔{}\n' \
-                            'Защита: 🛡{}\n' \
-                            'Профит: 🔥{} 💰{} 📦{}\n\n' \
-                            '<b>Личные</b>\n'
+MSG_SQUAD_CALL_HEADER = 'Everybody come here!\n'
+MSG_REPORT_SUMMARY_HEADER = 'Reports of the squad {} for the batle {}\n' \
+                            'Reports: {} from {}\n' \
+                            '<b>General</b>\n' \
+                            'Attack: ⚔{}\n' \
+                            'Defense: 🛡{}\n' \
+                            'Profit: 🔥{} 💰{} 📦{}\n\n' \
+                            '<b>Personal</b>\n'
 MSG_REPORT_SUMMARY_ROW = '<b>{}</b> (@{})\n⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'
 MSG_REPORT_SUMMARY_ROW_EMPTY = '<b>{}</b> (@{}) ❗\n'
 
-BTN_HERO = '🏅Герой'
-BTN_STOCK = '📦Склад'
-BTN_EQUIPMENT = '🎽Экипировка'
+BTN_HERO = '🏅Hero'
+BTN_STOCK = '📦Stock'
+BTN_EQUIPMENT = '🎽Equipment'
 
-BTN_YES = '✅Да'
-BTN_NO = '❌Нет'
+BTN_YES = '✅YES'
+BTN_NO = '❌NO'
 
-BTN_LEAVE = 'Выйти'
+BTN_LEAVE = 'Leave'
 
-BTN_ACCEPT = '✅Принять'
-BTN_DECLINE = '❌Отклонить'
+BTN_ACCEPT = '✅Accept'
+BTN_DECLINE = '❌Decline'
 
-BTN_WEEK = "Неделя"
-BTN_ALL_TIME = "Всё время"
-BTN_SQUAD_WEEK = "Отряды за неделю"
-BTN_SQUAD_ALL_TIME = "Отряды за всё время"
+BTN_WEEK = "Week"
+BTN_ALL_TIME = "All Time"
+BTN_SQUAD_WEEK = "Squads per Week"
+BTN_SQUAD_ALL_TIME = "Squads of all time"
 
-MSG_LAST_UPDATE = '🕑 Последнее обновление'
-MSG_GO_AWAY = 'Пшёл вон!'
-MSG_TOP_GENERATING = 'Генерируем топ'
+MSG_LAST_UPDATE = '🕑 Last Update'
+MSG_GO_AWAY = 'Go Away!'
+MSG_TOP_GENERATING = 'Generating Top'
 
-MSG_NO_REASON = 'Причина не указана'
+MSG_NO_REASON = 'Reason not specified'
