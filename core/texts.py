@@ -229,7 +229,7 @@ MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'You were accepted into the squad'
 MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'You apllication was rejected'
 MSG_SQUAD_CLEAN = """Cleaning the squad  {}.
 Guess Who is going to have a rest today? """
-MSG_SQUAD_ADD = '{}, вас хотят в орден. А вы хотите?'
+MSG_SQUAD_ADD = '{}, Do you want to join the squad?'
 MSG_SQUAD_ADD_IN_SQUAD = '{} is already in a squad (perhaps not yours)'
 MSG_SQUAD_ADD_ACCEPTED = '{} Accepted the offer'
 MSG_SQUAD_ADD_DECLINED = '{} is useless and no one cares'
