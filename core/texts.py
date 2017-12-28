@@ -258,53 +258,53 @@ MSG_UPDATE_PROFILE = 'Пришли свежий игровой профиль (�
 MSG_SQUAD_DELETE_OUTDATED = 'Ты был изгнан из ордена за то, что давно не обновлял свой профиль.'
 MSG_SQUAD_DELETE_OUTDATED_EXT = '{} (@{}) был изгнан из ордена {} за то, что давно не обновлял свой профиль.'
 
-MSG_ALREADY_BANNED = 'Пользователь уже забанен. Причина: {2}.'
+MSG_ALREADY_BANNED = 'This user is already banned. The reason is: {2}.'
 MSG_USER_BANNED = 'Член нашего ордена {} был замечен в нарушении правил и был с позором изгнан из замка!'
-MSG_YOU_BANNED = 'Вас изгнали по причине: {}'
-MSG_BAN_COMPLETE = 'Изгнание завершено.'
-MSG_USER_NOT_BANNED = 'Мы не изгоняли этого господина.'
-MSG_USER_UNBANNED = '{} больше не изгнан.'
-MSG_YOU_UNBANNED = 'Мы снова можем пообщаться 🌚'
+MSG_YOU_BANNED = 'You were banned because: {}'
+MSG_BAN_COMPLETE = 'Warrior successfully banned'
+MSG_USER_NOT_BANNED = 'This warrior is not banned'
+MSG_USER_UNBANNED = '{} is no longer banned.'
+MSG_YOU_UNBANNED = 'We can talk again 🌚'
 
-PLOT_X_LABEL = 'Дата'
-PLOT_Y_LABEL = 'Опыт'
+PLOT_X_LABEL = 'Date'
+PLOT_Y_LABEL = 'XP'
 
-MSG_DAY_SINGLE = 'день'
-MSG_DAY_PLURAL1 = 'дня'
-MSG_DAY_PLURAL2 = 'дней'
+MSG_DAY_SINGLE = 'Day'
+MSG_DAY_PLURAL1 = 'Day'
+MSG_DAY_PLURAL2 = 'Days'
 MSG_DATE_FORMAT = '{} {}'
-MSG_PLOT_DESCRIPTION = 'В среднем {} опыта в день. До следующего уровня осталось {} опыта и {}'
+MSG_PLOT_DESCRIPTION = 'On average {} of experience per day. For next level, you need {} experience and {}'
 
-MSG_SQUAD_CALL_HEADER = 'Все сюда!\n'
-MSG_REPORT_SUMMARY_HEADER = 'Репорты отряда {} за битву {}\n' \
-                            'Репорты: {} из {}\n' \
-                            '<b>Общие</b>\n' \
-                            'Атака: ⚔{}\n' \
-                            'Защита: 🛡{}\n' \
-                            'Профит: 🔥{} 💰{} 📦{}\n\n' \
-                            '<b>Личные</b>\n'
+MSG_SQUAD_CALL_HEADER = 'Everybody come here!\n'
+MSG_REPORT_SUMMARY_HEADER = 'Reports of the squad {} for the batle {}\n' \
+                            'Reports: {} from {}\n' \
+                            '<b>General</b>\n' \
+                            'Attack: ⚔{}\n' \
+                            'Defense: 🛡{}\n' \
+                            'Profit: 🔥{} 💰{} 📦{}\n\n' \
+                            '<b>Personal</b>\n'
 MSG_REPORT_SUMMARY_ROW = '<b>{}</b> (@{})\n⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'
 MSG_REPORT_SUMMARY_ROW_EMPTY = '<b>{}</b> (@{}) ❗\n'
 
-BTN_HERO = '🏅Герой'
-BTN_STOCK = '📦Склад'
-BTN_EQUIPMENT = '🎽Экипировка'
+BTN_HERO = '🏅Hero'
+BTN_STOCK = '📦Stock'
+BTN_EQUIPMENT = '🎽Equipment'
 
-BTN_YES = '✅Да'
-BTN_NO = '❌Нет'
+BTN_YES = '✅YES'
+BTN_NO = '❌NO'
 
-BTN_LEAVE = 'Выйти'
+BTN_LEAVE = 'Leave'
 
-BTN_ACCEPT = '✅Принять'
-BTN_DECLINE = '❌Отклонить'
+BTN_ACCEPT = '✅Accept'
+BTN_DECLINE = '❌Declne'
 
-BTN_WEEK = "Неделя"
-BTN_ALL_TIME = "Всё время"
-BTN_SQUAD_WEEK = "Отряды за неделю"
-BTN_SQUAD_ALL_TIME = "Отряды за всё время"
+BTN_WEEK = "Week"
+BTN_ALL_TIME = "All Time"
+BTN_SQUAD_WEEK = "Squads per Week"
+BTN_SQUAD_ALL_TIME = "Squads of all time"
 
-MSG_LAST_UPDATE = '🕑 Последнее обновление'
-MSG_GO_AWAY = 'Пшёл вон!'
-MSG_TOP_GENERATING = 'Генерируем топ'
+MSG_LAST_UPDATE = '🕑 Last Update'
+MSG_GO_AWAY = 'Go Away!'
+MSG_TOP_GENERATING = 'Generating Top'
 
-MSG_NO_REASON = 'Причина не указана'
+MSG_NO_REASON = 'Reason not specified'
