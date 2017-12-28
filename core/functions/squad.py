@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import or_, and_
-from telegram import Update, Bot, ParseMode
+from telegram import Update, Bot, ParseMode, TelegramError
 
 from core.functions.reply_markup import generate_squad_markup
 from core.template import fill_char_template
@@ -220,8 +220,8 @@ def leave_squad_request(bot: Bot, update: Update, session):
 
 def leave_squad(bot: Bot, user: User, member: SquadMember, message, session):
     if member:
-        squad = member.squad
-        member_user = member.user
+        squad = session.query(Squad).filter(Squad.chat_id == member.squad_id).first()
+        member_user = session.query(User).filter(User.id == member.user_id).first()
         session.delete(member)
         session.commit()
         if member.approved:
@@ -234,7 +234,10 @@ def leave_squad(bot: Bot, user: User, member: SquadMember, message, session):
             send_async(bot, chat_id=member.squad_id,
                        text=MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
                        parse_mode=ParseMode.HTML)
-        bot.kick_chat_member(message.chat.id, member.user_id)
+        try:
+            bot.kick_chat_member(message.chat.id, member.user_id)
+        except TelegramError as err:
+            bot.logger.error(err.message)
 
         if member.user_id == user.id:
             bot.editMessageText(MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
@@ -250,11 +253,7 @@ def leave_squad(bot: Bot, user: User, member: SquadMember, message, session):
                                 message.message_id,
                                 reply_markup=generate_fire_up(members))
     else:
-        if member.user_id == user.id:
-            send_async(bot, chat_id=user.id,
-                       text=MSG_SQUAD_NONE, parse_mode=ParseMode.HTML)
-        else:
-            send_async(bot, chat_id=user.id, text=MSG_SQUAD_ALREADY_DELETED)
+        send_async(bot, chat_id=user.id, text=MSG_SQUAD_ALREADY_DELETED)
 
 
 @admin_allowed(AdminType.GROUP)
