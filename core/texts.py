@@ -203,8 +203,8 @@ MSG_WELCOME_DISABLED = 'Welcome disabled'
 MSG_PIN_ALL_ENABLED = 'Enyone can pin'
 MSG_PIN_ALL_DISABLED = 'Do not suffer, now only admins can pin😡'
 
-MSG_ORDER_CLEARED_BY_DUMMY = 'Функция перерабатывается в связи с высокой \
-нагрузкой от постоянного обновления'
+MSG_ORDER_CLEARED_BY_DUMMY = 'The requested is order is being processed \
+because of high server load due to continuous updates'
 
 MSG_NO_SQUAD = 'squadless parasite'
 MSG_NO_PET = 'No pets'
