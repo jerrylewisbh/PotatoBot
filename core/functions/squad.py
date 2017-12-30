@@ -235,7 +235,7 @@ def leave_squad(bot: Bot, user: User, member: SquadMember, message, session):
                        text=MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
                        parse_mode=ParseMode.HTML)
         try:
-            bot.kick_chat_member(message.chat.id, member.user_id)
+            bot.kick_chat_member(squad.chat_id, member.user_id)
         except TelegramError as err:
             bot.logger.error(err.message)
 
