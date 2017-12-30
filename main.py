@@ -485,22 +485,22 @@ def main():
 
     # log all errors
     disp.add_error_handler(error)
-
-    updater.job_queue.run_daily(ready_to_battle, time(hour=6, minute=50))
-    updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=6, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=10, minute=50))
-    updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=10, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=14, minute=50))
-    updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=14, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=18, minute=50))
-    updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=18, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=22, minute=50))
-    updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=22, minute=55))
+    #
+    # updater.job_queue.run_daily(ready_to_battle, time(hour=6, minute=50))
+    # updater.job_queue.run_daily(ready_to_battle_result,
+    #                             time(hour=6, minute=55))
+    # updater.job_queue.run_daily(ready_to_battle, time(hour=10, minute=50))
+    # updater.job_queue.run_daily(ready_to_battle_result,
+    #                             time(hour=10, minute=55))
+    # updater.job_queue.run_daily(ready_to_battle, time(hour=14, minute=50))
+    # updater.job_queue.run_daily(ready_to_battle_result,
+    #                             time(hour=14, minute=55))
+    # updater.job_queue.run_daily(ready_to_battle, time(hour=18, minute=50))
+    # updater.job_queue.run_daily(ready_to_battle_result,
+    #                             time(hour=18, minute=55))
+    # updater.job_queue.run_daily(ready_to_battle, time(hour=22, minute=50))
+    # updater.job_queue.run_daily(ready_to_battle_result,
+    #                             time(hour=22, minute=55))
     updater.job_queue.run_daily(fresh_profiles,
                                 time(hour=6, minute=40))
     updater.job_queue.run_daily(fresh_profiles,
