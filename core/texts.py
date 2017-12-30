@@ -1,6 +1,6 @@
 """ Строки """
 
-MSG_ORDER_STATISTIC = 'Statistics of following the orders for {} days:\n'
+MSG_ORDER_STATISTIC = 'Statistics of who followed the orders for {} days:\n'
 MSG_ORDER_STATISTIC_OUT_FORMAT = '{}: {}/{}\n'
 MSG_USER_UNKNOWN = 'No such user'
 
@@ -26,7 +26,7 @@ MSG_LIST_ADMINS_USER_FORMAT = '@{} {} {}\n'
 
 MSG_EMPTY = '[Empty]\n'
 
-MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato castle! ' \
+MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! ' \
                     'Please send me your game profile from @chtwrsbot ("/hero" command).'
 MSG_ADMIN_WELCOME = 'Welcome, master!'
 
@@ -41,13 +41,12 @@ using %last_name%, %first_name%, %id%.
 
 Trigger commands:
 Reply to a message or file with /set_trigger <trigger text> — \
-set message to reply with on a trigger.
-/add_trigger <trigger text>::<reply text> — \
-add message to reply with on a trigger. \
-Old messages can't be replaced.
-
+set message to reply with on a trigger (only current chat)
 /del_trigger <trigger> — delete trigger.
 /list_triggers — show all triggers.
+Reply to a message or file with /set_global_trigger <trigger text> — \
+set message to reply with on a trigger (all chats)
+/del_global_trigger <trigger> — delete trigger.
 
 Super administrator commands:
 /add_admin <user> — add administrator to current chat.
@@ -55,6 +54,34 @@ Super administrator commands:
 /list_admins — show list of current chat administrators.
 /enable_trigger — allow everyone to call trigger.
 /disable_trigger — forbid everyone to call trigger.
+/find <user> - Show user status
+
+
+
+Squad commands:
+/add_squad - Create a new squad and associates it to the current group
+/del_squad - Delete the squad associated with teh group  
+/enable_thorns - Prevent non members of the squad be in the group
+/disable_thorns - Allow non members of the group to be in the squad
+/set_squad_name <name> - Change the name of the squad 
+
+/add <user> - Ask an user to join the squad 
+/ban <user> - Ban an user form the squad 
+/unban <user> - Unban an user from the squad
+
+
+Free text commands:
+daily stats  - Show squad daily stats 
+weekly stats - Show squad weekly stats  
+battle stats - Show last batle stats for batle 
+allow everyone to trigger - Allow every member to set triggers
+prevent everyone from triggering - Allow only admins to set triggers
+allow everyone to pin - Allow all members to pin messages 
+prevent everyone from pinning - Allow only admins to pin messages
+
+Reply any message with Pin to Pin it (admins always can do that, other members if its enabled)
+Reply any message with Delete to delete it 
+
 """
 
 MSG_HELP_GROUP_ADMIN = """Welcome commands:
@@ -66,13 +93,28 @@ if not set to First and Last name, or ID,
 using %last_name%, %first_name%, %id%.
 /show_welcome — show welcome message.
 
-Trigger Commands:
-/add_trigger <trigger text>::<reply text> — \
-add message to reply with on a trigger. \
-Old messages can't be replaced.
+
+Trigger commands:
+Reply to a message or file with /set_trigger <trigger text> — \
+set message to reply with on a trigger
+/del_trigger <trigger> — delete trigger.
 /list_triggers — show all triggers.
 /enable_trigger — allow everyone to call trigger.
 /disable_trigger — forbid everyone to call trigger.
+
+Free text commands:
+daily stats  - Show squad daily stats 
+weekly stats - Show squad weekly stats  
+battle stats - Show last batle stats for batle 
+allow everyone to trigger - Allow every member to set triggers
+prevent everyone from triggering - Allow only admins to set triggers
+allow everyone to pin - Allow all members to pin messages 
+prevent everyone from pinning - Allow only admins to pin messages
+
+
+Reply any message with Pin to Pin it (admins always can do that, other members if its enabled)
+Reply any message with Delete to delete it 
+
 """
 
 MSG_HELP_USER = "/list_triggers — show all triggers."
@@ -104,8 +146,8 @@ MSG_SYMBOL_ON = '✅'
 MSG_SYMBOL_OFF = '❌'
 MSG_BACK = '🔙Back'
 
-MSG_ORDER_TO_SQUADS = 'To groups'
-MSG_ORDER_ACCEPT = 'Accepted!'
+MSG_ORDER_TO_SQUADS = 'Choose Squad'
+MSG_ORDER_ACCEPT = 'Accept!'
 MSG_ORDER_PIN = '✅Pin'
 MSG_ORDER_NO_PIN = '❌No pin'
 MSG_ORDER_BUTTON = '✅Button'
@@ -116,8 +158,9 @@ MSG_ORDER_CLEARED_BY_HEADER = 'Order accepted by:\n'
 MSG_ORDER_SENT = 'Message is sent'
 
 MSG_ORDER_CLEARED = 'Recorded, soldier!'
-MSG_ORDER_CLEARED_ERROR = 'Please stop!!!!'
 
+
+MSG_ORDER_CLEARED_ERROR = 'STOP! You do not bellong here!!!!'
 MSG_ORDER_SEND_HEADER = 'Where to send?'
 
 MSG_ORDER_GROUP_CONFIG_HEADER = 'Group settings: {}'
@@ -131,18 +174,18 @@ Hurry up to recruit %username%!"""
 
 MSG_FLAG_CHOOSE_HEADER = 'Choose a flag or send me the order'
 
-MSG_PROFILE_OLD = 'Your profile smells rotten...'
+MSG_PROFILE_OLD = 'Your profile smells rotten, forward a new one...'
 MSG_PROFILE_SAVED = """Your profile now smells like a really good potato, {}!
 Don't forget to water it regularly 🥔 """
 MSG_PROFILE_CASTLE_MISTAKE = """\
 You saw a beautiful potato field not far away from you.
-There was just fence between you.
+There was just a fence between you.
 You decided to walk around and find a way in.
 Two hours later you returned to the same place you started at..."""
 MSG_PROFILE_SHOW_FORMAT = """\
-👤 %first_name% %last_name% (%username%)
+👤 %first_name% %last_name% (%username%) of
 %castle% %name%
-🏅 %prof% %level% level of
+🏅 %prof% %level% level
 ⚜️ Squad %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
 💰 %gold% | 🔋 %maxStamina%
@@ -150,7 +193,7 @@ MSG_PROFILE_SHOW_FORMAT = """\
 🕑 Last update %date%"""
 
 # main.py texts
-MSG_MAIN_INLINE_BATTLE = 'ROB AND KILL!'
+MSG_MAIN_INLINE_BATTLE = 'ROGER THAT!'
 MSG_MAIN_READY_TO_BATTLE = 'The battle is in 10 minutes, 🛡🥔 HOLD DEFENSE HIDE GOLD AND WAIT FOR COMMANDS'
 # -----------------------
 MSG_BUILD_REPORT_EXISTS = 'This report already exists!'
@@ -162,22 +205,22 @@ MSG_REPORT_OLD = 'Your report stinks like rotten potato, next time try to send i
 MSG_REPORT_EXISTS = 'The report for this battle has already been submitted.'
 MSG_REPORT_OK = 'Thank you. Do not forget to forward reports on every battle.'
 
-MSG_PROFILE_NOT_FOUND = 'In the potato plantation records there is still no data about this hero'
+MSG_PROFILE_NOT_FOUND = 'In the potato plantation records, there is still no data about this hero'
 MSG_SQUAD_REQUEST_EMPTY = 'At the moment no one wants to join you.'
 
-MSG_NO_PROFILE_IN_BOT = 'First give me a profile!'
+MSG_NO_PROFILE_IN_BOT = 'First give me a recent profile!'
 MSG_SQUAD_RECRUITING_ENABLED = 'Squad recruiting is enabled!'
 MSG_SQUAD_RECRUITING_DISABLED = 'Squad recruiting is disabled!'
-MSG_SQUAD_NO_PROFILE = 'First let him give the profile!'
+MSG_SQUAD_NO_PROFILE = 'First let him give me a recent profile!'
 MSG_SQUAD_GREEN_INLINE_BUTTON = '✅Yes'
 MSG_SQUAD_RED_INLINE_BUTTON = '❌No'
-MSG_SQUAD_NEW = """Now the orders will be here {}!
+MSG_SQUAD_NEW = """Now this is the squad {}!
 Do not forget to set a link to invite new members."""
 MSG_SQUAD_LINK_SAVED = """Invitation link saved!
 New members will not pass by now!"""
-MSG_SQUAD_RENAMED = 'Now this squad will be called{}!'
+MSG_SQUAD_RENAMED = 'Now this squad will be called {}!'
 MSG_SQUAD_DELETE = 'The squad is dissolved'
-MSG_SQUAD_THORNS_ENABLED = 'The straw man in around'
+MSG_SQUAD_THORNS_ENABLED = 'The straw man in around, only members can be here'
 MSG_SQUAD_THORNS_DISABLED = 'The straw man disappeared, \
 now everyone can see what is happening'
 MSG_SQUAD_ALREADY_DELETED = 'This user is already expelled from the squad, this button no longer works=('
@@ -202,14 +245,14 @@ MSG_WELCOME_ENABLED = 'Welcome enabled'
 MSG_WELCOME_DISABLED = 'Welcome disabled'
 
 MSG_PIN_ALL_ENABLED = 'Anyone can pin'
-MSG_PIN_ALL_DISABLED = 'Do not suffer, now only admins can pin😡'
+MSG_PIN_ALL_DISABLED = 'Now only admins can pin😡'
 
-MSG_ORDER_CLEARED_BY_DUMMY = 'The requested is order is being processed \
+MSG_ORDER_CLEARED_BY_DUMMY = 'The requested is being is being processed \
 because of high server load due to continuous updates'
 
 MSG_NO_SQUAD = 'squadless parasite'
 MSG_NO_PET = 'No pets'
-MSG_WANTS_TO_JOIN = '\n\nWants to join{}'
+MSG_WANTS_TO_JOIN = '\n\nWants to join {}'
 
 MSG_CLEARED = 'Done'
 
@@ -217,23 +260,22 @@ MSG_SQUAD_LIST = 'List of your squads:'
 MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter this squad. \
 Exit the current squad or cancel the request to create a new one. '
 MSG_SQUAD_REQUEST = 'Here are the requests you have receive:'
-MSG_SQUAD_LEAVED = '{} left the squad {}, now it is useless, \
-and no one will help him any more.'
+MSG_SQUAD_LEAVED = '{} left the squad {}, Who cares ?'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
 MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. \
 To speed up the decision-making process, you can write to the heads of the squad: {}.'
 MSG_SQUAD_REQUEST_ACCEPTED = 'The request from {} is accepted.'
-MSG_SQUAD_REQUEST_DECLINED = '{} is useless and no one cares.'
+MSG_SQUAD_REQUEST_DECLINED = '{} is useless, no one cares.'
 MSG_SQUAD_REQUEST_NEW = 'There are new applications for your squad'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'You were accepted into the squad'
 MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'You application was rejected'
-MSG_SQUAD_CLEAN = """Cleaning the squad  {}.
-Guess Who is going to have a rest today? """
+MSG_SQUAD_CLEAN = """Harvesting in the squad {}.
+Guess who is going to have a rest later today? """
 MSG_SQUAD_ADD = '{}, Do you want to join the squad?'
 MSG_SQUAD_ADD_IN_SQUAD = '{} is already in a squad (perhaps not yours)'
 MSG_SQUAD_ADD_ACCEPTED = '{} Accepted the offer'
-MSG_SQUAD_ADD_DECLINED = '{} is useless and no one cares'
+MSG_SQUAD_ADD_DECLINED = '{} declined, who cares?'
 MSG_SQUAD_NONE = 'It looks like you are not in a squad'
 
 MSG_SQUAD_READY = '{} warriors of <b>{}</b> are ready to battle!\n{}⚔ {}🛡'
