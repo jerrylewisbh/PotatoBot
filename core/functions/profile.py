@@ -60,7 +60,7 @@ def parse_hero(profile, user_id, date, session):
         char.exp = int(parsed_data.group(7))
         char.needExp = int(parsed_data.group(8))
         char.maxStamina = int(parsed_data.group(10))
-        char.gold = int(parsed_data.group(11))
+        char.gold = int(parsed_data.group(11)) + int(parsed_data.group(12)) if parsed_data.group(12) else 0
         char.donateGold = 0 # int(parsed_data.group(12))
         if parsed_data.group(18):
             char.pet = str(parsed_data.group(18))
