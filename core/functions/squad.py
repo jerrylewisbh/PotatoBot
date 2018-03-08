@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import timedelta, datetime
 
 from sqlalchemy import or_, and_
 from telegram import Update, Bot, ParseMode, TelegramError
@@ -12,6 +12,7 @@ from core.functions.inline_markup import generate_squad_list, generate_leave_squ
     generate_yes_no
 from core.texts import *
 from core.constants import *
+from core.texts import MSG_NO_USERNAME
 
 
 @user_allowed
@@ -160,7 +161,7 @@ def list_squad_requests(bot: Bot, update: Update, session):
             markup = generate_squad_request_answer(member.user_id)
             send_async(bot, chat_id=update.message.chat.id,
                        text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character, True),
-                       reply_markup=markup)
+                       reply_markup=markup, parse_mode=ParseMode.HTML)
     if count == 0:
         send_async(bot, chat_id=update.message.chat.id,
                    text=MSG_SQUAD_REQUEST_EMPTY)
@@ -299,9 +300,11 @@ def battle_reports_show(bot: Bot, update: Update, session):
             group_admin.append([adm, squad])
     for adm, squad in group_admin:
         now = datetime.now()
-        time_from = datetime(now.year, now.month,
-                             now.day + (-1 if now.hour < 3 else 0),
-                             (int((now.hour+1) / 4) * 4 - 1 + 24) % 24, 0, 0)
+        if (now.hour < 7):
+            now= now - timedelta(days=1)
+        
+        time_from = now.replace(hour=(int((now.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
+ 
         reports = session.query(User, Report) \
             .join(SquadMember) \
             .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from)) \
@@ -328,8 +331,6 @@ def battle_reports_show(bot: Bot, update: Update, session):
                 total_reports += 1
             else:
                 text += MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
-        text = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports,
-                                                total_members, full_atk, full_def, full_exp, full_gold,
-                                                full_stock) + text
+        text = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock) + text
         markup = generate_other_reports(time_from, squad.chat_id)
         send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)

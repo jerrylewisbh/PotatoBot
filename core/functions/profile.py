@@ -10,7 +10,7 @@ from core.template import fill_char_template
 from core.texts import *
 from enum import Enum
 
-from config import CASTLE
+from config import CASTLE, EXT_ID
 
 
 class BuildType(Enum):
@@ -182,12 +182,20 @@ def report_received(bot: Bot, update: Update, session):
     report = re.search(REPORT, update.message.text)
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     if report and user.character and str(report.group(2)) == user.character.name:
-        time_from = datetime(update.message.forward_date.year, update.message.forward_date.month,
-                             update.message.forward_date.day + (-1 if update.message.forward_date.hour < 3 else 0),
-                             (int((update.message.forward_date.hour+1) / 4) * 4 - 1 + 24) % 24, 0, 0)
-        time_to = datetime(update.message.forward_date.year, update.message.forward_date.month,
-                           update.message.forward_date.day + (1 if update.message.forward_date.hour >= 20 else 0),
-                           (int((update.message.forward_date.hour+1) / 4 + 1) * 4 - 1) % 24, 0, 0)
+        
+        date= update.message.forward_date
+        if (update.message.forward_date.hour < 7):
+            date= update.message.forward_date - timedelta(days=1)
+        
+        time_from = date.replace(hour=(int((update.message.forward_date.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
+ 
+        date= update.message.forward_date
+        if (update.message.forward_date.hour == 23):
+            date= update.message.forward_date + timedelta(days=1)
+
+        time_to = date.replace(hour=(int((update.message.forward_date.hour+1) / 8 + 1) * 8 - 1) % 24, minute=0, second=0)
+        
+
         report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
                                               Report.user_id == update.message.from_user.id).all()
         if len(report) == 0:
@@ -214,7 +222,8 @@ def char_update(bot: Bot, update: Update, session):
                                  update.message.forward_date,
                                  session)
         if CASTLE:
-            if char and char.castle == CASTLE:
+            if char and (char.castle == CASTLE or update.message.from_user.id == EXT_ID) :
+                char.castle = CASTLE
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
                            parse_mode=ParseMode.HTML)
             else:
@@ -232,14 +241,15 @@ def char_show(bot: Bot, update: Update, session):
         if user is not None and user.character is not None:
             char = user.character
             if CASTLE:
-                if char.castle == CASTLE:
+                if char.castle == CASTLE or user.id == EXT_ID :
+                    char.castle = CASTLE
                     text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
                     btns = generate_profile_buttons(user)
-                    send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns)
+                    send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
                 btns = generate_profile_buttons(user)
-                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns)
+                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
 
 
 @admin_allowed()
@@ -253,6 +263,21 @@ def find_by_username(bot: Bot, update: Update, session):
                 char = user.character
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
                 btns = generate_profile_buttons(user)
-                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns)
+                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
+            else:
+                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+                
+@admin_allowed()
+def find_by_character(bot: Bot, update: Update, session):
+    if update.message.chat.type == 'private':
+        msg = update.message.text.split(' ', 1)[1]
+        msg = msg.replace('@', '')
+        if msg != '':
+            char = session.query(Character).filter_by(name=msg).first()
+            if char is not None and char.user:
+                user = char.user
+                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
+                btns = generate_profile_buttons(user)
+                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
