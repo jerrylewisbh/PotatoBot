@@ -208,7 +208,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         elif update.message.text:
             text = update.message.text.lower()
             user = session.query(User).filter_by(id=update.message.from_user.id).first()
-            if user and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID):
+            if user and user.character and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID):
                 if text == ADMIN_COMMAND_STATUS.lower():
                     send_status(bot, update)
                 elif text == USER_COMMAND_BACK.lower():
