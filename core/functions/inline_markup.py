@@ -4,7 +4,7 @@ from enum import Enum
 
 from sqlalchemy import func, tuple_
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-import  telegram
+
 from config import CASTLE
 from core.enums import Castle, Icons
 from core.texts import MSG_GROUP_STATUS_ADMIN_FORMAT, MSG_GROUP_STATUS_DEL_ADMIN, MSG_GROUP_STATUS, MSG_ON, MSG_OFF, \
@@ -43,14 +43,15 @@ class QueryType(Enum):
     GroupDelete = 24
     TriggerOrderButton = 25
     OtherReport = 26
-    #GlobalBuildTop = 27
-    #WeekBuildTop = 28
-    #SquadGlobalBuildTop = 29
-    #SquadWeekBuildTop = 30
+    GlobalBuildTop = 27
+    WeekBuildTop = 28
+    SquadGlobalBuildTop = 29
+    SquadWeekBuildTop = 30
     BattleGlobalTop = 31
     BattleWeekTop = 32
     Yes = 100
     No = 200
+
 
 def generate_group_info(group_id, session):
     group = session.query(Group).filter(Group.id == group_id).first()
@@ -81,25 +82,25 @@ def generate_group_info(group_id, session):
 
 def generate_flag_orders():
     flag_btns = [InlineKeyboardButton(Castle.BLACK.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.BLACK.value, 'name':"MOON" })),
-                 InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.MINT.value, 'name':"DRAGON"})),
-                 InlineKeyboardButton(Castle.RED.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.RED.value, 'name':"WOLF"})),
-                 InlineKeyboardButton(Castle.DUSK.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.DUSK.value, 'name':"SHARK"})),
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.BLACK.value})),
                  InlineKeyboardButton(Castle.WHITE.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.WHITE.value, 'name':"DEER"})),
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.WHITE.value})),
                  InlineKeyboardButton(Castle.BLUE.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.BLUE.value, 'name':"POTATO"})),
-                 #InlineKeyboardButton(Castle.YELLOW.value, callback_data=json.dumps(
-                     #{'t': QueryType.OrderGroup.value, 'txt': Castle.YELLOW.value})),
-                 InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
-                 InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
-                      {'t': QueryType.OrderGroup.value, 'txt': Castle.LES.value})),
-                 #InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
-                 #    {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.BLUE.value})),
+                 InlineKeyboardButton(Castle.YELLOW.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.YELLOW.value})),
+                 InlineKeyboardButton(Castle.RED.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.RED.value})),
+                 InlineKeyboardButton(Castle.DUSK.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.DUSK.value})),
+                 InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
+                     {'t': QueryType.OrderGroup.value, 'txt': Castle.MINT.value})),
+                 # InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
+                 #     {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
+                 # InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
+                 #     {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value})),
+                 # InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
+                 #     {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))
                  ]
     btns = []
     i = 0
@@ -294,16 +295,16 @@ def generate_squad_request(session):
 
 
 def generate_other_reports(time: datetime, squad_id):
-    inline_keys = [[InlineKeyboardButton('<< ' + (time - timedelta(hours=8)).strftime('%d-%m-%Y %H:%M'),
+    inline_keys = [[InlineKeyboardButton('<< ' + (time - timedelta(hours=4)).strftime('%d-%m-%Y %H:%M'),
                                          callback_data=json.dumps(
                                                      {'t': QueryType.OtherReport.value,
-                                                      'ts': (time - timedelta(hours=8)).timestamp(),
+                                                      'ts': (time - timedelta(hours=4)).timestamp(),
                                                       'c': squad_id}))]]
-    if time + timedelta(hours=8) < datetime.now():
-        inline_keys[0].append(InlineKeyboardButton((time + timedelta(hours=8)).strftime('%d-%m-%Y %H:%M') + ' >>',
+    if time + timedelta(hours=4) < datetime.now():
+        inline_keys[0].append(InlineKeyboardButton((time + timedelta(hours=4)).strftime('%d-%m-%Y %H:%M') + ' >>',
                                                    callback_data=json.dumps(
                                                      {'t': QueryType.OtherReport.value,
-                                                      'ts': (time + timedelta(hours=8)).timestamp(),
+                                                      'ts': (time + timedelta(hours=4)).timestamp(),
                                                       'c': squad_id})))
     return InlineKeyboardMarkup(inline_keys)
 
