@@ -160,7 +160,7 @@ MSG_ORDER_SENT = 'Message is sent'
 MSG_ORDER_CLEARED = 'Recorded, soldier!'
 
 
-MSG_ORDER_CLEARED_ERROR = 'STOP! You do not bellong here!!!!'
+MSG_ORDER_CLEARED_ERROR = 'STOP! You do not belong here!!!!'
 MSG_ORDER_SEND_HEADER = 'Where to send?'
 
 MSG_ORDER_GROUP_CONFIG_HEADER = 'Group settings: {}'
@@ -172,7 +172,8 @@ MSG_ORDER_GROUP_DEL = '🔥🚨Delete group🚨🔥'
 MSG_NEWBIE = """There is a new player in castle!\n
 Hurry up to recruit %username%!"""
 
-MSG_FLAG_CHOOSE_HEADER = 'Choose a flag or send me the order'
+MSG_NO_USERNAME = "You have not set up a telegram username, you need to set one up to join squad." 
+MSG_FLAG_CHOOSE_HEADER = 'Choose a castle or send me the order'
 
 MSG_PROFILE_OLD = 'Your profile smells rotten, forward a new one...'
 MSG_PROFILE_SAVED = """Your profile now smells like a really good potato, {}!

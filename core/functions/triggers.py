@@ -3,6 +3,7 @@ from core.types import Trigger, AdminType, admin_allowed, MessageType, LocalTrig
 from core.utils import send_async, update_group
 from core.texts import *
 from json import loads
+import telegram
 
 
 def trigger_decorator(func):
@@ -200,7 +201,7 @@ def add_trigger_db(msg: Message, chat, trigger_text: str, session):
         trigger.message = msg.photo[-1].file_id
         trigger.message_type = MessageType.PHOTO.value
     else:
-        trigger.message = msg.text
+        trigger.message = msg.text_html_urled
         trigger.message_type = MessageType.TEXT.value
     session.add(trigger)
     session.commit()

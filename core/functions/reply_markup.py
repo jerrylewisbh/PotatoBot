@@ -20,7 +20,8 @@ def generate_admin_markup(full=False):
 def generate_user_markup(is_admin=False):
     buttons = [[KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)],
                [KeyboardButton(USER_COMMAND_SQUAD), KeyboardButton(USER_COMMAND_STATISTICS)],
-               [KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)]]
+               #[KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)]
+               ]
     if is_admin:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ADMINPANEL)])
     return ReplyKeyboardMarkup(buttons, True)
@@ -28,7 +29,8 @@ def generate_user_markup(is_admin=False):
 
 def generate_top_markup():
     buttons = [[KeyboardButton(TOP_COMMAND_ATTACK), KeyboardButton(TOP_COMMAND_DEFENCE),
-                KeyboardButton(TOP_COMMAND_EXP), KeyboardButton(TOP_COMMAND_BUILD),
+                KeyboardButton(TOP_COMMAND_EXP), 
+                #KeyboardButton(TOP_COMMAND_BUILD),
                 KeyboardButton(TOP_COMMAND_BATTLES)],
                [KeyboardButton(USER_COMMAND_BACK)]]
     return ReplyKeyboardMarkup(buttons, True)
