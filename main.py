@@ -134,7 +134,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             set_welcome(bot, update)
         elif text == CC_HELP:
             help_msg(bot, update)
-        elif text == CC_SQUAD:
+        elif text == CC_SQUAD and registered:
             call_squad(bot, update)
         elif text == CC_SHOW_WELCOME:
             show_welcome(bot, update)
@@ -279,11 +279,11 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 elif from_id == TRADEBOT_ID:
                     if TRADE_BOT in text:
                         trade_compare(bot, update, chat_data)
-            elif not is_admin and registered:
+            elif not is_admin:
                 user_panel(bot, update)
             else:
                 order(bot, update, chat_data)
-        elif not is_admin and registered:
+        elif not is_admin:
             user_panel(bot, update)
         else:
             order(bot, update, chat_data)
