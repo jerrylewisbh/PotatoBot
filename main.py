@@ -195,7 +195,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         else:
             trigger_show(bot, update)
 
-    elif update.message.chat.type == 'private':
+     elif update.message.chat.type == 'private':
         admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         is_admin = False
         for _ in admin:
@@ -205,7 +205,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         if 'order_wait' in chat_data and chat_data['order_wait']:
             order(bot, update, chat_data)
 
-                elif update.message.text:
+        elif update.message.text:
             text = update.message.text.lower()
             user = session.query(User).filter_by(id=update.message.from_user.id).first()
             if user and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID):
