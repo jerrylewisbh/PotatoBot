@@ -114,7 +114,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
     add_user(update.message.from_user, session)
 
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
-    registered = user and user.character and  (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID):
+    registered = user and user.character and  (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
         squad = session.query(Squad).filter_by(
             chat_id=update.message.chat.id).first()
