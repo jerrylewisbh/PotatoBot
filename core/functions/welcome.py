@@ -5,6 +5,7 @@ from time import time
 from core.utils import send_async, add_user, update_group
 from core.functions.newbies import newbie
 from core.texts import *
+from config import CASTLE
 
 last_welcome = 0
 
@@ -28,7 +29,7 @@ def welcome(bot: Bot, update: Update, session):
                 send_async(bot, chat_id=update.message.chat.id,
                            text=MSG_THORNS.format(str(user)))
                 bot.kickChatMember(update.message.chat.id, new_chat_member.id)
-                
+
                 bot.unbanChatMember(update.message.chat.id, new_chat_member.id)
             else:
                 if group.welcome_enabled:
