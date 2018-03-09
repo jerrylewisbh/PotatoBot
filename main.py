@@ -16,7 +16,7 @@ from telegram.ext import (
 from telegram.ext.dispatcher import run_async
 from telegram.error import TelegramError
 
-from config import TOKEN, GOVERNMENT_CHAT, CASTLE, EXT_ID
+from config import TOKEN, GOVERNMENT_CHAT, CASTLE
 from core.chat_commands import CC_SET_WELCOME, CC_HELP, CC_SQUAD, CC_SHOW_WELCOME, CC_TURN_ON_WELCOME, \
     CC_TURN_OFF_WELCOME, CC_SET_TRIGGER, CC_UNSET_TRIGGER, CC_TRIGGER_LIST, CC_ADMIN_LIST, CC_PING, CC_DAY_STATISTICS, \
     CC_WEEK_STATISTICS, CC_BATTLE_STATISTICS, CC_ALLOW_TRIGGER_ALL, CC_DISALLOW_TRIGGER_ALL, CC_ADMINS, \
@@ -55,7 +55,7 @@ from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.profile import char_update, char_show, find_by_username, find_by_character, find_by_id,report_received, build_report_received, \
     repair_report_received
 from core.functions.squad import (
-    add_squad, del_squad, set_invite_link, set_squad_name ,
+    add_squad, del_squad, set_invite_link, set_squad_name,
     enable_thorns, disable_thorns,
     squad_list, squad_request, list_squad_requests,
     open_hiring, close_hiring, remove_from_squad, add_to_squad,
@@ -112,6 +112,9 @@ def del_msg(bot, job):
 @user_allowed
 def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
     add_user(update.message.from_user, session)
+
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    registered = user and user.character && (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID):
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
         squad = session.query(Squad).filter_by(
             chat_id=update.message.chat.id).first()
@@ -122,7 +125,6 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         #if squad is not None and admin is None and battle_time():
             #bot.delete_message(update.message.chat.id,
                                #update.message.message_id)
-
         if not update.message.text:
             return
 
@@ -207,81 +209,80 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
 
         elif update.message.text:
             text = update.message.text.lower()
-            user = session.query(User).filter_by(id=update.message.from_user.id).first()
-            if user and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID):
-                if text == ADMIN_COMMAND_STATUS.lower():
-                    send_status(bot, update)
-                elif text == USER_COMMAND_BACK.lower():
-                    user_panel(bot, update)
-                elif text == USER_COMMAND_SQUAD_REQUEST.lower():
-                    squad_request(bot, update)
-                elif text == ADMIN_COMMAND_RECRUIT.lower():
-                    list_squad_requests(bot, update)
-                elif text == ADMIN_COMMAND_ORDER.lower():
-                    orders(bot, update, chat_data)
-                elif text == ADMIN_COMMAND_SQUAD_LIST.lower():
-                    squad_list(bot, update)
-                elif text == ADMIN_COMMAND_GROUPS.lower():
-                    group_list(bot, update)
-                elif text == ADMIN_COMMAND_REPORTS.lower():
-                    battle_reports_show(bot, update)
-                elif text == ADMIN_COMMAND_FIRE_UP.lower():
-                    remove_from_squad(bot, update)
-                elif text == USER_COMMAND_ME.lower():
-                    char_show(bot, update)
-                elif text == USER_COMMAND_TOP.lower():
-                    top_about(bot, update)
-                elif text == TOP_COMMAND_ATTACK.lower():
-                    attack_top(bot, update)
-                elif text == TOP_COMMAND_DEFENCE.lower():
-                    def_top(bot, update)
-                elif text == TOP_COMMAND_EXP.lower():
-                    exp_top(bot, update)
-                elif text == TOP_COMMAND_BUILD.lower():
-                    week_build_top(bot, update)
-                elif text == TOP_COMMAND_BATTLES.lower():
-                    week_battle_top(bot, update)
-                elif text == USER_COMMAND_BUILD.lower():
-                    send_async(bot,
-                            chat_id=update.message.chat.id,
-                            text=MSG_IN_DEV,
-                            parse_mode=ParseMode.HTML)
-                elif text == USER_COMMAND_STATISTICS.lower():
-                    statistic_about(bot, update)
-                elif text == STATISTICS_COMMAND_EXP.lower():
-                    exp_statistic(bot, update)
-                elif text == USER_COMMAND_SQUAD.lower():
-                    squad_about(bot, update)
-                elif text == USER_COMMAND_SQUAD_LEAVE.lower():
-                    leave_squad_request(bot, update)
-                elif text == USER_COMMAND_CONTACTS.lower():
-                    web_auth(bot, update)
-                elif text == ADMIN_COMMAND_ADMINPANEL.lower():
-                    admin_panel(bot, update)
-                elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
-                    add_group(bot, update, chat_data)
 
-                elif update.message.forward_from:
-                    from_id = update.message.forward_from.id
+            if text == ADMIN_COMMAND_STATUS.lower() && registered:
+                send_status(bot, update)
+            elif text == USER_COMMAND_BACK.lower():
+                user_panel(bot, update)
+            elif text == USER_COMMAND_SQUAD_REQUEST.lower() && registered:
+                squad_request(bot, update)
+            elif text == ADMIN_COMMAND_RECRUIT.lower():
+                list_squad_requests(bot, update)
+            elif text == ADMIN_COMMAND_ORDER.lower():
+                orders(bot, update, chat_data)
+            elif text == ADMIN_COMMAND_SQUAD_LIST.lower():
+                squad_list(bot, update)
+            elif text == ADMIN_COMMAND_GROUPS.lower():
+                group_list(bot, update)
+            elif text == ADMIN_COMMAND_REPORTS.lower():
+                battle_reports_show(bot, update)
+            elif text == ADMIN_COMMAND_FIRE_UP.lower():
+                remove_from_squad(bot, update)
+            elif text == USER_COMMAND_ME.lower():
+                char_show(bot, update)
+            elif text == USER_COMMAND_TOP.lower() and registered:
+                top_about(bot, update)
+            elif text == TOP_COMMAND_ATTACK.lower():
+                attack_top(bot, update)
+            elif text == TOP_COMMAND_DEFENCE.lower():
+                def_top(bot, update)
+            elif text == TOP_COMMAND_EXP.lower():
+                exp_top(bot, update)
+            elif text == TOP_COMMAND_BUILD.lower():
+                week_build_top(bot, update)
+            elif text == TOP_COMMAND_BATTLES.lower():
+                week_battle_top(bot, update)
+            elif text == USER_COMMAND_BUILD.lower():
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_IN_DEV,
+                           parse_mode=ParseMode.HTML)
+            elif text == USER_COMMAND_STATISTICS.lower():
+                statistic_about(bot, update)
+            elif text == STATISTICS_COMMAND_EXP.lower():
+                exp_statistic(bot, update)
+            elif text == USER_COMMAND_SQUAD.lower():
+                squad_about(bot, update)
+            elif text == USER_COMMAND_SQUAD_LEAVE.lower():
+                leave_squad_request(bot, update)
+            elif text == USER_COMMAND_CONTACTS.lower():
+                web_auth(bot, update)
+            elif text == ADMIN_COMMAND_ADMINPANEL.lower():
+                admin_panel(bot, update)
+            elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
+                add_group(bot, update, chat_data)
 
-                    if from_id == CWBOT_ID:
-                        if text.startswith(STOCK):
-                            stock_compare(bot, update, chat_data)
-                        elif re.search(PROFILE, update.message.text) or re.search(HERO, update.message.text):
-                            char_update(bot, update)
-                        elif re.search(REPORT, update.message.text):
-                            report_received(bot, update)
-                        elif re.search(BUILD_REPORT, update.message.text):
-                            build_report_received(bot, update)
-                        elif re.search(REPAIR_REPORT, update.message.text):
-                            repair_report_received(bot, update)
-                    elif from_id == TRADEBOT_ID:
-                        if TRADE_BOT in text:
-                            trade_compare(bot, update, chat_data)
-                elif not is_admin:
-                    user_panel(bot, update)
-                else:
-                    order(bot, update, chat_data)
+            elif update.message.forward_from:
+                from_id = update.message.forward_from.id
+
+                if from_id == CWBOT_ID:
+                    if text.startswith(STOCK):
+                        stock_compare(bot, update, chat_data)
+                    elif re.search(PROFILE, update.message.text) or re.search(HERO, update.message.text):
+                        char_update(bot, update)
+                    elif re.search(REPORT, update.message.text):
+                        report_received(bot, update)
+                    elif re.search(BUILD_REPORT, update.message.text):
+                        build_report_received(bot, update)
+                    elif re.search(REPAIR_REPORT, update.message.text):
+                        repair_report_received(bot, update)
+                elif from_id == TRADEBOT_ID:
+                    if TRADE_BOT in text:
+                        trade_compare(bot, update, chat_data)
+            elif not is_admin:
+                user_panel(bot, update)
+            else:
+                order(bot, update, chat_data)
         elif not is_admin:
             user_panel(bot, update)
         else:
