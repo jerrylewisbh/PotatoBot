@@ -52,7 +52,7 @@ from core.functions.inline_keyboard_handling import (
 from core.functions.inline_markup import QueryType
 from core.functions.order_groups import group_list, add_group
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
-from core.functions.profile import char_update, char_show, find_by_username, find_by_character, report_received, build_report_received, \
+from core.functions.profile import char_update, char_show, find_by_username, find_by_character, find_by_id,report_received, build_report_received, \
     repair_report_received
 from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
