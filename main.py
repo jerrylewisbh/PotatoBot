@@ -261,7 +261,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
                     add_group(bot, update, chat_data)
 
-            elif update.message.forward_from:
+            if update.message.forward_from:
                 from_id = update.message.forward_from.id
 
                 if from_id == CWBOT_ID:
