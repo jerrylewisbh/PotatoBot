@@ -54,7 +54,9 @@ Super administrator commands:
 /list_admins — show list of current chat administrators.
 /enable_trigger — allow everyone to call trigger.
 /disable_trigger — forbid everyone to call trigger.
-/find <user> - Show user status
+/find <user> - Show user status by telegram user name
+/findc <ign> - Show user status by ingame name
+/findi <id> - Show user status by telegram uquique id
 
 
 
