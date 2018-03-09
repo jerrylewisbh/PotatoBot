@@ -13,6 +13,7 @@ from core.functions.inline_markup import generate_squad_list, generate_leave_squ
 from core.texts import *
 from core.constants import *
 from core.texts import MSG_NO_USERNAME
+from config import CASTLE
 
 
 @user_allowed
