@@ -284,8 +284,6 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 order(bot, update, chat_data)
         elif not is_admin:
             user_panel(bot, update)
-        else:
-            order(bot, update, chat_data)
 
 
 @run_async
