@@ -114,7 +114,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
     add_user(update.message.from_user, session)
 
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
-    registered = user and user.character && (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID):
+    registered = user and user.character and  (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID):
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
         squad = session.query(Squad).filter_by(
             chat_id=update.message.chat.id).first()
@@ -210,11 +210,11 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         elif update.message.text:
             text = update.message.text.lower()
 
-            if text == ADMIN_COMMAND_STATUS.lower() && registered:
+            if text == ADMIN_COMMAND_STATUS.lower() and registered:
                 send_status(bot, update)
             elif text == USER_COMMAND_BACK.lower():
                 user_panel(bot, update)
-            elif text == USER_COMMAND_SQUAD_REQUEST.lower() && registered:
+            elif text == USER_COMMAND_SQUAD_REQUEST.lower() and registered:
                 squad_request(bot, update)
             elif text == ADMIN_COMMAND_RECRUIT.lower():
                 list_squad_requests(bot, update)
