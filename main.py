@@ -55,7 +55,7 @@ from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.profile import char_update, char_show, find_by_username, find_by_character, find_by_id,report_received, build_report_received, \
     repair_report_received
 from core.functions.squad import (
-    add_squad, del_squad, set_invite_link, set_squad_name,
+    add_squad, del_squad, set_invite_link, set_squad_name ,
     enable_thorns, disable_thorns,
     squad_list, squad_request, list_squad_requests,
     open_hiring, close_hiring, remove_from_squad, add_to_squad,
