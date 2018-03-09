@@ -282,3 +282,18 @@ def find_by_character(bot: Bot, update: Update, session):
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+
+@admin_allowed()
+def find_by_id(bot: Bot, update: Update, session):
+    if update.message.chat.type == 'private':
+        msg = update.message.text.split(' ', 1)[1]
+        msg = msg.replace('@', '')
+        if msg != '':
+            char = session.query(Character).filter_by(id=msg).first()
+            if char is not None and char.user:
+                user = char.user
+                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
+                btns = generate_profile_buttons(user)
+                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
+            else:
+                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
