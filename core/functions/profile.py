@@ -289,7 +289,7 @@ def find_by_id(bot: Bot, update: Update, session):
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg != '':
-            char = session.query(Character).filter_by(id=msg).first()
+            char = session.query(Character).filter_by(user_id=msg).first()
             if char is not None and char.user:
                 user = char.user
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
