@@ -212,7 +212,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
 
             if text == ADMIN_COMMAND_STATUS.lower() and registered:
                 send_status(bot, update)
-            elif text == USER_COMMAND_BACK.lower():
+            elif text == USER_COMMAND_BACK.lower() and registered:
                 user_panel(bot, update)
             elif text == USER_COMMAND_SQUAD_REQUEST.lower() and registered:
                 squad_request(bot, update)
@@ -279,11 +279,11 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 elif from_id == TRADEBOT_ID:
                     if TRADE_BOT in text:
                         trade_compare(bot, update, chat_data)
-            elif not is_admin:
+            elif not is_admin and registered:
                 user_panel(bot, update)
             else:
                 order(bot, update, chat_data)
-        elif not is_admin:
+        elif not is_admin and registered:
             user_panel(bot, update)
         else:
             order(bot, update, chat_data)
