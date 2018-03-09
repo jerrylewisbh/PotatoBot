@@ -208,7 +208,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         elif update.message.text:
             text = update.message.text.lower()
             user = session.query(User).filter_by(id=update.message.from_user.id).first()
-            if user and user.character and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID):
+            if user and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID):
                 if text == ADMIN_COMMAND_STATUS.lower():
                     send_status(bot, update)
                 elif text == USER_COMMAND_BACK.lower():
@@ -261,27 +261,31 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
                     add_group(bot, update, chat_data)
 
-            if update.message.forward_from:
-                from_id = update.message.forward_from.id
+                    elif update.message.forward_from:
+                        from_id = update.message.forward_from.id
 
-                if from_id == CWBOT_ID:
-                    if text.startswith(STOCK):
-                        stock_compare(bot, update, chat_data)
-                    elif re.search(PROFILE, update.message.text) or re.search(HERO, update.message.text):
-                        char_update(bot, update)
-                    elif re.search(REPORT, update.message.text):
-                        report_received(bot, update)
-                    elif re.search(BUILD_REPORT, update.message.text):
-                        build_report_received(bot, update)
-                    elif re.search(REPAIR_REPORT, update.message.text):
-                        repair_report_received(bot, update)
-                elif from_id == TRADEBOT_ID:
-                    if TRADE_BOT in text:
-                        trade_compare(bot, update, chat_data)
-            elif not is_admin:
-                user_panel(bot, update)
+                        if from_id == CWBOT_ID:
+                            if text.startswith(STOCK):
+                                stock_compare(bot, update, chat_data)
+                            elif re.search(PROFILE, update.message.text) or re.search(HERO, update.message.text):
+                                char_update(bot, update)
+                            elif re.search(REPORT, update.message.text):
+                                report_received(bot, update)
+                            elif re.search(BUILD_REPORT, update.message.text):
+                                build_report_received(bot, update)
+                            elif re.search(REPAIR_REPORT, update.message.text):
+                                repair_report_received(bot, update)
+                        elif from_id == TRADEBOT_ID:
+                            if TRADE_BOT in text:
+                                trade_compare(bot, update, chat_data)
+                    elif not is_admin:
+                        user_panel(bot, update)
+                    else:
+                        order(bot, update, chat_data)
         elif not is_admin:
             user_panel(bot, update)
+        else:
+            order(bot, update, chat_data)
 
 
 @run_async

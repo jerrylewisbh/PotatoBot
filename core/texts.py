@@ -1,6 +1,6 @@
 """ Строки """
 
-MSG_ORDER_STATISTIC = 'Statistics of who followed the orders for {} days:\n'
+MSG_ORDER_STATISTIC = 'Statistics of who confirmed the orders for {} days:\n'
 MSG_ORDER_STATISTIC_OUT_FORMAT = '{}: {}/{}\n'
 MSG_USER_UNKNOWN = 'No such user'
 
