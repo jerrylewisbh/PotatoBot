@@ -469,6 +469,7 @@ def main():
     disp.add_handler(CommandHandler("set_invite_link", set_invite_link))
     disp.add_handler(CommandHandler("find", find_by_username))
     disp.add_handler(CommandHandler("findc", find_by_character))
+    disp.add_handler(CommandHandler("findi", find_by_id))
     disp.add_handler(CommandHandler("add", add_to_squad))
     disp.add_handler(CommandHandler("ban", ban))
     disp.add_handler(CommandHandler("unban", unban))
