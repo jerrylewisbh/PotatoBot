@@ -45,9 +45,12 @@ def parse_profile(profile, user_id, date, session):
 
 
 def parse_hero(profile, user_id, date, session):
+    print("parsing hero");
     parsed_data = re.search(HERO, profile)
+    print("parsing hero: " + parsed_data);
     char = session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
+        print("no char");
         char = Character()
         char.user_id = user_id
         char.date = date
