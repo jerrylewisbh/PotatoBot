@@ -25,12 +25,11 @@ def welcome(bot: Bot, update: Update, session):
                     allow_anywhere = True
                     break
             if len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != bot.id and \
-                    (user.member and user.member not in group.squad[0].members) and not allow_anywhere or (user.character is None or user.character.castle != CASTLE):
+                    (user.member and user.member not in group.squad[0].members) and not allow_anywhere or ((user.character is None or user.character.castle != CASTLE) and  user.id != bot.id):
                 send_async(bot, chat_id=update.message.chat.id,
                            text=MSG_THORNS.format(str(user)))
-                bot.kickChatMember(update.message.chat.id, new_chat_member.id)
-
-                bot.unbanChatMember(update.message.chat.id, new_chat_member.id)
+                bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
+                #bot.unbanChatMember(update.message.chat.id, new_chat_member.id)
             else:
                 if group.welcome_enabled:
                     welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()

@@ -518,6 +518,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 full_stock += report.earned_stock
             else:
                 text += MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
+        print(full_exp, full_gold, full_stock)
         text = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), full_atk, full_def,
                                         full_exp, full_gold, full_stock) + text
         markup = generate_other_reports(time_from, squad.chat_id)
