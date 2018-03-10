@@ -72,7 +72,8 @@ def parse_hero(profile, user_id, date, session):
             equip.equip = str(parsed_data.group(15))
             session.add(equip)
         session.add(char)
-        session.commit()
+        if char.castle == CASTLE:
+            session.commit()
     return char
 
 
