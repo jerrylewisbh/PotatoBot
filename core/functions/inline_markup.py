@@ -295,16 +295,16 @@ def generate_squad_request(session):
 
 
 def generate_other_reports(time: datetime, squad_id):
-    inline_keys = [[InlineKeyboardButton('<< ' + (time - timedelta(hours=4)).strftime('%d-%m-%Y %H:%M'),
+    inline_keys = [[InlineKeyboardButton('<< ' + (time - timedelta(hours=8)).strftime('%d-%m-%Y %H:%M'),
                                          callback_data=json.dumps(
                                                      {'t': QueryType.OtherReport.value,
-                                                      'ts': (time - timedelta(hours=4)).timestamp(),
+                                                      'ts': (time - timedelta(hours=8)).timestamp(),
                                                       'c': squad_id}))]]
     if time + timedelta(hours=4) < datetime.now():
-        inline_keys[0].append(InlineKeyboardButton((time + timedelta(hours=4)).strftime('%d-%m-%Y %H:%M') + ' >>',
+        inline_keys[0].append(InlineKeyboardButton((time + timedelta(hours=8)).strftime('%d-%m-%Y %H:%M') + ' >>',
                                                    callback_data=json.dumps(
                                                      {'t': QueryType.OtherReport.value,
-                                                      'ts': (time + timedelta(hours=4)).timestamp(),
+                                                      'ts': (time + timedelta(hours=8)).timestamp(),
                                                       'c': squad_id})))
     return InlineKeyboardMarkup(inline_keys)
 
