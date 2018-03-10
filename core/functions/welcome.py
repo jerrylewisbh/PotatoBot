@@ -13,6 +13,7 @@ last_welcome = 0
 @user_allowed(False)
 def welcome(bot: Bot, update: Update, session):
     newbie(bot, update)
+    print(welcome)
     global last_welcome
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
@@ -24,12 +25,17 @@ def welcome(bot: Bot, update: Update, session):
                 if adm.admin_type == AdminType.FULL.value:
                     allow_anywhere = True
                     break
-            if len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != bot.id and \
-                    (user.member and user.member not in group.squad[0].members) and not allow_anywhere or ((user.character is None or user.character.castle != CASTLE) and  user.id != bot.id):
+
+            if user is None or user.character is None or user.character.castle != CASTLE  or user.member is None and not allow_anywhere and user.id != bot.id:
+                send_async(bot, chat_id=update.message.chat.id,vtext=MSG_THORNS.format("SPY"))
+                bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
+                bot.kickChatMember(update.message.chat.id, new_chat_member.id)
+            elif len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != bot.id and \
+                    (user.member and user.member not in group.squad[0].members) and not allow_anywhere:
                 send_async(bot, chat_id=update.message.chat.id,
                            text=MSG_THORNS.format(str(user)))
                 bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
-                #bot.unbanChatMember(update.message.chat.id, new_chat_member.id)
+                bot.kickChatMember(update.message.chat.id, new_chat_member.id)
             else:
                 if group.welcome_enabled:
                     welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
