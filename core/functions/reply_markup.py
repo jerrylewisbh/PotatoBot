@@ -4,7 +4,7 @@ from core.commands import ADMIN_COMMAND_ORDER, ADMIN_COMMAND_STATUS, ADMIN_COMMA
     ADMIN_COMMAND_FIRE_UP, ADMIN_COMMAND_SQUAD_LIST, USER_COMMAND_ME, USER_COMMAND_TOP, USER_COMMAND_SQUAD, \
     USER_COMMAND_STATISTICS, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, ADMIN_COMMAND_ADMINPANEL, \
     USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, \
-    STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, ADMIN_COMMAND_REPORTS, TOP_COMMAND_BUILD, \
+    STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ATTENDANCE,TOP_COMMAND_BUILD, \
     TOP_COMMAND_BATTLES
 
 
@@ -43,12 +43,14 @@ def generate_statistics_markup():
 
 
 def generate_squad_markup(is_group_admin=False, in_squad=False):
-    if in_squad:
+    buttons = []
+    if is_group_admin:
+        buttons.append([KeyboardButton(ADMIN_COMMAND_ATTENDANCE), KeyboardButton(ADMIN_COMMAND_REPORTS)])
+        buttons.append([KeyboardButton(ADMIN_COMMAND_SQUAD_LIST), KeyboardButton(ADMIN_COMMAND_RECRUIT)])
+        buttons.append([KeyboardButton(ADMIN_COMMAND_FIRE_UP), KeyboardButton(USER_COMMAND_SQUAD_LEAVE)])
+    elif in_squad:
         buttons = [[KeyboardButton(USER_COMMAND_SQUAD_LEAVE)]]
     else:
         buttons = [[KeyboardButton(USER_COMMAND_SQUAD_REQUEST)]]
-    if is_group_admin:
-        buttons.append([KeyboardButton(ADMIN_COMMAND_REPORTS), KeyboardButton(ADMIN_COMMAND_RECRUIT)])
-        buttons.append([KeyboardButton(ADMIN_COMMAND_SQUAD_LIST), KeyboardButton(ADMIN_COMMAND_FIRE_UP)])
     buttons.append([KeyboardButton(USER_COMMAND_BACK)])
     return ReplyKeyboardMarkup(buttons, True)

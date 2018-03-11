@@ -26,7 +26,7 @@ from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COM
     ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, \
     USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP, USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, \
     TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, \
-    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, TOP_COMMAND_BUILD, \
+    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,TOP_COMMAND_BUILD, \
     TOP_COMMAND_BATTLES
 from core.constants import DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
 from core.functions.activity import (
@@ -56,10 +56,10 @@ from core.functions.profile import char_update, char_show, find_by_username, fin
     repair_report_received
 from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
-    enable_thorns, disable_thorns,
+    enable_thorns, disable_thorns, enable_silence, disable_silence,
     squad_list, squad_request, list_squad_requests,
     open_hiring, close_hiring, remove_from_squad, add_to_squad,
-    leave_squad_request, squad_about, call_squad, battle_reports_show)
+    leave_squad_request, squad_about, call_squad, battle_reports_show, battle_attendance_show)
 from core.functions.statistics import statistic_about, exp_statistic
 from core.functions.top import top_about, attack_top, exp_top, def_top, global_build_top, week_build_top, \
     week_battle_top
@@ -122,9 +122,9 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             Admin.user_id == update.message.from_user.id and
             Admin.admin_group in [update.message.chat.id, 0]).first()
 
-        #if squad is not None and admin is None and battle_time():
-            #bot.delete_message(update.message.chat.id,
-                               #update.message.message_id)
+        if squad is not None and squad.silence_enabled and admin is None and battle_time():
+            bot.delete_message(update.message.chat.id,
+                               update.message.message_id)
         if not update.message.text:
             return
 
@@ -226,6 +226,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 group_list(bot, update)
             elif text == ADMIN_COMMAND_REPORTS.lower():
                 battle_reports_show(bot, update)
+            elif text == ADMIN_COMMAND_ATTENDANCE.lower():
+                battle_attendance_show(bot, update)
             elif text == ADMIN_COMMAND_FIRE_UP.lower():
                 remove_from_squad(bot, update)
             elif text == USER_COMMAND_ME.lower():
@@ -469,7 +471,9 @@ def main():
     disp.add_handler(CommandHandler("add_squad", add_squad))
     disp.add_handler(CommandHandler("del_squad", del_squad))
     disp.add_handler(CommandHandler("enable_thorns", enable_thorns))
+    disp.add_handler(CommandHandler("enable_silence", enable_silence))
     disp.add_handler(CommandHandler("disable_thorns", disable_thorns))
+    disp.add_handler(CommandHandler("disable_silence", disable_silence))
     disp.add_handler(CommandHandler("set_squad_name", set_squad_name))
     disp.add_handler(CommandHandler("set_invite_link", set_invite_link))
     disp.add_handler(CommandHandler("find", find_by_username))

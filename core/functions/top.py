@@ -249,7 +249,7 @@ def week_battle_top(bot: Bot, update: Update, session):
                 Character.date > datetime.now() - timedelta(days=7))\
         .outerjoin(Report, Report.user_id == Character.user_id) \
         .filter(Report.date > today - timedelta(days=today.weekday())) \
-        .filter(Report.earned_exp > 1).group_by(Character) \
+        .filter(Report.earned_exp > 0).group_by(Character) \
         .order_by(func.count(Report.user_id).desc())
     if CASTLE:
         battles = battles.filter(Character.castle == CASTLE)
@@ -280,7 +280,7 @@ def global_battle_top(bot: Bot, update: Update, session):
                 .in_([(a[0], a[1]) for a in actual_profiles]),
                 Character.date > datetime.now() - timedelta(days=7))\
         .outerjoin(Report, Report.user_id == Character.user_id) \
-        .filter(Report.earned_exp > 1) \
+        .filter(Report.earned_exp > 0) \
         .filter(Report.date > TOP_START_DATE).group_by(Character) \
         .order_by(func.count(Report.user_id).desc())
     if CASTLE:
