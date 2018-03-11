@@ -70,6 +70,7 @@ Squad commands:
 /disable_silence - Allow user to type even 3 minutes before batte
 
 /set_squad_name <name> - Change the name of the squad 
+/set_invite_link <link> - Set up the invite link that will be sent to approved members
 
 /add <user> - Ask an user to join the squad 
 /ban <user> - Ban an user form the squad 

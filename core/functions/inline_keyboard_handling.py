@@ -386,7 +386,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 answer = MSG_SQUAD_REQUEST_ACCEPTED_ANSWER
             else:
                 answer = MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK.format(member.squad.invite_link)
-            send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_ACCEPTED_ANSWER,
+            send_async(bot, chat_id=member.user_id, text=answer,
                        reply_markup=generate_user_markup(is_admin))
             send_async(bot, chat_id=member.squad_id, text=MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username))
     elif data['t'] == QueryType.RequestSquadDecline.value:
