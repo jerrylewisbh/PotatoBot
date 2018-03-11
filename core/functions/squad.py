@@ -316,6 +316,7 @@ def call_squad(bot: Bot, update: Update, session):
             if count > limit:
                 send_async(bot, chat_id=update.message.chat.id, text=msg)
                 msg = ""
+                count = 0
             count += 1;
 
 
