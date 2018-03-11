@@ -7,7 +7,7 @@ from core.functions.reply_markup import generate_squad_markup
 from core.functions.top import gen_top_msg, generate_battle_top
 from core.template import fill_char_template
 from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed, Report, Character
-from core.utils import send_async
+from core.utils import send_async, chunks
 from core.functions.inline_markup import generate_squad_list, generate_leave_squad, generate_squad_request, \
     generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, generate_fire_up, \
     generate_yes_no
@@ -303,6 +303,8 @@ def add_to_squad(bot: Bot, update: Update, session):
 
 @admin_allowed(AdminType.GROUP)
 def call_squad(bot: Bot, update: Update, session):
+    limit = 5;
+    count = 0;
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         users = session.query(User).join(SquadMember).filter(User.id == SquadMember.user_id)\
@@ -311,7 +313,10 @@ def call_squad(bot: Bot, update: Update, session):
         for user in users:
             if user.username is not None:
                 msg += '@' + user.username + ' '
-        send_async(bot, chat_id=update.message.chat.id, text=msg)
+            if count > limit:
+                send_async(bot, chat_id=update.message.chat.id, text=msg)
+                msg = ""
+            count += 1;
 
 
 

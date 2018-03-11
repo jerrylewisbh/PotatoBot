@@ -72,3 +72,7 @@ def update_group(grp, session):
         session.commit()
         return group
     return None
+
+def chunks(l, n):
+    n = max(1, n)
+    return (l[i:i+n] for i in xrange(0, len(l), n))
