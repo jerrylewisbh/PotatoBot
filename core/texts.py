@@ -65,6 +65,10 @@ Squad commands:
 /del_squad - Delete the squad associated with teh group  
 /enable_thorns - Prevent non members of the squad be in the group
 /disable_thorns - Allow non members of the group to be in the squad
+
+/enable_silence  - Deletes all messages typed 3 minutes before battle
+/disable_silence - Allow user to type even 3 minutes before batte
+
 /set_squad_name <name> - Change the name of the squad 
 
 /add <user> - Ask an user to join the squad 
@@ -226,6 +230,9 @@ MSG_SQUAD_DELETE = 'The squad is dissolved'
 MSG_SQUAD_THORNS_ENABLED = 'The straw man in around, only members can be here'
 MSG_SQUAD_THORNS_DISABLED = 'The straw man disappeared, \
 now everyone can see what is happening'
+
+MSG_SQUAD_SILENCE_ENABLED = 'Battle silence enabled, messages will be deleted 3 minutes before battle'
+MSG_SQUAD_SILENCE_DISABLED = 'Battle silence disabled'
 MSG_SQUAD_ALREADY_DELETED = 'This user is already expelled from the squad, this button no longer works=('
 MSG_SQUAD_LEVEL_TOO_LOW = 'This squad takes soldiers at level {} and above. Come back when you get pumped!'
 
@@ -272,6 +279,7 @@ MSG_SQUAD_REQUEST_ACCEPTED = 'The request from {} is accepted.'
 MSG_SQUAD_REQUEST_DECLINED = '{} is useless, no one cares.'
 MSG_SQUAD_REQUEST_NEW = 'There are new applications for your squad'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'You were accepted into the squad'
+MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK = 'You were accepted into the squad join using {}'
 MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'You application was rejected'
 MSG_SQUAD_CLEAN = """Harvesting in the squad {}.
 Guess who is going to have a rest later today? """
@@ -291,14 +299,15 @@ MSG_TOP_ABOUT = '🏆 Tops 🏆'
 MSG_STATISTICS_ABOUT = '📈Statistics📈'
 MSG_SQUAD_ABOUT = '⚜Squad⚜'
 
-MSG_TOP_FORMAT = '{}. {} ({}🌟) - {}{}\n'
+MSG_TOP_FORMAT = '{}. {} (Level {}) - {}{}\n'
 MSG_SQUAD_TOP_FORMAT = '{}. {} ({}👥) - {}{} ({}{}/👤)\n'
 MSG_TOP_DEFENCE = '🛡Top Defenders:\n'
 MSG_TOP_ATTACK = '⚔Тop attackers:\n'
 MSG_TOP_EXPERIENCE = '🔥Top XP:\n'
 MSG_TOP_GLOBAL_BUILDERS = '⚒Top Builders:\n'
 MSG_TOP_WEEK_BUILDERS = '👷Top builders of the week:\n'
-MSG_TOP_WEEK_WARRIORS = '⛳️Top in the battle:\n'
+MSG_TOP_WEEK_WARRIORS = '⛳️Top battle attendance:\n\n'
+MSG_TOP_WEEK_WARRIORS_SQUAD = '⛳️Reports sent on the past 7 days for {}:\n\n'
 
 MSG_UPDATE_PROFILE = 'Send me a new profile (🏅 command "/hero"), or you might be kicked of .'
 MSG_SQUAD_DELETE_OUTDATED = 'You were kicked from the squad for not updating your profile for a long time.'

@@ -1,9 +1,10 @@
 from datetime import timedelta, datetime
 
-from sqlalchemy import or_, and_
+from sqlalchemy import func, text as text_, tuple_
 from telegram import Update, Bot, ParseMode, TelegramError
 
 from core.functions.reply_markup import generate_squad_markup
+from core.functions.top import gen_top_msg, generate_battle_top
 from core.template import fill_char_template
 from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed, Report, Character
 from core.utils import send_async
@@ -15,6 +16,7 @@ from core.constants import *
 from core.texts import MSG_NO_USERNAME
 from config import CASTLE
 
+TOP_START_DATE = datetime(2017, 12, 11)
 
 @user_allowed
 def squad_about(bot: Bot, update: Update, session):
@@ -97,6 +99,16 @@ def enable_thorns(bot: Bot, update: Update, session):
 
 
 @admin_allowed(AdminType.GROUP)
+def enable_silence(bot: Bot, update: Update, session):
+    group = session.query(Group).filter_by(id=update.message.chat.id).first()
+    if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
+        group.squad[0].silence_enabled = True
+        session.add(group.squad[0])
+        session.commit()
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_SILENCE_ENABLED)
+
+
+@admin_allowed(AdminType.GROUP)
 def disable_thorns(bot: Bot, update: Update, session):
     group = session.query(Group).filter_by(id=update.message.chat.id).first()
     if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
@@ -104,6 +116,16 @@ def disable_thorns(bot: Bot, update: Update, session):
         session.add(group.squad[0])
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_THORNS_DISABLED)
+
+@admin_allowed(AdminType.GROUP)
+def disable_silence(bot: Bot, update: Update, session):
+    group = session.query(Group).filter_by(id=update.message.chat.id).first()
+    if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
+        group.squad[0].silence_enabled = False
+        session.add(group.squad[0])
+        session.commit()
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_SILENCE_DISABLED)
+
 
 
 @admin_allowed(AdminType.GROUP)
@@ -287,8 +309,47 @@ def call_squad(bot: Bot, update: Update, session):
             .filter(SquadMember.squad_id == squad.chat_id).all()
         msg = MSG_SQUAD_CALL_HEADER
         for user in users:
-            msg += '@' + user.username + ' '
+            if user.username is not None:
+                msg += '@' + user.username + ' '
         send_async(bot, chat_id=update.message.chat.id, text=msg)
+
+
+
+
+@admin_allowed(AdminType.GROUP)
+def battle_attendance_show(bot: Bot, update: Update, session):
+    admin = session.query(Admin, Squad).filter(Admin.user_id == update.message.from_user.id,
+                                               Squad.chat_id == Admin.admin_group).all()
+    group_admin = []
+    for adm, squad in admin:
+        if squad is not None:
+            group_admin.append([adm, squad])
+    for adm, squad in group_admin:
+        actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+            group_by(Character.user_id)
+        actual_profiles = actual_profiles.all()
+
+        battles = session.query(Character, func.count(Report.user_id))\
+            .outerjoin(Report, Report.user_id == Character.user_id) \
+            .join(SquadMember, SquadMember.user_id == Character.user_id)\
+            .filter(Report.date > TOP_START_DATE) \
+            .filter(tuple_(Character.user_id, Character.date)\
+                    .in_([(a[0], a[1]) for a in actual_profiles]),
+                    Character.date > datetime.now() - timedelta(days=7))\
+            .filter(SquadMember.squad_id == adm.admin_group).group_by(Character)\
+            .order_by(func.count(Report.user_id).desc())
+        print(str(battles))
+        battles = battles.all()
+        print(len(battles))
+        text =  MSG_TOP_WEEK_WARRIORS_SQUAD.format(squad.squad_name)
+        str_format = MSG_TOP_FORMAT
+        for i in range(0, len(battles)):
+            text += str_format.format(i + 1, battles[i][0].name, battles[i][0].level, battles[i][1], '⛳️')
+        if update.message:
+            send_async(bot,
+                       chat_id=update.message.chat.id,
+                       text=text)
+
 
 
 @admin_allowed(AdminType.GROUP)
@@ -335,3 +396,5 @@ def battle_reports_show(bot: Bot, update: Update, session):
         text = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock) + text
         markup = generate_other_reports(time_from, squad.chat_id)
         send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
+
+

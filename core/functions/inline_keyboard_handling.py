@@ -380,6 +380,12 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             for _ in admin:
                 is_admin = True
                 break
+            squad = session.query(Squad).filter_by(chat_id = member.squad_id).first();
+            answer = ""
+            if squad.invite_link is None:
+                answer = MSG_SQUAD_REQUEST_ACCEPTED_ANSWER
+            else:
+                answer = MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK.format(member.squad.invite_link)
             send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_ACCEPTED_ANSWER,
                        reply_markup=generate_user_markup(is_admin))
             send_async(bot, chat_id=member.squad_id, text=MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username))

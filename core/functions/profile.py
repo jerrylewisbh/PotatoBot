@@ -40,7 +40,8 @@ def parse_profile(profile, user_id, date, session):
             char.pet = str(parsed_data.group(16))
             char.petLevel = int(parsed_data.group(18))
         session.add(char)
-        session.commit()
+        if char.castle == CASTLE:
+            session.commit()
     return char
 
 
