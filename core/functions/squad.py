@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime
 
-from sqlalchemy import func, text as text_, tuple_
+from sqlalchemy import func, text, and_ as text_, tuple_, and_
 from telegram import Update, Bot, ParseMode, TelegramError
 
 from core.functions.reply_markup import generate_squad_markup
