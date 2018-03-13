@@ -2,6 +2,8 @@
 from enum import Enum
 
 
+CASTLE_LIST = ['🌑', '🐺', '🥔','🦅','🦌','🐉','🦈']
+
 class Castle(Enum):
     UNDEFINED = 0
     BLACK = '🌑'

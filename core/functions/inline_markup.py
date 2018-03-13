@@ -9,7 +9,7 @@ from config import CASTLE
 from core.enums import Castle, Icons
 from core.texts import MSG_GROUP_STATUS_ADMIN_FORMAT, MSG_GROUP_STATUS_DEL_ADMIN, MSG_GROUP_STATUS, MSG_ON, MSG_OFF, \
     MSG_ORDER_GROUP_DEL, MSG_BACK, MSG_ORDER_PIN, MSG_ORDER_NO_PIN, MSG_ORDER_BUTTON, MSG_ORDER_NO_BUTTON, \
-    MSG_ORDER_TO_SQUADS, MSG_ORDER_ACCEPT, MSG_ORDER_GROUP_ADD, MSG_SYMBOL_ON, MSG_SYMBOL_OFF, \
+    MSG_ORDER_TO_SQUADS, MSG_ORDER_ACCEPT,MSG_ORDER_FORWARD, MSG_ORDER_GROUP_ADD, MSG_SYMBOL_ON, MSG_SYMBOL_OFF, \
     MSG_SQUAD_GREEN_INLINE_BUTTON, MSG_SQUAD_RED_INLINE_BUTTON, BTN_HERO, BTN_STOCK, BTN_EQUIPMENT, BTN_YES, BTN_NO, \
     BTN_LEAVE, BTN_ACCEPT, BTN_DECLINE, BTN_WEEK, BTN_ALL_TIME, BTN_SQUAD_WEEK, BTN_SQUAD_ALL_TIME
 from core.types import Group, Admin, User, Squad, AdminType, OrderGroup, Character
@@ -49,8 +49,10 @@ class QueryType(Enum):
     SquadWeekBuildTop = 30
     BattleGlobalTop = 31
     BattleWeekTop = 32
+    Forward = 33
     Yes = 100
     No = 200
+
 
 
 def generate_group_info(group_id, session):
@@ -177,10 +179,18 @@ def generate_order_groups_markup(session, admin_user: list=None, pin: bool=True,
             return inline_markup
 
 
-def generate_ok_markup(order_id, count):
-    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton(MSG_ORDER_ACCEPT.format(count),
+def generate_ok_markup(order_id, count, forward = False, order =''):
+
+    buttons = [[InlineKeyboardButton(MSG_ORDER_ACCEPT.format(count),
                                                                 callback_data=json.dumps(
-                                                                    {'t': QueryType.OrderOk.value, 'id': order_id}))]])
+                                                                    {'t': QueryType.OrderOk.value, 'id': order_id}))]]
+    if forward:
+      buttons.append([InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order)])
+    inline_markup = InlineKeyboardMarkup(buttons)
+    return inline_markup
+
+def generate_forward_markup(order_id, count):
+    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order_id) ]])
     return inline_markup
 
 

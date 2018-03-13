@@ -11,6 +11,7 @@ def fill_template(msg: str, user: User):
     msg = msg.replace('%first_name%', user.first_name or '')
     msg = msg.replace('%last_name%', user.last_name or '')
     msg = msg.replace('%id%', str(user.id))
+    msg = msg.replace('%ign%', str(user.character.name or ''))
     return msg
 
 

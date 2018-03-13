@@ -3,14 +3,14 @@ import json
 from json import loads
 import logging
 
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, TelegramError, ParseMode
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle,  InputTextMessageContent, TelegramError, ParseMode
 from telegram.ext import JobQueue, Job
 from telegram.ext.dispatcher import run_async
 
-from core.enums import Castle, Icons
+from core.enums import Castle, Icons, CASTLE_LIST
 from core.functions.admins import del_adm
 from core.functions.inline_markup import generate_group_info, generate_order_chats_markup, generate_order_groups_markup, \
-    generate_ok_markup, generate_groups_manage, generate_group_manage, generate_profile_buttons, generate_squad_list, \
+    generate_ok_markup, generate_forward_markup, generate_groups_manage, generate_group_manage, generate_profile_buttons, generate_squad_list, \
     generate_leave_squad, generate_other_reports, generate_squad_members, QueryType
 from core.functions.reply_markup import generate_user_markup
 from core.functions.squad import leave_squad
@@ -131,6 +131,9 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
         order_type = chat_data['order_type']
         order_pin = chat_data['pin'] if 'pin' in chat_data else True
         order_btn = chat_data['btn'] if 'btn' in chat_data else True
+        print("order text: " + order_text)
+        print("order order_btn: " + str(order_btn))
+        print(order_text in CASTLE_LIST)
         if not data['g']:
             if order_btn:
                 order = Order()
@@ -144,10 +147,13 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                     order.confirmed_msg = 0
                 session.add(order)
                 session.commit()
-                markup = generate_ok_markup(order.id, 0)
+                markup = generate_ok_markup(order.id, 0, order_text in CASTLE_LIST, order_text)
                 msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
             else:
-                msg = send_order(bot, order_text, order_type, data['id'], None).result().result()
+                markup = None
+                if order_text in CASTLE_LIST:
+                    markup = generate_forward_markup(order_text,0)
+                msg = send_order(bot, order_text, order_type, data['id'], markup).result().result()
             if order_pin and msg:
                 try:
                     bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': data['id'],
@@ -557,3 +563,16 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
         bot.editMessageText(MSG_SQUAD_LEAVE_DECLINE,
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id)
+
+
+def inlinequery(bot, update):
+    """Handle the inline query."""
+    query = update.inline_query.query
+    print("query " + query)
+    results = [
+        InlineQueryResultArticle(
+            id=0,
+            title=query,
+            input_message_content=InputTextMessageContent(query))]
+
+    update.inline_query.answer(results)
