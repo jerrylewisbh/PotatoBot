@@ -7,11 +7,11 @@ import re
 
 from sqlalchemy import func, tuple_
 from telegram import (
-    Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+    Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle,ParseMode
 )
 from telegram.ext import (
     Updater, CommandHandler, MessageHandler,
-    Filters, CallbackQueryHandler
+    Filters, CallbackQueryHandler, InlineQueryHandler
 )
 from telegram.ext.dispatcher import run_async
 from telegram.error import TelegramError
@@ -47,7 +47,7 @@ from core.functions.common import (
     delete_msg, delete_user,
     user_panel, web_auth)
 from core.functions.inline_keyboard_handling import (
-    callback_query, send_status, send_order
+    callback_query, inlinequery ,send_status, send_order
 )
 from core.functions.inline_markup import QueryType
 from core.functions.order_groups import group_list, add_group
@@ -485,6 +485,8 @@ def main():
 
     disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True, pass_job_queue=True))
 
+    disp.add_handler(InlineQueryHandler(inlinequery))
+
     # on noncommand i.e message - echo the message on Telegram
     disp.add_handler(MessageHandler(Filters.status_update, welcome))
     # disp.add_handler(MessageHandler(
@@ -523,6 +525,7 @@ def main():
 
     # Start the Bot
     updater.start_polling()
+
     # app.run(port=API_PORT)
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since

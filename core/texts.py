@@ -34,7 +34,7 @@ MSG_HELP_GLOBAL_ADMIN = """Welcome commands:
 /enable_welcome — enable welcome message.
 /disable_welcome — disable welcome message.
 /set_welcome <text> — set welcome message. \
-Can contain %username% — will be shown as @username, \
+Can contain %username% — will be shown as @username, %ign% - will show user ingame name, \
 if not set to First and Last name, or ID, 
 using %last_name%, %first_name%, %id%.
 /show_welcome — show welcome message.
@@ -155,6 +155,7 @@ MSG_BACK = '🔙Back'
 
 MSG_ORDER_TO_SQUADS = 'Choose Squad'
 MSG_ORDER_ACCEPT = 'Accept!'
+MSG_ORDER_FORWARD = 'Forward'
 MSG_ORDER_PIN = '✅Pin'
 MSG_ORDER_NO_PIN = '❌No pin'
 MSG_ORDER_BUTTON = '✅Button'
