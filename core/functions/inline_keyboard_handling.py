@@ -176,10 +176,12 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                         order.confirmed_msg = 0
                     session.add(order)
                     session.commit()
-                    markup = generate_ok_markup(order.id, 0)
+                    markup = generate_ok_markup(order.id, 0, order_text in CASTLE_LIST, order_text)
                     msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
                 else:
-                    msg = send_order(bot, order_text, order_type, item.chat_id, None).result().result()
+                    markup = None
+                    markup = generate_forward_markup(order_text,0)
+                    msg = send_order(bot, order_text, order_type, item.chat_id, markup).result().result()
                 if order_pin and msg:
                     try:
                         bot.request.post(bot.base_url + '/pinChatMessage',
