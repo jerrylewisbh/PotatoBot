@@ -180,7 +180,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                     msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
                 else:
                     markup = None
-                    markup = generate_forward_markup(order_text,0)
+                    if order_text in CASTLE_LIST:
+                        markup = generate_forward_markup(order_text,0)
                     msg = send_order(bot, order_text, order_type, item.chat_id, markup).result().result()
                 if order_pin and msg:
                     try:
