@@ -74,7 +74,7 @@ from core.functions.welcome import (
 from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT
 from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL,
-    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
+    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
     MSG_SQUAD_DELETE_OUTDATED_EXT)
 from core.types import Session, Order, Squad, Admin, user_allowed, Character, SquadMember, User
 from core.utils import add_user, send_async
@@ -298,7 +298,7 @@ def ready_to_battle(bot: Bot, job_queue):
         group = session.query(Squad).all()
         for item in group:
             new_order = Order()
-            new_order.text = MSG_MAIN_READY_TO_BATTLE
+            new_order.text = job_queue.context
             new_order.chat_id = item.chat_id
             new_order.date = datetime.now()
             new_order.confirmed_msg = 0
@@ -311,7 +311,7 @@ def ready_to_battle(bot: Bot, job_queue):
                 [InlineKeyboardButton(MSG_MAIN_INLINE_BATTLE,
                                       callback_data=callback_data)]])
 
-            msg = send_order(bot, new_order.text, 0, new_order.chat_id, markup)
+            msg = send_order(bot, new_order.text, 0, new_order.chat_id, markup = None)
 
             try:
                 msg = msg.result().result()
@@ -497,19 +497,24 @@ def main():
     # log all errors
     disp.add_error_handler(error)
     #
-    # updater.job_queue.run_daily(ready_to_battle, time(hour=6, minute=50))
+    updater.job_queue.run_daily(callback =ready_to_battle, time=time(hour=6, minute=30), context=MSG_MAIN_READY_TO_BATTLE_30)#6
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=6, minute=45), context=MSG_MAIN_READY_TO_BATTLE_45)
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=6, minute=55))
     # updater.job_queue.run_daily(ready_to_battle, time(hour=10, minute=50))
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=10, minute=55))
-    # updater.job_queue.run_daily(ready_to_battle, time(hour=14, minute=50))
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=14, minute=30), context =MSG_MAIN_READY_TO_BATTLE_30)
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=14, minute=45), context =MSG_MAIN_READY_TO_BATTLE_45)
+    # updater.job_queue.run_daily(ready_to_battle_result,)
+     #updater.job_queue.run_daily(ready_to_battle, time(hour=14, minute=50))
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=14, minute=55))
     # updater.job_queue.run_daily(ready_to_battle, time(hour=18, minute=50))
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=18, minute=55))
-    # updater.job_queue.run_daily(ready_to_battle, time(hour=22, minute=50))
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=22, minute=30), context =MSG_MAIN_READY_TO_BATTLE_30)
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=22, minute=45), context =MSG_MAIN_READY_TO_BATTLE_45)
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=22, minute=55))
     updater.job_queue.run_daily(fresh_profiles,

@@ -303,7 +303,7 @@ def add_to_squad(bot: Bot, update: Update, session):
 
 @admin_allowed(AdminType.GROUP)
 def call_squad(bot: Bot, update: Update, session):
-    limit = 5;
+    limit = 3;
     count = 0;
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
