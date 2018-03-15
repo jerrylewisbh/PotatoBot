@@ -85,6 +85,7 @@ allow everyone to trigger - Allow every member to set triggers
 prevent everyone from triggering - Allow only admins to set triggers
 allow everyone to pin - Allow all members to pin messages 
 prevent everyone from pinning - Allow only admins to pin messages
+squad - mention every squad member
 
 Reply any message with Pin to Pin it (admins always can do that, other members if its enabled)
 Reply any message with Delete to delete it 
@@ -192,10 +193,11 @@ There was just a fence between you.
 You decided to walk around and find a way in.
 Two hours later you returned to the same place you started at..."""
 MSG_PROFILE_SHOW_FORMAT = """\
-👤 %first_name% %last_name% (%username%) of
-%castle% %name%
-🏅 %prof% %level% level
-⚜️ Squad %squad%
+👤 %first_name% %last_name% (%username%) 
+%castle% %name% of
+%prof% Castle
+🏅 level %level% 
+⚜️ %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
 💰 %gold% | 🔋 %maxStamina%
 %pet%
@@ -204,6 +206,26 @@ MSG_PROFILE_SHOW_FORMAT = """\
 # main.py texts
 MSG_MAIN_INLINE_BATTLE = 'ROGER THAT!'
 MSG_MAIN_READY_TO_BATTLE = 'The battle is in 10 minutes, 🛡🥔 HOLD DEFENSE HIDE GOLD AND WAIT FOR COMMANDS'
+MSG_MAIN_READY_TO_BATTLE_30 = '❗️⚔️WAR IN 30 MINUTES ⚔️❗️\
+\n\n\
+CLOSE TRADES ⚖️ HIDE GOLD💰AND STOCK 📦 \
+\n\n\
+Equip dagger 🗡/ shield 🛡\
+\n\n\
+Set default status to DEF 🛡 and wait for orders.'
+
+MSG_MAIN_READY_TO_BATTLE_45 ='WAAARRR IN 15 MINS!!\
+\n\n\
+1) 💰➡️🚫HIDE GOLD&STOCK NOW\
+\n\n\
+2) Press 🛡  in the game bot \
+\n\n\
+3) Press "⚔️ Attack" to the state of "Ha, bold enough? Choose an enemy!". Don’t choose a target, wait for orders.\
+\n\n\
+4) Keep Battle-Silence from xx:57:00 till Wind \
+\n\n\
+@chtwrsbot'
+
 # -----------------------
 MSG_BUILD_REPORT_EXISTS = 'This report already exists!'
 MSG_BUILD_REPORT_OK = 'Thanks for the help! This is your {} report.'
@@ -262,8 +284,8 @@ MSG_PIN_ALL_DISABLED = 'Now only admins can pin😡'
 MSG_ORDER_CLEARED_BY_DUMMY = 'The requested is being is being processed \
 because of high server load due to continuous updates'
 
-MSG_NO_SQUAD = 'squadless parasite'
-MSG_NO_PET = 'No pets'
+MSG_NO_SQUAD = 'squadless'
+MSG_NO_PET = ''
 MSG_WANTS_TO_JOIN = '\n\nWants to join {}'
 
 MSG_CLEARED = 'Done'
