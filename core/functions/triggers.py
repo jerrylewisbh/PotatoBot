@@ -201,7 +201,7 @@ def add_trigger_db(msg: Message, chat, trigger_text: str, session):
         trigger.message = msg.photo[-1].file_id
         trigger.message_type = MessageType.PHOTO.value
     else:
-        trigger.message = msg.text_html_urled
+        trigger.message = msg.text
         trigger.message_type = MessageType.TEXT.value
     session.add(trigger)
     session.commit()
