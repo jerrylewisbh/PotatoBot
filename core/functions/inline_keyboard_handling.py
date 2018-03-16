@@ -571,11 +571,13 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
 def inlinequery(bot, update):
     """Handle the inline query."""
     query = update.inline_query.query
-    print("query " + query)
+    if query not in CASTLE_LIST:
+        return
+
     results = [
         InlineQueryResultArticle(
             id=0,
-            title=query,
+            title= ( "DEFEND " if Castle.BLUE.value == query else "ATTACK ") + query,
             input_message_content=InputTextMessageContent(query))]
 
     update.inline_query.answer(results)

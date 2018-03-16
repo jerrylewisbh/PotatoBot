@@ -65,13 +65,12 @@ Squad commands:
 /del_squad - Delete the squad associated with teh group  
 /enable_thorns - Prevent non members of the squad be in the group
 /disable_thorns - Allow non members of the group to be in the squad
-
 /enable_silence  - Deletes all messages typed 3 minutes before battle
 /disable_silence - Allow user to type even 3 minutes before batte
-
+/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle 
+/disable_reminders - Disable reminders
 /set_squad_name <name> - Change the name of the squad 
 /set_invite_link <link> - Set up the invite link that will be sent to approved members
-
 /add <user> - Ask an user to join the squad 
 /ban <user> - Ban an user form the squad 
 /unban <user> - Unban an user from the squad
@@ -81,13 +80,13 @@ Free text commands:
 daily stats  - Show squad daily stats 
 weekly stats - Show squad weekly stats  
 battle stats - Show last batle stats for batle 
-allow everyone to trigger - Allow every member to set triggers
-prevent everyone from triggering - Allow only admins to set triggers
+prevent everyone from triggering - Allow only admins to call triggers
 allow everyone to pin - Allow all members to pin messages 
 prevent everyone from pinning - Allow only admins to pin messages
 squad - mention every squad member
 
 Reply any message with Pin to Pin it (admins always can do that, other members if its enabled)
+Reply any message with Pin and notify to pin and send notificaion
 Reply any message with Delete to delete it 
 
 """
@@ -101,27 +100,33 @@ if not set to First and Last name, or ID,
 using %last_name%, %first_name%, %id%.
 /show_welcome — show welcome message.
 
+Squad commands:
+/enable_thorns - Prevent non members of the squad be in the group
+/disable_thorns - Allow non members of the group to be in the squad
+/enable_silence  - Deletes all messages typed 3 minutes before battle
+/disable_silence - Allow user to type even 3 minutes before batte
+/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle 
+/disable_reminders - Disable reminders
+/set_invite_link <link> - Set up the invite link that will be sent to approved members
+/add <user> - Ask an user to join the squad 
+/ban <user> - Ban an user form the squad 
+/unban <user> - Unban an user from the squad
 
-Trigger commands:
-Reply to a message or file with /set_trigger <trigger text> — \
-set message to reply with on a trigger
-/del_trigger <trigger> — delete trigger.
-/list_triggers — show all triggers.
-/enable_trigger — allow everyone to call trigger.
-/disable_trigger — forbid everyone to call trigger.
 
 Free text commands:
 daily stats  - Show squad daily stats 
 weekly stats - Show squad weekly stats  
 battle stats - Show last batle stats for batle 
-allow everyone to trigger - Allow every member to set triggers
-prevent everyone from triggering - Allow only admins to set triggers
+allow everyone to trigger - Allow every member to call triggers
+prevent everyone from triggering - Allow only admins to call triggers
 allow everyone to pin - Allow all members to pin messages 
 prevent everyone from pinning - Allow only admins to pin messages
-
+squad - mention every squad member
 
 Reply any message with Pin to Pin it (admins always can do that, other members if its enabled)
+Reply any message with Pin and notify to pin and send notificaion
 Reply any message with Delete to delete it 
+
 
 """
 
@@ -226,6 +231,12 @@ MSG_MAIN_READY_TO_BATTLE_45 ='WAAARRR IN 15 MINS!!\
 \n\n\
 @chtwrsbot'
 
+MSG_MAIN_SEND_REPORTS = '⚔️BATTLE IS OVER ⚔️\
+\n\n\
+📜send me your reports📜\
+\n\n\
+➡️@PotatoCastle_bot⬅️'
+
 # -----------------------
 MSG_BUILD_REPORT_EXISTS = 'This report already exists!'
 MSG_BUILD_REPORT_OK = 'Thanks for the help! This is your {} report.'
@@ -242,7 +253,7 @@ MSG_SQUAD_REQUEST_EMPTY = 'At the moment no one wants to join you.'
 MSG_NO_PROFILE_IN_BOT = 'First give me a recent profile!'
 MSG_SQUAD_RECRUITING_ENABLED = 'Squad recruiting is enabled!'
 MSG_SQUAD_RECRUITING_DISABLED = 'Squad recruiting is disabled!'
-MSG_SQUAD_NO_PROFILE = 'First let him give me a recent profile!'
+MSG_SQUAD_NO_PROFILE = 'First I need him/her to give me a recent profile!'
 MSG_SQUAD_GREEN_INLINE_BUTTON = '✅Yes'
 MSG_SQUAD_RED_INLINE_BUTTON = '❌No'
 MSG_SQUAD_NEW = """Now this is the squad {}!
@@ -257,6 +268,10 @@ now everyone can see what is happening'
 
 MSG_SQUAD_SILENCE_ENABLED = 'Battle silence enabled, messages will be deleted 3 minutes before battle'
 MSG_SQUAD_SILENCE_DISABLED = 'Battle silence disabled'
+
+MSG_SQUAD_REMINDERS_ENABLED = 'This squad will automatically be reminded of battles and reports, lazy captain'
+MSG_SQUAD_REMINDERS_DISABLED = 'This squad will NOT be automatically reminded of battles and reports, do not let them forget 👀'
+
 MSG_SQUAD_ALREADY_DELETED = 'This user is already expelled from the squad, this button no longer works=('
 MSG_SQUAD_LEVEL_TOO_LOW = 'This squad takes soldiers at level {} and above. Come back when you get pumped!'
 
@@ -265,8 +280,8 @@ MSG_TRIGGER_GLOBAL = '<b>Global:</b>\n'
 MSG_TRIGGER_LOCAL = '\n<b>Local:</b>\n'
 MSG_TRIGGER_NEW_ERROR = 'You thoughts are not clear, try one more time'
 MSG_TRIGGER_EXISTS = 'Trigger "{}" already exists, select another one.'
-MSG_TRIGGER_ALL_ENABLED = 'now everything can be triggered.'
-MSG_TRIGGER_ALL_DISABLED = 'Now only admins can trigger.'
+MSG_TRIGGER_ALL_ENABLED = 'now everything can call triggers.'
+MSG_TRIGGER_ALL_DISABLED = 'Now only admins can call triggers.'
 MSG_TRIGGER_DEL = 'The trigger for "{}" has been deleted.'
 MSG_TRIGGER_DEL_ERROR = 'Where did you see such a trigger? 0_o'
 MSG_TRIGGER_LIST_HEADER = 'List of current triggers: \n'
@@ -281,7 +296,7 @@ MSG_WELCOME_DISABLED = 'Welcome disabled'
 MSG_PIN_ALL_ENABLED = 'Anyone can pin'
 MSG_PIN_ALL_DISABLED = 'Now only admins can pin😡'
 
-MSG_ORDER_CLEARED_BY_DUMMY = 'The requested is being is being processed \
+MSG_ORDER_CLEARED_BY_DUMMY = 'The requested is being processed \
 because of high server load due to continuous updates'
 
 MSG_NO_SQUAD = 'squadless'

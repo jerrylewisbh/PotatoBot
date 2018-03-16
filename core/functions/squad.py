@@ -97,6 +97,16 @@ def enable_thorns(bot: Bot, update: Update, session):
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_THORNS_ENABLED)
 
+@admin_allowed(AdminType.GROUP)
+def enable_reminders(bot: Bot, update: Update, session):
+    group = session.query(Group).filter_by(id=update.message.chat.id).first()
+    if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
+        group.squad[0].reminders_enabled = True
+        session.add(group.squad[0])
+        session.commit()
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REMINDERS_ENABLED)
+
+
 
 @admin_allowed(AdminType.GROUP)
 def enable_silence(bot: Bot, update: Update, session):
@@ -125,6 +135,17 @@ def disable_silence(bot: Bot, update: Update, session):
         session.add(group.squad[0])
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_SILENCE_DISABLED)
+
+
+@admin_allowed(AdminType.GROUP)
+def disable_reminders(bot: Bot, update: Update, session):
+    group = session.query(Group).filter_by(id=update.message.chat.id).first()
+    if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
+        group.squad[0].reminders_enabled = False
+        session.add(group.squad[0])
+        session.commit()
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REMINDERS_DISABLED)
+
 
 
 
