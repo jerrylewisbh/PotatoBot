@@ -190,7 +190,7 @@ def generate_ok_markup(order_id, count, forward = False, order =''):
     return inline_markup
 
 def generate_forward_markup(order_id, count):
-    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=MSG_ORDER_FORWARD,  =order_id) ]])
+    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order_id) ]])
     return inline_markup
 
 

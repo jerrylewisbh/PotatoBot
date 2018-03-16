@@ -56,7 +56,7 @@ from core.functions.profile import char_update, char_show, find_by_username, fin
     repair_report_received
 from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
-    enable_thorns, disable_thorns, enable_silence, disable_silence,
+    enable_thorns, disable_thorns, enable_silence, disable_silence,enable_reminders,disable_reminders,
     squad_list, squad_request, list_squad_requests,
     open_hiring, close_hiring, remove_from_squad, add_to_squad,
     leave_squad_request, squad_about, call_squad, battle_reports_show, battle_attendance_show)
@@ -74,7 +74,7 @@ from core.functions.welcome import (
 from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT
 from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL,
-    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
+    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,MSG_MAIN_SEND_REPORTS,MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
     MSG_SQUAD_DELETE_OUTDATED_EXT)
 from core.types import Session, Order, Squad, Admin, user_allowed, Character, SquadMember, User
 from core.utils import add_user, send_async
@@ -297,6 +297,9 @@ def ready_to_battle(bot: Bot, job_queue):
     try:
         group = session.query(Squad).all()
         for item in group:
+            if not item.reminders_enabled:
+                continue
+
             new_order = Order()
             new_order.text = job_queue.context
             new_order.chat_id = item.chat_id
@@ -467,13 +470,14 @@ def main():
     disp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     disp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
     disp.add_handler(CommandHandler("me", char_show))
-
     disp.add_handler(CommandHandler("add_squad", add_squad))
     disp.add_handler(CommandHandler("del_squad", del_squad))
     disp.add_handler(CommandHandler("enable_thorns", enable_thorns))
     disp.add_handler(CommandHandler("enable_silence", enable_silence))
+    disp.add_handler(CommandHandler("enable_reminders", enable_reminders))
     disp.add_handler(CommandHandler("disable_thorns", disable_thorns))
     disp.add_handler(CommandHandler("disable_silence", disable_silence))
+    disp.add_handler(CommandHandler("disable_reminders", disable_reminders))
     disp.add_handler(CommandHandler("set_squad_name", set_squad_name))
     disp.add_handler(CommandHandler("set_invite_link", set_invite_link))
     disp.add_handler(CommandHandler("find", find_by_username))
@@ -499,6 +503,7 @@ def main():
     #
     updater.job_queue.run_daily(callback =ready_to_battle, time=time(hour=6, minute=30), context=MSG_MAIN_READY_TO_BATTLE_30)#6
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=6, minute=45), context=MSG_MAIN_READY_TO_BATTLE_45)
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=7, minute=10), context=MSG_MAIN_SEND_REPORTS)
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=6, minute=55))
     # updater.job_queue.run_daily(ready_to_battle, time(hour=10, minute=50))
@@ -506,6 +511,7 @@ def main():
     #                             time(hour=10, minute=55))
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=14, minute=30), context =MSG_MAIN_READY_TO_BATTLE_30)
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=14, minute=45), context =MSG_MAIN_READY_TO_BATTLE_45)
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=15, minute=10), context=MSG_MAIN_SEND_REPORTS)
     # updater.job_queue.run_daily(ready_to_battle_result,)
      #updater.job_queue.run_daily(ready_to_battle, time(hour=14, minute=50))
     # updater.job_queue.run_daily(ready_to_battle_result,
@@ -515,6 +521,7 @@ def main():
     #                             time(hour=18, minute=55))
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=22, minute=30), context =MSG_MAIN_READY_TO_BATTLE_30)
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=22, minute=45), context =MSG_MAIN_READY_TO_BATTLE_45)
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=23, minute=10), context=MSG_MAIN_SEND_REPORTS)
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=22, minute=55))
     updater.job_queue.run_daily(fresh_profiles,

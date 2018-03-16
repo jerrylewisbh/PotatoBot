@@ -268,6 +268,7 @@ class Squad(Base):
     squad_name = Column(UnicodeText(250))
     thorns_enabled = Column(Boolean, default=True)
     silence_enabled = Column(Boolean, default=True)
+    reminders_enabled = Column(Boolean, default=True)
     hiring = Column(Boolean, default=False)
 
     members = relationship('SquadMember', back_populates='squad')
