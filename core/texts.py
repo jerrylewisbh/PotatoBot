@@ -72,7 +72,7 @@ Squad commands:
 /set_squad_name <name> - Change the name of the squad 
 /set_invite_link <link> - Set up the invite link that will be sent to approved members
 /add <user> - Ask an user to join the squad 
-/ban <user> - Ban an user form the squad 
+/ban <user> <reason> - Ban an user from the squad 
 /unban <user> - Unban an user from the squad
 
 
@@ -109,7 +109,7 @@ Squad commands:
 /disable_reminders - Disable reminders
 /set_invite_link <link> - Set up the invite link that will be sent to approved members
 /add <user> - Ask an user to join the squad 
-/ban <user> - Ban an user form the squad 
+/ban <user> <reason>  - Ban an user from the squad 
 /unban <user> - Unban an user from the squad
 
 
@@ -370,15 +370,24 @@ MSG_DATE_FORMAT = '{} {}'
 MSG_PLOT_DESCRIPTION = 'On average {} of experience per day. For next level, you need {} experience and {}'
 
 MSG_SQUAD_CALL_HEADER = 'Everybody come here!\n'
-MSG_REPORT_SUMMARY_HEADER = 'Reports of the squad {} for the batle {}\n' \
+MSG_REPORT_SUMMARY_HEADER = 'Reports of the squad {} for the battle {}' \
                             'Reports: {} from {}\n' \
                             '<b>General</b>\n' \
                             'Attack: ⚔{}\n' \
                             'Defense: 🛡{}\n' \
                             'Profit: 🔥{} 💰{} 📦{}\n\n' \
                             '<b>Personal</b>\n'
+
+MSG_REPORT_SUMMARY_RATING = "Reports for the battle {}"
+
+MSG_REPORT_SUMMARY = '\n\n{} ({}/{})\n' \
+                            'Attack: ⚔{}\n' \
+                            'Defense: 🛡{}\n' \
+                            'Profit: 🔥{} 💰{} 📦{}' \
+
 MSG_REPORT_SUMMARY_ROW = '<b>{}</b> (@{})\n⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'
 MSG_REPORT_SUMMARY_ROW_EMPTY = '<b>{}</b> (@{}) ❗\n'
+
 
 BTN_HERO = '🏅Hero'
 BTN_STOCK = '📦Stock'
