@@ -5,7 +5,7 @@ import json
 import logging
 import re
 
-from sqlalchemy import func, tuple_
+from sqlalchemy import func, tuple_, and_
 from telegram import (
     Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle,ParseMode
 )
@@ -73,10 +73,10 @@ from core.functions.welcome import (
 )
 from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT
 from core.texts import (
-    MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL,
-    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,MSG_MAIN_SEND_REPORTS,MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
+    MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL, 
+    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,MSG_MAIN_SEND_REPORTS,MSG_REPORT_SUMMARY,MSG_REPORT_SUMMARY_RATING,MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
     MSG_SQUAD_DELETE_OUTDATED_EXT)
-from core.types import Session, Order, Squad, Admin, user_allowed, Character, SquadMember, User
+from core.types import Session, Order, Squad, Admin, user_allowed, admin_allowed,Character, Report,SquadMember, User
 from core.utils import add_user, send_async
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -333,54 +333,59 @@ def ready_to_battle(bot: Bot, job_queue):
 
 
 @run_async
-def ready_to_battle_result(bot: Bot, job_queue):
+#@admin_allowed()
+def ready_to_battle_result(bot: Bot, update: Update):
+#def ready_to_battle_result(bot: Bot, job_queue):
+    if GOVERNMENT_CHAT is None:
+        return
+    
+    global_def = 0
+    global_atk = 0
+    global_exp = 0
+    global_gold = 0
+    global_stock = 0
+    global_reports = 0
+    global_members = 0
     session = Session()
     try:
-        group = session.query(Squad).all()
-        full_attack = 0
-        full_defence = 0
-        full_text = ''
-        full_count = 0
-
-        for item in group:
-            ready_order = session.query(Order).filter_by(
-                chat_id=item.chat_id,
-                text=MSG_MAIN_READY_TO_BATTLE).order_by(Order.date.desc()).first()
-
-            if ready_order is not None:
-                attack = 0
-                defence = 0
-                for clear in ready_order.cleared:
-                    if clear.user.character:
-                        attack += clear.user.character.attack
-                        defence += clear.user.character.defence
-
-                text = MSG_SQUAD_READY.format(len(ready_order.cleared),
-                                              item.squad_name,
-                                              attack,
-                                              defence)
-
-                send_async(bot,
-                           chat_id=item.chat_id,
-                           text=text,
-                           parse_mode=ParseMode.HTML)
-
-                full_attack += attack
-                full_defence += defence
-                full_count += len(ready_order.cleared)
-                full_text += MSG_FULL_TEXT_LINE.format(item.squad_name,
-                                                       len(ready_order.cleared),
-                                                       attack,
-                                                       defence)
-
-        full_text += MSG_FULL_TEXT_TOTAL.format(full_count,
-                                                full_attack,
-                                                full_defence)
-
-        send_async(bot,
-                   chat_id=GOVERNMENT_CHAT,
-                   text=full_text,
-                   parse_mode=ParseMode.HTML)
+        squads = session.query(Squad).all()
+        text = MSG_REPORT_SUMMARY_RATING
+        now = datetime.now()
+        if (now.hour < 7):
+            now= now - timedelta(days=1)
+        time_from = now.replace(hour=(int((now.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
+        text = MSG_REPORT_SUMMARY_RATING.format(time_from.strftime('%d-%m-%Y %H:%M'))
+        for squad in squads:
+            reports = session.query(User, Report) \
+                .join(SquadMember) \
+                .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from)) \
+                .filter(SquadMember.squad_id == squad.chat_id).order_by(Report.date.desc()).all()
+            full_def = 0
+            full_atk = 0
+            full_exp = 0
+            full_gold = 0
+            full_stock = 0
+            total_reports = 0
+            total_members = 0
+            for user, report in reports:
+                total_members += 1
+                if report:
+                    full_atk += report.attack
+                    full_def += report.defence
+                    full_exp += report.earned_exp
+                    full_gold += report.earned_gold
+                    full_stock += report.earned_stock
+                    total_reports += 1
+            global_def += full_def
+            global_atk += full_atk
+            global_exp += full_exp
+            global_stock += full_stock
+            global_gold += full_gold
+            global_members += total_members
+            global_reports += total_reports
+            text += MSG_REPORT_SUMMARY.format(squad.squad_name, total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock)
+        text +=  MSG_REPORT_SUMMARY.format('TOTAL', global_reports, global_members, global_atk, global_def, global_exp, global_gold, global_stock)
+        send_async(bot, chat_id=GOVERNMENT_CHAT, text=text, parse_mode=ParseMode.HTML, reply_markup=None)
 
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
@@ -445,6 +450,7 @@ def main():
     disp = updater.dispatcher
 
     # on different commands - answer in Telegram
+    #disp.add_handler(CommandHandler("test", ready_to_battle_result))
     disp.add_handler(CommandHandler("start", user_panel))
     disp.add_handler(CommandHandler("admin", admin_panel))
     disp.add_handler(CommandHandler("help", help_msg))
@@ -504,6 +510,7 @@ def main():
     updater.job_queue.run_daily(callback =ready_to_battle, time=time(hour=6, minute=30), context=MSG_MAIN_READY_TO_BATTLE_30)#6
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=6, minute=45), context=MSG_MAIN_READY_TO_BATTLE_45)
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=7, minute=10), context=MSG_MAIN_SEND_REPORTS)
+    updater.job_queue.run_daily(callback=ready_to_battle_result, time=time(hour=8, minute=0))
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=6, minute=55))
     # updater.job_queue.run_daily(ready_to_battle, time(hour=10, minute=50))
@@ -512,6 +519,7 @@ def main():
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=14, minute=30), context =MSG_MAIN_READY_TO_BATTLE_30)
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=14, minute=45), context =MSG_MAIN_READY_TO_BATTLE_45)
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=15, minute=10), context=MSG_MAIN_SEND_REPORTS)
+    updater.job_queue.run_daily(callback=ready_to_battle_result, time=time(hour=16, minute=0))
     # updater.job_queue.run_daily(ready_to_battle_result,)
      #updater.job_queue.run_daily(ready_to_battle, time(hour=14, minute=50))
     # updater.job_queue.run_daily(ready_to_battle_result,
@@ -522,6 +530,7 @@ def main():
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=22, minute=30), context =MSG_MAIN_READY_TO_BATTLE_30)
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=22, minute=45), context =MSG_MAIN_READY_TO_BATTLE_45)
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=23, minute=10), context=MSG_MAIN_SEND_REPORTS)
+    updater.job_queue.run_daily(callback=ready_to_battle_result, time=time(hour=0, minute=0))
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=22, minute=55))
     updater.job_queue.run_daily(fresh_profiles,
