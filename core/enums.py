@@ -4,6 +4,8 @@ from enum import Enum
 
 CASTLE_LIST = ['🌑', '🐺', '🥔','🦅','🦌','🐉','🦈']
 
+TACTICTS_COMMAND_PREFIX = "/tactics_"
+
 class Castle(Enum):
     UNDEFINED = 0
     BLACK = '🌑'

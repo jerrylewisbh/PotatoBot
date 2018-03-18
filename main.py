@@ -268,9 +268,10 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 from_id = update.message.forward_from.id
 
                 if from_id == CWBOT_ID:
+                    print(update.message.text)
                     if text.startswith(STOCK):
                         stock_compare(bot, update, chat_data)
-                    elif re.search(PROFILE, update.message.text) or re.search(HERO, update.message.text):
+                    elif re.search(HERO, update.message.text):
                         char_update(bot, update)
                     elif re.search(REPORT, update.message.text):
                         report_received(bot, update)
@@ -338,7 +339,7 @@ def ready_to_battle_result(bot: Bot, update: Update):
 #def ready_to_battle_result(bot: Bot, job_queue):
     if GOVERNMENT_CHAT is None:
         return
-    
+
     global_def = 0
     global_atk = 0
     global_exp = 0
