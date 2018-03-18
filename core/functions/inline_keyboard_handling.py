@@ -7,7 +7,7 @@ from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, In
 from telegram.ext import JobQueue, Job
 from telegram.ext.dispatcher import run_async
 
-from core.enums import Castle, Icons, CASTLE_LIST
+from core.enums import Castle, Icons, CASTLE_LIST, TACTICTS_COMMAND_PREFIX
 from core.functions.admins import del_adm
 from core.functions.inline_markup import generate_group_info, generate_order_chats_markup, generate_order_groups_markup, \
     generate_ok_markup, generate_forward_markup, generate_groups_manage, generate_group_manage, generate_profile_buttons, generate_squad_list, \
@@ -147,11 +147,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                     order.confirmed_msg = 0
                 session.add(order)
                 session.commit()
-                markup = generate_ok_markup(order.id, 0, order_text in CASTLE_LIST, order_text)
+                markup = generate_ok_markup(order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX) , order_text)
                 msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
             else:
                 markup = None
-                if order_text in CASTLE_LIST:
+                if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX) :
                     markup = generate_forward_markup(order_text,0)
                 msg = send_order(bot, order_text, order_type, data['id'], markup).result().result()
             if order_pin and msg:
@@ -176,11 +176,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                         order.confirmed_msg = 0
                     session.add(order)
                     session.commit()
-                    markup = generate_ok_markup(order.id, 0, order_text in CASTLE_LIST, order_text)
+                    markup = generate_ok_markup(order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX) , order_text)
                     msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
                 else:
                     markup = None
-                    if order_text in CASTLE_LIST:
+                    if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
                         markup = generate_forward_markup(order_text,0)
                     msg = send_order(bot, order_text, order_type, item.chat_id, markup).result().result()
                 if order_pin and msg:
@@ -571,13 +571,14 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
 def inlinequery(bot, update):
     """Handle the inline query."""
     query = update.inline_query.query
-    if query not in CASTLE_LIST:
+    print(update.inline_query.query)
+    if query not in CASTLE_LIST and not query.startswith(TACTICTS_COMMAND_PREFIX):
         return
 
     results = [
         InlineQueryResultArticle(
             id=0,
-            title= ( "DEFEND " if Castle.BLUE.value == query else "ATTACK ") + query,
+            title= ( "DEFEND " if Castle.BLUE.value == query or query.startswith(TACTICTS_COMMAND_PREFIX) else "ATTACK ") + query,
             input_message_content=InputTextMessageContent(query))]
 
     update.inline_query.answer(results)
