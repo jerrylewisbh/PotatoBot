@@ -26,7 +26,7 @@ MSG_LIST_ADMINS_USER_FORMAT = '@{} {} {}\n'
 
 MSG_EMPTY = '[Empty]\n'
 
-MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! ' \
+MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🦅Highnest Castle! ' \
                     'Please send me your game profile from @chtwrsbot ("/hero" command).'
 MSG_ADMIN_WELCOME = 'Welcome, master!'
 
@@ -132,7 +132,7 @@ Reply any message with Delete to delete it
 
 MSG_HELP_USER = "/list_triggers — show all triggers."
 
-MSG_PING = 'Go and dig some potatoes, @{}!'
+MSG_PING = 'Now Fly High, @{}!'
 
 MSG_STOCK_COMPARE_HARVESTED = '📦<b>You got:</b>\n'
 MSG_STOCK_COMPARE_LOST = '\n📦<b>You lost:</b>\n'
@@ -189,28 +189,26 @@ Hurry up to recruit %username%!"""
 MSG_NO_USERNAME = "You have not set up a telegram username, you need to set one up to join squad." 
 MSG_FLAG_CHOOSE_HEADER = 'Choose a castle or send me the order'
 
-MSG_PROFILE_OLD = 'Your profile smells rotten, forward a new one...'
-MSG_PROFILE_SAVED = """Your profile now smells like a really good potato, {}!
-Don't forget to water it regularly 🥔 """
+MSG_PROFILE_OLD = 'Your profile looks old, forward a new one...'
+MSG_PROFILE_SAVED = """Your profile looks great, <b>{}</b>!
+Don't forget to update it regularly. Time to fly high now 🦅 """
 MSG_PROFILE_CASTLE_MISTAKE = """\
-You saw a beautiful potato field not far away from you.
-There was just a fence between you.
-You decided to walk around and find a way in.
+You saw a beautiful cloud not far away from you.
+There was just a little mountain between you.
+You decided to fly around and find a way.
 Two hours later you returned to the same place you started at..."""
 MSG_PROFILE_SHOW_FORMAT = """\
 👤 %first_name% %last_name% (%username%) 
-%castle% %name% of
-%prof% Castle
+%castle% %name% of %prof% Castle
 🏅 level %level% 
 ⚜️ %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
 💰 %gold% | 🔋 %maxStamina%
-%pet%
 🕑 Last update %date%"""
 
 # main.py texts
 MSG_MAIN_INLINE_BATTLE = 'ROGER THAT!'
-MSG_MAIN_READY_TO_BATTLE = 'The battle is in 10 minutes, 🛡🥔 HOLD DEFENSE HIDE GOLD AND WAIT FOR COMMANDS'
+MSG_MAIN_READY_TO_BATTLE = 'The battle is in 10 minutes, 🛡HOLD DEFENSE HIDE GOLD AND WAIT FOR COMMANDS'
 MSG_MAIN_READY_TO_BATTLE_30 = '❗️⚔️WAR IN 30 MINUTES ⚔️❗️\
 \n\n\
 CLOSE TRADES ⚖️ HIDE GOLD💰AND STOCK 📦 \
@@ -235,7 +233,7 @@ MSG_MAIN_SEND_REPORTS = '⚔️BATTLE IS OVER ⚔️\
 \n\n\
 📜send me your reports📜\
 \n\n\
-➡️@PotatoCastle_bot⬅️'
+➡️@BotnestBot⬅️'
 
 # -----------------------
 MSG_BUILD_REPORT_EXISTS = 'This report already exists!'
@@ -243,11 +241,11 @@ MSG_BUILD_REPORT_OK = 'Thanks for the help! This is your {} report.'
 MSG_BUILD_REPORT_FORWARDED = 'Do not send me any more reports from alternative accounts !!! '
 MSG_BUILD_REPORT_TOO_OLD = 'This report is very old, I can not accept it.'
 
-MSG_REPORT_OLD = 'Your report stinks like rotten potato, next time try to send it within a minute after receiving."'
+MSG_REPORT_OLD = 'Your report stinks like rotten egg, next time try to send it within a minute after receiving."'
 MSG_REPORT_EXISTS = 'The report for this battle has already been submitted.'
 MSG_REPORT_OK = 'Thank you. Do not forget to forward reports on every battle.'
 
-MSG_PROFILE_NOT_FOUND = 'In the potato plantation records, there is still no data about this hero'
+MSG_PROFILE_NOT_FOUND = 'In the Highnest Library records, there is still no data about this hero'
 MSG_SQUAD_REQUEST_EMPTY = 'At the moment no one wants to join you.'
 
 MSG_NO_PROFILE_IN_BOT = 'First give me a recent profile!'
@@ -256,7 +254,7 @@ MSG_SQUAD_RECRUITING_DISABLED = 'Squad recruiting is disabled!'
 MSG_SQUAD_NO_PROFILE = 'First I need him/her to give me a recent profile!'
 MSG_SQUAD_GREEN_INLINE_BUTTON = '✅Yes'
 MSG_SQUAD_RED_INLINE_BUTTON = '❌No'
-MSG_SQUAD_NEW = """Now this is the squad {}!
+MSG_SQUAD_NEW = """Now this is the squad <b>{}</b>!
 Do not forget to set a link to invite new members."""
 MSG_SQUAD_LINK_SAVED = """Invitation link saved!
 New members will not pass by now!"""
@@ -286,7 +284,7 @@ MSG_TRIGGER_DEL = 'The trigger for "{}" has been deleted.'
 MSG_TRIGGER_DEL_ERROR = 'Where did you see such a trigger? 0_o'
 MSG_TRIGGER_LIST_HEADER = 'List of current triggers: \n'
 
-MSG_THORNS = 'This fool {} does not look like a potato, let the straw man kick his ass'
+MSG_THORNS = 'This fool {} does not look like an eagle, let the straw man kick his ass'
 
 MSG_WELCOME_DEFAULT = 'Hi, %username%!'
 MSG_WELCOME_SET = 'The welcome text is set.'
@@ -306,10 +304,10 @@ MSG_WANTS_TO_JOIN = '\n\nWants to join {}'
 MSG_CLEARED = 'Done'
 
 MSG_SQUAD_LIST = 'List of your squads:'
-MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter this squad. \
+MSG_SQUAD_REQUEST_EXISTS = 'You already have requested to enter this squad. \
 Exit the current squad or cancel the request to create a new one. '
 MSG_SQUAD_REQUEST = 'Here are the requests you have receive:'
-MSG_SQUAD_LEAVED = '{} left the squad {}, Who cares ?'
+MSG_SQUAD_LEAVED = '{} left the squad {}, Bye'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
 MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. \
@@ -320,8 +318,8 @@ MSG_SQUAD_REQUEST_NEW = 'There are new applications for your squad'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'You were accepted into the squad'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK = 'You were accepted into the squad join using {}'
 MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'You application was rejected'
-MSG_SQUAD_CLEAN = """Harvesting in the squad {}.
-Guess who is going to have a rest later today? """
+MSG_SQUAD_CLEAN = """Clean in the squad {}.
+Choose a squad member to kick him or her out"""
 MSG_SQUAD_ADD = '{}, Do you want to join the squad?'
 MSG_SQUAD_ADD_IN_SQUAD = '{} is already in a squad (perhaps not yours)'
 MSG_SQUAD_ADD_ACCEPTED = '{} Accepted the offer'
@@ -348,7 +346,9 @@ MSG_TOP_WEEK_BUILDERS = '👷Top builders of the week:\n'
 MSG_TOP_WEEK_WARRIORS = '⛳️Top battle attendance:\n\n'
 MSG_TOP_WEEK_WARRIORS_SQUAD = '⛳️Reports sent on the past 7 days for {}:\n\n'
 
-MSG_UPDATE_PROFILE = 'Send me a new profile (🏅 command "/hero"), or you might be kicked of .'
+MSG_UPDATE_PROFILE = 'Your profile needs to be updated. Please, send me a new one (🏅 command "/hero").\n If you don\'t update you profile often you may be demoted from your squad.'
+MSG_SQUAD_DELETE_OUTDATED = 'You were kicked from the squad for not updating your profile for a long time.'
+
 MSG_SQUAD_DELETE_OUTDATED = 'You were kicked from the squad for not updating your profile for a long time.'
 MSG_SQUAD_DELETE_OUTDATED_EXT = '{} (@{}) was kicked from {} for not updating profile for a long time.'
 
