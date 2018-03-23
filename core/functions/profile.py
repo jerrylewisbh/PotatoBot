@@ -46,6 +46,7 @@ def parse_profile(profile, user_id, date, session):
 
 
 def parse_hero(profile, user_id, date, session):
+    print("PARSE HERO")
     parsed_data = re.search(HERO, profile)
     char = session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
@@ -66,11 +67,12 @@ def parse_hero(profile, user_id, date, session):
         if parsed_data.group(20):
             char.pet = str(parsed_data.group(20))
             char.petLevel = int(parsed_data.group(22))
+        print("equip " + parsed_data.group(17))
         if parsed_data.group(17):
             equip = Equip()
             equip.user_id = user_id
             equip.date = date
-            equip.equip = str(parsed_data.group(15))
+            equip.equip = str(parsed_data.group(17))
             session.add(equip)
         session.add(char)
         if char.castle == CASTLE:
