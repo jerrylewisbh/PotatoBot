@@ -63,14 +63,14 @@ def parse_hero(profile, user_id, date, session):
         char.maxStamina = int(parsed_data.group(10))
         char.gold = int(parsed_data.group(11)) + int(parsed_data.group(12)) if parsed_data.group(12) else 0
         char.donateGold = 0 # int(parsed_data.group(12))
-        if parsed_data.group(23):
-            char.pet = str(parsed_data.group(23))
-            char.petLevel = int(parsed_data.group(24))
-        if parsed_data.group(17):
+        if parsed_data.group(24):
+            char.pet = str(parsed_data.group(24))
+            char.petLevel = int(parsed_data.group(25))
+        if parsed_data.group(18):
             equip = Equip()
             equip.user_id = user_id
             equip.date = date
-            equip.equip = str(parsed_data.group(17))
+            equip.equip = str(parsed_data.group(18))
             session.add(equip)
         session.add(char)
         if char.castle == CASTLE:
@@ -88,18 +88,18 @@ def parse_reports(report, user_id, date, session):
         report.castle = str(parsed_data.group(1))
         report.name = str(parsed_data.group(2))
         report.attack = str(parsed_data.group(3))
-        report.defence = str(parsed_data.group(4))
-        report.level = int(parsed_data.group(5))
-        if parsed_data.group(6):
-            report.earned_exp = int(parsed_data.group(6))
+        report.defence = str(parsed_data.group(5))
+        report.level = int(parsed_data.group(7))
+        if parsed_data.group(8):
+            report.earned_exp = int(parsed_data.group(8))
         else:
             report.earned_exp = 0
-        if parsed_data.group(7):
-            report.earned_gold = int(parsed_data.group(7))
+        if parsed_data.group(9):
+            report.earned_gold = int(parsed_data.group(9))
         else:
             report.earned_gold = 0
-        if parsed_data.group(8):
-            report.earned_stock = int(parsed_data.group(8))
+        if parsed_data.group(10):
+            report.earned_stock = int(parsed_data.group(10))
         else:
             report.earned_stock = 0
         session.add(report)
