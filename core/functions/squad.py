@@ -13,7 +13,6 @@ from core.functions.inline_markup import generate_squad_list, generate_leave_squ
     generate_yes_no
 from core.texts import *
 from core.constants import *
-from core.texts import MSG_NO_USERNAME
 from config import CASTLE
 
 TOP_START_DATE = datetime(2017, 12, 11)
@@ -320,6 +319,33 @@ def add_to_squad(bot: Bot, update: Update, session):
                     send_async(bot, chat_id=update.message.chat.id,
                             text=MSG_SQUAD_ADD.format('@' + username),
                             reply_markup=markup)
+
+
+
+@admin_allowed(AdminType.FULL)
+def force_add_to_squad(bot: Bot, update: Update, session):
+    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    if squad is not None:
+        username = update.message.text.split(' ', 1)
+        if len(username) == 2:
+            username = username[1].replace('@', '')
+            user = session.query(User).filter_by(username=username).first()
+            if user is not None:
+                if user.character is None:
+                    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
+                elif user.member is not None:
+                    send_async(bot, chat_id=update.message.chat.id,
+                            text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
+                else:
+                    member = session.query(SquadMember).filter_by(user_id=user.id).first()
+                    if member is None:
+                        member = SquadMember()
+                        member.user_id = user.id
+                        member.squad_id = update.message.chat.id
+                        member.approved = True
+                        session.add(member)
+                        session.commit()
+                        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_ADD_FORCED.format('@'+user.username))
 
 
 @admin_allowed(AdminType.GROUP)

@@ -58,7 +58,7 @@ from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
     enable_thorns, disable_thorns, enable_silence, disable_silence,enable_reminders,disable_reminders,
     squad_list, squad_request, list_squad_requests,
-    open_hiring, close_hiring, remove_from_squad, add_to_squad,
+    open_hiring, close_hiring, remove_from_squad, add_to_squad, force_add_to_squad,
     leave_squad_request, squad_about, call_squad, battle_reports_show, battle_attendance_show)
 from core.functions.statistics import statistic_about, exp_statistic
 from core.functions.top import top_about, attack_top, exp_top, def_top, global_build_top, week_build_top, \
@@ -491,6 +491,7 @@ def main():
     disp.add_handler(CommandHandler("findc", find_by_character))
     disp.add_handler(CommandHandler("findi", find_by_id))
     disp.add_handler(CommandHandler("add", add_to_squad))
+    disp.add_handler(CommandHandler("forceadd", force_add_to_squad))
     disp.add_handler(CommandHandler("ban", ban))
     disp.add_handler(CommandHandler("unban", unban))
 
@@ -510,7 +511,7 @@ def main():
     #
     updater.job_queue.run_daily(callback =ready_to_battle, time=time(hour=6, minute=30), context=MSG_MAIN_READY_TO_BATTLE_30)#6
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=6, minute=45), context=MSG_MAIN_READY_TO_BATTLE_45)
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=7, minute=10), context=MSG_MAIN_SEND_REPORTS)
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=7, minute=3), context=MSG_MAIN_SEND_REPORTS)
     updater.job_queue.run_daily(callback=ready_to_battle_result, time=time(hour=8, minute=0))
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=6, minute=55))
@@ -519,7 +520,7 @@ def main():
     #                             time(hour=10, minute=55))
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=14, minute=30), context =MSG_MAIN_READY_TO_BATTLE_30)
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=14, minute=45), context =MSG_MAIN_READY_TO_BATTLE_45)
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=15, minute=10), context=MSG_MAIN_SEND_REPORTS)
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=15, minute=3), context=MSG_MAIN_SEND_REPORTS)
     updater.job_queue.run_daily(callback=ready_to_battle_result, time=time(hour=16, minute=0))
     # updater.job_queue.run_daily(ready_to_battle_result,)
      #updater.job_queue.run_daily(ready_to_battle, time(hour=14, minute=50))
@@ -530,7 +531,7 @@ def main():
     #                             time(hour=18, minute=55))
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=22, minute=30), context =MSG_MAIN_READY_TO_BATTLE_30)
     updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=22, minute=45), context =MSG_MAIN_READY_TO_BATTLE_45)
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=23, minute=10), context=MSG_MAIN_SEND_REPORTS)
+    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=23, minute=3), context=MSG_MAIN_SEND_REPORTS)
     updater.job_queue.run_daily(callback=ready_to_battle_result, time=time(hour=0, minute=0))
     # updater.job_queue.run_daily(ready_to_battle_result,
     #                             time(hour=22, minute=55))
