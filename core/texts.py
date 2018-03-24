@@ -72,6 +72,7 @@ Squad commands:
 /set_squad_name <name> - Change the name of the squad 
 /set_invite_link <link> - Set up the invite link that will be sent to approved members
 /add <user> - Ask an user to join the squad 
+/forceadd <user> - add user to a squad without asking for confirmation
 /ban <user> <reason> - Ban an user from the squad 
 /unban <user> - Unban an user from the squad
 
@@ -151,7 +152,7 @@ Trigger allowed: {}
 Thorns: {}"""
 
 MSG_GROUP_STATUS_ADMIN_FORMAT = '{} @{} {} {}\n'
-MSG_GROUP_STATUS_DEL_ADMIN = 'Bust {} {}'
+MSG_GROUP_STATUS_DEL_ADMIN = 'Demote {} {}'
 
 MSG_ON = 'Enabled'
 MSG_OFF = 'Disabled'
@@ -309,7 +310,7 @@ MSG_SQUAD_LIST = 'List of your squads:'
 MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter this squad. \
 Exit the current squad or cancel the request to create a new one. '
 MSG_SQUAD_REQUEST = 'Here are the requests you have receive:'
-MSG_SQUAD_LEAVED = '{} left the squad {}, Who cares ?'
+MSG_SQUAD_LEAVED = '{} left the squad {} 😰'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
 MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. \
@@ -321,11 +322,12 @@ MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'You were accepted into the squad'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK = 'You were accepted into the squad join using {}'
 MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'You application was rejected'
 MSG_SQUAD_CLEAN = """Harvesting in the squad {}.
-Guess who is going to have a rest later today? """
+Who do you want to kick? """
 MSG_SQUAD_ADD = '{}, Do you want to join the squad?'
 MSG_SQUAD_ADD_IN_SQUAD = '{} is already in a squad (perhaps not yours)'
 MSG_SQUAD_ADD_ACCEPTED = '{} Accepted the offer'
-MSG_SQUAD_ADD_DECLINED = '{} declined, who cares?'
+MSG_SQUAD_ADD_FORCED = '{} was added to the squad'
+MSG_SQUAD_ADD_DECLINED = '{} declined, 😰'
 MSG_SQUAD_NONE = 'It looks like you are not in a squad'
 
 MSG_SQUAD_READY = '{} warriors of <b>{}</b> are ready to battle!\n{}⚔ {}🛡'
