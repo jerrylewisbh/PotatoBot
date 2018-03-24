@@ -46,7 +46,6 @@ def parse_profile(profile, user_id, date, session):
 
 
 def parse_hero(profile, user_id, date, session):
-    print("PARSE HERO")
     parsed_data = re.search(HERO, profile)
     char = session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
@@ -89,19 +88,19 @@ def parse_reports(report, user_id, date, session):
         report.date = date
         report.castle = str(parsed_data.group(1))
         report.name = str(parsed_data.group(2))
-        report.attack = str(parsed_data.group(3))
-        report.defence = str(parsed_data.group(4))
-        report.level = int(parsed_data.group(5))
-        if parsed_data.group(6):
-            report.earned_exp = int(parsed_data.group(6))
+        report.attack = int(parsed_data.group(3))  + int(parsed_data.group(4) if parsed_data.group(4) else 0)
+        report.defence = int(parsed_data.group(6))  + int(parsed_data.group(7) if parsed_data.group(7) else 0)
+        report.level = int(parsed_data.group(9))
+        if parsed_data.group(10):
+            report.earned_exp = int(parsed_data.group(10))
         else:
             report.earned_exp = 0
-        if parsed_data.group(7):
-            report.earned_gold = int(parsed_data.group(7))
+        if parsed_data.group(11):
+            report.earned_gold = int(parsed_data.group(11))
         else:
             report.earned_gold = 0
-        if parsed_data.group(8):
-            report.earned_stock = int(parsed_data.group(8))
+        if parsed_data.group(12):
+            report.earned_stock = int(parsed_data.group(12))
         else:
             report.earned_stock = 0
         session.add(report)
