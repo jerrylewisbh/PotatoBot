@@ -384,7 +384,8 @@ def ready_to_battle_result(bot: Bot, update: Update):
             global_gold += full_gold
             global_members += total_members
             global_reports += total_reports
-            text += MSG_REPORT_SUMMARY.format(squad.squad_name, total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock)
+            if total_members > 0:
+                text += MSG_REPORT_SUMMARY.format(squad.squad_name, total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock)
         text +=  MSG_REPORT_SUMMARY.format('TOTAL', global_reports, global_members, global_atk, global_def, global_exp, global_gold, global_stock)
         send_async(bot, chat_id=GOVERNMENT_CHAT, text=text, parse_mode=ParseMode.HTML, reply_markup=None)
 
