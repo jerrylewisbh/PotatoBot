@@ -88,8 +88,8 @@ def parse_reports(report, user_id, date, session):
         report.date = date
         report.castle = str(parsed_data.group(1))
         report.name = str(parsed_data.group(2))
-        report.attack = int(parsed_data.group(3))  + int(parsed_data.group(4) if parsed_data.group(4) else 0)
-        report.defence = int(parsed_data.group(6))  + int(parsed_data.group(7) if parsed_data.group(7) else 0)
+        report.attack = int(parsed_data.group(3))  #+ int(parsed_data.group(4) if parsed_data.group(4) else 0)
+        report.defence = int(parsed_data.group(6))  #+ int(parsed_data.group(7) if parsed_data.group(7) else 0)
         report.level = int(parsed_data.group(9))
         if parsed_data.group(10):
             report.earned_exp = int(parsed_data.group(10))
