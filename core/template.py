@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from core.texts import MSG_NO_SQUAD, MSG_WANTS_TO_JOIN, MSG_NO_PET
-from core.types import User, Character
+from core.texts import MSG_NO_SQUAD, MSG_WANTS_TO_JOIN, MSG_NO_PET, MSG_NO_PROFESSION
+from core.types import User, Character, Profession
 
 
 def fill_template(msg: str, user: User):
@@ -15,7 +15,7 @@ def fill_template(msg: str, user: User):
     return msg
 
 
-def fill_char_template(msg: str, user: User, char: Character, squad_request=False):
+def fill_char_template(msg: str, user: User, char: Character, profession: Profession,squad_request=False):
     msg = fill_template(msg, user)
     msg = msg.replace('%date%', str(char.date))
     msg = msg.replace('%name%', str(char.name))
@@ -41,4 +41,9 @@ def fill_char_template(msg: str, user: User, char: Character, squad_request=Fals
         msg = msg.replace('%pet%', MSG_NO_PET)
     if squad_request:
         msg += MSG_WANTS_TO_JOIN.format(user.member.squad.squad_name)
+    if profession is not None:
+        msg = msg.replace('%profession%', profession.name)
+    else:
+        msg = msg.replace('%profession%', MSG_NO_PROFESSION)
+
     return msg

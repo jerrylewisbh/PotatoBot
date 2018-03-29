@@ -1,8 +1,8 @@
 from telegram import Update, Bot, ParseMode
 
 from core.functions.inline_keyboard_handling import generate_profile_buttons
-from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT
-from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport
+from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT, PROFESSION
+from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport, Profession
 from core.utils import send_async
 from datetime import timedelta, datetime
 import re
@@ -107,6 +107,23 @@ def parse_reports(report, user_id, date, session):
     return report
 
 
+def parse_profession(prof, user_id, date, session):
+    parsed_data = re.search(PROFESSION, prof)
+    profession = None
+    if parsed_data is not None:
+        profession = Profession()
+        profession.user_id = user_id
+        profession.date = date
+        profession.name = str(parsed_data.group(1))
+        strings = prof.splitlines()
+        skillList = ""
+        for string in strings[2:]:
+            skillList += string.split("/")[0] + "\n"
+        profession.skillList = skillList
+        session.add(profession)
+        session.commit()
+    return profession
+
 def parse_build_reports(report, user_id, date, session):
     parsed_data = re.search(BUILD_REPORT, report)
     report = session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
@@ -209,7 +226,6 @@ def report_received(bot: Bot, update: Update, session):
 
 @user_allowed(False)
 def char_update(bot: Bot, update: Update, session):
-    print("updating char");
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
     else:
@@ -237,20 +253,37 @@ def char_update(bot: Bot, update: Update, session):
                        parse_mode=ParseMode.HTML)
 
 
+@user_allowed(False)
+def profession_update(bot: Bot, update: Update, session):
+    if update.message.date - update.message.forward_date > timedelta(minutes=1):
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
+    else:
+        profession = None
+        if re.search(PROFESSION, update.message.text):
+            profession = parse_profession(update.message.text,
+                              update.message.from_user.id,
+                              update.message.forward_date,
+                              session)
+            if profession:
+                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(profession.name),parse_mode=ParseMode.HTML)
+
+
+
 @user_allowed
 def char_show(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
         user = session.query(User).filter_by(id=update.message.from_user.id).first()
         if user is not None and user.character is not None:
             char = user.character
+            profession = user.profession
             if CASTLE:
                 if char.castle == CASTLE or user.id == EXT_ID :
                     char.castle = CASTLE
-                    text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
+                    text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                     btns = generate_profile_buttons(user)
                     send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
-                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
+                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
 
@@ -264,7 +297,8 @@ def find_by_username(bot: Bot, update: Update, session):
             user = session.query(User).filter_by(username=msg).first()
             if user is not None and user.character:
                 char = user.character
-                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
+                profession = user.profession
+                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
@@ -279,7 +313,8 @@ def find_by_character(bot: Bot, update: Update, session):
             char = session.query(Character).filter_by(name=msg).first()
             if char is not None and char.user:
                 user = char.user
-                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
+                profession = user.profession
+                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
@@ -294,7 +329,8 @@ def find_by_id(bot: Bot, update: Update, session):
             user = session.query(User).filter_by(id=msg).first()
             if user is not None and user.character:
                 char = user.character
-                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char)
+                profession = user.profession
+                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:

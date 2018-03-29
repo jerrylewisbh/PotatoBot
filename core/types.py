@@ -104,6 +104,11 @@ class User(Base):
                                 back_populates='user',
                                 order_by='BuildReport.date.desc()')
 
+    profession = relationship('Profession',
+                         back_populates='user',
+                         order_by='Profession.date.desc()',
+                         uselist=False)
+
     def __repr__(self):
         user = ''
         if self.first_name:
@@ -207,6 +212,17 @@ class Stock(Base):
     stock_type = Column(Integer)
 
     user = relationship('User', back_populates='stock')
+
+class Profession(Base):
+    __tablename__ = 'profession'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(BigInteger, ForeignKey(User.id))
+    skillList = Column(UnicodeText(2500))
+    name = Column(UnicodeText(250))
+    date = Column(DATETIME(fsp=6), default=datetime.now())
+
+    user = relationship('User', back_populates='profession')
 
 
 class Character(Base):

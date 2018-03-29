@@ -202,6 +202,7 @@ MSG_PROFILE_SHOW_FORMAT = """\
 👤 %first_name% %last_name% (%username%) 
 %castle% %name% of
 %prof% Castle
+🏛 %profession% 
 🏅 level %level% 
 ⚜️ %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
@@ -302,6 +303,7 @@ because of high server load due to continuous updates'
 
 MSG_NO_SQUAD = 'squadless'
 MSG_NO_PET = ''
+MSG_NO_PROFESSION = 'Classless'
 MSG_WANTS_TO_JOIN = '\n\nWants to join {}'
 
 MSG_CLEARED = 'Done'
@@ -394,6 +396,7 @@ MSG_REPORT_SUMMARY_ROW_EMPTY = '<b>{}</b> (@{}) ❗\n'
 BTN_HERO = '🏅Hero'
 BTN_STOCK = '📦Stock'
 BTN_EQUIPMENT = '🎽Equipment'
+BTN_PROFESSIONS = '🏛Skills'
 
 BTN_YES = '✅YES'
 BTN_NO = '❌NO'

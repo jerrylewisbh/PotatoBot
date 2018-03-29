@@ -52,7 +52,7 @@ from core.functions.inline_keyboard_handling import (
 from core.functions.inline_markup import QueryType
 from core.functions.order_groups import group_list, add_group
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
-from core.functions.profile import char_update, char_show, find_by_username, find_by_character, find_by_id,report_received, build_report_received, \
+from core.functions.profile import char_update, profession_update,char_show, find_by_username, find_by_character, find_by_id,report_received, build_report_received, \
     repair_report_received
 from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
@@ -71,7 +71,7 @@ from core.functions.triggers import (
 from core.functions.welcome import (
     welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 )
-from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT
+from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT, PROFESSION
 from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL, 
     MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,MSG_MAIN_SEND_REPORTS,MSG_REPORT_SUMMARY,MSG_REPORT_SUMMARY_RATING,MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
@@ -279,6 +279,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                         build_report_received(bot, update)
                     elif re.search(REPAIR_REPORT, update.message.text):
                         repair_report_received(bot, update)
+                    elif re.search(PROFESSION, update.message.text):
+                        profession_update(bot, update)
                 elif from_id == TRADEBOT_ID:
                     if TRADE_BOT in text:
                         trade_compare(bot, update, chat_data)
