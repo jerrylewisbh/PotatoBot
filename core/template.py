@@ -29,6 +29,7 @@ def fill_char_template(msg: str, user: User, char: Character, squad_request=Fals
     msg = msg.replace('%needExp%', str(char.needExp))
     msg = msg.replace('%castle%', str(char.castle))
     msg = msg.replace('%gold%', str(char.gold))
+    msg = msg.replace('%pouches%', str(char.donateGold))
     if user.member is not None and user.member.approved:
         msg = msg.replace('%squad%', user.member.squad.squad_name)
     else:
