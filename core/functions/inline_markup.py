@@ -11,7 +11,7 @@ from core.texts import MSG_GROUP_STATUS_ADMIN_FORMAT, MSG_GROUP_STATUS_DEL_ADMIN
     MSG_ORDER_GROUP_DEL, MSG_BACK, MSG_ORDER_PIN, MSG_ORDER_NO_PIN, MSG_ORDER_BUTTON, MSG_ORDER_NO_BUTTON, \
     MSG_ORDER_TO_SQUADS, MSG_ORDER_ACCEPT,MSG_ORDER_FORWARD, MSG_ORDER_GROUP_ADD, MSG_SYMBOL_ON, MSG_SYMBOL_OFF, \
     MSG_SQUAD_GREEN_INLINE_BUTTON, MSG_SQUAD_RED_INLINE_BUTTON, BTN_HERO, BTN_STOCK, BTN_EQUIPMENT, BTN_YES, BTN_NO, \
-    BTN_LEAVE, BTN_ACCEPT, BTN_DECLINE, BTN_WEEK, BTN_ALL_TIME, BTN_SQUAD_WEEK, BTN_SQUAD_ALL_TIME
+    BTN_LEAVE, BTN_ACCEPT, BTN_DECLINE, BTN_WEEK, BTN_ALL_TIME, BTN_SQUAD_WEEK, BTN_SQUAD_ALL_TIME, BTN_PROFESSIONS
 from core.types import Group, Admin, User, Squad, AdminType, OrderGroup, Character
 
 
@@ -50,6 +50,7 @@ class QueryType(Enum):
     BattleGlobalTop = 31
     BattleWeekTop = 32
     Forward = 33
+    ShowSkills = 34
     Yes = 100
     No = 200
 
@@ -233,6 +234,9 @@ def generate_profile_buttons(user, back_key=False):
     if user.equip:
         inline_keys.append([InlineKeyboardButton(BTN_EQUIPMENT, callback_data=json.dumps(
             {'t': QueryType.ShowEquip.value, 'id': user.id, 'b': back_key}))])
+    if user.profession:
+        inline_keys.append([InlineKeyboardButton(BTN_PROFESSIONS, callback_data=json.dumps(
+            {'t': QueryType.ShowSkills.value, 'id': user.id, 'b': back_key}))])
     if back_key:
         inline_keys.append(
             [InlineKeyboardButton(MSG_BACK,

@@ -203,7 +203,7 @@ def list_squad_requests(bot: Bot, update: Update, session):
             count += 1
             markup = generate_squad_request_answer(member.user_id)
             send_async(bot, chat_id=update.message.chat.id,
-                       text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character, True),
+                       text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character,  member.user.profession,True),
                        reply_markup=markup, parse_mode=ParseMode.HTML)
     if count == 0:
         send_async(bot, chat_id=update.message.chat.id,
