@@ -205,7 +205,7 @@ MSG_PROFILE_SHOW_FORMAT = """\
 🏅 level %level% 
 ⚜️ %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
-💰 %gold% | 🔋 %maxStamina%
+💰 %gold% | 👝 %pouches% | 🔋 %maxStamina%
 %pet%
 🕑 Last update %date%"""
 
