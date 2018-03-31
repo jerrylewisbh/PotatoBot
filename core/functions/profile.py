@@ -310,7 +310,7 @@ def find_by_character(bot: Bot, update: Update, session):
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg != '':
-            char = session.query(Character).filter_by(name=msg).first()
+            char = session.query(Character).filter_by(name=msg).order_by(Character.date.desc()).first()
             if char is not None and char.user:
                 user = char.user
                 profession = user.profession
