@@ -381,7 +381,7 @@ def battle_attendance_show(bot: Bot, update: Update, session):
         actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
             group_by(Character.user_id)
         actual_profiles = actual_profiles.all()
-
+        today = datetime.today().date()
         battles = session.query(Character, func.count(Report.user_id))\
             .outerjoin(Report, Report.user_id == Character.user_id) \
             .join(SquadMember, SquadMember.user_id == Character.user_id)\
@@ -390,6 +390,7 @@ def battle_attendance_show(bot: Bot, update: Update, session):
                     .in_([(a[0], a[1]) for a in actual_profiles]),
                     Character.date > datetime.now() - timedelta(days=7))\
             .filter(SquadMember.squad_id == adm.admin_group).group_by(Character)\
+            .filter(Report.date > today - timedelta(days=today.weekday())) \
             .order_by(func.count(Report.user_id).desc())
         print(str(battles))
         battles = battles.all()
