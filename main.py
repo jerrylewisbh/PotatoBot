@@ -268,7 +268,6 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 from_id = update.message.forward_from.id
 
                 if from_id == CWBOT_ID:
-                    print(update.message.text)
                     if text.startswith(STOCK):
                         stock_compare(bot, update, chat_data)
                     elif re.search(HERO, update.message.text):
@@ -427,6 +426,12 @@ def fresh_profiles(bot: Bot, job_queue):
         for member, user in members:
             session.delete(member)
             admins = session.query(Admin).filter_by(admin_group=member.squad_id).all()
+            try:
+                bot.restrictChatMember(member.squad_id, member.user_id)
+                bot.kick_chat_member(member.squad_id, member.user_id)
+            except TelegramError as err:
+                bot.logger.error(err.message)
+
             for adm in admins:
                 send_async(bot, chat_id=adm.user_id,
                            text=MSG_SQUAD_DELETE_OUTDATED_EXT

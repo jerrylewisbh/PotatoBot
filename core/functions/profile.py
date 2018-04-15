@@ -7,6 +7,7 @@ from core.utils import send_async
 from datetime import timedelta, datetime
 import re
 from core.template import fill_char_template
+from core.functions.ban import ban_traitor
 from core.texts import *
 from enum import Enum
 
@@ -42,6 +43,8 @@ def parse_profile(profile, user_id, date, session):
         session.add(char)
         if char.castle == CASTLE:
             session.commit()
+        else:
+            print('Traitor')
     return char
 
 
@@ -75,6 +78,8 @@ def parse_hero(profile, user_id, date, session):
         session.add(char)
         if char.castle == CASTLE:
             session.commit()
+        else:
+            print('Traitor')
     return char
 
 
@@ -102,8 +107,11 @@ def parse_reports(report, user_id, date, session):
             report.earned_stock = int(parsed_data.group(12))
         else:
             report.earned_stock = 0
-        session.add(report)
-        session.commit()
+        if report.castle == CASTLE:
+            session.add(report)
+            session.commit()
+        else:
+            print('Traitor')
     return report
 
 
@@ -195,33 +203,40 @@ def repair_report_received(bot: Bot, update: Update, session):
 
 @user_allowed(False)
 def report_received(bot: Bot, update: Update, session):
-    # if datetime.now() - update.message.forward_date > timedelta(minutes=1):
-    #     send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
-    # else:
-    report = re.search(REPORT, update.message.text)
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
-    if report and user.character and str(report.group(2)) == user.character.name:
-        
-        date= update.message.forward_date
-        if (update.message.forward_date.hour < 7):
-            date= update.message.forward_date - timedelta(days=1)
-        
-        time_from = date.replace(hour=(int((update.message.forward_date.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
- 
-        date= update.message.forward_date
-        if (update.message.forward_date.hour == 23):
-            date= update.message.forward_date + timedelta(days=1)
+    if datetime.now() - update.message.forward_date > timedelta(minutes=1):
+         send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
+    else:
+        report = re.search(REPORT, update.message.text)
+        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+        if report and user.character and str(report.group(2)) == user.character.name:
+            
+            date= update.message.forward_date
+            if (update.message.forward_date.hour < 7):
+                date= update.message.forward_date - timedelta(days=1)
+            
+            time_from = date.replace(hour=(int((update.message.forward_date.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
+     
+            date= update.message.forward_date
+            if (update.message.forward_date.hour == 23):
+                date= update.message.forward_date + timedelta(days=1)
 
-        time_to = date.replace(hour=(int((update.message.forward_date.hour+1) / 8 + 1) * 8 - 1) % 24, minute=0, second=0)
-        
+            time_to = date.replace(hour=(int((update.message.forward_date.hour+1) / 8 + 1) * 8 - 1) % 24, minute=0, second=0)
+            
 
-        report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
-                                              Report.user_id == update.message.from_user.id).all()
-        if len(report) == 0:
-            parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
-            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
-        else:
-            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
+            report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
+                                                  Report.user_id == update.message.from_user.id).all()
+
+            if len(report) > 0 and report[0].castle != CASTLE or True:
+                ban_traitor(bot, session,update.message.from_user.id)
+
+            if len(report) == 0:
+                parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+                send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
+                if report and report.castle != CASTLE or True:
+                    ban_traitor(bot, session,update.message.from_user.id)
+
+            else:
+                send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
 
 
 @user_allowed(False)
@@ -251,6 +266,8 @@ def char_update(bot: Bot, update: Update, session):
         else:
             send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
                        parse_mode=ParseMode.HTML)
+        if char and char.castle != CASTLE:
+            ban_traitor(bot, session , update.message.from_user.id)
 
 
 @user_allowed(False)
