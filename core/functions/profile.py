@@ -232,7 +232,7 @@ def report_received(bot: Bot, update: Update, session):
             if len(report) == 0:
                 parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
                 send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
-                if report and report.castle != CASTLE or True:
+                if report and report.castle != CASTLE:
                     ban_traitor(bot, session,update.message.from_user.id)
 
             else:
