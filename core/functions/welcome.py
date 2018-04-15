@@ -25,7 +25,7 @@ def welcome(bot: Bot, update: Update, session):
                     allow_anywhere = True
                     break
 
-            if update.message.chat.id != CASTLE_CHAT_ID or True:
+            if update.message.chat.id != CASTLE_CHAT_ID:
                 if group.welcome_enabled:
                     welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
                     send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
