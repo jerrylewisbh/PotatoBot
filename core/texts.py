@@ -190,7 +190,7 @@ Hurry up to recruit %username%!"""
 MSG_NO_USERNAME = "You have not set up a telegram username, you need to set one up to join squad." 
 MSG_FLAG_CHOOSE_HEADER = 'Choose a castle or send me the order'
 
-MSG_PROFILE_OLD = 'Your profile smells rotten, forward a new one...'
+MSG_PROFILE_OLD = 'Your profile smells rotten, forward a new one generated within one minute.'
 MSG_PROFILE_SAVED = """Your profile now smells like a really good potato, {}!
 Don't forget to water it regularly 🥔 """
 MSG_PROFILE_CASTLE_MISTAKE = """\
@@ -316,7 +316,7 @@ MSG_SQUAD_LEAVED = '{} left the squad {} 😰'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
 MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. \
-To speed up the decision-making process, you can write to the heads of the squad: {}.'
+The captains as {} and they will contact you soon. Be patient, the process is manual and there is a small queue.'
 MSG_SQUAD_REQUEST_ACCEPTED = 'The request from {} is accepted.'
 MSG_SQUAD_REQUEST_DECLINED = '{} is useless, no one cares.'
 MSG_SQUAD_REQUEST_NEW = 'There are new applications for your squad'
@@ -357,7 +357,8 @@ MSG_SQUAD_DELETE_OUTDATED = 'You were kicked from the squad for not updating you
 MSG_SQUAD_DELETE_OUTDATED_EXT = '{} (@{}) was kicked from {} for not updating profile for a long time.'
 
 MSG_ALREADY_BANNED = 'This user is already banned. The reason is: {2}.'
-MSG_USER_BANNED = '{} violated the rules and was kicked from!'
+MSG_USER_BANNED = '{} violated the rules and was kicked off!'
+MSG_USER_BANNED_TRAITOR = 'Et tu, Brute? The traitor {} pledged allegiance to another castle!'
 MSG_YOU_BANNED = 'You were banned because: {}'
 MSG_BAN_COMPLETE = 'Warrior successfully banned'
 MSG_USER_NOT_BANNED = 'This warrior is not banned'
@@ -416,3 +417,4 @@ MSG_GO_AWAY = 'Go Away!'
 MSG_TOP_GENERATING = 'Generating Top'
 
 MSG_NO_REASON = 'Reason not specified'
+MSG_REASON_TRAITOR = 'User changed castles'
