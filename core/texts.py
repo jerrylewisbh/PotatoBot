@@ -385,12 +385,24 @@ MSG_REPORT_SUMMARY_HEADER = 'Reports of the squad {} for the battle {}' \
 
 MSG_REPORT_SUMMARY_RATING = "Reports for the battle {}"
 
+ATTACK_ICON  = '⚔'
+DEFENSE_ICON = '🛡'
+REST_ICON = '🛌'
+
+
 MSG_REPORT_SUMMARY = '\n\n{} ({}/{})\n' \
                             'Attack: ⚔{}\n' \
                             'Defense: 🛡{}\n' \
                             'Profit: 🔥{} 💰{} 📦{}' \
 
-MSG_REPORT_SUMMARY_ROW = '<b>{}</b> (@{})\n⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'
+
+MSG_REPORT_TOTAL = '\n\n({} attacked / {} defended)\n' \
+                            'Attack: ⚔{}\n' \
+                            'Defense: 🛡{}\n' \
+
+
+
+MSG_REPORT_SUMMARY_ROW = '{} <b>{}</b> (@{})\n ⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'
 MSG_REPORT_SUMMARY_ROW_EMPTY = '<b>{}</b> (@{}) ❗\n'
 
 

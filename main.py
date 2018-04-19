@@ -74,7 +74,7 @@ from core.functions.welcome import (
 from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT, PROFESSION
 from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL, 
-    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,MSG_MAIN_SEND_REPORTS,MSG_REPORT_SUMMARY,MSG_REPORT_SUMMARY_RATING,MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
+    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,MSG_MAIN_SEND_REPORTS,MSG_REPORT_SUMMARY, MSG_REPORT_TOTAL, MSG_REPORT_SUMMARY_RATING,MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
     MSG_SQUAD_DELETE_OUTDATED_EXT)
 from core.types import Session, Order, Squad, Admin, user_allowed, admin_allowed,Character, Report,SquadMember, User
 from core.utils import add_user, send_async
@@ -348,6 +348,11 @@ def ready_to_battle_result(bot: Bot, update: Update):
     global_stock = 0
     global_reports = 0
     global_members = 0
+
+    real_def = 0
+    real_atk = 0
+    players_atk = 0
+    players_def = 0
     session = Session()
     try:
         squads = session.query(Squad).all()
@@ -369,6 +374,7 @@ def ready_to_battle_result(bot: Bot, update: Update):
             full_stock = 0
             total_reports = 0
             total_members = 0
+
             for user, report in reports:
                 total_members += 1
                 if report:
@@ -377,6 +383,12 @@ def ready_to_battle_result(bot: Bot, update: Update):
                     full_exp += report.earned_exp
                     full_gold += report.earned_gold
                     full_stock += report.earned_stock
+                    
+                    real_atk += report.attack if report.earned_stock > 0 else 0 
+                    real_def += report.defence if report.earned_exp > 0 and report.earned_stock == 0 else 0 
+
+                    players_atk += 1  if report.earned_stock > 0 else 0 
+                    players_def += 1  if report.earned_exp > 0 and report.earned_stock == 0 else 0 
                     total_reports += 1
             global_def += full_def
             global_atk += full_atk
@@ -388,6 +400,7 @@ def ready_to_battle_result(bot: Bot, update: Update):
             if total_members > 0:
                 text += MSG_REPORT_SUMMARY.format(squad.squad_name, total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock)
         text +=  MSG_REPORT_SUMMARY.format('TOTAL', global_reports, global_members, global_atk, global_def, global_exp, global_gold, global_stock)
+        text +=  MSG_REPORT_TOTAL.format(players_atk, players_def, real_atk, real_def)
         send_async(bot, chat_id=GOVERNMENT_CHAT, text=text, parse_mode=ParseMode.HTML, reply_markup=None)
 
     except SQLAlchemyError as err:
@@ -461,6 +474,7 @@ def main():
     # on different commands - answer in Telegram
     #disp.add_handler(CommandHandler("test", ready_to_battle_result))
     disp.add_handler(CommandHandler("start", user_panel))
+    disp.add_handler(CommandHandler("test", ready_to_battle_result))
     disp.add_handler(CommandHandler("admin", admin_panel))
     disp.add_handler(CommandHandler("help", help_msg))
     disp.add_handler(CommandHandler("ping", ping))
