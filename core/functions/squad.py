@@ -437,8 +437,9 @@ def battle_reports_show(bot: Bot, update: Update, session):
         for user, report in reports:
             total_members += 1
             if report:
+                icon = REST_ICON if report.earned_exp  == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
                 text += MSG_REPORT_SUMMARY_ROW.format(
-                    report.name, user.username, report.attack, report.defence,
+                    icon, report.name, user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
                 full_atk += report.attack
                 full_def += report.defence
