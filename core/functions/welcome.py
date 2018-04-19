@@ -5,14 +5,14 @@ from time import time
 from core.utils import send_async, add_user, update_group
 from core.functions.newbies import newbie
 from core.texts import *
-from config import CASTLE, CASTLE_CHAT_ID
+from config import CASTLE, CASTLE_CHAT_ID, ACADEM_CHAT_ID
 
 last_welcome = 0
 
 
 @user_allowed(False)
 def welcome(bot: Bot, update: Update, session):
-    newbie(bot, update)
+    #newbie(bot, update)
     global last_welcome
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
@@ -25,7 +25,7 @@ def welcome(bot: Bot, update: Update, session):
                     allow_anywhere = True
                     break
 
-            if update.message.chat.id == CASTLE_CHAT_ID:
+            if update.message.chat.id == CASTLE_CHAT_ID or update.message.chat.id == ACADEM_CHAT_ID:
                 if group.welcome_enabled:
                     welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
                     send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
