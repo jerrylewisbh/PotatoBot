@@ -538,7 +538,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
         for user, report in reports:
             total_members += 1
             if report:
-                text += MSG_REPORT_SUMMARY_ROW.format(
+                icon = REST_ICON if report.earned_exp  == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
+                text += MSG_REPORT_SUMMARY_ROW.format(icon, 
                     report.name, user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
                 full_atk += report.attack
