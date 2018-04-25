@@ -72,6 +72,7 @@ Squad commands:
 /set_squad_name <name> - Change the name of the squad 
 /set_invite_link <link> - Set up the invite link that will be sent to approved members
 /add <user> - Ask an user to join the squad 
+/forceadd <user> - add user to a squad without asking for confirmation
 /ban <user> <reason> - Ban an user from the squad 
 /unban <user> - Unban an user from the squad
 
@@ -151,7 +152,7 @@ Trigger allowed: {}
 Thorns: {}"""
 
 MSG_GROUP_STATUS_ADMIN_FORMAT = '{} @{} {} {}\n'
-MSG_GROUP_STATUS_DEL_ADMIN = 'Bust {} {}'
+MSG_GROUP_STATUS_DEL_ADMIN = 'Demote {} {}'
 
 MSG_ON = 'Enabled'
 MSG_OFF = 'Disabled'
@@ -192,6 +193,7 @@ MSG_FLAG_CHOOSE_HEADER = 'Choose a castle or send me the order'
 MSG_PROFILE_OLD = 'Your profile looks old, forward a new one...'
 MSG_PROFILE_SAVED = """Your profile looks great, <b>{}</b>!
 Don't forget to update it regularly. Time to fly high now 🦅 """
+
 MSG_PROFILE_CASTLE_MISTAKE = """\
 You saw a beautiful cloud not far away from you.
 There was just a little mountain between you.
@@ -199,11 +201,14 @@ You decided to fly around and find a way.
 Two hours later you returned to the same place you started at..."""
 MSG_PROFILE_SHOW_FORMAT = """\
 👤 %first_name% %last_name% (%username%) 
-%castle% %name% of %prof% Castle
+%castle% %name% of
+%prof% Castle
+🏛 %profession% 
 🏅 level %level% 
 ⚜️ %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
-💰 %gold% | 🔋 %maxStamina%
+💰 %gold% | 👝 %pouches% | 🔋 %maxStamina%
+%pet%
 🕑 Last update %date%"""
 
 # main.py texts
@@ -299,6 +304,7 @@ because of high server load due to continuous updates'
 
 MSG_NO_SQUAD = 'squadless'
 MSG_NO_PET = ''
+MSG_NO_PROFESSION = 'Classless'
 MSG_WANTS_TO_JOIN = '\n\nWants to join {}'
 
 MSG_CLEARED = 'Done'
@@ -307,23 +313,24 @@ MSG_SQUAD_LIST = 'List of your squads:'
 MSG_SQUAD_REQUEST_EXISTS = 'You already have requested to enter this squad. \
 Exit the current squad or cancel the request to create a new one. '
 MSG_SQUAD_REQUEST = 'Here are the requests you have receive:'
-MSG_SQUAD_LEAVED = '{} left the squad {}, Bye'
+MSG_SQUAD_LEAVED = '{} left the squad {} 😰'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
 MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. \
-To speed up the decision-making process, you can write to the heads of the squad: {}.'
+Be patient, the process is manual and there is a small queue. Plese join the waiting room, Captains will talk to you from there: https://t.me/joinchat/Hm7VckdKMgfB0PpLWJLJtQ '
 MSG_SQUAD_REQUEST_ACCEPTED = 'The request from {} is accepted.'
 MSG_SQUAD_REQUEST_DECLINED = '{} is useless, no one cares.'
 MSG_SQUAD_REQUEST_NEW = 'There are new applications for your squad'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'You were accepted into the squad'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK = 'You were accepted into the squad join using {}'
 MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'You application was rejected'
-MSG_SQUAD_CLEAN = """Clean in the squad {}.
-Choose a squad member to kick him or her out"""
+MSG_SQUAD_CLEAN = """Harvesting in the squad {}.
+Who do you want to kick? """
 MSG_SQUAD_ADD = '{}, Do you want to join the squad?'
 MSG_SQUAD_ADD_IN_SQUAD = '{} is already in a squad (perhaps not yours)'
 MSG_SQUAD_ADD_ACCEPTED = '{} Accepted the offer'
-MSG_SQUAD_ADD_DECLINED = '{} declined, who cares?'
+MSG_SQUAD_ADD_FORCED = '{} was added to the squad'
+MSG_SQUAD_ADD_DECLINED = '{} declined, 😰'
 MSG_SQUAD_NONE = 'It looks like you are not in a squad'
 
 MSG_SQUAD_READY = '{} warriors of <b>{}</b> are ready to battle!\n{}⚔ {}🛡'
@@ -348,12 +355,11 @@ MSG_TOP_WEEK_WARRIORS_SQUAD = '⛳️Reports sent on the past 7 days for {}:\n\n
 
 MSG_UPDATE_PROFILE = 'Your profile needs to be updated. Please, send me a new one (🏅 command "/hero").\n If you don\'t update you profile often you may be demoted from your squad.'
 MSG_SQUAD_DELETE_OUTDATED = 'You were kicked from the squad for not updating your profile for a long time.'
-
-MSG_SQUAD_DELETE_OUTDATED = 'You were kicked from the squad for not updating your profile for a long time.'
 MSG_SQUAD_DELETE_OUTDATED_EXT = '{} (@{}) was kicked from {} for not updating profile for a long time.'
 
 MSG_ALREADY_BANNED = 'This user is already banned. The reason is: {2}.'
-MSG_USER_BANNED = 'A member of {} violated the rules and was kicked!'
+MSG_USER_BANNED = '{} violated the rules and was kicked off!'
+MSG_USER_BANNED_TRAITOR = 'Et tu, Brute? The traitor {} pledged allegiance to another castle!'
 MSG_YOU_BANNED = 'You were banned because: {}'
 MSG_BAN_COMPLETE = 'Warrior successfully banned'
 MSG_USER_NOT_BANNED = 'This warrior is not banned'
@@ -380,18 +386,31 @@ MSG_REPORT_SUMMARY_HEADER = 'Reports of the squad {} for the battle {}' \
 
 MSG_REPORT_SUMMARY_RATING = "Reports for the battle {}"
 
+ATTACK_ICON  = '⚔'
+DEFENSE_ICON = '🛡'
+REST_ICON = '🛌'
+
+
 MSG_REPORT_SUMMARY = '\n\n{} ({}/{})\n' \
                             'Attack: ⚔{}\n' \
                             'Defense: 🛡{}\n' \
                             'Profit: 🔥{} 💰{} 📦{}' \
 
-MSG_REPORT_SUMMARY_ROW = '<b>{}</b> (@{})\n⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'
+
+MSG_REPORT_TOTAL = '\n\n({} attacked / {} defended)\n' \
+                            'Attack: ⚔{}\n' \
+                            'Defense: 🛡{}\n' \
+
+
+
+MSG_REPORT_SUMMARY_ROW = '{} <b>{}</b> (@{})\n ⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'
 MSG_REPORT_SUMMARY_ROW_EMPTY = '<b>{}</b> (@{}) ❗\n'
 
 
 BTN_HERO = '🏅Hero'
 BTN_STOCK = '📦Stock'
 BTN_EQUIPMENT = '🎽Equipment'
+BTN_PROFESSIONS = '🏛Skills'
 
 BTN_YES = '✅YES'
 BTN_NO = '❌NO'
@@ -411,3 +430,4 @@ MSG_GO_AWAY = 'Go Away!'
 MSG_TOP_GENERATING = 'Generating Top'
 
 MSG_NO_REASON = 'Reason not specified'
+MSG_REASON_TRAITOR = 'User changed castles'

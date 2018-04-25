@@ -13,7 +13,6 @@ from core.functions.inline_markup import generate_squad_list, generate_leave_squ
     generate_yes_no
 from core.texts import *
 from core.constants import *
-from core.texts import MSG_NO_USERNAME
 from config import CASTLE
 
 TOP_START_DATE = datetime(2017, 12, 11)
@@ -204,7 +203,7 @@ def list_squad_requests(bot: Bot, update: Update, session):
             count += 1
             markup = generate_squad_request_answer(member.user_id)
             send_async(bot, chat_id=update.message.chat.id,
-                       text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character, True),
+                       text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character,  member.user.profession,True),
                        reply_markup=markup, parse_mode=ParseMode.HTML)
     if count == 0:
         send_async(bot, chat_id=update.message.chat.id,
@@ -280,7 +279,8 @@ def leave_squad(bot: Bot, user: User, member: SquadMember, message, session):
                        text=MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
                        parse_mode=ParseMode.HTML)
         try:
-            bot.kick_chat_member(squad.chat_id, member.user_id)
+            bot.restrictChatMember(squad.chat_id, member.user_id)
+            bot.kickChatMember(squad.chat_id, member.user_id)
         except TelegramError as err:
             bot.logger.error(err.message)
 
@@ -322,6 +322,33 @@ def add_to_squad(bot: Bot, update: Update, session):
                             reply_markup=markup)
 
 
+
+@admin_allowed(AdminType.FULL)
+def force_add_to_squad(bot: Bot, update: Update, session):
+    squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    if squad is not None:
+        username = update.message.text.split(' ', 1)
+        if len(username) == 2:
+            username = username[1].replace('@', '')
+            user = session.query(User).filter_by(username=username).first()
+            if user is not None:
+                if user.character is None:
+                    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
+                elif user.member is not None:
+                    send_async(bot, chat_id=update.message.chat.id,
+                            text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
+                else:
+                    member = session.query(SquadMember).filter_by(user_id=user.id).first()
+                    if member is None:
+                        member = SquadMember()
+                        member.user_id = user.id
+                        member.squad_id = update.message.chat.id
+                        member.approved = True
+                        session.add(member)
+                        session.commit()
+                        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_ADD_FORCED.format('@'+user.username))
+
+
 @admin_allowed(AdminType.GROUP)
 def call_squad(bot: Bot, update: Update, session):
     limit = 3;
@@ -355,7 +382,7 @@ def battle_attendance_show(bot: Bot, update: Update, session):
         actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
             group_by(Character.user_id)
         actual_profiles = actual_profiles.all()
-
+        today = datetime.today().date()
         battles = session.query(Character, func.count(Report.user_id))\
             .outerjoin(Report, Report.user_id == Character.user_id) \
             .join(SquadMember, SquadMember.user_id == Character.user_id)\
@@ -364,6 +391,7 @@ def battle_attendance_show(bot: Bot, update: Update, session):
                     .in_([(a[0], a[1]) for a in actual_profiles]),
                     Character.date > datetime.now() - timedelta(days=7))\
             .filter(SquadMember.squad_id == adm.admin_group).group_by(Character)\
+            .filter(Report.date > today - timedelta(days=today.weekday())) \
             .order_by(func.count(Report.user_id).desc())
         print(str(battles))
         battles = battles.all()
@@ -409,8 +437,9 @@ def battle_reports_show(bot: Bot, update: Update, session):
         for user, report in reports:
             total_members += 1
             if report:
+                icon = REST_ICON if report.earned_exp  == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
                 text += MSG_REPORT_SUMMARY_ROW.format(
-                    report.name, user.username, report.attack, report.defence,
+                    icon, report.name, user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
                 full_atk += report.attack
                 full_def += report.defence
