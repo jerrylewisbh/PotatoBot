@@ -459,20 +459,21 @@ def battle_reports_show(bot: Bot, update: Update, session):
                 text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
                 texts.append(text);
         
-        text = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock)
+        template = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock)
 
         limit = 50;
         count = 0;
         repo_list = ''
+        limit = limit if len(texts) > limit else len(texts) 
         for element in texts:
             repo_list += element
             count = count + 1
-
-            if count > limit:
+            if count >= limit:
                 count = 0
-                text = text + repo_list
+                text = template + repo_list
                 markup = generate_other_reports(time_from, squad.chat_id)
-                send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
+                bot.sendMessage(chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
+                #send_async(bot, chat_id=update.message.chat.id, text=repo_list, parse_mode=ParseMode.HTML, reply_markup=markup)
                 repo_list = ''
 
 
