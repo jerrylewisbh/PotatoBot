@@ -357,11 +357,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                             )
     elif data['t'] == QueryType.MemberList.value:
         squad = session.query(Squad).filter_by(chat_id=data['id']).first()
-        markup = generate_squad_members(squad.members, session)
-        bot.editMessageText(squad.squad_name,
-                            update.callback_query.message.chat.id,
-                            update.callback_query.message.message_id,
-                            reply_markup=markup)
+        markups = generate_squad_members(squad.members, session)
+        for markup in markups:
+            send_async(bot, chat_id=update.callback_query.message.chat.id,
+                   text=squad.squad_name,
+                   reply_markup=markup, parse_mode=ParseMode.HTML)
     elif data['t'] == QueryType.LeaveSquad.value:
         member = session.query(SquadMember).filter_by(user_id=data['id']).first()
         leave_squad(bot, user, member, update.effective_message, session)
@@ -527,7 +527,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             .join(SquadMember) \
             .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from, Report.date < time_to)) \
             .filter(SquadMember.squad_id == data['c']).order_by(Report.date.desc()).all()
-        text = ''
+        texts = []
         full_def = 0
         full_atk = 0
         full_exp = 0
@@ -539,9 +539,10 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             total_members += 1
             if report:
                 icon = REST_ICON if report.earned_exp  == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
-                text += MSG_REPORT_SUMMARY_ROW.format(icon, 
+                text = MSG_REPORT_SUMMARY_ROW.format(icon, 
                     report.name, user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
+                texts.append(text);
                 full_atk += report.attack
                 full_def += report.defence
                 full_exp += report.earned_exp
@@ -549,12 +550,29 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 full_stock += report.earned_stock
                 total_reports += 1
             else:
-                text += MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
+                text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
+                texts.append(text);
+        
+
         text = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports, total_members,full_atk, full_def,
-                                        full_exp, full_gold, full_stock) + text
-        markup = generate_other_reports(time_from, squad.chat_id)
-        bot.editMessageText(text, update.callback_query.message.chat.id, update.callback_query.message.message_id,
-                            parse_mode=ParseMode.HTML, reply_markup=markup)
+                                        full_exp, full_gold, full_stock)
+        
+
+
+        limit = 50;
+        count = 0;
+        repo_list = ''
+        for element in texts:
+            repo_list += element
+            count = count + 1
+
+            if count > limit:
+                count = 0
+                text = text + repo_list
+                markup = generate_other_reports(time_from, squad.chat_id)
+                send_async(bot, chat_id=update.callback_query.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
+                repo_list = ''
+
     elif data['t'] == QueryType.GlobalBuildTop.value:
         update.callback_query.answer(text=MSG_TOP_GENERATING)
         global_build_top(bot, update)
