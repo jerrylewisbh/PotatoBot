@@ -53,12 +53,21 @@ def add_squad(bot: Bot, update: Update, session):
 def set_invite_link(bot: Bot, update: Update, session):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if update.message.chat.type == 'supergroup' and squad is not None:
+        new_invite_link = ''
         msg = update.message.text.split(' ', 1)
         if len(msg) == 2:
-            squad.invite_link = msg[1]
-            session.add(squad)
-            session.commit()
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LINK_SAVED)
+            new_invite_link = msg[1]
+        else:
+            try:
+                new_invite_link = bot.export_chat_invite_link(update.effective_chat.id)
+            except TelegramError:  # missing add_user admin permission
+                return
+
+    if new_invite_link:
+        squad.invite_link = new_invite_link
+        session.add(squad)
+        session.commit()
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LINK_SAVED)
 
 
 @admin_allowed()
