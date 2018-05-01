@@ -329,6 +329,7 @@ def generate_squad_members(members, session):
     user_ids = []
     limit = 50
     count = 0
+    limit = limit if len(members) > limit else len(members) 
     for member in members:
         user_ids.append(member.user_id)
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
@@ -362,7 +363,7 @@ def generate_squad_members(members, session):
                                   ))])
     
         count = count + 1
-        if count > limit:
+        if count >= limit:
             count = 0;
             inline_keys.append(
         [InlineKeyboardButton(MSG_BACK,
@@ -400,13 +401,15 @@ def generate_fire_up(members):
     inline_list = []
     limit = 50
     count = 0
+    limit = limit if len(members) > limit else len(members) 
+    print(limit)
     for member in members:
         inline_keys.append([InlineKeyboardButton('🔥{}: {}⚔ {}🛡'.format(member.user, member.user.character.attack,
                                                                        member.user.character.defence),
                                                  callback_data=json.dumps(
                                                      {'t': QueryType.LeaveSquad.value, 'id': member.user_id}))])
         count = count + 1
-        if count > limit:
+        if count >= limit:
             count = 0;
             inline_list.append(InlineKeyboardMarkup(inline_keys))
             inline_keys = []
