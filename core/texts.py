@@ -358,7 +358,7 @@ MSG_SQUAD_DELETE_OUTDATED_EXT = '{} (@{}) was kicked from {} for not updating pr
 
 MSG_ALREADY_BANNED = 'This user is already banned. The reason is: {2}.'
 MSG_USER_BANNED = '{} violated the rules and was kicked off!'
-MSG_USER_BANNED_TRAITOR = 'Et tu, Brute? The traitor {} pledged allegiance to another castle!'
+MSG_USER_BANNED_TRAITOR = 'Et tu, Brute? {} pledged allegiance to another castle, we will remember you!'
 MSG_YOU_BANNED = 'You were banned because: {}'
 MSG_BAN_COMPLETE = 'Warrior successfully banned'
 MSG_USER_NOT_BANNED = 'This warrior is not banned'

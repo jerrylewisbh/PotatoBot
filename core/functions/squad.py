@@ -240,9 +240,10 @@ def remove_from_squad(bot: Bot, update: Update, session):
             group_admin.append(adm)
     for adm in group_admin:
         members = session.query(SquadMember).filter_by(squad_id=adm.admin_group, approved=True).all()
-        markup = generate_fire_up(members)
+        markups = generate_fire_up(members)
         squad = session.query(Squad).filter_by(chat_id=adm.admin_group).first()
-        send_async(bot, chat_id=update.message.chat.id,
+        for markup in markups:
+            send_async(bot, chat_id=update.message.chat.id,
                    text=MSG_SQUAD_CLEAN.format(squad.squad_name),
                    reply_markup=markup, parse_mode=ParseMode.HTML)
 
@@ -293,10 +294,9 @@ def leave_squad(bot: Bot, user: User, member: SquadMember, message, session):
                        text=MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
                        parse_mode=ParseMode.HTML)
             members = session.query(SquadMember).filter_by(squad_id=member.squad_id, approved=True).all()
-            bot.editMessageText(message.text,
-                                message.chat.id,
-                                message.message_id,
-                                reply_markup=generate_fire_up(members))
+            markups = generate_fire_up(members)
+            for markup in markups:
+                send_async(bot, chat_id=message.chat.id, text=message.text, reply_markup=markup)
     else:
         send_async(bot, chat_id=user.id, text=MSG_SQUAD_ALREADY_DELETED)
 
@@ -393,9 +393,7 @@ def battle_attendance_show(bot: Bot, update: Update, session):
             .filter(SquadMember.squad_id == adm.admin_group).group_by(Character)\
             .filter(Report.date > today - timedelta(days=today.weekday())) \
             .order_by(func.count(Report.user_id).desc())
-        print(str(battles))
         battles = battles.all()
-        print(len(battles))
         text =  MSG_TOP_WEEK_WARRIORS_SQUAD.format(squad.squad_name)
         str_format = MSG_TOP_FORMAT
         for i in range(0, len(battles)):
@@ -426,7 +424,7 @@ def battle_reports_show(bot: Bot, update: Update, session):
             .join(SquadMember) \
             .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from)) \
             .filter(SquadMember.squad_id == adm.admin_group).order_by(Report.date.desc()).all()
-        text = ''
+        texts = []
         full_def = 0
         full_atk = 0
         full_exp = 0
@@ -438,9 +436,10 @@ def battle_reports_show(bot: Bot, update: Update, session):
             total_members += 1
             if report:
                 icon = REST_ICON if report.earned_exp  == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
-                text += MSG_REPORT_SUMMARY_ROW.format(
+                text = MSG_REPORT_SUMMARY_ROW.format(
                     icon, report.name, user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
+                texts.append(text);
                 full_atk += report.attack
                 full_def += report.defence
                 full_exp += report.earned_exp
@@ -448,9 +447,23 @@ def battle_reports_show(bot: Bot, update: Update, session):
                 full_stock += report.earned_stock
                 total_reports += 1
             else:
-                text += MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
-        text = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock) + text
-        markup = generate_other_reports(time_from, squad.chat_id)
-        send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
+                text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
+                texts.append(text);
+        
+        text = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock)
+
+        limit = 50;
+        count = 0;
+        repo_list = ''
+        for element in texts:
+            repo_list += element
+            count = count + 1
+
+            if count > limit:
+                count = 0
+                text = text + repo_list
+                markup = generate_other_reports(time_from, squad.chat_id)
+                send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
+                repo_list = ''
 
 
