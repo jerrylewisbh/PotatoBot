@@ -399,6 +399,8 @@ DEFENSE_ICON = '🛡'
 REST_ICON = '🛌'
 
 
+MSG_NO_CLASS = ' Please forward me your /class first'
+
 MSG_REPORT_SUMMARY = '\n\n{} ({}/{})\n' \
                             'Attack: ⚔{}\n' \
                             'Defense: 🛡{}\n' \
