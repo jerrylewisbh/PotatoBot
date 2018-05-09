@@ -191,8 +191,14 @@ MSG_NO_USERNAME = "You have not set up a telegram username, you need to set one 
 MSG_FLAG_CHOOSE_HEADER = 'Choose a castle or send me the order'
 
 MSG_PROFILE_OLD = 'Your profile smells rotten, forward a new one generated within one minute.'
+
 MSG_PROFILE_SAVED = """Your profile now smells like a really good potato, {}!
 Don't forget to water it regularly 🥔 """
+
+MSG_SKILLS_SAVED = """Thanks for submitting your skills, {}!
+Don't forget to send it regularly 🥔 """
+
+
 MSG_PROFILE_CASTLE_MISTAKE = """\
 You saw a beautiful potato field not far away from you.
 There was just a fence between you.
@@ -372,7 +378,10 @@ MSG_DAY_SINGLE = 'Day'
 MSG_DAY_PLURAL1 = 'Day'
 MSG_DAY_PLURAL2 = 'Days'
 MSG_DATE_FORMAT = '{} {}'
-MSG_PLOT_DESCRIPTION = 'On average {} of experience per day. For next level, you need {} experience and {}'
+MSG_PLOT_DESCRIPTION = 'On average {} experience per day. For the next level, you need {} experience and approximately {}'
+
+
+MSG_PLOT_DESCRIPTION_SKILL = 'Here you can compare the level of your skills with the average for the whole castle. Note it is still beta, please report if you find something wrong'
 
 MSG_SQUAD_CALL_HEADER = 'Everybody come here!\n'
 MSG_REPORT_SUMMARY_HEADER = 'Reports of the squad {} for the battle {}' \

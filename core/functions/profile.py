@@ -282,7 +282,7 @@ def profession_update(bot: Bot, update: Update, session):
                               update.message.forward_date,
                               session)
             if profession:
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(profession.name),parse_mode=ParseMode.HTML)
+                send_async(bot, chat_id=update.message.chat.id, text=MSG_SKILLS_SAVED.format(profession.name),parse_mode=ParseMode.HTML)
 
 
 
@@ -311,7 +311,7 @@ def find_by_username(bot: Bot, update: Update, session):
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg != '':
-            user = session.query(User).filter_by(username=msg).first()
+            user = session.query(User).filter_by(username=msg).order_by(Character.date.desc()).first()
             if user is not None and user.character:
                 char = user.character
                 profession = user.profession
@@ -343,7 +343,7 @@ def find_by_id(bot: Bot, update: Update, session):
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg != '':
-            user = session.query(User).filter_by(id=msg).first()
+            user = session.query(User).filter_by(id=msg).order_by(Character.date.desc()).first()
             if user is not None and user.character:
                 char = user.character
                 profession = user.profession

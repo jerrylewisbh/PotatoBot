@@ -4,3 +4,4 @@ PyMySQL
 python-telegram-bot
 requests
 SQLAlchemy
+pandas
