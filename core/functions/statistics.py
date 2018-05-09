@@ -3,7 +3,7 @@ from sqlalchemy import func, text as text_, tuple_
 
 from core.functions.reply_markup import generate_statistics_markup
 from core.texts import MSG_STATISTICS_ABOUT, PLOT_X_LABEL, PLOT_Y_LABEL, MSG_DAY_SINGLE, MSG_DAY_PLURAL1, \
-    MSG_DAY_PLURAL2, MSG_DATE_FORMAT, MSG_PLOT_DESCRIPTION, MSG_PLOT_DESCRIPTION_SKILL
+    MSG_DAY_PLURAL2, MSG_DATE_FORMAT, MSG_PLOT_DESCRIPTION, MSG_PLOT_DESCRIPTION_SKILL, MSG_NO_CLASS
 from core.types import user_allowed, Character, Profession
 from core.utils import send_async
 
@@ -29,6 +29,12 @@ def statistic_about(bot: Bot, update: Update, session):
 @user_allowed
 def skill_statistic(bot: Bot, update: Update, session):
     my_class = session.query(Profession).filter_by(user_id=update.message.from_user.id).order_by(Profession.date.desc()).first()
+    if not my_class:
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_NO_CLASS)
+        return
+
+
+
     recent_classes = session.query(Profession.user_id, func.max(Profession.date)). \
         group_by(Profession.user_id)
     
