@@ -311,7 +311,7 @@ def find_by_username(bot: Bot, update: Update, session):
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg != '':
-            user = session.query(User).filter_by(username=msg).order_by(Character.date.desc()).first()
+            user = session.query(User).filter_by(username=msg).first()
             if user is not None and user.character:
                 char = user.character
                 profession = user.profession
@@ -343,7 +343,7 @@ def find_by_id(bot: Bot, update: Update, session):
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg != '':
-            user = session.query(User).filter_by(id=msg).order_by(Character.date.desc()).first()
+            user = session.query(User).filter_by(id=msg).first()
             if user is not None and user.character:
                 char = user.character
                 profession = user.profession
