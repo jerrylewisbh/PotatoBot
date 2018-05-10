@@ -54,7 +54,7 @@ def skill_statistic(bot: Bot, update: Update, session):
     for string in strings:
         skill_name = string.split(": ")[1]
         skill_value = int(string.split(": ")[0])
-        my_skills[skill_name] = [skill_value, 0,0]
+        my_skills[skill_name] = [skill_value, 0,0,0,0]
 
 
     for class_data in classes:
@@ -68,10 +68,17 @@ def skill_statistic(bot: Bot, update: Update, session):
             max_value = max(max_value, skill_value)
             my_skills[skill_name][2] += 1
 
+            if class_data.name == my_class.name:
+                my_skills[skill_name][3] += skill_value
+                my_skills[skill_name][4] += 1
+
+
 
     for skill in my_skills:
         my_skills[skill][1]/=my_skills[skill][2]
-        my_skills[skill].pop()
+        my_skills[skill][3]/=my_skills[skill][4]
+        del my_skills[skill][2]
+        del my_skills[skill][3]
 
     # Set data
     df = pd.DataFrame(my_skills)
@@ -118,6 +125,11 @@ def skill_statistic(bot: Bot, update: Update, session):
     values=df.loc[1].values.flatten().tolist()
     ax.plot(angles, values, linewidth=1, linestyle='solid', label="Castle")
     ax.fill(angles, values, 'r', alpha=0.1)
+
+    # Ind2
+    values=df.loc[2].values.flatten().tolist()
+    ax.plot(angles, values, linewidth=1, linestyle='solid', label="Class")
+    ax.fill(angles, values, 'g', alpha=0.1)
      
     # Add legend
     plot.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
