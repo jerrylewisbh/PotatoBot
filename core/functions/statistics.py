@@ -82,17 +82,12 @@ def skill_statistic(bot: Bot, update: Update, session):
 
     # Set data
     df = pd.DataFrame(my_skills)
-    print(df)
-
     categories=list(df)
     N = len(categories)
-    print(categories)
-    print(N)
         # What will be the angle of each axis in the plot? (we divide the plot / number of variable)
     angles = [n / float(N) * 2 * pi for n in range(N)]
     #angles += angles[:1]
 
-    print(angles)
      
     # Initialise the spider plot
     ax = plot.subplot(111, polar=True)
