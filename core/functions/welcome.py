@@ -14,19 +14,24 @@ last_welcome = 0
 def welcome(bot: Bot, update: Update, session):
     #newbie(bot, update)
     global last_welcome
+    print('welcome')
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
         for new_chat_member in update.message.new_chat_members:
             user = add_user(new_chat_member, session)
+            print(user)
             administrator = session.query(Admin).filter_by(user_id=user.id).all()
             allow_anywhere = False
             for adm in administrator:
                 if adm.admin_type == AdminType.FULL.value:
                     allow_anywhere = True
                     break
-
-            if update.message.chat.id == CASTLE_CHAT_ID or update.message.chat.id == ACADEM_CHAT_ID:
+            print(update.message.chat.id)
+            print(CASTLE_CHAT_ID == update.message.chat.id)
+            if str(update.message.chat.id) == CASTLE_CHAT_ID or str(update.message.chat.id) == ACADEM_CHAT_ID:
+                print('equal')
                 if group.welcome_enabled:
+                    print('enable_welcome')
                     welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
                     send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
 
