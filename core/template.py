@@ -11,7 +11,10 @@ def fill_template(msg: str, user: User):
     msg = msg.replace('%first_name%', user.first_name or '')
     msg = msg.replace('%last_name%', user.last_name or '')
     msg = msg.replace('%id%', str(user.id))
-    msg = msg.replace('%ign%', str(user.character.name or ''))
+    if user.character:
+        msg = msg.replace('%ign%', str(user.character.name or ''))
+    else:
+        msg = msg.replace('%ign%', (user.first_name or '') + ' ' + (user.last_name or ''))
     return msg
 
 
