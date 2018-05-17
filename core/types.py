@@ -381,14 +381,15 @@ def check_ban(update, session):
 
 
 def log(session, user_id, chat_id, func_name, args):
-    log_item = Log()
-    log_item.date = datetime.now()
-    log_item.user_id = user_id
-    log_item.chat_id = chat_id
-    log_item.func_name = func_name
-    log_item.args = args
-    session.add(log_item)
-    session.commit()
+    if user_id:
+        log_item = Log()
+        log_item.date = datetime.now()
+        log_item.user_id = user_id
+        log_item.chat_id = chat_id
+        log_item.func_name = func_name
+        log_item.args = args
+        session.add(log_item)
+        session.commit()
 
 
 def admin_allowed(adm_type=AdminType.FULL, ban_enable=True, allowed_types=()):
