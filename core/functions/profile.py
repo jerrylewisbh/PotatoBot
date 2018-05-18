@@ -1,7 +1,7 @@
 from telegram import Update, Bot, ParseMode
 
 from core.functions.inline_keyboard_handling import generate_profile_buttons
-from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT, PROFESSION
+from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT, PROFESSION, ACCESS_CODE
 from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport, Profession
 from core.utils import send_async
 from datetime import timedelta, datetime
@@ -11,6 +11,8 @@ from core.functions.ban import ban_traitor
 from core.texts import *
 from enum import Enum
 
+from cwmq import Publisher
+
 from config import CASTLE, EXT_ID
 
 
@@ -18,6 +20,8 @@ class BuildType(Enum):
     Build = 1
     Repair = 0
 
+# Get the Publisher Singleton
+p = Publisher()
 
 def parse_profile(profile, user_id, date, session):
     parsed_data = re.search(PROFILE, profile)
@@ -284,8 +288,6 @@ def profession_update(bot: Bot, update: Update, session):
             if profession:
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_SKILLS_SAVED.format(profession.name),parse_mode=ParseMode.HTML)
 
-
-
 @user_allowed
 def char_show(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
@@ -303,6 +305,80 @@ def char_show(bot: Bot, update: Update, session):
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
+
+@user_allowed
+def grant_access(bot: Bot, update: Update, session):
+    if update.message.chat.type == 'private':
+        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+
+        reg_req = {
+            "action": "createAuthCode",
+            "payload": {
+                "userId": update.message.chat.id
+            }
+        }
+        p.publish(reg_req)
+        text = "By registering you will allow me to automatically update your profile. After this step I can also notify about /stock changes after war.\nRegistering requires three steps. Please bear with me. \n\n @chtwrsbot will send you an authentication code. Please send it back to me to complete registration."
+        send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML)
+
+@user_allowed
+def grant_access_stock(bot: Bot, update: Update, session):
+    # TODO: Needed?
+    pass
+
+@user_allowed
+def grant_access_profile(bot: Bot, update: Update, session):
+    # TODO: Needed?
+    pass
+
+@user_allowed
+def handle_access_token(bot: Bot, update: Update, session):
+    """ Handle a forwarded access code to authorize API access by bot.
+    Note: We do not send back a confirmation at this point. User should be notified after async answer from APMQ
+    TODO: Maybe add some kind of timeout if API is not availiable? """
+
+    if update.message.chat.type == 'private':
+        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+        # Extract token...
+        code = re.search(ACCESS_CODE, update.message.text)
+        if not code:
+            text = "Sorry, your code is not valid!"
+            send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML)
+            return
+
+        # For what is this code. Send the right response
+        if user.api_request_id and user.api_grant_operation:
+            add_grant_req = {
+                "action": "grantAdditionalOperation",
+                "token": user.api_token,
+                "payload": {
+                    "requestId": user.api_request_id,
+                    "authCode": code.group(2),
+                }
+            }
+            p.publish(add_grant_req)
+        else:
+            grant_req = {
+                "action": "grantToken",
+                "payload": {
+                    "userId": update.message.chat.id,
+                    "authCode": code.group(2),
+                }
+            }
+            p.publish(grant_req)
+
+@user_allowed
+def settings(bot: Bot, update: Update, session):
+    if update.message.chat.type == 'private':
+        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+
+        text = "Automatic stock update: {}\nAutomatic profile update: {}".format(
+            user.setting_automated_stock,
+            user.setting_automated_profile
+        )
+
+        send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML)
+        return
 
 
 @admin_allowed()

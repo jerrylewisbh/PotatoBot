@@ -109,6 +109,17 @@ class User(Base):
                          order_by='Profession.date.desc()',
                          uselist=False)
 
+    # API Token and temporary stuff we need after we get an async answer...
+    api_token = Column(UnicodeText(250))
+    api_request_id = Column(UnicodeText(250))
+    api_grant_operation = Column(UnicodeText(250))
+
+    is_api_profile_allowed = Column(Boolean())
+    is_api_stock_allowed = Column(Boolean())
+
+    setting_automated_stock = Column(Boolean())
+    setting_automated_profile = Column(Boolean())
+
     def __repr__(self):
         user = ''
         if self.first_name:
