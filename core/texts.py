@@ -26,8 +26,8 @@ MSG_LIST_ADMINS_USER_FORMAT = '@{} {} {}\n'
 
 MSG_EMPTY = '[Empty]\n'
 
-MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! ' \
-                    'Please send me your game profile from @chtwrsbot ("/hero" command).'
+MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! \n\n' \
+                    'To get things started please send me your game profile from @chtwrsbot ("/hero" command) or select "🔑 Grant access" to allow me direct access to your profile.'
 MSG_ADMIN_WELCOME = 'Welcome, master!'
 
 MSG_HELP_GLOBAL_ADMIN = """Welcome commands:

@@ -1,11 +1,17 @@
 from telegram import ReplyKeyboardMarkup, KeyboardButton
 
+from core.types import Session, User
+
+session = Session()
+
 from core.commands import ADMIN_COMMAND_ORDER, ADMIN_COMMAND_STATUS, ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_RECRUIT, \
     ADMIN_COMMAND_FIRE_UP, ADMIN_COMMAND_SQUAD_LIST, USER_COMMAND_ME, USER_COMMAND_TOP, USER_COMMAND_SQUAD, \
     USER_COMMAND_STATISTICS, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, ADMIN_COMMAND_ADMINPANEL, \
     USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, \
-    STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ATTENDANCE,TOP_COMMAND_BUILD, \
-    TOP_COMMAND_BATTLES, STATISTICS_COMMAND_SKILLS
+    STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ATTENDANCE, \
+    TOP_COMMAND_BUILD, \
+    TOP_COMMAND_BATTLES, STATISTICS_COMMAND_SKILLS, USER_COMMAND_REGISTER, USER_COMMAND_REGISTER_CONTINUE, \
+    USER_COMMAND_SETTINGS
 
 
 def generate_admin_markup(full=False):
@@ -17,11 +23,30 @@ def generate_admin_markup(full=False):
     return ReplyKeyboardMarkup(buttons, True)
 
 
-def generate_user_markup(is_admin=False):
-    buttons = [[KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)],
-               [KeyboardButton(USER_COMMAND_SQUAD), KeyboardButton(USER_COMMAND_STATISTICS)],
-               #[KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)]
-               ]
+def generate_user_markup(is_admin=False, user_id=None):
+    """ Create a users keyboard. If user_id is given check if there are settings... """
+    user = None
+    if user_id:
+        user = session.query(User).filter_by(id=user_id).first()
+
+    buttons = [
+        [KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)],
+        [KeyboardButton(USER_COMMAND_SQUAD), KeyboardButton(USER_COMMAND_STATISTICS)],
+        #[KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)]
+    ]
+
+    """# Create dynamic keyboard based on users state..."""
+    if not user or not user.api_token:
+        # New
+        user_menu = [KeyboardButton(USER_COMMAND_REGISTER)]
+    elif user.api_token and (not user.is_api_profile_allowed or not user.is_api_stock_allowed):
+        # Not complete access...
+        user_menu = [KeyboardButton(USER_COMMAND_REGISTER_CONTINUE)]
+    elif user.api_token and user.is_api_profile_allowed and user.is_api_stock_allowed:
+        # All set up
+        user_menu = [KeyboardButton(USER_COMMAND_SETTINGS)]
+    buttons.append(user_menu)
+
     if is_admin:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ADMINPANEL)])
     return ReplyKeyboardMarkup(buttons, True)

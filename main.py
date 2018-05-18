@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, time, timedelta
+import re
 import json
 import logging
-import re
+
+from builtins import repr
+
+from cwmq import Consumer, Publisher
+from cwmq.handler import mq_handler
 
 from sqlalchemy import func, tuple_, and_
 from telegram import (
@@ -26,8 +31,9 @@ from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COM
     ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, \
     USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP, USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, \
     TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, \
-    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,TOP_COMMAND_BUILD, \
-    TOP_COMMAND_BATTLES, STATISTICS_COMMAND_SKILLS
+    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE, TOP_COMMAND_BUILD, \
+    TOP_COMMAND_BATTLES, STATISTICS_COMMAND_SKILLS, USER_COMMAND_REGISTER, \
+    USER_COMMAND_SETTINGS
 from core.constants import DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
 from core.functions.activity import (
     day_activity, week_activity, battle_activity
@@ -52,8 +58,9 @@ from core.functions.inline_keyboard_handling import (
 from core.functions.inline_markup import QueryType
 from core.functions.order_groups import group_list, add_group
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
-from core.functions.profile import char_update, profession_update,char_show, find_by_username, find_by_character, find_by_id,report_received, build_report_received, \
-    repair_report_received
+from core.functions.profile import char_update, profession_update, char_show, find_by_username, find_by_character, \
+    find_by_id, report_received, build_report_received, \
+    repair_report_received, grant_access, handle_access_token, settings
 from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
     enable_thorns, disable_thorns, enable_silence, disable_silence,enable_reminders,disable_reminders,
@@ -71,7 +78,7 @@ from core.functions.triggers import (
 from core.functions.welcome import (
     welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 )
-from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT, PROFESSION
+from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT, PROFESSION, ACCESS_CODE
 from core.texts import (
     MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL, 
     MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,MSG_MAIN_SEND_REPORTS,MSG_REPORT_SUMMARY, MSG_REPORT_TOTAL, MSG_REPORT_SUMMARY_RATING,MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
@@ -232,6 +239,10 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 remove_from_squad(bot, update)
             elif text == USER_COMMAND_ME.lower():
                 char_show(bot, update)
+            elif text == USER_COMMAND_REGISTER.lower():
+                grant_access(bot, update)
+            elif text == USER_COMMAND_SETTINGS.lower():
+                settings(bot, update)
             elif text == USER_COMMAND_TOP.lower() and registered:
                 top_about(bot, update)
             elif text == TOP_COMMAND_ATTACK.lower():
@@ -282,6 +293,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                         repair_report_received(bot, update)
                     elif re.search(PROFESSION, update.message.text):
                         profession_update(bot, update)
+                    elif re.search(ACCESS_CODE, update.message.text):
+                        handle_access_token(bot, update)
                 elif from_id == TRADEBOT_ID:
                     if TRADE_BOT in text:
                         trade_compare(bot, update, chat_data)
@@ -501,6 +514,7 @@ def main():
     disp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     disp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
     disp.add_handler(CommandHandler("me", char_show))
+    disp.add_handler(CommandHandler("grant_access", grant_access))
     disp.add_handler(CommandHandler("add_squad", add_squad))
     disp.add_handler(CommandHandler("del_squad", del_squad))
     disp.add_handler(CommandHandler("enable_thorns", enable_thorns))
@@ -572,6 +586,23 @@ def main():
 
     # Start the Bot
     updater.start_polling()
+
+    # After we've set up the bot we also now start consuming the CW APMQ messages in seperate threads
+    # and handle them 
+
+    # Consumer...
+    logging.info("Setting up MQ Consumer")
+    q_in = Consumer(
+        mq_handler, 
+        disp
+    )
+    q_in.setName("T1_IN")
+    q_in.start()
+
+    # Publisher
+    q_out = Publisher()
+    q_out.setName("T1_OUT")
+    q_out.start()
 
     # app.run(port=API_PORT)
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
