@@ -105,14 +105,13 @@ def get_diff(dict_one, dict_two):
     return resource_diff_add, resource_diff_del
 
 
-@user_allowed(False)
-def stock_compare(bot: Bot, update: Update, session, chat_data: dict):
-    old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
+def stock_compare(session, user_id, stock_text):
+    old_stock = session.query(Stock).filter_by(user_id=user_id,
                                                stock_type=StockType.Stock.value).order_by(Stock.date.desc()).first()
     new_stock = Stock()
-    new_stock.stock = update.message.text
+    new_stock.stock = stock_text
     new_stock.stock_type = StockType.Stock.value
-    new_stock.user_id = update.message.from_user.id
+    new_stock.user_id = user_id
     new_stock.date = datetime.now()
     session.add(new_stock)
     session.commit()
@@ -142,7 +141,16 @@ def stock_compare(bot: Bot, update: Update, session, chat_data: dict):
                 msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
             msg += MSG_EMPTY
-        send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
+        return msg
+    else:
+        return None
+
+
+@user_allowed(False)
+def stock_compare_forwarded(bot: Bot, update: Update, session, chat_data: dict):
+    cmp_result = stock_compare(session, update.message.from_user.id, update.message.text)
+    if cmp_result:
+        send_async(bot, chat_id=update.message.chat.id, text=cmp_result, parse_mode=ParseMode.HTML)
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT, parse_mode=ParseMode.HTML)
 

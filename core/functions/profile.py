@@ -372,7 +372,7 @@ def settings(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
         user = session.query(User).filter_by(id=update.message.from_user.id).first()
 
-        text = "Automatic stock update: {}\nAutomatic profile update: {}".format(
+        text = "Automatic stock update: \nAutomatic profile update: {}".format(
             user.setting_automated_stock,
             user.setting_automated_profile
         )

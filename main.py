@@ -49,7 +49,7 @@ from core.functions.orders import order, orders
 
 from core.functions.common import (
     help_msg, ping, start, error, kick,
-    admin_panel, stock_compare, trade_compare,
+    admin_panel, stock_compare_forwarded, trade_compare,
     delete_msg, delete_user,
     user_panel, web_auth)
 from core.functions.inline_keyboard_handling import (
@@ -282,7 +282,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
 
                 if from_id == CWBOT_ID:
                     if text.startswith(STOCK):
-                        stock_compare(bot, update, chat_data)
+                        stock_compare_forwarded(bot, update, chat_data)
                     elif re.search(HERO, update.message.text):
                         char_update(bot, update)
                     elif re.search(REPORT, update.message.text):
@@ -344,6 +344,29 @@ def ready_to_battle(bot: Bot, job_queue):
             except TelegramError as err:
                 bot.logger.error(err.message)
 
+    except SQLAlchemyError as err:
+        bot.logger.error(str(err))
+        Session.rollback()
+
+@run_async
+def refresh_api_users(bot: Bot, job_queue):
+    print("API REFRESH")
+    session = Session()
+    try:
+        p = Publisher()
+        api_users = session.query(User).filter(User.api_token is not None)
+        for user in api_users:
+            logging.info("Updating data for %s", user.id)
+            if user.is_api_profile_allowed:
+                p.publish({
+                    "token": user.api_token,
+                    "action": "requestProfile"
+                })
+            if user.is_api_stock_allowed:
+                p.publish({
+                    "token": user.api_token,
+                    "action": "requestStock"
+                })
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
         Session.rollback()
@@ -584,6 +607,10 @@ def main():
     #updater.job_queue.run_daily(fresh_profiles,
                                 #time(hour=22, minute=40))
 
+    # THIS IS FOR DEBUGGING AND TESTING!
+    print("UPDATER?")
+    updater.job_queue.run_repeating(refresh_api_users, 120)
+
     # Start the Bot
     updater.start_polling()
 
@@ -594,7 +621,7 @@ def main():
     logging.info("Setting up MQ Consumer")
     q_in = Consumer(
         mq_handler, 
-        disp
+        dispatcher=updater
     )
     q_in.setName("T1_IN")
     q_in.start()
