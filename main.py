@@ -5,8 +5,7 @@ import re
 import json
 import logging
 
-from builtins import repr
-
+from core.state import get_game_state, GameState
 from cwmq import Consumer, Publisher
 from cwmq.handler import mq_handler
 
@@ -99,15 +98,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-
-def battle_time():
-    """ Определяет, наступило ли время битвы """
-    now = datetime.now().time()
-    if (now.hour + 1) % 8 == 7 and now.minute >= 57:
-        return True
-    return False
-
-
 def del_msg(bot, job):
     try:
         bot.delete_message(job.context[0], job.context[1])
@@ -129,7 +119,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             Admin.user_id == update.message.from_user.id and
             Admin.admin_group in [update.message.chat.id, 0]).first()
 
-        if squad is not None and squad.silence_enabled and admin is None and battle_time():
+        if squad is not None and squad.silence_enabled and admin is None and get_game_state() == GameState.HOWLING_WIND:
             bot.delete_message(update.message.chat.id,
                                update.message.message_id)
         if not update.message.text:
@@ -350,7 +340,7 @@ def ready_to_battle(bot: Bot, job_queue):
 
 @run_async
 def refresh_api_users(bot: Bot, job_queue):
-    print("API REFRESH")
+    logging.info("API REFRESH type %s")
     session = Session()
     try:
         p = Publisher()
@@ -605,11 +595,20 @@ def main():
     #updater.job_queue.run_daily(fresh_profiles,
                                 #time(hour=18, minute=40))
     #updater.job_queue.run_daily(fresh_profiles,
-                                #time(hour=22, minute=40))
+                                #time(hour=22, minute=40))i
+
+
+    # API refreshing, etc.
+    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=6, minute=57))
+    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=14, minute=57))
+    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=22, minute=57))
+    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=7, minute=3))
+    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=15, minute=3))
+    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=23, minute=3))
 
     # THIS IS FOR DEBUGGING AND TESTING!
-    print("UPDATER?")
-    updater.job_queue.run_repeating(refresh_api_users, 120)
+    #updater.job_queue.run_repeating(refresh_api_users, 120)
+
 
     # Start the Bot
     updater.start_polling()
@@ -631,6 +630,8 @@ def main():
     q_out.setName("T1_OUT")
     q_out.start()
 
+    print("Current game time: {}".format(get_game_state()))
+
     # app.run(port=API_PORT)
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
@@ -639,4 +640,8 @@ def main():
 
 
 if __name__ == '__main__':
+    # Force bot TZ into UTC
+    import os
+    os.environ['TZ'] = 'UTC'
+
     main()

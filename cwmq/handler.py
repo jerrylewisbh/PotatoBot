@@ -2,6 +2,8 @@ import datetime
 import json
 import logging
 
+from telegram import ParseMode
+
 from core.functions.common import stock_compare_forwarded, stock_compare
 from cwmq import Publisher
 
@@ -227,7 +229,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
             for item, count in data['payload']['stock'].items():
                 text += "{} ({})\n".format(item, count)
 
-            stock_info = "Your stock after war: \n{}".format(stock_compare(session, user.id, text))
+            stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(session, user.id, text))
 
             # Seems we have access although we thought we don't have it...
             #if not user.is_profile_access_granted():
@@ -237,7 +239,8 @@ def mq_handler(channel, method, properties, body, dispatcher):
 
             dispatcher.bot.send_message(
                 user.id,
-                text,
+                stock_info,
+                parse_mode=ParseMode.HTML
                 #reply_markup=_get_keyboard(user)
             )
 
