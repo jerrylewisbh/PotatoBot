@@ -1,0 +1,18 @@
+TOKEN = '<SOME_TOKEN>'
+DB = 'mysql+pymysql://<username>:<password>@<host>/<dbname>?charset=utf8mb4' # Строчка подключения к базе данных (поддерживается только MySql, о формате можно прочитать тут http://docs.sqlalchemy.org/en/latest/dialects/mysql.html)
+API_PORT = 88
+
+GOVERNMENT_CHAT = -1001149271906
+SUPER_ADMIN_ID = 0 #
+
+CASTLE_CHAT_ID = None
+ACADEM_CHAT_ID = None
+CASTLE = None
+EXT_ID = None
+WEB_LINK = 'Please change it. {}'
+
+# CW APMQ Settings
+CW_EXCHANGE = "<username>_<botname>_ex"
+CW_IN_Q = "<username>_<botname>_i"
+CW_OUT_Q = "<username>_<botname>_o"
+CW_URL = "amqps://<username>:<pass>@api.chatwars.me:5673/?socket_timeout=10"
