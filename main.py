@@ -59,7 +59,7 @@ from core.functions.order_groups import group_list, add_group
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.profile import char_update, profession_update, char_show, find_by_username, find_by_character, \
     find_by_id, report_received, build_report_received, \
-    repair_report_received, grant_access, handle_access_token, settings
+    repair_report_received, grant_access, handle_access_token, settings, revoke
 from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
     enable_thorns, disable_thorns, enable_silence, disable_silence,enable_reminders,disable_reminders,
@@ -545,6 +545,7 @@ def main():
     disp.add_handler(CommandHandler("forceadd", force_add_to_squad))
     disp.add_handler(CommandHandler("ban", ban))
     disp.add_handler(CommandHandler("unban", unban))
+    disp.add_handler(CommandHandler("revoke", revoke))
 
     disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True, pass_job_queue=True))
 
@@ -607,19 +608,19 @@ def main():
     updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=23, minute=3))
 
     # THIS IS FOR DEBUGGING AND TESTING!
-    #updater.job_queue.run_repeating(refresh_api_users, 120)
+    updater.job_queue.run_repeating(refresh_api_users, 3600)
 
 
     # Start the Bot
     updater.start_polling()
 
     # After we've set up the bot we also now start consuming the CW APMQ messages in seperate threads
-    # and handle them 
+    # and handle them
 
     # Consumer...
     logging.info("Setting up MQ Consumer")
     q_in = Consumer(
-        mq_handler, 
+        mq_handler,
         dispatcher=updater
     )
     q_in.setName("T1_IN")

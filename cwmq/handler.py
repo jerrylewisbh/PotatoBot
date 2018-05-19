@@ -4,7 +4,10 @@ import logging
 
 from telegram import ParseMode
 
+from core.enums import CASTLE_MAP
 from core.functions.common import stock_compare_forwarded, stock_compare
+from core.functions.profile import get_required_xp
+from core.state import get_game_state, GameState
 from cwmq import Publisher
 
 from homeassistant.components.notify import telegram
@@ -15,12 +18,7 @@ session = Session()
 p = Publisher()
 
 def mq_handler(channel, method, properties, body, dispatcher):
-    logging.warning("GOT RESPONSE")
-    logging.warning(dispatcher)
-    logging.warning(body)
-
     logging.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
-
     data = json.loads(body)
 
     # Get user details if possible...
@@ -86,6 +84,15 @@ def mq_handler(channel, method, properties, body, dispatcher):
             user.api_grant_operation = None # We don't need this code anymore!
             user.is_api_stock_allowed = True
 
+            p.publish({
+                "token": user.api_token,
+                "action": "requestProfile"
+            })
+            p.publish({
+                "token": user.api_token,
+                "action": "requestStock"
+            })
+
         session.add(user)
         session.commit()
 
@@ -149,17 +156,18 @@ def mq_handler(channel, method, properties, body, dispatcher):
             c.user_id = user.id
             c.date = datetime.datetime.now()
             c.name = data['payload']['profile']['userName']
-            c.prof = data['payload']['profile']['class']
+            c.prof = CASTLE_MAP[data['payload']['profile']['castle']]
+            # data['payload']['profile']['class'] # TODO
             c.pet = None
             c.maxStamina = -1 # TODO?
             c.level = data['payload']['profile']['lvl']
             c.attack = data['payload']['profile']['atk']
             c.defence = data['payload']['profile']['def']
             c.exp = data['payload']['profile']['exp']
-            c.needExp = -1 # TODO
+            c.needExp = get_required_xp(data['payload']['profile']['lvl']) # TODO
             c.castle = data['payload']['profile']['castle']
             c.gold = data['payload']['profile']['gold']
-            c.donateGold = 1
+            c.donateGold = data['payload']['profile']['pouches']
             session.add(c)
             session.commit()
 
@@ -174,11 +182,11 @@ def mq_handler(channel, method, properties, body, dispatcher):
               🏛Class info: {class}
             """
 
-            dispatcher.bot.send_message(
-                data['payload']['userId'],
-                "{}".format(data['payload']),
-                # reply_markup=_get_keyboard(user)
-            )
+            #dispatcher.bot.send_message(
+            #    data['payload']['userId'],
+            #    "{}".format(data['payload']),
+            #    # reply_markup=_get_keyboard(user)
+            #)
 
     elif data['action'] == "requestStock":
         if data['result'] == "InvalidToken":
@@ -228,6 +236,11 @@ def mq_handler(channel, method, properties, body, dispatcher):
             text = "📦Storage (???/???):\n" # We don't have the overall size (yet) so we enter dummy text...
             for item, count in data['payload']['stock'].items():
                 text += "{} ({})\n".format(item, count)
+
+            if get_game_state() != GameState.HOWLING_WIND:
+                # Don't send stock change notification when wind is not howling...
+                # TODO: This might be too late?!
+                return
 
             stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(session, user.id, text))
 

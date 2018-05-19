@@ -136,6 +136,83 @@ def parse_profession(prof, user_id, date, session):
         session.commit()
     return profession
 
+def get_required_xp(level):
+    """ Get required XP for next level.
+    Based on https://wiki.chatwars.me/index.php?title=%D0%93%D0%B5%D1%80%D0%BE%D0%B9"""
+
+    # We need the XP for next level...
+    level += 1
+
+    required = {
+        1: 0,
+        2: 5,
+        3: 15,
+        4: 38,
+        5: 79,
+        6: 142,
+        7: 227,
+        8: 329,
+        9: 444,
+        10: 577,
+        11: 721,
+        12: 902,
+        13: 1127,
+        14: 1409,
+        15: 1761,
+        16: 2202,
+        17: 2752,
+        18: 3440,
+        19: 4300,
+        20: 5375,
+        21: 6719,
+        22: 8399,
+        23: 10498,
+        24: 13123,
+        25: 16404,
+        26: 20504,
+        27: 25631,
+        28: 32038,
+        29: 39023,
+        30: 46636,
+        31: 54934,
+        32: 63979,
+        33: 73838,
+        34: 84584,
+        35: 96297,
+        36: 109065,
+        37: 122982,
+        38: 138151,
+        39: 154685,
+        40: 172708,
+        41: 192353,
+        42: 213765,
+        43: 237105,
+        44: 262545,
+        45: 290275,
+        46: 320501,
+        47: 353447,
+        48: 389358,
+        49: 428501,
+        50: 471167,
+        51: 517673,
+        52: 568364,
+        53: 623618,
+        54: 683845,
+        55: 749492,
+        56: 821047,
+        57: 899042,
+        58: 984057,
+        59: 1076723,
+        60: 1177728,
+        61: 1287825,
+        62: 1407830,
+        63: 1538636,
+        64: 1681214,
+        65: 1836624,
+        66: 2006021,
+    }
+    return required[level]
+
 def parse_build_reports(report, user_id, date, session):
     parsed_data = re.search(BUILD_REPORT, report)
     report = session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
@@ -292,6 +369,17 @@ def profession_update(bot: Bot, update: Update, session):
 def char_show(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
         user = session.query(User).filter_by(id=update.message.from_user.id).first()
+
+        if user.is_api_profile_allowed:
+            p.publish({
+                "token": user.api_token,
+                "action": "requestStock"
+            })
+            p.publish({
+                "token": user.api_token,
+                "action": "requestProfile"
+            })
+
         if user is not None and user.character is not None:
             char = user.character
             profession = user.profession
@@ -305,6 +393,21 @@ def char_show(bot: Bot, update: Update, session):
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
+
+
+@user_allowed()
+def revoke(bot: Bot, update: Update, session):
+    if update.message.chat.type == 'private':
+        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+        user.api_token = None
+        user.is_api_profile_allowed = False
+        user.is_api_stock_allowed = False
+        session.add(user)
+        session.commit()
+
+        btns = generate_profile_buttons(user)
+        send_async(bot, chat_id=update.message.chat.id, text="API access reset!", reply_markup=btns, parse_mode=ParseMode.HTML)
+
 
 @user_allowed
 def grant_access(bot: Bot, update: Update, session):
