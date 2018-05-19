@@ -456,3 +456,5 @@ MSG_API_SETUP_STEP_1_COMPLETE = "👌 First step is complete! Now you will recei
 MSG_API_SETUP_STEP_2_COMPLETE = "👌 Second step is complete! Now as a last step please allow me access to your stock. " \
                                 "Please also forward this code to me."
 MSG_API_SETUP_STEP_3_COMPLETE = "👌 All set up now! Thank you!"
+
+MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock update:</b>"
