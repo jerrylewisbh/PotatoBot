@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import uuid
 from threading import Thread
 
 import functools
@@ -216,9 +216,17 @@ class Publisher(Thread, metaclass=Singleton):
             #self.bind_queue(self.QUEUE)
 
         def publish(self, body):
+            # Dear future me: Currently correlation_ids are not sent back by the CW API making some things hard...
+            # Check for it again in the future...
             LOGGER.info("[Publisher] Got item from queue %s", json.dumps(body))
-            self._channel.basic_publish(self.EXCHANGE, self.QUEUE, json.dumps(body))
-            #self._channel.basic_publish(self.EXCHANGE, self.QUEUE, json.dumps({'action': 'createAuthCode', 'payload': {'userId': 176862585}}))
+            self._channel.basic_publish(
+                exchange=self.EXCHANGE,
+                routing_key=self.QUEUE,
+                body=json.dumps(body),
+                properties=pika.BasicProperties(
+                    correlation_id=str(uuid.uuid4())
+                ),
+            )
             LOGGER.info("[Publisher] ... published")
 
         def run(self):
