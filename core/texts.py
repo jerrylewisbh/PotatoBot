@@ -318,7 +318,7 @@ MSG_CLEARED = 'Done'
 MSG_SQUAD_LIST = 'List of your squads:'
 MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter this squad. \
 Exit the current squad or cancel the request to create a new one. '
-MSG_SQUAD_REQUEST = 'Here are the requests you have receive:'
+MSG_SQUAD_REQUEST = 'Here are the requests you have received:'
 MSG_SQUAD_LEAVED = '{} left the squad {} 😰'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
@@ -347,7 +347,8 @@ MSG_IN_DEV = 'Under construction=('
 
 MSG_TOP_ABOUT = '🏆 Tops 🏆'
 MSG_STATISTICS_ABOUT = '📈Statistics📈'
-MSG_SQUAD_ABOUT = '⚜Squad⚜'
+MSG_SQUAD_ABOUT = 'You are a member of the Squad "{}"'
+MSG_SQUAD_NONE = 'You are currently not a member of any squad. Select "⚜Join Squad" to join one!'
 
 MSG_TOP_FORMAT = '{}. {} (Level {}) - {}{}\n'
 MSG_SQUAD_TOP_FORMAT = '{}. {} ({}👥) - {}{} ({}{}/👤)\n'
