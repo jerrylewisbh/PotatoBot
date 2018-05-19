@@ -151,8 +151,6 @@ class Publisher(Thread, metaclass=Singleton):
         def __init__(self):
             Thread.__init__(self)
 
-            self.__throttling = UserRequestThrottling()
-
             self.EXCHANGE = CW_EXCHANGE
             self.EXCHANGE_TYPE = 'topic'
             self.QUEUE = CW_OUT_Q
