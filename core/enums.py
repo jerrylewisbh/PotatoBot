@@ -14,6 +14,15 @@ CASTLE_MAP = {
     '🦈': 'Sharkteeth',
 }
 
+CLASS_MAP = {
+    '⚔️': 'Knight',
+    '🏹': 'Ranger',
+    '⚗️': 'Alchemist',
+    '🛡': 'Sentinel',
+    '⚒️': 'Blacksmith',
+    '📦': 'Collector',
+}
+
 TACTICTS_COMMAND_PREFIX = "/tactics_"
 
 class Castle(Enum):
