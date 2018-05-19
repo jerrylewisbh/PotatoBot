@@ -242,7 +242,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
             if get_game_state() != GameState.HOWLING_WIND:
                 # Don't send stock change notification when wind is not howling...
                 # TODO: This might be too late?!
-                channel.basic_ack(method.delivery_tag) # Acknowledge manually 
+                channel.basic_ack(method.delivery_tag) # Acknowledge manually
                 return
 
             dispatcher.bot.send_message(
