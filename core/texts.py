@@ -375,9 +375,9 @@ MSG_YOU_UNBANNED = 'We can talk again 🌚'
 PLOT_X_LABEL = 'Date'
 PLOT_Y_LABEL = 'XP'
 
-MSG_DAY_SINGLE = 'Day'
-MSG_DAY_PLURAL1 = 'Day'
-MSG_DAY_PLURAL2 = 'Days'
+MSG_DAY_SINGLE = 'day'
+MSG_DAY_PLURAL1 = 'day'
+MSG_DAY_PLURAL2 = 'days'
 MSG_DATE_FORMAT = '{} {}'
 MSG_PLOT_DESCRIPTION = 'On average {} experience per day. For the next level, you need {} experience and approximately {}'
 
