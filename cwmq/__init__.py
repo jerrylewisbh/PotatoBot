@@ -50,9 +50,12 @@ class Consumer(Thread):
 
     def connect(self):
         LOGGER.info('[Consumer] Connecting to %s', self._url)
-        return pika.SelectConnection(pika.URLParameters(self._url),
-                                     self.on_connection_open,
-                                     stop_ioloop_on_close=False)
+
+        return pika.SelectConnection(
+            pika.URLParameters(self._url),
+            self.on_connection_open,
+            stop_ioloop_on_close=False,
+        )
 
     def on_connection_open(self, unused_connection):
         LOGGER.info('[Consumer] Connection opened')
