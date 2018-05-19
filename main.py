@@ -87,8 +87,6 @@ from cwmq import Consumer, Publisher
 from cwmq.handler import mq_handler
 
 # -----constants----
-from cwmq.state import UserState
-
 CWBOT_ID = 408101137
 TRADEBOT_ID = 0
 #278525885
