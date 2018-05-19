@@ -5,8 +5,9 @@ import logging
 from telegram import ParseMode
 
 from core.enums import CASTLE_MAP
-from core.functions.common import stock_compare_forwarded, stock_compare
+from core.functions.common import stock_compare
 from core.functions.profile import get_required_xp
+from core.functions.reply_markup import generate_user_markup
 from core.state import get_game_state, GameState
 from cwmq import Publisher
 
@@ -48,6 +49,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
         dispatcher.bot.send_message(
             user.id,
             "👌 First step is complete! Now you will receive another request to allow me access to your profile. Please also forward this code to me.",
+            reply_markup=generate_user_markup(user.id)
         )
 
         logging.info("Requesting profile access")
@@ -98,8 +100,8 @@ def mq_handler(channel, method, properties, body, dispatcher):
 
         dispatcher.bot.send_message(
             user.id,
-            message
-            #reply_markup=_get_keyboard(user)
+            message,
+            reply_markup=generate_user_markup(user.id)
         )
 
      # Profile requests...
@@ -116,6 +118,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 dispatcher.bot.send_message(
                     user.id,
                     "It seems I'm unable to access your profile. Did you /revoke your permission?",
+                    reply_markup=generate_user_markup(user.id)
                 )
                 # TODO: Keyboard refresh?
 
@@ -133,7 +136,8 @@ def mq_handler(channel, method, properties, body, dispatcher):
 
             dispatcher.bot.send_message(
                 user.id,
-                text
+                text,
+                reply_markup=generate_user_markup(user.id)
             )
             # TODO: Keyboard update?
 
@@ -201,6 +205,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 dispatcher.bot.send_message(
                     user.id,
                     "It seems I'm unable to access your profile. Did you /revoke your permission?",
+                    reply_markup=generate_user_markup(user.id)
                 )
                 # TODO: Keyboard refresh?
 
@@ -218,7 +223,8 @@ def mq_handler(channel, method, properties, body, dispatcher):
 
             dispatcher.bot.send_message(
                 user.id,
-                text
+                text,
+                reply_markup=generate_user_markup(user.id)
             )
             # TODO: Keyboard update?
 
@@ -244,17 +250,12 @@ def mq_handler(channel, method, properties, body, dispatcher):
 
             stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(session, user.id, text))
 
-            # Seems we have access although we thought we don't have it...
-            #if not user.is_profile_access_granted():
-            #    logging.warn("State is wrong? We already have granted persmissions for Profile!")
-            #    user.set_profile_access_granted(True)
-            #    user.save()
 
             dispatcher.bot.send_message(
                 user.id,
                 stock_info,
-                parse_mode=ParseMode.HTML
-                #reply_markup=_get_keyboard(user)
+                parse_mode=ParseMode.HTML,
+                reply_markup = generate_user_markup(user.id)
             )
 
     # We're done...
