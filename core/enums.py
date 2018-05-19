@@ -24,6 +24,42 @@ CLASS_MAP = {
     '🐣': 'Esquire / Master'
 }
 
+# Only these items are going to reported in stock loss/gain
+STOCK_WHITELIST = [
+    'bone',
+    'bone powder',
+    'charcoal',
+    'cloth',
+    'coal',
+    'cocoa powder',
+    'coke',
+    'egg',
+    'flour',
+    'hardener',
+    'iron ore',
+    'leather',
+    'magic stone',
+    'metal plate',
+    'milk',
+    'pelt',
+    'powder',
+    'purified powder',
+    'rope',
+    'ruby',
+    'sapphire',
+    'silver alloy',
+    'silver mold',
+    'silver ore',
+    'solvent',
+    'steel',
+    'steel mold',
+    'stick',
+    'string',
+    'sugar',
+    'thread',
+    'wooden shaft',
+]
+
 TACTICTS_COMMAND_PREFIX = "/tactics_"
 
 class Castle(Enum):

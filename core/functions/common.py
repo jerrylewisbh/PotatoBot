@@ -5,6 +5,7 @@ import logging
 
 from telegram import Update, Bot, ParseMode
 
+from core.enums import STOCK_WHITELIST
 from core.functions.triggers import trigger_decorator
 from core.functions.reply_markup import generate_admin_markup, generate_user_markup
 from core.texts import *
@@ -119,13 +120,15 @@ def stock_compare_text(old_stock, new_stock):
         msg = MSG_STOCK_COMPARE_HARVESTED
         if len(resource_diff_add):
             for key, val in resource_diff_add:
-                msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
+                if key.lower() in STOCK_WHITELIST:
+                    msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
             msg += MSG_EMPTY
         msg += MSG_STOCK_COMPARE_LOST
         if len(resource_diff_del):
             for key, val in resource_diff_del:
-                msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
+                if key.lower() in STOCK_WHITELIST:
+                    msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
             msg += MSG_EMPTY
         return msg
