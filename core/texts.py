@@ -206,10 +206,9 @@ You decided to walk around and find a way in.
 Two hours later you returned to the same place you started at..."""
 MSG_PROFILE_SHOW_FORMAT = """\
 👤 %first_name% %last_name% (%username%) 
-%castle% %name% of
-%prof% Castle
+%castle% %name% of %prof% Castle
 🏛 %profession% 
-🏅 level %level% 
+🏅 Level %level% 
 ⚜️ %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
 💰 %gold% | 👝 %pouches% | 🔋 %maxStamina%
@@ -307,7 +306,7 @@ MSG_PIN_ALL_DISABLED = 'Now only admins can pin😡'
 MSG_ORDER_CLEARED_BY_DUMMY = 'The requested is being processed \
 because of high server load due to continuous updates'
 
-MSG_NO_SQUAD = 'squadless'
+MSG_NO_SQUAD = 'Squadless'
 MSG_NO_PET = ''
 MSG_NO_PROFESSION = 'Classless'
 MSG_WANTS_TO_JOIN = '\n\nWants to join {}'
