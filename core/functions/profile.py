@@ -423,16 +423,6 @@ def grant_access(bot: Bot, update: Update, session):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_API_INFO, parse_mode=ParseMode.HTML)
 
 @user_allowed
-def grant_access_stock(bot: Bot, update: Update, session):
-    # TODO: Needed?
-    pass
-
-@user_allowed
-def grant_access_profile(bot: Bot, update: Update, session):
-    # TODO: Needed?
-    pass
-
-@user_allowed
 def handle_access_token(bot: Bot, update: Update, session):
     """ Handle a forwarded access code to authorize API access by bot.
     Note: We do not send back a confirmation at this point. User should be notified after async answer from APMQ
