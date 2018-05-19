@@ -47,7 +47,7 @@ def generate_user_markup(user_id=None):
         user_menu = [KeyboardButton(USER_COMMAND_SETTINGS)]
     buttons.append(user_menu)
 
-    if user and user.admin_permissions:
+    if user and user.admin_permission:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ADMINPANEL)])
     return ReplyKeyboardMarkup(buttons, True)
 
