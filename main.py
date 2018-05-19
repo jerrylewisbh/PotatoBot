@@ -1,24 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, time, timedelta
-import re
 import json
 import logging
-
-from core.state import get_game_state, GameState
-from cwmq import Consumer, Publisher
-from cwmq.handler import mq_handler
+import re
+from datetime import datetime, time, timedelta
 
 from sqlalchemy import func, tuple_, and_
+from sqlalchemy.exc import SQLAlchemyError
 from telegram import (
-    Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle,ParseMode
+    Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 )
+from telegram.error import TelegramError
 from telegram.ext import (
     Updater, CommandHandler, MessageHandler,
     Filters, CallbackQueryHandler, InlineQueryHandler
 )
 from telegram.ext.dispatcher import run_async
-from telegram.error import TelegramError
 
 from config import TOKEN, GOVERNMENT_CHAT, CASTLE, EXT_ID
 from core.chat_commands import CC_SET_WELCOME, CC_HELP, CC_SQUAD, CC_SHOW_WELCOME, CC_TURN_ON_WELCOME, \
@@ -44,30 +41,29 @@ from core.functions.admins import (
 from core.functions.ban import unban, ban
 from core.functions.bosses import (
     boss_leader, boss_zhalo, boss_monoeye, boss_hydra)
-from core.functions.orders import order, orders
-
 from core.functions.common import (
-    help_msg, ping, start, error, kick,
+    help_msg, ping, error, kick,
     admin_panel, stock_compare_forwarded, trade_compare,
     delete_msg, delete_user,
     user_panel, web_auth)
 from core.functions.inline_keyboard_handling import (
-    callback_query, inlinequery ,send_status, send_order
+    callback_query, inlinequery, send_status, send_order
 )
 from core.functions.inline_markup import QueryType
 from core.functions.order_groups import group_list, add_group
+from core.functions.orders import order, orders
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.profile import char_update, profession_update, char_show, find_by_username, find_by_character, \
     find_by_id, report_received, build_report_received, \
     repair_report_received, grant_access, handle_access_token, settings, revoke
 from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
-    enable_thorns, disable_thorns, enable_silence, disable_silence,enable_reminders,disable_reminders,
+    enable_thorns, disable_thorns, enable_silence, disable_silence, enable_reminders, disable_reminders,
     squad_list, squad_request, list_squad_requests,
     open_hiring, close_hiring, remove_from_squad, add_to_squad, force_add_to_squad,
     leave_squad_request, squad_about, call_squad, battle_reports_show, battle_attendance_show)
 from core.functions.statistics import statistic_about, exp_statistic, skill_statistic
-from core.functions.top import top_about, attack_top, exp_top, def_top, global_build_top, week_build_top, \
+from core.functions.top import top_about, attack_top, exp_top, def_top, week_build_top, \
     week_battle_top
 from core.functions.triggers import (
     set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all,
@@ -77,15 +73,17 @@ from core.functions.triggers import (
 from core.functions.welcome import (
     welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
 )
-from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT, PROFESSION, ACCESS_CODE
+from core.regexp import HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT, PROFESSION, ACCESS_CODE
+from core.state import get_game_state, GameState
 from core.texts import (
-    MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL, 
-    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,MSG_MAIN_SEND_REPORTS,MSG_REPORT_SUMMARY, MSG_REPORT_TOTAL, MSG_REPORT_SUMMARY_RATING,MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
+    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45, MSG_MAIN_SEND_REPORTS,
+    MSG_REPORT_SUMMARY, MSG_REPORT_TOTAL, MSG_REPORT_SUMMARY_RATING, MSG_IN_DEV, MSG_UPDATE_PROFILE,
+    MSG_SQUAD_DELETE_OUTDATED,
     MSG_SQUAD_DELETE_OUTDATED_EXT)
-from core.types import Session, Order, Squad, Admin, user_allowed, admin_allowed,Character, Report,SquadMember, User
+from core.types import Session, Order, Squad, Admin, user_allowed, Character, Report, SquadMember, User
 from core.utils import add_user, send_async
-
-from sqlalchemy.exc import SQLAlchemyError
+from cwmq import Consumer, Publisher
+from cwmq.handler import mq_handler
 
 # -----constants----
 CWBOT_ID = 408101137
