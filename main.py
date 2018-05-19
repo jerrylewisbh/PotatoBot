@@ -45,7 +45,8 @@ from core.functions.common import (
     help_msg, ping, error, kick,
     admin_panel, stock_compare_forwarded, trade_compare,
     delete_msg, delete_user,
-    user_panel, web_auth)
+    user_panel, web_auth, StockType, stock_compare_text, MSG_CHANGES_SINCE_LAST_UPDATE, MSG_LAST_UPDATE,
+    MSG_USER_BATTLE_REPORT, MSG_USER_BATTLE_REPORT_PRELIM, MSG_USER_BATTLE_REPORT_STOCK)
 from core.functions.inline_keyboard_handling import (
     callback_query, inlinequery, send_status, send_order
 )
@@ -80,12 +81,14 @@ from core.texts import (
     MSG_REPORT_SUMMARY, MSG_REPORT_TOTAL, MSG_REPORT_SUMMARY_RATING, MSG_IN_DEV, MSG_UPDATE_PROFILE,
     MSG_SQUAD_DELETE_OUTDATED,
     MSG_SQUAD_DELETE_OUTDATED_EXT)
-from core.types import Session, Order, Squad, Admin, user_allowed, Character, Report, SquadMember, User
+from core.types import Session, Order, Squad, Admin, user_allowed, Character, Report, SquadMember, User, Stock
 from core.utils import add_user, send_async
 from cwmq import Consumer, Publisher
 from cwmq.handler import mq_handler
 
 # -----constants----
+from cwmq.state import UserState
+
 CWBOT_ID = 408101137
 TRADEBOT_ID = 0
 #278525885
@@ -359,6 +362,77 @@ def refresh_api_users(bot: Bot, job_queue):
         bot.logger.error(str(err))
         Session.rollback()
 
+@run_async
+def report_after_battle(bot: Bot, job_queue):
+    logging.info("API REFRESH type %s")
+    session = Session()
+    try:
+        api_users = session.query(User).filter(User.api_token is not None)
+        for user in api_users:
+            if user.id != 176862585:
+                continue
+            logging.info("Updating data for %s", user.id)
+
+            text = MSG_USER_BATTLE_REPORT
+
+            if user.is_api_profile_allowed:
+                prev_stock = session.query(Stock).filter_by(
+                    user_id=user.id,
+                    stock_type=StockType.Stock.value
+                ).order_by(Stock.date.desc()).limit(1).offset(1).one()
+
+                prev_character = session.query(Character).filter_by(
+                    user_id=user.id,
+                ).order_by(Character.date.desc()).limit(1).offset(1).one()
+
+                earned_exp = user.character.exp - prev_character.exp
+                earned_gold = user.character.gold - prev_character.gold
+
+                r = Report()
+                r.user = user
+                r.name = user.character.name
+                r.date = datetime.now()
+                r.level = user.character.level
+                r.attack = user.character.attack
+                r.defence = user.character.defence
+                r.castle = user.character.castle
+                r.earned_exp = earned_exp
+                r.earned_gold = earned_gold
+                r.earned_stock = earned_gold
+                r.preliminary_report = True
+                session.add(r)
+                session.commit()
+
+                text += MSG_USER_BATTLE_REPORT_PRELIM.format(
+                    user.character.castle, user.character.name, user.character.attack, user.character.defence,
+                    user.character.level, earned_exp, earned_gold, "This is weight/size gain/loss!?!?"
+                )
+
+            if user.is_api_stock_allowed:
+                second_newest = session.query(Stock).filter_by(
+                    user_id=user.id,
+                    stock_type=StockType.Stock.value
+                ).order_by(Stock.date.desc()).limit(1).offset(1).one()
+
+                stock_diff = stock_compare_text(user.stock.stock, second_newest.stock)
+                stock_text = MSG_USER_BATTLE_REPORT_STOCK.format(
+                    MSG_CHANGES_SINCE_LAST_UPDATE,
+                    stock_diff,
+                    MSG_LAST_UPDATE,
+                    user.stock.date.strftime("%Y-%m-%d %H:%M:%S")
+                )
+                text += stock_text
+
+            send_async(bot,
+                       chat_id=user.id,
+                       text=text,
+                       parse_mode=ParseMode.HTML,
+                       reply_markup=None
+                       )
+
+    except SQLAlchemyError as err:
+        bot.logger.error(str(err))
+        Session.rollback()
 
 @run_async
 #@admin_allowed()
@@ -598,16 +672,23 @@ def main():
 
 
     # API refreshing, etc.
+    # Pre-War
     updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=6, minute=57))
     updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=14, minute=57))
     updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=22, minute=57))
+
+    # After-War
     updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=7, minute=3))
     updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=15, minute=3))
     updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=23, minute=3))
 
-    # THIS IS FOR DEBUGGING AND TESTING!
-    updater.job_queue.run_repeating(refresh_api_users, 3600)
+    # Battle Report
+    updater.job_queue.run_daily(callback=report_after_battle, time=time(hour=7, minute=5))
+    updater.job_queue.run_daily(callback=report_after_battle, time=time(hour=15, minute=5))
+    updater.job_queue.run_daily(callback=report_after_battle, time=time(hour=23, minute=5))
 
+    # THIS IS FOR DEBUGGING AND TESTING!
+    updater.job_queue.run_once(report_after_battle, datetime.now()+timedelta(seconds=5))
 
     # Start the Bot
     updater.start_polling()
@@ -628,6 +709,9 @@ def main():
     q_out = Publisher()
     q_out.setName("T1_OUT")
     q_out.start()
+
+    # User State Helper...
+    UserState()
 
     print("Current game time: {}".format(get_game_state()))
 

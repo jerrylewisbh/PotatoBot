@@ -458,3 +458,16 @@ MSG_API_SETUP_STEP_2_COMPLETE = "👌 Second step is complete! Now as a last ste
 MSG_API_SETUP_STEP_3_COMPLETE = "👌 All set up now! Thank you!"
 
 MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock update:</b>"
+
+MSG_USER_BATTLE_REPORT = "<b>Your after action report:\n</b>"
+MSG_USER_BATTLE_REPORT_PRELIM = "{}{} ⚔:{} 🛡:{} "\
+                                "Lvl: {}\n"\
+                                "Your result on the battlefield:\n" \
+                                "🔥Exp: {}\n" \
+                                "💰Gold: {}\n" \
+                                "📦Stock: {}\n\n" \
+                                "<i>Note: Please send your /report after every battle!\n</i>"
+MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n <i>{}: {}</i>"
+
+#text += "\n\n<b>Please do not forget to forward me your /report command!</b>"
+

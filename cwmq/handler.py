@@ -23,7 +23,6 @@ logger.setLevel(logging.DEBUG)
 def mq_handler(channel, method, properties, body, dispatcher):
     logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
-
     # Get user details if possible...
     user = None
     if data and "payload" in data and data["payload"] and "userId" in data['payload']:
@@ -239,11 +238,13 @@ def mq_handler(channel, method, properties, body, dispatcher):
 
             stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(session, user.id, text))
 
-            if get_game_state() != GameState.HOWLING_WIND:
-                # Don't send stock change notification when wind is not howling...
-                # TODO: This might be too late?!
-                channel.basic_ack(method.delivery_tag) # Acknowledge manually
-                return
+            #if get_game_state() != GameState.HOWLING_WIND:
+            #    # Don't send stock change notification when wind is not howling...
+            #    # TODO: This might be too late?!
+            #    channel.basic_ack(method.delivery_tag) # Acknowledge manually
+
+            # FIXME: DO NOT SEND STOCK CHANGE FOR THE TIME BEEING
+            return
 
             dispatcher.bot.send_message(
                 user.id,

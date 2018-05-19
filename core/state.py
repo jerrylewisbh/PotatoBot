@@ -1,9 +1,9 @@
 from datetime import time, datetime
 
-from enum import IntEnum
+from enum import IntEnum, Flag
 
 
-class GameState(IntEnum):
+class GameState(Flag):
     NO_WIND = 0
 
     MORNING = 1
@@ -47,6 +47,6 @@ def get_game_state():
         daytime = GameState.MORNING
 
     if now >= time(6, 57) and now <= time(7, 3) or now >= time(14, 57) and now <= time(15, 3) or now >= time(22, 57) and now <= time(23, 3):
-        daytime = GameState.HOWLING
+        daytime = GameState.HOWLING_WIND
 
     return daytime

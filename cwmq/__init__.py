@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import uuid
 from threading import Thread
 
@@ -10,6 +11,8 @@ import json
 import pika
 import queue
 import logging
+
+from cwmq.throttling import UserRequestThrottling
 
 LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
@@ -150,6 +153,8 @@ class Publisher(Thread, metaclass=Singleton):
         def __init__(self):
             Thread.__init__(self)
 
+            self.__throttling = UserRequestThrottling()
+
             self.EXCHANGE = CW_EXCHANGE
             self.EXCHANGE_TYPE = 'topic'
             self.QUEUE = CW_OUT_Q
@@ -218,7 +223,8 @@ class Publisher(Thread, metaclass=Singleton):
         def publish(self, body):
             # Dear future me: Currently correlation_ids are not sent back by the CW API making some things hard...
             # Check for it again in the future...
-            LOGGER.info("[Publisher] Got item from queue %s", json.dumps(body))
+            LOGGER.info("[Publisher] Got item: %s", json.dumps(body))
+
             self._channel.basic_publish(
                 exchange=self.EXCHANGE,
                 routing_key=self.QUEUE,
