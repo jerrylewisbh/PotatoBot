@@ -535,7 +535,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             total_members += 1
             if report:
                 icon = REST_ICON if report.earned_exp  == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
-                text = MSG_REPORT_SUMMARY_ROW.format(icon, 
+                text = MSG_REPORT_SUMMARY_ROW.format(icon,
                     report.name, user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
                 texts.append(text);
@@ -548,17 +548,17 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             else:
                 text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
                 texts.append(text);
-        
+
 
         template = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports, total_members,full_atk, full_def,
                                         full_exp, full_gold, full_stock)
-        
+
 
 
         limit = 50;
         count = 0;
         repo_list = ''
-        limit = limit if len(texts) > limit else len(texts) 
+        limit = limit if len(texts) > limit else len(texts)
         for element in texts:
             repo_list += element
             count = count + 1
