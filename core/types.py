@@ -120,6 +120,9 @@ class User(Base):
     setting_automated_stock = Column(Boolean())
     setting_automated_profile = Column(Boolean())
 
+    # Relationship
+    admin_permission = relationship("Admin")
+
     def __repr__(self):
         user = ''
         if self.first_name:
