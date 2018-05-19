@@ -117,11 +117,12 @@ class User(Base):
     is_api_profile_allowed = Column(Boolean())
     is_api_stock_allowed = Column(Boolean())
 
-    setting_automated_stock = Column(Boolean())
-    setting_automated_profile = Column(Boolean())
+    setting_automated_stock = Column(Boolean(), default=True)
+    setting_automated_profile = Column(Boolean(), default=True)
 
     # Relationship
     admin_permission = relationship("Admin")
+    squad = relationship("SquadMember")
 
     def __repr__(self):
         user = ''
