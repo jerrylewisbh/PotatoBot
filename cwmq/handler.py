@@ -4,7 +4,7 @@ import logging
 
 from telegram import ParseMode
 
-from core.enums import CASTLE_MAP
+from core.enums import CASTLE_MAP, CLASS_MAP
 from core.functions.common import stock_compare, MSG_API_REQUIRE_ACCESS_STOCK, MSG_API_REQUIRE_ACCESS_PROFILE, \
     MSG_API_REVOKED_PERMISSIONS, MSG_API_SETUP_STEP_1_COMPLETE, MSG_API_SETUP_STEP_2_COMPLETE, \
     MSG_API_SETUP_STEP_3_COMPLETE
@@ -17,8 +17,11 @@ from cwmq import Publisher
 session = Session()
 p = Publisher()
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 def mq_handler(channel, method, properties, body, dispatcher):
-    logging.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
+    logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
 
     # Get user details if possible...
@@ -28,7 +31,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
 
     if "action" not in data:
         if data['payload']['operation'] in ("GetUserProfile", "GetStock"):
-            logging.info("authAdditionalOperation - Response")
+            logger.info("authAdditionalOperation - Response")
             if data['result'] == "Ok" and user:
                 # Since we're stateless we have to temporarily save the action and request_id
                 user.api_request_id = data['uuid']
@@ -36,22 +39,22 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 session.add(user)
                 session.commit()
             else:
-                logging.error("TODO!? %r, %r", data, user)
+                logger.error("TODO!? %r, %r", data, user)
         else:
-            logging.warning("TODO: %r", data)
+            logger.warning("TODO: %r", data)
     elif data['action'] == "grantToken" and data['result'] == "Ok":
         user.api_token = data['payload']['token']
         session.add(user)
         session.commit()
 
-        logging.info("Added token for chat_id=%s", data['payload']['userId'])
+        logger.info("Added token for chat_id=%s", data['payload']['userId'])
         dispatcher.bot.send_message(
             user.id,
             MSG_API_SETUP_STEP_1_COMPLETE,
             reply_markup=generate_user_markup(user.id)
         )
 
-        logging.info("Requesting profile access")
+        logger.info("Requesting profile access")
         grant_req = {
             "token": user.api_token,
             "action": "authAdditionalOperation",
@@ -61,7 +64,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
         }
         p.publish(grant_req)
     elif data['action'] == "grantAdditionalOperation" and data['result'] == "Ok":
-        logging.info("grantAdditionalOperation was successful!")
+        logger.info("grantAdditionalOperation was successful!")
 
         # Reset request ID
         user.api_request_id = None
@@ -108,7 +111,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
         if data['result'] == "InvalidToken":
             # Revoked token?
             # TODO: Inform user?
-            logging.warning("InvalidToken response for token %s", data['payload']['token'])
+            logger.warning("InvalidToken response for token %s", data['payload']['token'])
 
             # We have to get the user from by token since userId is not published and user is None currently...
             user = session.query(User).filter_by(api_token=data['payload']['token']).first()
@@ -126,7 +129,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 session.add(user)
                 session.commit()
         elif data['result'] == "Forbidden":
-            logging.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
+            logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
 
             dispatcher.bot.send_message(
                 user.id,
@@ -145,7 +148,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
         elif data['result'] == "Ok":
             # Seems we have access although we thought we don't have it...
             #if not user.is_profile_access_granted():
-            #    logging.warning("State is wrong? We already have granted persmissions for Profile!")
+            #    logger.warning("State is wrong? We already have granted persmissions for Profile!")
             #    user.set_profile_access_granted(True)
             #   user.save()
 
@@ -154,7 +157,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
             c.date = datetime.datetime.now()
             c.name = data['payload']['profile']['userName']
             c.prof = CASTLE_MAP[data['payload']['profile']['castle']]
-            # data['payload']['profile']['class'] # TODO
+            c.characterClass = CLASS_MAP[data['payload']['profile']['class']] # TODO
             c.pet = None
             c.maxStamina = -1 # TODO?
             c.level = data['payload']['profile']['lvl']
@@ -188,7 +191,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
     elif data['action'] == "requestStock":
         if data['result'] == "InvalidToken":
             # Revoked token?
-            logging.warning("InvalidToken response for token %s", data['payload']['token'])
+            logger.warning("InvalidToken response for token %s", data['payload']['token'])
 
             # We have to get the user from by token since userId is not published and user is None currently...
             user = session.query(User).filter_by(api_token=data['payload']['token']).first()
@@ -208,7 +211,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 session.add(user)
                 session.commit()
         elif data['result'] == "Forbidden":
-            logging.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
+            logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
 
 
             dispatcher.bot.send_message(
@@ -227,19 +230,20 @@ def mq_handler(channel, method, properties, body, dispatcher):
             }
             p.publish(grant_req)
         elif data['result'] == "Ok":
-            logging.info("Stock update for %s...", user.id)
+            logger.info("Stock update for %s...", user.id)
 
+            # FixMe: Filled stock slots is currently not tracked. Maybe calculate it?
             text = "📦Storage (???/???):\n" # We don't have the overall size (yet) so we enter dummy text...
             for item, count in data['payload']['stock'].items():
                 text += "{} ({})\n".format(item, count)
 
+            stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(session, user.id, text))
+
             if get_game_state() != GameState.HOWLING_WIND:
                 # Don't send stock change notification when wind is not howling...
                 # TODO: This might be too late?!
+                channel.basic_ack(method.delivery_tag) # Acknowledge manually 
                 return
-
-            stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(session, user.id, text))
-
 
             dispatcher.bot.send_message(
                 user.id,
