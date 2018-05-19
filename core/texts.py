@@ -211,9 +211,11 @@ MSG_PROFILE_SHOW_FORMAT = """\
 🏅 Level %level% 
 ⚜️ %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
-💰 %gold% | 👝 %pouches% | 🔋 %maxStamina%
+💰 %gold% | 👝 %pouches% 
 %pet%
 🕑 Last update %date%"""
+
+# | 🔋 %maxStamina% - Removed until api provides it or sth else happens...
 
 # main.py texts
 MSG_MAIN_INLINE_BATTLE = 'ROGER THAT!'

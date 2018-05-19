@@ -24,7 +24,7 @@ def fill_char_template(msg: str, user: User, char: Character, profession: Profes
     msg = msg.replace('%name%', str(char.name))
     msg = msg.replace('%prof%', str(char.prof))
     msg = msg.replace('%petLevel%', str(char.petLevel))
-    msg = msg.replace('%maxStamina%', str(char.maxStamina))
+    #msg = msg.replace('%maxStamina%', str(char.maxStamina))
     msg = msg.replace('%level%', str(char.level))
     msg = msg.replace('%attack%', str(char.attack))
     msg = msg.replace('%defence%', str(char.defence))
