@@ -23,7 +23,7 @@ def generate_admin_markup(full=False):
     return ReplyKeyboardMarkup(buttons, True)
 
 
-def generate_user_markup(is_admin=False, user_id=None):
+def generate_user_markup(user_id=None):
     """ Create a users keyboard. If user_id is given check if there are settings... """
     user = None
     if user_id:
@@ -47,7 +47,7 @@ def generate_user_markup(is_admin=False, user_id=None):
         user_menu = [KeyboardButton(USER_COMMAND_SETTINGS)]
     buttons.append(user_menu)
 
-    if is_admin:
+    if user and user.admin_permissions:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ADMINPANEL)])
     return ReplyKeyboardMarkup(buttons, True)
 

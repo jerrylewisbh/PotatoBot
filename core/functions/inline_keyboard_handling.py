@@ -396,11 +396,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
-            admin = session.query(Admin).filter_by(user_id=member.user_id).all()
-            is_admin = False
-            for _ in admin:
-                is_admin = True
-                break
+
             squad = session.query(Squad).filter_by(chat_id = member.squad_id).first();
             answer = ""
             if squad.invite_link is None:
@@ -408,7 +404,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             else:
                 answer = MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK.format(member.squad.invite_link)
             send_async(bot, chat_id=member.user_id, text=answer,
-                       reply_markup=generate_user_markup(is_admin))
+                       reply_markup=generate_user_markup(member.user_id))
             send_async(bot, chat_id=member.squad_id, text=MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username))
     elif data['t'] == QueryType.RequestSquadDecline.value:
         member = session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
