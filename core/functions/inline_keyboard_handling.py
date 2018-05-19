@@ -9,6 +9,7 @@ from telegram.ext.dispatcher import run_async
 
 from core.enums import Castle, Icons, CASTLE_LIST, TACTICTS_COMMAND_PREFIX
 from core.functions.admins import del_adm
+from core.functions.common import StockType, stock_compare_text
 from core.functions.inline_markup import generate_group_info, generate_order_chats_markup, generate_order_groups_markup, \
     generate_ok_markup, generate_forward_markup, generate_groups_manage, generate_group_manage, generate_profile_buttons, generate_squad_list, \
     generate_leave_squad, generate_other_reports, generate_squad_members, QueryType
@@ -20,7 +21,7 @@ from core.template import fill_char_template
 from core.types import (
     User, Admin, admin_allowed, Order, OrderGroup,
     OrderGroupItem, OrderCleared, Squad, user_allowed,
-    SquadMember, MessageType, AdminType, Report)
+    SquadMember, MessageType, AdminType, Report, Stock)
 from core.texts import *
 from core.utils import send_async, update_group, add_user
 
@@ -319,7 +320,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             user = session.query(User).filter_by(id=data['id']).first()
             update.callback_query.answer(text=MSG_CLEARED)
             back = data['b'] if 'b' in data else False
-            bot.editMessageText('{}\n{} {}'.format(user.equip.equip, MSG_LAST_UPDATE, user.equip.date),
+            bot.editMessageText('{}\n\n{} {}'.format(user.equip.equip, MSG_LAST_UPDATE, user.equip.date),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
                                 reply_markup=generate_profile_buttons(user, back)
@@ -340,11 +341,26 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             user = session.query(User).filter_by(id=data['id']).first()
             update.callback_query.answer(text=MSG_CLEARED)
             back = data['b'] if 'b' in data else False
-            bot.editMessageText('{}\n{} {}'.
-                                format(user.stock.stock, MSG_LAST_UPDATE, user.stock.date.strftime("%Y-%m-%d %H:%M:%S")),
+
+            second_newest = session.query(Stock).filter_by(
+                user_id=update.callback_query.message.chat.id,
+                stock_type=StockType.Stock.value
+            ).order_by(Stock.date.desc()).limit(1).offset(1).one()
+
+            stock_diff = stock_compare_text(user.stock.stock, second_newest.stock)
+            stock_text = "{}\n{}\n{}\n <i>{}: {}</i>".format(
+                user.stock.stock,
+                MSG_CHANGES_SINCE_LAST_UPDATE,
+                stock_diff,
+                MSG_LAST_UPDATE,
+                user.stock.date.strftime("%Y-%m-%d %H:%M:%S")
+            )
+
+            bot.editMessageText(stock_text,
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
-                                reply_markup=generate_profile_buttons(user, back)
+                                reply_markup=generate_profile_buttons(user, back),
+                                parse_mode = ParseMode.HTML
                                 )
         elif data['t'] == QueryType.ShowHero.value:
             user = session.query(User).filter_by(id=data['id']).first()
