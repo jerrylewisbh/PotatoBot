@@ -367,8 +367,6 @@ def report_after_battle(bot: Bot, job_queue):
     try:
         api_users = session.query(User).filter(User.api_token is not None)
         for user in api_users:
-            if user.id != 176862585:
-                continue
             logging.info("Updating data for %s", user.id)
 
             text = MSG_USER_BATTLE_REPORT
@@ -686,7 +684,7 @@ def main():
     updater.job_queue.run_daily(callback=report_after_battle, time=time(hour=23, minute=5))
 
     # THIS IS FOR DEBUGGING AND TESTING!
-    updater.job_queue.run_once(report_after_battle, datetime.now()+timedelta(seconds=5))
+    #updater.job_queue.run_once(report_after_battle, datetime.now()+timedelta(seconds=5))
 
     # Start the Bot
     updater.start_polling()
@@ -707,9 +705,6 @@ def main():
     q_out = Publisher()
     q_out.setName("T1_OUT")
     q_out.start()
-
-    # User State Helper...
-    UserState()
 
     print("Current game time: {}".format(get_game_state()))
 
