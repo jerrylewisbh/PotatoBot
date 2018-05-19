@@ -441,3 +441,19 @@ MSG_TOP_GENERATING = 'Generating Top'
 
 MSG_NO_REASON = 'Reason not specified'
 MSG_REASON_TRAITOR = 'User changed castles'
+
+
+# API Access related stuff...
+MSG_API_INFO = "By registering you will allow me to automatically update your profile. After this step I can also notify about /stock changes after war.\nRegistering requires three steps. Please bear with me. \n\n @chtwrsbot will send you an authentication code. Please send it back to me to complete registration."
+MSG_API_INVALID_CODE = "Sorry, your code is not valid!"
+MSG_API_ACCESS_RESET = "API access was reset!"
+MSG_API_REQUIRE_ACCESS_STOCK = "Seems like I don't have permission to access your stock yet. You'll get a " \
+                               "request from me please forward this code to me!"
+MSG_API_REQUIRE_ACCESS_PROFILE = "Seems like I don't have permission to access your profile yet. You'll get a " \
+                               "request from me please forward this code to me!"
+MSG_API_REVOKED_PERMISSIONS = "It seems I'm unable to access your data. Did you /revoke your permission?"
+MSG_API_SETUP_STEP_1_COMPLETE = "👌 First step is complete! Now you will receive another request to allow me access to " \
+                                "your profile. Please also forward this code to me."
+MSG_API_SETUP_STEP_2_COMPLETE = "👌 Second step is complete! Now as a last step please allow me access to your stock. " \
+                                "Please also forward this code to me."
+MSG_API_SETUP_STEP_3_COMPLETE = "👌 All set up now! Thank you!"

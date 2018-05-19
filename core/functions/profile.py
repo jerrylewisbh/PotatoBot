@@ -1,19 +1,19 @@
-from telegram import Update, Bot, ParseMode
-
-from core.functions.inline_keyboard_handling import generate_profile_buttons
-from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT, PROFESSION, ACCESS_CODE
-from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport, Profession
-from core.utils import send_async
-from datetime import timedelta, datetime
 import re
-from core.template import fill_char_template
-from core.functions.ban import ban_traitor
-from core.texts import *
+
+from datetime import timedelta, datetime
 from enum import Enum
 
-from cwmq import Publisher
+from telegram import Update, Bot, ParseMode
 
 from config import CASTLE, EXT_ID
+from core.functions.ban import ban_traitor
+from core.functions.inline_keyboard_handling import generate_profile_buttons
+from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT, PROFESSION, ACCESS_CODE
+from core.template import fill_char_template
+from core.texts import *
+from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport, Profession
+from core.utils import send_async
+from cwmq import Publisher
 
 
 class BuildType(Enum):
@@ -406,7 +406,7 @@ def revoke(bot: Bot, update: Update, session):
         session.commit()
 
         btns = generate_profile_buttons(user)
-        send_async(bot, chat_id=update.message.chat.id, text="API access reset!", reply_markup=btns, parse_mode=ParseMode.HTML)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_API_ACCESS_RESET, reply_markup=btns, parse_mode=ParseMode.HTML)
 
 
 @user_allowed
@@ -421,8 +421,7 @@ def grant_access(bot: Bot, update: Update, session):
             }
         }
         p.publish(reg_req)
-        text = "By registering you will allow me to automatically update your profile. After this step I can also notify about /stock changes after war.\nRegistering requires three steps. Please bear with me. \n\n @chtwrsbot will send you an authentication code. Please send it back to me to complete registration."
-        send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_API_INFO, parse_mode=ParseMode.HTML)
 
 @user_allowed
 def grant_access_stock(bot: Bot, update: Update, session):
@@ -445,8 +444,7 @@ def handle_access_token(bot: Bot, update: Update, session):
         # Extract token...
         code = re.search(ACCESS_CODE, update.message.text)
         if not code:
-            text = "Sorry, your code is not valid!"
-            send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML)
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_API_INVALID_CODE, parse_mode=ParseMode.HTML)
             return
 
         # For what is this code. Send the right response

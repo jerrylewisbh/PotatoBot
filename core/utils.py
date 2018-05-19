@@ -1,6 +1,5 @@
 import http.client
 
-from telegram import Bot
 from telegram.error import TelegramError
 from telegram.ext.dispatcher import run_async
 
@@ -8,7 +7,7 @@ from core.types import Session, User, Group
 
 
 @run_async
-def send_async(bot: Bot, *args, **kwargs):
+def send_async(bot: object, args: object, kwargs: object) -> object:
     try:
         return bot.sendMessage(*args, **kwargs)
 

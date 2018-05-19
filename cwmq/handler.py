@@ -5,15 +5,14 @@ import logging
 from telegram import ParseMode
 
 from core.enums import CASTLE_MAP
-from core.functions.common import stock_compare
+from core.functions.common import stock_compare, MSG_API_REQUIRE_ACCESS_STOCK, MSG_API_REQUIRE_ACCESS_PROFILE, \
+    MSG_API_REVOKED_PERMISSIONS, MSG_API_SETUP_STEP_1_COMPLETE, MSG_API_SETUP_STEP_2_COMPLETE, \
+    MSG_API_SETUP_STEP_3_COMPLETE
 from core.functions.profile import get_required_xp
 from core.functions.reply_markup import generate_user_markup
 from core.state import get_game_state, GameState
-from cwmq import Publisher
-
-from homeassistant.components.notify import telegram
-
 from core.types import Session, User, Character
+from cwmq import Publisher
 
 session = Session()
 p = Publisher()
@@ -48,7 +47,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
         logging.info("Added token for chat_id=%s", data['payload']['userId'])
         dispatcher.bot.send_message(
             user.id,
-            "👌 First step is complete! Now you will receive another request to allow me access to your profile. Please also forward this code to me.",
+            MSG_API_SETUP_STEP_1_COMPLETE,
             reply_markup=generate_user_markup(user.id)
         )
 
@@ -69,10 +68,10 @@ def mq_handler(channel, method, properties, body, dispatcher):
 
         message = ""
         if user.api_grant_operation == "GetUserProfile":
-            message = "👌 Second step is complete! Now as a last step please allow me access to your stock. Please also forward this code to me."
+
             user.is_api_profile_allowed = True
             user.api_grant_operation = "requestStock"
-
+            message = MSG_API_SETUP_STEP_2_COMPLETE
             grant_req = {
                 "token": user.api_token,
                 "action": "authAdditionalOperation",
@@ -82,7 +81,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
             }
             p.publish(grant_req)
         elif user.api_grant_operation == "GetStock":
-            message = "👌 All set up now! Thank you!"
+            message = MSG_API_SETUP_STEP_3_COMPLETE
             user.api_grant_operation = None # We don't need this code anymore!
             user.is_api_stock_allowed = True
 
@@ -117,11 +116,9 @@ def mq_handler(channel, method, properties, body, dispatcher):
             if user:
                 dispatcher.bot.send_message(
                     user.id,
-                    "It seems I'm unable to access your profile. Did you /revoke your permission?",
+                    MSG_API_REVOKED_PERMISSIONS,
                     reply_markup=generate_user_markup(user.id)
                 )
-                # TODO: Keyboard refresh?
-
                 # Remove api settings...
                 user.is_api_stock_allowed = False
                 user.is_api_profile_allowed = False
@@ -131,15 +128,11 @@ def mq_handler(channel, method, properties, body, dispatcher):
         elif data['result'] == "Forbidden":
             logging.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
 
-            text = "Seems like I don't have permission to access your profile yet. You'll get a request from me " \
-                   "please forward this code to me!"
-
             dispatcher.bot.send_message(
                 user.id,
-                text,
+                MSG_API_REQUIRE_ACCESS_PROFILE,
                 reply_markup=generate_user_markup(user.id)
             )
-            # TODO: Keyboard update?
 
             grant_req = {
                 "token": user.api_token,
@@ -168,7 +161,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
             c.attack = data['payload']['profile']['atk']
             c.defence = data['payload']['profile']['def']
             c.exp = data['payload']['profile']['exp']
-            c.needExp = get_required_xp(data['payload']['profile']['lvl']) # TODO
+            c.needExp = get_required_xp(data['payload']['profile']['lvl'])
             c.castle = data['payload']['profile']['castle']
             c.gold = data['payload']['profile']['gold']
             c.donateGold = data['payload']['profile']['pouches']
@@ -195,7 +188,6 @@ def mq_handler(channel, method, properties, body, dispatcher):
     elif data['action'] == "requestStock":
         if data['result'] == "InvalidToken":
             # Revoked token?
-            # TODO: Inform user?
             logging.warning("InvalidToken response for token %s", data['payload']['token'])
 
             # We have to get the user from by token since userId is not published and user is None currently...
@@ -204,7 +196,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
             if user:
                 dispatcher.bot.send_message(
                     user.id,
-                    "It seems I'm unable to access your profile. Did you /revoke your permission?",
+                    MSG_API_REVOKED_PERMISSIONS,
                     reply_markup=generate_user_markup(user.id)
                 )
                 # TODO: Keyboard refresh?
@@ -218,12 +210,10 @@ def mq_handler(channel, method, properties, body, dispatcher):
         elif data['result'] == "Forbidden":
             logging.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
 
-            text = "Seems like I don't have permission to access your stock yet. You'll get a request from me " \
-                   "please forward this code to me!"
 
             dispatcher.bot.send_message(
                 user.id,
-                text,
+                MSG_API_REQUIRE_ACCESS_STOCK,
                 reply_markup=generate_user_markup(user.id)
             )
             # TODO: Keyboard update?
