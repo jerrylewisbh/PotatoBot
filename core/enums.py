@@ -4,6 +4,16 @@ from enum import Enum
 
 CASTLE_LIST = ['🌑', '🐺', '🥔','🦅','🦌','🐉','🦈']
 
+CASTLE_MAP = {
+    '🌑': 'Moonlight',
+    '🐺': 'Wolfpack',
+    '🥔': 'Potato',
+    '🦅': 'Highnest',
+    '🦌': 'Deerhorn',
+    '🐉': 'Dragonscale',
+    '🦈': 'Sharkteeth',
+}
+
 TACTICTS_COMMAND_PREFIX = "/tactics_"
 
 class Castle(Enum):
