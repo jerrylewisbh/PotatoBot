@@ -100,26 +100,17 @@ def get_diff(dict_one, dict_two):
     resource_diff_del = sorted(resource_diff_del.items(), key=lambda x: x[0])
     return resource_diff_add, resource_diff_del
 
-
-def stock_compare(session, user_id, stock_text):
-    old_stock = session.query(Stock).filter_by(user_id=user_id,
-                                               stock_type=StockType.Stock.value).order_by(Stock.date.desc()).first()
-    new_stock = Stock()
-    new_stock.stock = stock_text
-    new_stock.stock_type = StockType.Stock.value
-    new_stock.user_id = user_id
-    new_stock.date = datetime.now()
-    session.add(new_stock)
-    session.commit()
-    if old_stock is not None:
+def stock_compare_text(old_stock, new_stock):
+    """ Compare stock... """
+    if old_stock:
         resources_old = {}
         resources_new = {}
-        strings = old_stock.stock.splitlines()
+        strings = old_stock.splitlines()
         for string in strings[1:]:
             resource = string.split(' (')
             resource[1] = resource[1][:-1]
             resources_old[resource[0]] = int(resource[1])
-        strings = new_stock.stock.splitlines()
+        strings = new_stock.splitlines()
         for string in strings[1:]:
             resource = string.split(' (')
             resource[1] = resource[1][:-1]
@@ -138,8 +129,28 @@ def stock_compare(session, user_id, stock_text):
         else:
             msg += MSG_EMPTY
         return msg
-    else:
-        return None
+
+    return None
+
+
+def stock_compare(session, user_id, new_stock_text):
+    """ Save new stock into database and compare it with the newest already saved.
+    """
+
+    old_stock = session.query(Stock).filter_by(user_id=user_id,
+                                               stock_type=StockType.Stock.value).order_by(Stock.date.desc()).first()
+    new_stock = Stock()
+    new_stock.stock = new_stock_text
+    new_stock.stock_type = StockType.Stock.value
+    new_stock.user_id = user_id
+    new_stock.date = datetime.now()
+    session.add(new_stock)
+    session.commit()
+
+    if old_stock:
+        return stock_compare_text(old_stock.stock, new_stock.stock)
+
+    return None
 
 
 @user_allowed(False)
