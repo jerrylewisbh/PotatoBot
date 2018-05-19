@@ -292,6 +292,8 @@ class Report(Base):
     earned_gold = Column(Integer)
     earned_stock = Column(Integer)
 
+    preliminary_report = Column(Boolean(), default=False)
+
     user = relationship('User', back_populates='report')
 
 
