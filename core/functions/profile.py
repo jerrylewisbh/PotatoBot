@@ -350,7 +350,6 @@ def char_update(bot: Bot, update: Update, session):
         if char and char.castle != CASTLE:
             ban_traitor(bot, session , update.message.from_user.id)
 
-
 @user_allowed(False)
 def profession_update(bot: Bot, update: Update, session):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
