@@ -258,6 +258,11 @@ class Character(Base):
     gold = Column(Integer, default=0)
     donateGold = Column(Integer, default=0)
 
+    # Note: Technically this is also tracked in a characters profession-information. But this represents the
+    # current state. Also this way we can display class info without having a users /class information which is not
+    # (yet) available in the API
+    characterClass = Column(UnicodeText(250))
+
     user = relationship('User', back_populates='character')
 
 
@@ -419,6 +424,7 @@ def admin_allowed(adm_type=AdminType.FULL, ban_enable=True, allowed_types=()):
                         log(session, update.effective_user.id, update.effective_chat.id, func.__name__,
                             update.message.text if update.message else None or
                             update.callback_query.data if update.callback_query else None)
+                    # Fixme: Issues a message-update even if message did not change. This raises a telegram.error.BadRequest exception!
                     func(bot, update, session, *args, **kwargs)
             except SQLAlchemyError as err:
                 bot.logger.error(str(err))

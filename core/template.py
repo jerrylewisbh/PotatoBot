@@ -42,9 +42,13 @@ def fill_char_template(msg: str, user: User, char: Character, profession: Profes
                                                       str(char.petLevel)))
     else:
         msg = msg.replace('%pet%', MSG_NO_PET)
+
     if squad_request:
         msg += MSG_WANTS_TO_JOIN.format(user.member.squad.squad_name)
-    if profession is not None:
+
+    if char.characterClass:
+        msg = msg.replace('%profession%', char.characterClass)
+    elif profession is not None:
         msg = msg.replace('%profession%', profession.name)
     else:
         msg = msg.replace('%profession%', MSG_NO_PROFESSION)
