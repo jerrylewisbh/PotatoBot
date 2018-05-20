@@ -432,6 +432,10 @@ BTN_LEAVE = 'Leave'
 BTN_ACCEPT = '✅Accept'
 BTN_DECLINE = '❌Decline'
 
+BTN_SETTING_API_DISABLE = '❌Disable API'
+BTN_SETTING_DISABLE_REPORT = '❌Disable automated Report'
+BTN_SETTING_ENABLE_REPORT = '✅Enable automated Report'
+
 BTN_WEEK = "Week"
 BTN_ALL_TIME = "All Time"
 BTN_SQUAD_WEEK = "Squads per Week"
@@ -463,6 +467,7 @@ MSG_API_SETUP_STEP_3_COMPLETE = "👌 All set up now! Thank you!"
 MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock update:</b>"
 
 MSG_USER_BATTLE_REPORT = "<b>Your after action report:\n</b>"
+"""
 MSG_USER_BATTLE_REPORT_PRELIM = "{}{} ⚔:{} 🛡:{} "\
                                 "Lvl: {}\n"\
                                 "Your result on the battlefield:\n" \
@@ -470,7 +475,17 @@ MSG_USER_BATTLE_REPORT_PRELIM = "{}{} ⚔:{} 🛡:{} "\
                                 "💰Gold: {}\n" \
                                 "📦Stock: {}\n\n" \
                                 "<i>Note: Please send your /report after every battle!\n</i>"
+"""
+MSG_USER_BATTLE_REPORT_PRELIM = "{}{} - Lvl: {}\n\n"\
+                                "<b>Please forward me your /report as soon as possible!\n</b>"
+
 MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n <i>{}: {}</i>"
+
+MSG_SETTINGS_INFO = "Automatic battle report enabled: {}\n\n" \
+                    "<i>Last profile update: {}</i>\n" \
+                    "<i>Last stock update: {}</i>"
+MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"
+
 
 #text += "\n\n<b>Please do not forget to forward me your /report command!</b>"
 
