@@ -368,13 +368,11 @@ def report_after_battle(bot: Bot, job_queue):
     try:
         api_users = session.query(User).filter(User.api_token is not None)
         for user in api_users:
-            if user.id != 176862585:
-                continue
             logging.info("Updating data for %s", user.id)
 
             text = MSG_USER_BATTLE_REPORT
 
-            if user.is_api_profile_allowed and user.is_api_stock_allowed:
+            if user.is_api_profile_allowed and user.is_api_stock_allowed and user.setting_automated_report and user.api_token:
                 prev_stock = session.query(Stock).filter_by(
                     user_id=user.id,
                     stock_type=StockType.Stock.value
@@ -386,21 +384,6 @@ def report_after_battle(bot: Bot, job_queue):
 
                 earned_exp = user.character.exp - prev_character.exp
                 earned_gold = user.character.gold - prev_character.gold
-
-                r = Report()
-                r.user = user
-                r.name = user.character.name
-                r.date = datetime.now()
-                r.level = user.character.level
-                r.attack = user.character.attack
-                r.defence = user.character.defence
-                r.castle = user.character.castle
-                r.earned_exp = earned_exp
-                r.earned_gold = earned_gold
-                r.earned_stock = earned_gold
-                r.preliminary_report = True
-                session.add(r)
-                session.commit()
 
                 # cmp stock
                 second_newest = session.query(Stock).filter_by(
@@ -416,9 +399,29 @@ def report_after_battle(bot: Bot, job_queue):
                 lost_sum = sum([x[1] for x in resource_diff_del])
                 diff_stock = gained_sum + lost_sum
 
-                text += MSG_USER_BATTLE_REPORT_PRELIM.format(
+                r = Report()
+                r.user = user
+                r.name = user.character.name
+                r.date = datetime.now()
+                r.level = user.character.level
+                r.attack = user.character.attack
+                r.defence = user.character.defence
+                r.castle = user.character.castle
+                r.earned_exp = earned_exp
+                r.earned_gold = earned_gold
+                r.earned_stock = diff_stock
+                r.preliminary_report = True
+                session.add(r)
+                session.commit()
+
+                # Text with prelim. battle report
+                """text += MSG_USER_BATTLE_REPORT_PRELIM.format(
                     user.character.castle, user.character.name, user.character.attack, user.character.defence,
                     user.character.level, earned_exp, earned_gold, diff_stock
+                )"""
+
+                text += MSG_USER_BATTLE_REPORT_PRELIM.format(
+                    user.character.castle, user.character.name, user.character.level
                 )
 
                 stock_text = MSG_USER_BATTLE_REPORT_STOCK.format(
@@ -694,7 +697,7 @@ def main():
     updater.job_queue.run_daily(callback=report_after_battle, time=time(hour=23, minute=5))
 
     # THIS IS FOR DEBUGGING AND TESTING!
-    updater.job_queue.run_once(report_after_battle, datetime.now()+timedelta(seconds=5))
+    #updater.job_queue.run_once(report_after_battle, datetime.now()+timedelta(seconds=5))
 
     # Start the Bot
     updater.start_polling()

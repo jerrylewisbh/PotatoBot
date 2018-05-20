@@ -102,7 +102,7 @@ def get_diff(dict_one, dict_two):
     return resource_diff_add, resource_diff_del
 
 def get_weight_multiplier(item_name):
-    if item_name in HEAVY_ITEMS:
+    if item_name.lower() in HEAVY_ITEMS:
         return 2
     else:
         return 1
