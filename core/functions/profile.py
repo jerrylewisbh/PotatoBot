@@ -8,6 +8,7 @@ from telegram import Update, Bot, ParseMode
 from config import CASTLE, EXT_ID
 from core.functions.ban import ban_traitor
 from core.functions.inline_keyboard_handling import generate_profile_buttons
+from core.functions.inline_markup import generate_settings_buttons
 from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT, PROFESSION, ACCESS_CODE
 from core.template import fill_char_template
 from core.texts import *
@@ -369,7 +370,7 @@ def char_show(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
         user = session.query(User).filter_by(id=update.message.from_user.id).first()
 
-        if user.is_api_profile_allowed:
+        if user.is_api_profile_allowed and user.is_api_stock_allowed:
             p.publish({
                 "token": user.api_token,
                 "action": "requestStock"
@@ -462,17 +463,19 @@ def settings(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
         user = session.query(User).filter_by(id=update.message.from_user.id).first()
 
-        text = "Automatic stock update enabled: {}\n" \
-               "<i>Last update: {}</i>\n\n" \
-               "Automatic profile update enabled: {}\n" \
-               "<i>Last update: {}</i>".format(
-            user.setting_automated_stock,
+        text = MSG_SETTINGS_INFO.format(
+            (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
             user.stock.date,
-            user.setting_automated_profile,
             user.character.date
         )
 
-        send_async(bot, chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML)
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            reply_markup=generate_settings_buttons(user),
+            parse_mode=ParseMode.HTML
+        )
         return
 
 

@@ -11,8 +11,9 @@ from core.enums import Castle, Icons, CASTLE_LIST, TACTICTS_COMMAND_PREFIX
 from core.functions.admins import del_adm
 from core.functions.common import StockType, stock_compare_text
 from core.functions.inline_markup import generate_group_info, generate_order_chats_markup, generate_order_groups_markup, \
-    generate_ok_markup, generate_forward_markup, generate_groups_manage, generate_group_manage, generate_profile_buttons, generate_squad_list, \
-    generate_leave_squad, generate_other_reports, generate_squad_members, QueryType
+    generate_ok_markup, generate_forward_markup, generate_groups_manage, generate_group_manage, \
+    generate_profile_buttons, generate_squad_list, \
+    generate_leave_squad, generate_other_reports, generate_squad_members, QueryType, generate_settings_buttons
 from core.functions.reply_markup import generate_user_markup
 from core.functions.squad import leave_squad
 from core.functions.top import global_build_top, week_build_top, week_battle_top, global_battle_top, \
@@ -532,6 +533,55 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
             bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                                 reply_markup=inline_markup)
+        elif data['t'] == QueryType.DisableAPIAccess:
+            user = session.query(User).filter_by(id=data['id']).first()
+
+            if user.api_token:
+                user.api_token = None
+                user.is_api_profile_allowed = None
+                user.is_api_stock_allowed = None
+                user.api_request_id = None
+                user.api_grant_operation = None
+                session.add(user)
+                session.commit()
+
+            msg = MSG_SETTINGS_INFO.format(
+                (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
+                user.stock.date,
+                user.character.date
+            )
+
+            bot.editMessageText(
+                msg,
+                update.callback_query.message.chat.id,
+                update.callback_query.message.message_id,
+                reply_markup=generate_settings_buttons(user),
+                parse_mode=ParseMode.HTML
+            )
+        elif data['t'] in [QueryType.EnableAutomatedReport, QueryType.DisableAutomatedReport]:
+            user = session.query(User).filter_by(id=data['id']).first()
+
+            if user.setting_automated_report:
+                user.setting_automated_report = False
+            else:
+                user.setting_automated_report = True
+
+            session.add(user)
+            session.commit()
+
+            msg = MSG_SETTINGS_INFO.format(
+                (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
+                user.stock.date,
+                user.character.date
+            )
+
+            bot.editMessageText(
+                msg,
+                update.callback_query.message.chat.id,
+                update.callback_query.message.message_id,
+                reply_markup=generate_settings_buttons(user),
+                parse_mode=ParseMode.HTML
+            )
         elif data['t'] == QueryType.OtherReport.value:
             squad = session.query(Squad).filter(Squad.chat_id == data['c']).first()
             time_from = datetime.fromtimestamp(data['ts'])
