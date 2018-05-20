@@ -72,6 +72,7 @@ HEAVY_ITEMS = [
     'steel mold',
     'steel',
     'sapphire',
+    'crafted leather',
 ]
 
 TACTICTS_COMMAND_PREFIX = "/tactics_"
