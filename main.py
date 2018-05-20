@@ -46,7 +46,8 @@ from core.functions.common import (
     admin_panel, stock_compare_forwarded, trade_compare,
     delete_msg, delete_user,
     user_panel, web_auth, StockType, stock_compare_text, MSG_CHANGES_SINCE_LAST_UPDATE, MSG_LAST_UPDATE,
-    MSG_USER_BATTLE_REPORT, MSG_USER_BATTLE_REPORT_PRELIM, MSG_USER_BATTLE_REPORT_STOCK)
+    MSG_USER_BATTLE_REPORT, MSG_USER_BATTLE_REPORT_PRELIM, MSG_USER_BATTLE_REPORT_STOCK, get_diff, stock_split,
+    get_weighted_diff)
 from core.functions.inline_keyboard_handling import (
     callback_query, inlinequery, send_status, send_order
 )
@@ -367,11 +368,13 @@ def report_after_battle(bot: Bot, job_queue):
     try:
         api_users = session.query(User).filter(User.api_token is not None)
         for user in api_users:
+            if user.id != 176862585:
+                continue
             logging.info("Updating data for %s", user.id)
 
             text = MSG_USER_BATTLE_REPORT
 
-            if user.is_api_profile_allowed:
+            if user.is_api_profile_allowed and user.is_api_stock_allowed:
                 prev_stock = session.query(Stock).filter_by(
                     user_id=user.id,
                     stock_type=StockType.Stock.value
@@ -399,18 +402,25 @@ def report_after_battle(bot: Bot, job_queue):
                 session.add(r)
                 session.commit()
 
-                text += MSG_USER_BATTLE_REPORT_PRELIM.format(
-                    user.character.castle, user.character.name, user.character.attack, user.character.defence,
-                    user.character.level, earned_exp, earned_gold, "This is weight/size gain/loss!?!?"
-                )
-
-            if user.is_api_stock_allowed:
+                # cmp stock
                 second_newest = session.query(Stock).filter_by(
                     user_id=user.id,
                     stock_type=StockType.Stock.value
                 ).order_by(Stock.date.desc()).limit(1).offset(1).one()
 
-                stock_diff = stock_compare_text(user.stock.stock, second_newest.stock)
+                resources_new, resources_old = stock_split(second_newest.stock, user.stock.stock)
+                resource_diff_add, resource_diff_del = get_weighted_diff(resources_old, resources_new)
+                stock_diff = stock_compare_text(second_newest.stock, user.stock.stock)
+
+                gained_sum = sum([x[1] for x in resource_diff_add])
+                lost_sum = sum([x[1] for x in resource_diff_del])
+                diff_stock = gained_sum + lost_sum
+
+                text += MSG_USER_BATTLE_REPORT_PRELIM.format(
+                    user.character.castle, user.character.name, user.character.attack, user.character.defence,
+                    user.character.level, earned_exp, earned_gold, diff_stock
+                )
+
                 stock_text = MSG_USER_BATTLE_REPORT_STOCK.format(
                     MSG_CHANGES_SINCE_LAST_UPDATE,
                     stock_diff,
@@ -684,7 +694,7 @@ def main():
     updater.job_queue.run_daily(callback=report_after_battle, time=time(hour=23, minute=5))
 
     # THIS IS FOR DEBUGGING AND TESTING!
-    #updater.job_queue.run_once(report_after_battle, datetime.now()+timedelta(seconds=5))
+    updater.job_queue.run_once(report_after_battle, datetime.now()+timedelta(seconds=5))
 
     # Start the Bot
     updater.start_polling()

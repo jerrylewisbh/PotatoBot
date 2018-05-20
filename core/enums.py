@@ -60,6 +60,20 @@ STOCK_WHITELIST = [
     'wooden shaft',
 ]
 
+# these /stock items take up TWO slots in inventory
+HEAVY_ITEMS = [
+    'hardener',
+    'iron ore',
+    'metal plate',
+    'ruby',
+    'silver alloy',
+    'silver ore',
+    'solvent',
+    'steel mold',
+    'steel',
+    'sapphire',
+]
+
 TACTICTS_COMMAND_PREFIX = "/tactics_"
 
 class Castle(Enum):
