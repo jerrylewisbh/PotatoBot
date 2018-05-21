@@ -485,7 +485,8 @@ MSG_SETTINGS_INFO = "Automatic battle report enabled: {}\n\n" \
                     "<i>Last profile update: {}</i>\n" \
                     "<i>Last stock update: {}</i>"
 MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"
-
+MSG_NO_REPORT_PHASE_BEFORE_BATTLE = "War is coming! Your Stock and Profile is getting updated automatically. No need to forward your data just yet!"
+MSG_NO_REPORT_PHASE_AFTER_BATTLE = "War is over but I don't accept reports just yet! I will remind you when it is time."
 
 #text += "\n\n<b>Please do not forget to forward me your /report command!</b>"
 

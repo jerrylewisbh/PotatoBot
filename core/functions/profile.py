@@ -10,6 +10,7 @@ from core.functions.ban import ban_traitor
 from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.functions.inline_markup import generate_settings_buttons
 from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT, PROFESSION, ACCESS_CODE
+from core.state import get_game_state, GameState
 from core.template import fill_char_template
 from core.texts import *
 from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport, Profession
@@ -287,69 +288,93 @@ def repair_report_received(bot: Bot, update: Update, session):
 def report_received(bot: Bot, update: Update, session):
     if datetime.now() - update.message.forward_date > timedelta(minutes=1):
          send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
-    else:
-        report = re.search(REPORT, update.message.text)
-        user = session.query(User).filter_by(id=update.message.from_user.id).first()
-        if report and user.character and str(report.group(2)) == user.character.name:
-            
-            date= update.message.forward_date
-            if (update.message.forward_date.hour < 7):
-                date= update.message.forward_date - timedelta(days=1)
-            
-            time_from = date.replace(hour=(int((update.message.forward_date.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
-     
-            date= update.message.forward_date
-            if (update.message.forward_date.hour == 23):
-                date= update.message.forward_date + timedelta(days=1)
+         return
 
-            time_to = date.replace(hour=(int((update.message.forward_date.hour+1) / 8 + 1) * 8 - 1) % 24, minute=0, second=0)
-            
+    state = get_game_state()
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
+        text = MSG_NO_REPORT_PHASE_BEFORE_BATTLE if GameState.NIGHT in state else MSG_NO_REPORT_PHASE_AFTER_BATTLE
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            parse_mode=ParseMode.HTML)
+        return
 
-            report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
-                                                  Report.user_id == update.message.from_user.id).all()
+    report = re.search(REPORT, update.message.text)
+    if report and user.character and str(report.group(2)) == user.character.name:
+        date= update.message.forward_date
+        if (update.message.forward_date.hour < 7):
+            date= update.message.forward_date - timedelta(days=1)
 
-            if len(report) > 0 and report[0].castle != CASTLE:
+        time_from = date.replace(hour=(int((update.message.forward_date.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
+
+        date= update.message.forward_date
+        if (update.message.forward_date.hour == 23):
+            date= update.message.forward_date + timedelta(days=1)
+
+        time_to = date.replace(hour=(int((update.message.forward_date.hour+1) / 8 + 1) * 8 - 1) % 24, minute=0, second=0)
+
+
+        report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
+                                              Report.user_id == update.message.from_user.id).all()
+
+        if len(report) > 0 and report[0].castle != CASTLE:
+            ban_traitor(bot, session,update.message.from_user.id)
+
+        if len(report) == 0:
+            parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
+            if report and report.castle != CASTLE:
                 ban_traitor(bot, session,update.message.from_user.id)
 
-            if len(report) == 0:
-                parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
-                send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
-                if report and report.castle != CASTLE:
-                    ban_traitor(bot, session,update.message.from_user.id)
-
-            else:
-                send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
+        else:
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
 
 
 @user_allowed(False)
 def char_update(bot: Bot, update: Update, session):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
-    else:
-        char = None
-        if re.search(HERO, update.message.text):
-            char = parse_hero(update.message.text,
-                              update.message.from_user.id,
-                              update.message.forward_date,
-                              session)
-        elif re.search(PROFILE, update.message.text):
-            char = parse_profile(update.message.text,
-                                 update.message.from_user.id,
-                                 update.message.forward_date,
-                                 session)
-        if CASTLE:
-            if char and (char.castle == CASTLE or update.message.from_user.id == EXT_ID) :
-                char.castle = CASTLE
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
-                           parse_mode=ParseMode.HTML)
-            else:
-                send_async(bot, chat_id=update.message.chat.id,
-                           text=MSG_PROFILE_CASTLE_MISTAKE, parse_mode=ParseMode.HTML)
-        else:
+        return
+
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+
+    state = get_game_state()
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
+        text = MSG_NO_REPORT_PHASE_BEFORE_BATTLE if GameState.NIGHT in state else MSG_NO_REPORT_PHASE_AFTER_BATTLE
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            parse_mode=ParseMode.HTML)
+        return
+
+    char = None
+    if re.search(HERO, update.message.text):
+        char = parse_hero(update.message.text,
+                          update.message.from_user.id,
+                          update.message.forward_date,
+                          session)
+    elif re.search(PROFILE, update.message.text):
+        char = parse_profile(update.message.text,
+                             update.message.from_user.id,
+                             update.message.forward_date,
+                             session)
+    if CASTLE:
+        if char and (char.castle == CASTLE or update.message.from_user.id == EXT_ID) :
+            char.castle = CASTLE
             send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
                        parse_mode=ParseMode.HTML)
-        if char and char.castle != CASTLE:
-            ban_traitor(bot, session , update.message.from_user.id)
+        else:
+            send_async(bot, chat_id=update.message.chat.id,
+                       text=MSG_PROFILE_CASTLE_MISTAKE, parse_mode=ParseMode.HTML)
+    else:
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
+                   parse_mode=ParseMode.HTML)
+    if char and char.castle != CASTLE:
+        ban_traitor(bot, session , update.message.from_user.id)
 
 @user_allowed(False)
 def profession_update(bot: Bot, update: Update, session):

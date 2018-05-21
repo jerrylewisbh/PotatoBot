@@ -8,8 +8,9 @@ from telegram import Update, Bot, ParseMode
 from core.enums import STOCK_WHITELIST, HEAVY_ITEMS
 from core.functions.triggers import trigger_decorator
 from core.functions.reply_markup import generate_admin_markup, generate_user_markup
+from core.state import GameState, get_game_state
 from core.texts import *
-from core.types import AdminType, Admin, Stock, admin_allowed, user_allowed, SquadMember, Auth
+from core.types import AdminType, Admin, Stock, admin_allowed, user_allowed, SquadMember, Auth, User
 from core.utils import send_async, add_user
 
 from config import WEB_LINK
@@ -191,6 +192,19 @@ def stock_compare(session, user_id, new_stock_text):
 
 @user_allowed(False)
 def stock_compare_forwarded(bot: Bot, update: Update, session, chat_data: dict):
+    # If user-stock is automatically updated via API do not allow reports during SILENCE
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+
+    state = get_game_state()
+    if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
+        text = MSG_NO_REPORT_PHASE_BEFORE_BATTLE if GameState.NIGHT in state else MSG_NO_REPORT_PHASE_AFTER_BATTLE
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            parse_mode=ParseMode.HTML)
+        return
+
     cmp_result = stock_compare(session, update.message.from_user.id, update.message.text)
     if cmp_result:
         send_async(bot, chat_id=update.message.chat.id, text=cmp_result, parse_mode=ParseMode.HTML)

@@ -43,10 +43,9 @@ from core.functions.bosses import (
     boss_leader, boss_zhalo, boss_monoeye, boss_hydra)
 from core.functions.common import (
     help_msg, ping, error, kick,
-    admin_panel, stock_compare_forwarded, trade_compare,
-    delete_msg, delete_user,
-    user_panel, web_auth, StockType, stock_compare_text, MSG_CHANGES_SINCE_LAST_UPDATE, MSG_LAST_UPDATE,
-    MSG_USER_BATTLE_REPORT, MSG_USER_BATTLE_REPORT_PRELIM, MSG_USER_BATTLE_REPORT_STOCK, get_diff, stock_split,
+    admin_panel, stock_compare_forwarded, trade_compare, delete_msg, delete_user, user_panel, web_auth, StockType,
+    stock_compare_text, MSG_CHANGES_SINCE_LAST_UPDATE, MSG_LAST_UPDATE, MSG_USER_BATTLE_REPORT,
+    MSG_USER_BATTLE_REPORT_PRELIM, MSG_USER_BATTLE_REPORT_STOCK, stock_split,
     get_weighted_diff)
 from core.functions.inline_keyboard_handling import (
     callback_query, inlinequery, send_status, send_order
