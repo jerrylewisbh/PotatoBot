@@ -173,12 +173,13 @@ def exp_statistic(bot: Bot, update: Update, session):
     text = ''
     if day_exp:
         delta_days = round(delta_exp / day_exp) or 1
-        if (delta_days % 10 == 0) or (delta_days % 10 >= 5) or ((delta_days % 100) in (11, 12, 13, 14)):
+        if delta_days == 1:
+            days_text = MSG_DAY_SINGLE
+        elif (delta_days % 10 == 0) or (delta_days % 10 >= 5) or ((delta_days % 100) in (11, 12, 13, 14)):
             days_text = MSG_DAY_PLURAL2
         elif (delta_days % 10) in (2, 3, 4):
             days_text = MSG_DAY_PLURAL1
-        else:
-            days_text = MSG_DAY_SINGLE
+
         text = (MSG_DATE_FORMAT.format(delta_days, days_text))
 
     with open(filename, 'rb') as file:

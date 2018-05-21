@@ -9,7 +9,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, scoped_session
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
 from sqlalchemy.exc import SQLAlchemyError
 
 from telegram import Bot
@@ -108,6 +108,19 @@ class User(Base):
                          back_populates='user',
                          order_by='Profession.date.desc()',
                          uselist=False)
+
+    # API Token and temporary stuff we need after we get an async answer...
+    api_token = Column(UnicodeText(250))
+    api_request_id = Column(UnicodeText(250))
+    api_grant_operation = Column(UnicodeText(250))
+
+    is_api_profile_allowed = Column(Boolean())
+    is_api_stock_allowed = Column(Boolean())
+
+    setting_automated_report = Column(Boolean(), default=True)
+
+    # Relationship
+    admin_permission = relationship("Admin")
 
     def __repr__(self):
         user = ''
@@ -244,6 +257,11 @@ class Character(Base):
     gold = Column(Integer, default=0)
     donateGold = Column(Integer, default=0)
 
+    # Note: Technically this is also tracked in a characters profession-information. But this represents the
+    # current state. Also this way we can display class info without having a users /class information which is not
+    # (yet) available in the API
+    characterClass = Column(UnicodeText(250))
+
     user = relationship('User', back_populates='character')
 
 
@@ -273,6 +291,8 @@ class Report(Base):
     earned_gold = Column(Integer)
     earned_stock = Column(Integer)
 
+    preliminary_report = Column(Boolean(), default=False)
+
     user = relationship('User', back_populates='report')
 
 
@@ -286,6 +306,7 @@ class Squad(Base):
     silence_enabled = Column(Boolean, default=True)
     reminders_enabled = Column(Boolean, default=True)
     hiring = Column(Boolean, default=False)
+    testing_squad = Column(Boolean, default=False)
 
     members = relationship('SquadMember', back_populates='squad')
     chat = relationship('Group', back_populates='squad')
@@ -299,7 +320,7 @@ class SquadMember(Base):
     approved = Column(Boolean, default=False)
 
     squad = relationship('Squad', back_populates='members')
-    user = relationship('User', back_populates='member')
+    user = relationship('User', backref=backref('squad_membership', lazy='dynamic'))
 
 
 class Equip(Base):
@@ -405,6 +426,7 @@ def admin_allowed(adm_type=AdminType.FULL, ban_enable=True, allowed_types=()):
                         log(session, update.effective_user.id, update.effective_chat.id, func.__name__,
                             update.message.text if update.message else None or
                             update.callback_query.data if update.callback_query else None)
+                    # Fixme: Issues a message-update even if message did not change. This raises a telegram.error.BadRequest exception!
                     func(bot, update, session, *args, **kwargs)
             except SQLAlchemyError as err:
                 bot.logger.error(str(err))
