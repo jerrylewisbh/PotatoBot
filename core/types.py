@@ -9,7 +9,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, scoped_session
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
 from sqlalchemy.exc import SQLAlchemyError
 
 from telegram import Bot
@@ -121,7 +121,6 @@ class User(Base):
 
     # Relationship
     admin_permission = relationship("Admin")
-    squad = relationship("SquadMember")
 
     def __repr__(self):
         user = ''
@@ -307,6 +306,7 @@ class Squad(Base):
     silence_enabled = Column(Boolean, default=True)
     reminders_enabled = Column(Boolean, default=True)
     hiring = Column(Boolean, default=False)
+    testing_squad = Column(Boolean, default=False)
 
     members = relationship('SquadMember', back_populates='squad')
     chat = relationship('Group', back_populates='squad')
@@ -320,7 +320,7 @@ class SquadMember(Base):
     approved = Column(Boolean, default=False)
 
     squad = relationship('Squad', back_populates='members')
-    user = relationship('User', back_populates='member')
+    user = relationship('User', backref=backref('squad_membership', lazy='dynamic'))
 
 
 class Equip(Base):

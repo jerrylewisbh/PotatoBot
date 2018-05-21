@@ -372,7 +372,16 @@ def report_after_battle(bot: Bot, job_queue):
 
             text = MSG_USER_BATTLE_REPORT
 
-            if user.is_api_profile_allowed and user.is_api_stock_allowed and user.setting_automated_report and user.api_token:
+            # We must have the actual access rights and user has to be in a testing squad to allow onboarding of this
+            # feature!
+            onboarding_squad_member = False
+            if user.squad_membership and user.squad_membership.first() and \
+                    user.squad_membership.first().approved and user.squad_membership.first().squad.testing_squad:
+                onboarding_squad_member = True
+
+            if user.is_api_profile_allowed and user.is_api_stock_allowed and \
+                    user.setting_automated_report and user.api_token and \
+                    onboarding_squad_member:
                 prev_stock = session.query(Stock).filter_by(
                     user_id=user.id,
                     stock_type=StockType.Stock.value

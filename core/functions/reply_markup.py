@@ -36,16 +36,22 @@ def generate_user_markup(user_id=None):
     ]
 
     """# Create dynamic keyboard based on users state..."""
-    if not user or not user.api_token:
-        # New
-        user_menu = [KeyboardButton(USER_COMMAND_REGISTER)]
-    elif user.api_token and (not user.is_api_profile_allowed or not user.is_api_stock_allowed):
-        # Not complete access...
-        user_menu = [KeyboardButton(USER_COMMAND_REGISTER_CONTINUE)]
-    elif user.api_token and user.is_api_profile_allowed and user.is_api_stock_allowed:
-        # All set up
-        user_menu = [KeyboardButton(USER_COMMAND_SETTINGS)]
-    buttons.append(user_menu)
+    # Check if user is in a squad and if this is a "testing squad". This allows onboarding for new features...
+    onboarding_squad_member = False
+    if user.squad_membership and user.squad_membership.first() and \
+            user.squad_membership.first().approved and user.squad_membership.first().squad.testing_squad:
+        onboarding_squad_member = True
+    if onboarding_squad_member:
+        if not user or not user.api_token:
+            # New
+            user_menu = [KeyboardButton(USER_COMMAND_REGISTER)]
+        elif user.api_token and (not user.is_api_profile_allowed or not user.is_api_stock_allowed):
+            # Not complete access...
+            user_menu = [KeyboardButton(USER_COMMAND_REGISTER_CONTINUE)]
+        elif user.api_token and user.is_api_profile_allowed and user.is_api_stock_allowed:
+            # All set up
+            user_menu = [KeyboardButton(USER_COMMAND_SETTINGS)]
+        buttons.append(user_menu)
 
     if user and user.admin_permission:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ADMINPANEL)])
