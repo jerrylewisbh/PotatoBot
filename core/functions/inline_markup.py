@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import IntFlag, auto
 
 from sqlalchemy import func, tuple_
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -9,51 +9,56 @@ from config import CASTLE
 from core.enums import Castle, Icons
 from core.texts import MSG_GROUP_STATUS_ADMIN_FORMAT, MSG_GROUP_STATUS_DEL_ADMIN, MSG_GROUP_STATUS, MSG_ON, MSG_OFF, \
     MSG_ORDER_GROUP_DEL, MSG_BACK, MSG_ORDER_PIN, MSG_ORDER_NO_PIN, MSG_ORDER_BUTTON, MSG_ORDER_NO_BUTTON, \
-    MSG_ORDER_TO_SQUADS, MSG_ORDER_ACCEPT,MSG_ORDER_FORWARD, MSG_ORDER_GROUP_ADD, MSG_SYMBOL_ON, MSG_SYMBOL_OFF, \
+    MSG_ORDER_TO_SQUADS, MSG_ORDER_ACCEPT, MSG_ORDER_FORWARD, MSG_ORDER_GROUP_ADD, MSG_SYMBOL_ON, MSG_SYMBOL_OFF, \
     MSG_SQUAD_GREEN_INLINE_BUTTON, MSG_SQUAD_RED_INLINE_BUTTON, BTN_HERO, BTN_STOCK, BTN_EQUIPMENT, BTN_YES, BTN_NO, \
-    BTN_LEAVE, BTN_ACCEPT, BTN_DECLINE, BTN_WEEK, BTN_ALL_TIME, BTN_SQUAD_WEEK, BTN_SQUAD_ALL_TIME, BTN_PROFESSIONS
+    BTN_LEAVE, BTN_ACCEPT, BTN_DECLINE, BTN_WEEK, BTN_ALL_TIME, BTN_SQUAD_WEEK, BTN_SQUAD_ALL_TIME, BTN_PROFESSIONS, \
+    BTN_SETTING_DISABLE_REPORT, BTN_SETTING_API_DISABLE, BTN_SETTING_ENABLE_REPORT
 from core.types import Group, Admin, User, Squad, AdminType, OrderGroup, Character
 
 
-class QueryType(Enum):
-    GroupList = 0
-    GroupInfo = 1
-    DelAdm = 2
-    Order = 3
-    OrderOk = 4
-    Orders = 5
-    OrderGroup = 6
-    OrderGroupManage = 7
-    OrderGroupTriggerChat = 8
-    OrderGroupAdd = 9
-    OrderGroupDelete = 10
-    OrderGroupList = 11
-    ShowStock = 12
-    ShowEquip = 13
-    ShowHero = 14
-    MemberList = 15
-    LeaveSquad = 16
-    RequestSquad = 17
-    RequestSquadAccept = 18
-    RequestSquadDecline = 19
-    InviteSquadAccept = 20
-    InviteSquadDecline = 21
-    TriggerOrderPin = 22
-    SquadList = 23
-    GroupDelete = 24
-    TriggerOrderButton = 25
-    OtherReport = 26
-    GlobalBuildTop = 27
-    WeekBuildTop = 28
-    SquadGlobalBuildTop = 29
-    SquadWeekBuildTop = 30
-    BattleGlobalTop = 31
-    BattleWeekTop = 32
-    Forward = 33
-    ShowSkills = 34
-    Yes = 100
-    No = 200
+class QueryType(IntFlag):
+    GroupList = auto()
+    GroupInfo = auto()
+    DelAdm = auto()
+    Order = auto()
+    OrderOk = auto()
+    Orders = auto()
+    OrderGroup = auto()
+    OrderGroupManage = auto()
+    OrderGroupTriggerChat = auto()
+    OrderGroupAdd = auto()
+    OrderGroupDelete = auto()
+    OrderGroupList = auto()
+    ShowStock = auto()
+    ShowEquip = auto()
+    ShowHero = auto()
+    MemberList = auto()
+    LeaveSquad = auto()
+    RequestSquad = auto()
+    RequestSquadAccept = auto()
+    RequestSquadDecline = auto()
+    InviteSquadAccept = auto()
+    InviteSquadDecline = auto()
+    TriggerOrderPin = auto()
+    SquadList = auto()
+    GroupDelete = auto()
+    TriggerOrderButton = auto()
+    OtherReport = auto()
+    GlobalBuildTop = auto()
+    WeekBuildTop = auto()
+    SquadGlobalBuildTop = auto()
+    SquadWeekBuildTop = auto()
+    BattleGlobalTop = auto()
+    BattleWeekTop = auto()
+    Forward = auto()
+    ShowSkills = auto()
 
+    DisableAPIAccess = auto()
+    DisableAutomatedReport = auto()
+    EnableAutomatedReport = auto()
+
+    Yes = auto()
+    No = auto()
 
 
 def generate_group_info(group_id, session):
@@ -244,6 +249,37 @@ def generate_profile_buttons(user, back_key=False):
                                       {'t': QueryType.MemberList.value, 'id': user.member.squad_id}
                                   ))])
     return InlineKeyboardMarkup(inline_keys)
+
+def generate_settings_buttons(user, back_key=False):
+    inline_keys = []
+    if user.api_token:
+        inline_keys.append(
+            [
+                InlineKeyboardButton(BTN_SETTING_API_DISABLE, callback_data=json.dumps(
+                    {'t': QueryType.DisableAPIAccess, 'id': user.id, 'b': back_key}
+                ))
+            ]
+        )
+    if user.is_api_stock_allowed and user.is_api_profile_allowed and user.api_token:
+        if user.setting_automated_report:
+            inline_keys.append(
+                [
+                    InlineKeyboardButton(BTN_SETTING_DISABLE_REPORT, callback_data=json.dumps(
+                        {'t': QueryType.DisableAutomatedReport, 'id': user.id, 'b': back_key}
+                    ))
+                ]
+            )
+        else:
+            inline_keys.append(
+                [
+                    InlineKeyboardButton(BTN_SETTING_ENABLE_REPORT, callback_data=json.dumps(
+                        {'t': QueryType.EnableAutomatedReport, 'id': user.id, 'b': back_key}
+                    ))
+                ]
+            )
+    if inline_keys:
+        return InlineKeyboardMarkup(inline_keys)
+    return None
 
 
 def generate_squad_list_key(squad, session):
