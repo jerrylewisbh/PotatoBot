@@ -1,52 +1,80 @@
+import logging
 from datetime import time, datetime
 
-from enum import IntEnum, Flag
+from enum import IntFlag, auto
+
+logging.basicConfig()
+log = logging.getLogger("LOG")
+
+""" Helper for getting current game state(s)... """
+
+""" 
+Notes: 
+
+Times are based on UTC!
+
++------------+----------------+----------------+----------------+
+|   State    |    Cycle 1     |    Cycle 2     |    Cycle 3     |
++------------+----------------+----------------+----------------+
+| Morning:   | 23:00 to 01:00 | 07:00 to 09:00 | 15:00 to 17:00 |
+| Day:       | 01:00 to 03:00 | 09:00 to 11:00 | 17:00 to 19:00 |
+| Dawn:      | 03:00 to 05:00 | 11:00 to 13:00 | 19:00 to 21:00 |
+| Night:     | 05:00 to 07:00 | 13:00 to 15:00 | 21:00 TO 23:00 |
+| Howling:   | 07:00 to 07:03 | 15:00 to 15:03 | 23:00 TO 23:03 |
+| Silence:   | 06:57 to 07:00 | 14:57 to 15:00 | 22:57 TO 23:00 |
+| NoReports: | 06:57 to 07:05 | 14:57 to 15:05 | 22:57 TO 23:05 |
++------------+----------------+----------------+----------------+
+
+"""
+
+class GameState(IntFlag):
+    NO_STATE = auto()
+
+    MORNING = auto()
+    DAY = auto()
+    EVENING = auto()
+    NIGHT = auto()
+
+    HOWLING_WIND = auto()
+    BATTLE_SILENCE = auto()
+    NO_REPORTS = auto()
 
 
-class GameState(Flag):
-    NO_WIND = 0
+def get_game_state(custom_time=None):
+    """ Return calculated GameState for the given time_value. """
 
-    MORNING = 1
-    DAY = 2
-    EVENING = 4
-    NIGHT = 8
+    if not custom_time:
+        now = datetime.now().time()
+    else:
+        now = custom_time
 
-    HOWLING_WIND = 16
+    mod = (now.hour + 1) % 8
+    states = []
+    if mod in [0, 1]:
+        states.append(GameState.MORNING)
+    elif mod in [2, 3]:
+        states.append(GameState.DAY)
+    elif mod in [4, 5]:
+        states.append(GameState.EVENING)
+    elif mod in [6, 7]:
+        states.append(GameState.NIGHT)
 
-def get_game_state():
-    """ Track the current state of the game so that we can simple query for state """
-    now = datetime.now().time()
+    # Additional states for action phases...
 
-    # Cycle 1 (Note: first hour of cycle is 23:00-00:00 handled later on...)
-    daytime = None
-    if now >= time(0, 0) and now <= time(1, 0):
-        daytime = GameState.MORNING
-    elif now >= time(1, 0) and now <= time(3, 0):
-        daytime = GameState.DAY
-    elif now >= time(3, 0) and now <= time(5, 0):
-        daytime = GameState.EVENING
-    elif now >= time(5,0) and now <= time(7, 0):
-        daytime = GameState.NIGHT
-    elif now >= time(7, 0) and now <= time(9, 0):
-        daytime = GameState.MORNING
-    elif now >= time(9, 0) and now <= time(11, 0):
-        daytime = GameState.DAY
-    elif now >= time(11, 0) and now <= time(13, 0):
-        daytime = GameState.EVENING
-    elif now >= time(13, 0) and now <= time(15, 0):
-        daytime = GameState.NIGHT
-    elif now >= time(15, 0) and now <= time(17, 0):
-        daytime = GameState.MORNING
-    elif now >= time(17, 0) and now <= time(19, 0):
-        daytime = GameState.DAY
-    elif now >= time(19, 0) and now <= time(21, 0):
-        daytime = GameState.EVENING
-    elif now >= time(21, 0) and now <= time(23, 0):
-        daytime = GameState.NIGHT
-    elif now >= time(23, 0) and now <= time(0, 0):
-        daytime = GameState.MORNING
+    # Howling
+    if mod == 0 and now.minute <= 3:
+        states.append(GameState.HOWLING_WIND)
 
-    if now >= time(6, 57) and now <= time(7, 3) or now >= time(14, 57) and now <= time(15, 3) or now >= time(22, 57) and now <= time(23, 3):
-        daytime = GameState.HOWLING_WIND
+    # Silence
+    if mod == 7 and now.minute >= 57:
+        states.append(GameState.BATTLE_SILENCE)
 
-    return daytime
+    # No Report phase...
+    if (mod == 7 and now.minute >= 57) or (mod == 0 and now.minute <= 5):
+        states.append(GameState.NO_REPORTS)
+
+    state = 0
+    for state_item in states:
+        state |= state_item
+
+    return state
