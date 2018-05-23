@@ -22,7 +22,7 @@ from core.template import fill_char_template
 from core.types import (
     User, Admin, admin_allowed, Order, OrderGroup,
     OrderGroupItem, OrderCleared, Squad, user_allowed,
-    SquadMember, MessageType, AdminType, Report, Stock)
+    SquadMember, MessageType, AdminType, Report, Stock, Location, UserQuest)
 from core.texts import *
 from core.utils import send_async, update_group, add_user
 
@@ -571,6 +571,30 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
 
             msg = MSG_SETTINGS_INFO.format(
                 (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
+                (MSG_NEEDS_API_ACCESS if not user.setting_automated_deal_report and not user.api_token else user.setting_automated_deal_report),
+                user.stock.date,
+                user.character.date
+            )
+
+            bot.editMessageText(
+                msg,
+                update.callback_query.message.chat.id,
+                update.callback_query.message.message_id,
+                reply_markup=generate_settings_buttons(user),
+                parse_mode=ParseMode.HTML
+            )
+        elif data['t'] in [QueryType.DisableDealReport, QueryType.EnableDealReport]:
+            user = session.query(User).filter_by(id=data['id']).first()
+            if user.setting_automated_deal_report:
+                user.setting_automated_deal_report = False
+            else:
+                user.setting_automated_deal_report = True
+            session.add(user)
+            session.commit()
+
+            msg = MSG_SETTINGS_INFO.format(
+                (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
+                (MSG_NEEDS_API_ACCESS if not user.setting_automated_deal_report and not user.api_token else user.setting_automated_deal_report),
                 user.stock.date,
                 user.character.date
             )
@@ -660,6 +684,20 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             bot.editMessageText(MSG_SQUAD_LEAVE_DECLINE,
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
+        elif data['t'] == QueryType.QuestFeedbackRequired:
+            user_quest = session.query(UserQuest).filter_by(id=data['uq']).first()
+            if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
+                location = session.query(Location).filter_by(id=data['l']).first()
+                user_quest.location = location
+                session.add(user_quest)
+                session.commit()
+
+                bot.editMessageText(
+                    MSG_QUEST_OK,
+                    update.callback_query.message.chat.id,
+                    update.callback_query.message.message_id
+                )
+
     except TelegramError as e:
         # Ignore Message is not modified errors
         if str(e) != "Message is not modified": raise e
@@ -667,7 +705,6 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
 def inlinequery(bot, update):
     """Handle the inline query."""
     query = update.inline_query.query
-    print(update.inline_query.query)
     if query not in CASTLE_LIST and not query.startswith(TACTICTS_COMMAND_PREFIX):
         return
 

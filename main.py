@@ -57,6 +57,7 @@ from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.profile import char_update, profession_update, char_show, find_by_username, find_by_character, \
     find_by_id, report_received, build_report_received, \
     repair_report_received, grant_access, handle_access_token, settings, revoke
+from core.functions.quest import parse_quest
 from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
     enable_thorns, disable_thorns, enable_silence, disable_silence, enable_reminders, disable_reminders,
@@ -85,6 +86,7 @@ from core.types import Session, Order, Squad, Admin, user_allowed, Character, Re
 from core.utils import add_user, send_async
 from cwmq import Consumer, Publisher
 from cwmq.handler import mq_handler
+from cwmq.deals_handler import deals_handler
 
 # -----constants----
 CWBOT_ID = 408101137
@@ -268,7 +270,6 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
 
             elif update.message.forward_from:
                 from_id = update.message.forward_from.id
-
                 if from_id == CWBOT_ID:
                     if text.startswith(STOCK):
                         stock_compare_forwarded(bot, update, chat_data)
@@ -284,6 +285,9 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                         profession_update(bot, update)
                     elif re.search(ACCESS_CODE, update.message.text):
                         handle_access_token(bot, update)
+                    else:
+                        # Handle everying else as Quest-Text.. At least for now...
+                        parse_quest(bot, update)
                 elif from_id == TRADEBOT_ID:
                     if TRADE_BOT in text:
                         trade_compare(bot, update, chat_data)
@@ -374,8 +378,7 @@ def report_after_battle(bot: Bot, job_queue):
             # We must have the actual access rights and user has to be in a testing squad to allow onboarding of this
             # feature!
             onboarding_squad_member = False
-            if user.squad_membership and user.squad_membership.first() and \
-                    user.squad_membership.first().approved and user.squad_membership.first().squad.testing_squad:
+            if user.member and user.member.approved and user.member.squad.testing_squad:
                 onboarding_squad_member = True
 
             if user.is_api_profile_allowed and user.is_api_stock_allowed and \
@@ -440,12 +443,12 @@ def report_after_battle(bot: Bot, job_queue):
                 )
                 text += stock_text
 
-            send_async(bot,
-                       chat_id=user.id,
-                       text=text,
-                       parse_mode=ParseMode.HTML,
-                       reply_markup=None
-                       )
+                send_async(bot,
+                    chat_id=user.id,
+                    text=text,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=None
+                )
 
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
@@ -717,6 +720,7 @@ def main():
     logging.info("Setting up MQ Consumer")
     q_in = Consumer(
         mq_handler,
+        deals_handler,
         dispatcher=updater
     )
     q_in.setName("T1_IN")

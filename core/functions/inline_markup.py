@@ -12,7 +12,8 @@ from core.texts import MSG_GROUP_STATUS_ADMIN_FORMAT, MSG_GROUP_STATUS_DEL_ADMIN
     MSG_ORDER_TO_SQUADS, MSG_ORDER_ACCEPT, MSG_ORDER_FORWARD, MSG_ORDER_GROUP_ADD, MSG_SYMBOL_ON, MSG_SYMBOL_OFF, \
     MSG_SQUAD_GREEN_INLINE_BUTTON, MSG_SQUAD_RED_INLINE_BUTTON, BTN_HERO, BTN_STOCK, BTN_EQUIPMENT, BTN_YES, BTN_NO, \
     BTN_LEAVE, BTN_ACCEPT, BTN_DECLINE, BTN_WEEK, BTN_ALL_TIME, BTN_SQUAD_WEEK, BTN_SQUAD_ALL_TIME, BTN_PROFESSIONS, \
-    BTN_SETTING_DISABLE_REPORT, BTN_SETTING_API_DISABLE, BTN_SETTING_ENABLE_REPORT
+    BTN_SETTING_DISABLE_REPORT, BTN_SETTING_API_DISABLE, BTN_SETTING_ENABLE_REPORT, BTN_SETTING_DISABLE_DEAL_REPORT, \
+    BTN_SETTING_ENABLE_DEAL_REPORT
 from core.types import Group, Admin, User, Squad, AdminType, OrderGroup, Character
 
 
@@ -56,6 +57,11 @@ class QueryType(IntFlag):
     DisableAPIAccess = auto()
     DisableAutomatedReport = auto()
     EnableAutomatedReport = auto()
+
+    DisableDealReport = auto()
+    EnableDealReport = auto()
+
+    QuestFeedbackRequired = auto()
 
     Yes = auto()
     No = auto()
@@ -274,6 +280,22 @@ def generate_settings_buttons(user, back_key=False):
                 [
                     InlineKeyboardButton(BTN_SETTING_ENABLE_REPORT, callback_data=json.dumps(
                         {'t': QueryType.EnableAutomatedReport, 'id': user.id, 'b': back_key}
+                    ))
+                ]
+            )
+        if user.setting_automated_deal_report:
+            inline_keys.append(
+                [
+                    InlineKeyboardButton(BTN_SETTING_DISABLE_DEAL_REPORT, callback_data=json.dumps(
+                        {'t': QueryType.DisableDealReport, 'id': user.id, 'b': back_key}
+                    ))
+                ]
+            )
+        else:
+            inline_keys.append(
+                [
+                    InlineKeyboardButton(BTN_SETTING_ENABLE_DEAL_REPORT, callback_data=json.dumps(
+                        {'t': QueryType.EnableDealReport, 'id': user.id, 'b': back_key}
                     ))
                 ]
             )

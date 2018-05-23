@@ -43,6 +43,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
             logger.warning("TODO: %r", data)
     elif data['action'] == "grantToken" and data['result'] == "Ok":
         user.api_token = data['payload']['token']
+        user.api_user_id = data['payload']['id']
         session.add(user)
         session.commit()
 

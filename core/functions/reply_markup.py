@@ -38,8 +38,7 @@ def generate_user_markup(user_id=None):
     """# Create dynamic keyboard based on users state..."""
     # Check if user is in a squad and if this is a "testing squad". This allows onboarding for new features...
     onboarding_squad_member = False
-    if user.squad_membership and user.squad_membership.first() and \
-            user.squad_membership.first().approved and user.squad_membership.first().squad.testing_squad:
+    if user and user.member and user.member.approved and user.member.squad.testing_squad:
         onboarding_squad_member = True
     if onboarding_squad_member:
         if not user or not user.api_token:

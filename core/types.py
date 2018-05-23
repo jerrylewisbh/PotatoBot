@@ -5,8 +5,8 @@ import logging
 
 from sqlalchemy import (
     create_engine,
-    Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger, Text
-)
+    Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger, Text,
+    Table, UniqueConstraint)
 from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
@@ -52,6 +52,13 @@ ENGINE = create_engine(DB,
 LOGGER = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
 Session = scoped_session(sessionmaker(bind=ENGINE))
+
+class UserQuestItem(Base):
+    __tablename__ = 'user_quest_item'
+
+    user_quest_id = Column(BigInteger, ForeignKey('user_quest.id'), primary_key=True)
+    item_id = Column(BigInteger, ForeignKey('item.id'), primary_key=True)
+    count = Column(Integer)
 
 
 class Group(Base):
@@ -109,8 +116,11 @@ class User(Base):
                          order_by='Profession.date.desc()',
                          uselist=False)
 
+    quests = relationship('UserQuest', back_populates='user')
+
     # API Token and temporary stuff we need after we get an async answer...
     api_token = Column(UnicodeText(250))
+    api_user_id = Column(UnicodeText(250))
     api_request_id = Column(UnicodeText(250))
     api_grant_operation = Column(UnicodeText(250))
 
@@ -118,6 +128,7 @@ class User(Base):
     is_api_stock_allowed = Column(Boolean())
 
     setting_automated_report = Column(Boolean(), default=True)
+    setting_automated_deal_report = Column(Boolean(), default=True)
 
     # Relationship
     admin_permission = relationship("Admin")
@@ -139,6 +150,56 @@ class User(Base):
         if self.last_name:
             user += self.last_name
         return user
+
+
+
+class Quest(Base):
+    __tablename__ = 'quest'
+
+    id = Column(BigInteger, autoincrement=True, primary_key=True)
+
+    text = Column(UnicodeText(), nullable=False)
+    approved = Column(Boolean(), default=False)
+
+    user_quests = relationship('UserQuest', back_populates='quest')
+
+
+class UserQuest(Base):
+    __tablename__ = 'user_quest'
+
+    id = Column(BigInteger, autoincrement=True, primary_key=True)
+
+    location_id = Column(Integer, ForeignKey('location.id'))
+    user_id = Column(BigInteger, ForeignKey(User.id))
+
+    from_date = Column(DATETIME(fsp=6), default=datetime.utcnow)
+    forward_date = Column(DATETIME(fsp=6), nullable=False) # When was the msg originally received? servces as uniqueness-factor together with user_id
+
+    exp = Column(BigInteger, default=0)
+    level = Column(BigInteger)
+
+    quest_id = Column(BigInteger, ForeignKey("quest.id"))
+    quest = relationship('Quest', back_populates='user_quests')
+
+    location_id = Column(BigInteger, ForeignKey("location.id"), nullable=True)
+    location = relationship('Location', back_populates='user_locations')
+
+    user = relationship('User', back_populates='quests')
+
+    items = relationship(UserQuestItem)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'forward_date', name='uc_usr_fwd_date'),
+    )
+
+
+class Location(Base):
+    __tablename__ = 'location'
+
+    id = Column(BigInteger, autoincrement=True, primary_key=True)
+    name = Column(UnicodeText(250))
+
+    user_locations = relationship('UserQuest', back_populates='location')
 
 
 class WelcomeMsg(Base):
@@ -317,10 +378,11 @@ class SquadMember(Base):
 
     squad_id = Column(BigInteger, ForeignKey(Squad.chat_id))
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
-    approved = Column(Boolean, default=False)
+
+    approved = Column(Boolean, default=False, nullable=False)
 
     squad = relationship('Squad', back_populates='members')
-    user = relationship('User', backref=backref('squad_membership', lazy='dynamic'))
+    user = relationship('User', back_populates='member')
 
 
 class Equip(Base):
@@ -369,6 +431,16 @@ class Auth(Base):
 
     id = Column(Text(length=32))
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+
+
+class Item(Base):
+    __tablename__ = 'item'
+
+    id = Column(BigInteger, autoincrement=True, primary_key=True)
+
+    name = Column(UnicodeText(250))
+
+    user_quests = relationship(UserQuestItem)
 
 
 def check_admin(update, session, adm_type, allowed_types=()):

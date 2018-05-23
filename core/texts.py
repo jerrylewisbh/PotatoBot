@@ -433,8 +433,10 @@ BTN_ACCEPT = '✅Accept'
 BTN_DECLINE = '❌Decline'
 
 BTN_SETTING_API_DISABLE = '❌Disable API'
-BTN_SETTING_DISABLE_REPORT = '❌Disable automated Report'
-BTN_SETTING_ENABLE_REPORT = '✅Enable automated Report'
+BTN_SETTING_DISABLE_REPORT = '❌Disable automated report'
+BTN_SETTING_ENABLE_REPORT = '✅Enable automated report'
+BTN_SETTING_DISABLE_DEAL_REPORT = '❌Disable exchange report'
+BTN_SETTING_ENABLE_DEAL_REPORT = '✅Enable exchange report'
 
 BTN_WEEK = "Week"
 BTN_ALL_TIME = "All Time"
@@ -481,12 +483,19 @@ MSG_USER_BATTLE_REPORT_PRELIM = "{}{} - Lvl: {}\n\n"\
 
 MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n <i>{}: {}</i>"
 
-MSG_SETTINGS_INFO = "Automatic battle report enabled: {}\n\n" \
+MSG_SETTINGS_INFO = "Automatic battle report enabled: {}\n" \
+                    "Send notification when I sell something: {}\n\n" \
                     "<i>Last profile update: {}</i>\n" \
                     "<i>Last stock update: {}</i>"
 MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"
+
 MSG_NO_REPORT_PHASE_BEFORE_BATTLE = "War is coming! Your Stock and Profile is getting updated automatically. No need to forward your data just yet!"
 MSG_NO_REPORT_PHASE_AFTER_BATTLE = "War is over but I don't accept reports just yet! I will remind you when it is time."
 
+MSG_DEAL_SOLD = "⚖️You sold <b>{}</b> for {}💰 ({} x {}💰)\nBuyer: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"
+
 #text += "\n\n<b>Please do not forget to forward me your /report command!</b>"
 
+MSG_QUEST = "<b>Please tell me where did you your quest?</b>\n\n<i>{}</i>"
+MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
+MSG_QUEST_OK = "Thank you for your quest details!"
