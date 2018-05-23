@@ -259,7 +259,7 @@ MSG_REPORT_OK = 'Thank you. Do not forget to forward reports on every battle.'
 MSG_PROFILE_NOT_FOUND = 'In the potato plantation records, there is still no data about this hero'
 MSG_SQUAD_REQUEST_EMPTY = 'At the moment no one wants to join you.'
 
-MSG_NO_PROFILE_IN_BOT = 'First give me a recent profile!'
+MSG_NO_PROFILE_IN_BOT = 'Please forward me a recent /hero command or grant me access to your profile!'
 MSG_SQUAD_RECRUITING_ENABLED = 'Squad recruiting is enabled!'
 MSG_SQUAD_RECRUITING_DISABLED = 'Squad recruiting is disabled!'
 MSG_SQUAD_NO_PROFILE = 'First I need him/her to give me a recent profile!'
@@ -452,6 +452,7 @@ MSG_REASON_TRAITOR = 'User changed castles'
 
 
 # API Access related stuff...
+MSG_API_TRY_AGAIN = "Please try again in a few seconds."
 MSG_API_INFO = "By registering you will allow me to automatically update your profile. After this step I can also notify about /stock changes after war.\nRegistering requires three steps. Please bear with me. \n\n @chtwrsbot will send you an authentication code. Please send it back to me to complete registration."
 MSG_API_INVALID_CODE = "Sorry, your code is not valid!"
 MSG_API_ACCESS_RESET = "API access was reset!"

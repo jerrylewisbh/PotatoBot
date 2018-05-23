@@ -367,6 +367,22 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             user = session.query(User).filter_by(id=data['id']).first()
             update.callback_query.answer(text=MSG_CLEARED)
             back = data['b'] if 'b' in data else False
+
+            # We need a profile first!
+            if not user.character:
+                text = MSG_NO_PROFILE_IN_BOT
+                if user.api_token:
+                    text = MSG_API_TRY_AGAIN
+
+                send_async(
+                    bot,
+                    chat_id=update.callback_query.message.chat.id,
+                    text=text,
+                    parse_mode=ParseMode.HTML
+                )
+                return
+
+
             bot.editMessageText(fill_char_template(MSG_PROFILE_SHOW_FORMAT,
                                                    user, user.character, user.profession),
                                 update.callback_query.message.chat.id,

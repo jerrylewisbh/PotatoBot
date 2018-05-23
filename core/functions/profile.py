@@ -405,7 +405,7 @@ def char_show(bot: Bot, update: Update, session):
                 "action": "requestProfile"
             })
 
-        if user is not None and user.character is not None:
+        if user is not None and user.character:
             char = user.character
             profession = user.profession
             if CASTLE:
@@ -418,6 +418,16 @@ def char_show(bot: Bot, update: Update, session):
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
+        elif user is not None and not user.character:
+            text = MSG_NO_PROFILE_IN_BOT
+            btns = generate_profile_buttons(user)
+            send_async(
+                bot,
+                chat_id=update.message.chat.id,
+                text=text,
+                reply_markup=btns,
+                parse_mode=ParseMode.HTML
+            )
 
 
 @user_allowed()
