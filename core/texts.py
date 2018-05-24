@@ -26,8 +26,8 @@ MSG_LIST_ADMINS_USER_FORMAT = '@{} {} {}\n'
 
 MSG_EMPTY = '[Empty]\n'
 
-MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! ' \
-                    'Please send me your game profile from @chtwrsbot ("/hero" command).'
+MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! \n\n' \
+                    'To get things started please send me your game profile from @chtwrsbot ("/hero" command) or select "🔑Register" to allow me direct access to your profile.'
 MSG_ADMIN_WELCOME = 'Welcome, master!'
 
 MSG_HELP_GLOBAL_ADMIN = """Welcome commands:
@@ -206,15 +206,16 @@ You decided to walk around and find a way in.
 Two hours later you returned to the same place you started at..."""
 MSG_PROFILE_SHOW_FORMAT = """\
 👤 %first_name% %last_name% (%username%) 
-%castle% %name% of
-%prof% Castle
+%castle% %name% of %prof% Castle
 🏛 %profession% 
-🏅 level %level% 
+🏅 Level %level% 
 ⚜️ %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
-💰 %gold% | 👝 %pouches% | 🔋 %maxStamina%
+💰 %gold% | 👝 %pouches% 
 %pet%
 🕑 Last update %date%"""
+
+# | 🔋 %maxStamina% - Removed until api provides it or sth else happens...
 
 # main.py texts
 MSG_MAIN_INLINE_BATTLE = 'ROGER THAT!'
@@ -258,7 +259,7 @@ MSG_REPORT_OK = 'Thank you. Do not forget to forward reports on every battle.'
 MSG_PROFILE_NOT_FOUND = 'In the potato plantation records, there is still no data about this hero'
 MSG_SQUAD_REQUEST_EMPTY = 'At the moment no one wants to join you.'
 
-MSG_NO_PROFILE_IN_BOT = 'First give me a recent profile!'
+MSG_NO_PROFILE_IN_BOT = 'Please forward me a recent /hero command or grant me access to your profile!'
 MSG_SQUAD_RECRUITING_ENABLED = 'Squad recruiting is enabled!'
 MSG_SQUAD_RECRUITING_DISABLED = 'Squad recruiting is disabled!'
 MSG_SQUAD_NO_PROFILE = 'First I need him/her to give me a recent profile!'
@@ -307,7 +308,7 @@ MSG_PIN_ALL_DISABLED = 'Now only admins can pin😡'
 MSG_ORDER_CLEARED_BY_DUMMY = 'The requested is being processed \
 because of high server load due to continuous updates'
 
-MSG_NO_SQUAD = 'squadless'
+MSG_NO_SQUAD = 'Squadless'
 MSG_NO_PET = ''
 MSG_NO_PROFESSION = 'Classless'
 MSG_WANTS_TO_JOIN = '\n\nWants to join {}'
@@ -317,7 +318,7 @@ MSG_CLEARED = 'Done'
 MSG_SQUAD_LIST = 'List of your squads:'
 MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter this squad. \
 Exit the current squad or cancel the request to create a new one. '
-MSG_SQUAD_REQUEST = 'Here are the requests you have receive:'
+MSG_SQUAD_REQUEST = 'Here are the requests you have received:'
 MSG_SQUAD_LEAVED = '{} left the squad {} 😰'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
@@ -346,7 +347,8 @@ MSG_IN_DEV = 'Under construction=('
 
 MSG_TOP_ABOUT = '🏆 Tops 🏆'
 MSG_STATISTICS_ABOUT = '📈Statistics📈'
-MSG_SQUAD_ABOUT = '⚜Squad⚜'
+MSG_SQUAD_ABOUT = 'You are a member of the Squad "{}"'
+MSG_SQUAD_NONE = 'You are currently not a member of any squad. Select "⚜Join Squad" to join one!'
 
 MSG_TOP_FORMAT = '{}. {} (Level {}) - {}{}\n'
 MSG_SQUAD_TOP_FORMAT = '{}. {} ({}👥) - {}{} ({}{}/👤)\n'
@@ -374,9 +376,9 @@ MSG_YOU_UNBANNED = 'We can talk again 🌚'
 PLOT_X_LABEL = 'Date'
 PLOT_Y_LABEL = 'XP'
 
-MSG_DAY_SINGLE = 'Day'
-MSG_DAY_PLURAL1 = 'Day'
-MSG_DAY_PLURAL2 = 'Days'
+MSG_DAY_SINGLE = 'day'
+MSG_DAY_PLURAL1 = 'day'
+MSG_DAY_PLURAL2 = 'days'
 MSG_DATE_FORMAT = '{} {}'
 MSG_PLOT_DESCRIPTION = 'On average {} experience per day. For the next level, you need {} experience and approximately {}'
 
@@ -430,6 +432,12 @@ BTN_LEAVE = 'Leave'
 BTN_ACCEPT = '✅Accept'
 BTN_DECLINE = '❌Decline'
 
+BTN_SETTING_API_DISABLE = '❌Disable API'
+BTN_SETTING_DISABLE_REPORT = '❌Disable automated report'
+BTN_SETTING_ENABLE_REPORT = '✅Enable automated report'
+BTN_SETTING_DISABLE_DEAL_REPORT = '❌Disable exchange report'
+BTN_SETTING_ENABLE_DEAL_REPORT = '✅Enable exchange report'
+
 BTN_WEEK = "Week"
 BTN_ALL_TIME = "All Time"
 BTN_SQUAD_WEEK = "Squads per Week"
@@ -441,3 +449,54 @@ MSG_TOP_GENERATING = 'Generating Top'
 
 MSG_NO_REASON = 'Reason not specified'
 MSG_REASON_TRAITOR = 'User changed castles'
+
+
+# API Access related stuff...
+MSG_API_TRY_AGAIN = "Please try again in a few seconds."
+MSG_API_INFO = "By registering you will allow me to automatically update your profile. After this step I can also notify about /stock changes after war.\nRegistering requires three steps. Please bear with me. \n\n @chtwrsbot will send you an authentication code. Please send it back to me to complete registration."
+MSG_API_INVALID_CODE = "Sorry, your code is not valid!"
+MSG_API_ACCESS_RESET = "API access was reset!"
+MSG_API_REQUIRE_ACCESS_STOCK = "Seems like I don't have permission to access your stock yet. You'll get a " \
+                               "request from me please forward this code to me!"
+MSG_API_REQUIRE_ACCESS_PROFILE = "Seems like I don't have permission to access your profile yet. You'll get a " \
+                               "request from me please forward this code to me!"
+MSG_API_REVOKED_PERMISSIONS = "It seems I'm unable to access your data. Did you /revoke your permission?"
+MSG_API_SETUP_STEP_1_COMPLETE = "👌 First step is complete! Now you will receive another request to allow me access to " \
+                                "your profile. Please also forward this code to me."
+MSG_API_SETUP_STEP_2_COMPLETE = "👌 Second step is complete! Now as a last step please allow me access to your stock. " \
+                                "Please also forward this code to me."
+MSG_API_SETUP_STEP_3_COMPLETE = "👌 All set up now! Thank you!"
+
+MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock update:</b>"
+
+MSG_USER_BATTLE_REPORT = "<b>Your after action report:\n</b>"
+"""
+MSG_USER_BATTLE_REPORT_PRELIM = "{}{} ⚔:{} 🛡:{} "\
+                                "Lvl: {}\n"\
+                                "Your result on the battlefield:\n" \
+                                "🔥Exp: {}\n" \
+                                "💰Gold: {}\n" \
+                                "📦Stock: {}\n\n" \
+                                "<i>Note: Please send your /report after every battle!\n</i>"
+"""
+MSG_USER_BATTLE_REPORT_PRELIM = "{}{} - Lvl: {}\n\n"\
+                                "<b>Please forward me your /report as soon as possible!\n</b>"
+
+MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n <i>{}: {}</i>"
+
+MSG_SETTINGS_INFO = "Automatic battle report enabled: {}\n" \
+                    "Send notification when I sell something: {}\n\n" \
+                    "<i>Last profile update: {}</i>\n" \
+                    "<i>Last stock update: {}</i>"
+MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"
+
+MSG_NO_REPORT_PHASE_BEFORE_BATTLE = "War is coming! Your Stock and Profile is getting updated automatically. No need to forward your data just yet!"
+MSG_NO_REPORT_PHASE_AFTER_BATTLE = "War is over but I don't accept reports just yet! I will remind you when it is time."
+
+MSG_DEAL_SOLD = "⚖️You sold <b>{}</b> for {}💰 ({} x {}💰)\nBuyer: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"
+
+#text += "\n\n<b>Please do not forget to forward me your /report command!</b>"
+
+MSG_QUEST = "<b>Please tell me where did you your quest?</b>\n\n<i>{}</i>"
+MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
+MSG_QUEST_OK = "Thank you for your quest details!"

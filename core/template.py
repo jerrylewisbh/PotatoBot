@@ -24,7 +24,7 @@ def fill_char_template(msg: str, user: User, char: Character, profession: Profes
     msg = msg.replace('%name%', str(char.name))
     msg = msg.replace('%prof%', str(char.prof))
     msg = msg.replace('%petLevel%', str(char.petLevel))
-    msg = msg.replace('%maxStamina%', str(char.maxStamina))
+    #msg = msg.replace('%maxStamina%', str(char.maxStamina))
     msg = msg.replace('%level%', str(char.level))
     msg = msg.replace('%attack%', str(char.attack))
     msg = msg.replace('%defence%', str(char.defence))
@@ -42,9 +42,13 @@ def fill_char_template(msg: str, user: User, char: Character, profession: Profes
                                                       str(char.petLevel)))
     else:
         msg = msg.replace('%pet%', MSG_NO_PET)
+
     if squad_request:
         msg += MSG_WANTS_TO_JOIN.format(user.member.squad.squad_name)
-    if profession is not None:
+
+    if char.characterClass:
+        msg = msg.replace('%profession%', char.characterClass)
+    elif profession is not None:
         msg = msg.replace('%profession%', profession.name)
     else:
         msg = msg.replace('%profession%', MSG_NO_PROFESSION)

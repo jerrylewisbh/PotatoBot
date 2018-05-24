@@ -5,10 +5,12 @@ import logging
 
 from telegram import Update, Bot, ParseMode
 
+from core.enums import STOCK_WHITELIST, HEAVY_ITEMS
 from core.functions.triggers import trigger_decorator
 from core.functions.reply_markup import generate_admin_markup, generate_user_markup
+from core.state import GameState, get_game_state
 from core.texts import *
-from core.types import AdminType, Admin, Stock, admin_allowed, user_allowed, SquadMember, Auth
+from core.types import AdminType, Admin, Stock, admin_allowed, user_allowed, SquadMember, Auth, User
 from core.utils import send_async, add_user
 
 from config import WEB_LINK
@@ -51,12 +53,8 @@ def admin_panel(bot: Bot, update: Update, session):
 def user_panel(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
         admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
-        is_admin = False
-        for _ in admin:
-            is_admin = True
-            break
         send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME, parse_mode=ParseMode.HTML,
-                   reply_markup=generate_user_markup(is_admin))
+                   reply_markup=generate_user_markup(user_id=update.message.from_user.id))
 
 
 @admin_allowed()
@@ -104,45 +102,112 @@ def get_diff(dict_one, dict_two):
     resource_diff_del = sorted(resource_diff_del.items(), key=lambda x: x[0])
     return resource_diff_add, resource_diff_del
 
+def get_weight_multiplier(item_name):
+    if item_name.lower() in HEAVY_ITEMS:
+        return 2
+    else:
+        return 1
 
-@user_allowed(False)
-def stock_compare(bot: Bot, update: Update, session, chat_data: dict):
-    old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
-                                               stock_type=StockType.Stock.value).order_by(Stock.date.desc()).first()
-    new_stock = Stock()
-    new_stock.stock = update.message.text
-    new_stock.stock_type = StockType.Stock.value
-    new_stock.user_id = update.message.from_user.id
-    new_stock.date = datetime.now()
-    session.add(new_stock)
-    session.commit()
-    if old_stock is not None:
-        resources_old = {}
-        resources_new = {}
-        strings = old_stock.stock.splitlines()
-        for string in strings[1:]:
-            resource = string.split(' (')
-            resource[1] = resource[1][:-1]
-            resources_old[resource[0]] = int(resource[1])
-        strings = new_stock.stock.splitlines()
-        for string in strings[1:]:
-            resource = string.split(' (')
-            resource[1] = resource[1][:-1]
-            resources_new[resource[0]] = int(resource[1])
+def get_weighted_diff(dict_one, dict_two):
+    """ Same as get_diff but accounts for item weight """
+    resource_diff_add = {}
+    resource_diff_del = {}
+    for key, val in dict_one.items():
+        weight_multiplier = get_weight_multiplier(key)
+        if key in dict_two:
+            diff_count = dict_one[key] - dict_two[key]
+            if diff_count > 0:
+                resource_diff_add[key] = diff_count * weight_multiplier
+            elif diff_count < 0:
+                resource_diff_del[key] = diff_count * weight_multiplier
+        else:
+            resource_diff_add[key] = val * weight_multiplier
+    for key, val in dict_two.items():
+        if key not in dict_one:
+            resource_diff_del[key] = -val * weight_multiplier
+    resource_diff_add = sorted(resource_diff_add.items(), key=lambda x: x[0])
+    resource_diff_del = sorted(resource_diff_del.items(), key=lambda x: x[0])
+    return resource_diff_add, resource_diff_del
+
+def stock_split(old_stock, new_stock):
+    """ Split stock text... """
+    resources_old = {}
+    resources_new = {}
+    strings = old_stock.splitlines()
+    for string in strings[1:]:
+        resource = string.split(' (')
+        resource[1] = resource[1][:-1]
+        resources_old[resource[0]] = int(resource[1])
+    strings = new_stock.splitlines()
+    for string in strings[1:]:
+        resource = string.split(' (')
+        resource[1] = resource[1][:-1]
+        resources_new[resource[0]] = int(resource[1])
+
+    return (resources_old, resources_new)
+
+def stock_compare_text(old_stock, new_stock):
+    """ Compare stock... """
+    if old_stock:
+        resources_old, resources_new = stock_split(old_stock, new_stock)
         resource_diff_add, resource_diff_del = get_diff(resources_new, resources_old)
         msg = MSG_STOCK_COMPARE_HARVESTED
         if len(resource_diff_add):
             for key, val in resource_diff_add:
-                msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
+                if key.lower() in STOCK_WHITELIST:
+                    msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
             msg += MSG_EMPTY
         msg += MSG_STOCK_COMPARE_LOST
         if len(resource_diff_del):
             for key, val in resource_diff_del:
-                msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
+                if key.lower() in STOCK_WHITELIST:
+                    msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
             msg += MSG_EMPTY
-        send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
+        return msg
+
+    return None
+
+
+def stock_compare(session, user_id, new_stock_text):
+    """ Save new stock into database and compare it with the newest already saved.
+    """
+
+    old_stock = session.query(Stock).filter_by(user_id=user_id,
+                                               stock_type=StockType.Stock.value).order_by(Stock.date.desc()).first()
+    new_stock = Stock()
+    new_stock.stock = new_stock_text
+    new_stock.stock_type = StockType.Stock.value
+    new_stock.user_id = user_id
+    new_stock.date = datetime.now()
+    session.add(new_stock)
+    session.commit()
+
+    if old_stock:
+        return stock_compare_text(old_stock.stock, new_stock.stock)
+
+    return None
+
+
+@user_allowed(False)
+def stock_compare_forwarded(bot: Bot, update: Update, session, chat_data: dict):
+    # If user-stock is automatically updated via API do not allow reports during SILENCE
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+
+    state = get_game_state()
+    if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
+        text = MSG_NO_REPORT_PHASE_BEFORE_BATTLE if GameState.NIGHT in state else MSG_NO_REPORT_PHASE_AFTER_BATTLE
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            parse_mode=ParseMode.HTML)
+        return
+
+    cmp_result = stock_compare(session, update.message.from_user.id, update.message.text)
+    if cmp_result:
+        send_async(bot, chat_id=update.message.chat.id, text=cmp_result, parse_mode=ParseMode.HTML)
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT, parse_mode=ParseMode.HTML)
 

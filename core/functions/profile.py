@@ -1,23 +1,29 @@
-from telegram import Update, Bot, ParseMode
-
-from core.functions.inline_keyboard_handling import generate_profile_buttons
-from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT, PROFESSION
-from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport, Profession
-from core.utils import send_async
-from datetime import timedelta, datetime
 import re
-from core.template import fill_char_template
-from core.functions.ban import ban_traitor
-from core.texts import *
+
+from datetime import timedelta, datetime
 from enum import Enum
 
+from telegram import Update, Bot, ParseMode
+
 from config import CASTLE, EXT_ID
+from core.functions.ban import ban_traitor
+from core.functions.inline_keyboard_handling import generate_profile_buttons
+from core.functions.inline_markup import generate_settings_buttons
+from core.regexp import HERO, PROFILE, REPORT, BUILD_REPORT, REPAIR_REPORT, PROFESSION, ACCESS_CODE
+from core.state import get_game_state, GameState
+from core.template import fill_char_template
+from core.texts import *
+from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport, Profession
+from core.utils import send_async
+from cwmq import Publisher
 
 
 class BuildType(Enum):
     Build = 1
     Repair = 0
 
+# Get the Publisher Singleton
+p = Publisher()
 
 def parse_profile(profile, user_id, date, session):
     parsed_data = re.search(PROFILE, profile)
@@ -132,6 +138,83 @@ def parse_profession(prof, user_id, date, session):
         session.commit()
     return profession
 
+def get_required_xp(level):
+    """ Get required XP for next level.
+    Based on https://wiki.chatwars.me/index.php?title=%D0%93%D0%B5%D1%80%D0%BE%D0%B9"""
+
+    # We need the XP for next level...
+    level += 1
+
+    required = {
+        1: 0,
+        2: 5,
+        3: 15,
+        4: 38,
+        5: 79,
+        6: 142,
+        7: 227,
+        8: 329,
+        9: 444,
+        10: 577,
+        11: 721,
+        12: 902,
+        13: 1127,
+        14: 1409,
+        15: 1761,
+        16: 2202,
+        17: 2752,
+        18: 3440,
+        19: 4300,
+        20: 5375,
+        21: 6719,
+        22: 8399,
+        23: 10498,
+        24: 13123,
+        25: 16404,
+        26: 20504,
+        27: 25631,
+        28: 32038,
+        29: 39023,
+        30: 46636,
+        31: 54934,
+        32: 63979,
+        33: 73838,
+        34: 84584,
+        35: 96297,
+        36: 109065,
+        37: 122982,
+        38: 138151,
+        39: 154685,
+        40: 172708,
+        41: 192353,
+        42: 213765,
+        43: 237105,
+        44: 262545,
+        45: 290275,
+        46: 320501,
+        47: 353447,
+        48: 389358,
+        49: 428501,
+        50: 471167,
+        51: 517673,
+        52: 568364,
+        53: 623618,
+        54: 683845,
+        55: 749492,
+        56: 821047,
+        57: 899042,
+        58: 984057,
+        59: 1076723,
+        60: 1177728,
+        61: 1287825,
+        62: 1407830,
+        63: 1538636,
+        64: 1681214,
+        65: 1836624,
+        66: 2006021,
+    }
+    return required[level]
+
 def parse_build_reports(report, user_id, date, session):
     parsed_data = re.search(BUILD_REPORT, report)
     report = session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
@@ -205,70 +288,93 @@ def repair_report_received(bot: Bot, update: Update, session):
 def report_received(bot: Bot, update: Update, session):
     if datetime.now() - update.message.forward_date > timedelta(minutes=1):
          send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
-    else:
-        report = re.search(REPORT, update.message.text)
-        user = session.query(User).filter_by(id=update.message.from_user.id).first()
-        if report and user.character and str(report.group(2)) == user.character.name:
-            
-            date= update.message.forward_date
-            if (update.message.forward_date.hour < 7):
-                date= update.message.forward_date - timedelta(days=1)
-            
-            time_from = date.replace(hour=(int((update.message.forward_date.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
-     
-            date= update.message.forward_date
-            if (update.message.forward_date.hour == 23):
-                date= update.message.forward_date + timedelta(days=1)
+         return
 
-            time_to = date.replace(hour=(int((update.message.forward_date.hour+1) / 8 + 1) * 8 - 1) % 24, minute=0, second=0)
-            
+    state = get_game_state()
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
+        text = MSG_NO_REPORT_PHASE_BEFORE_BATTLE if GameState.NIGHT in state else MSG_NO_REPORT_PHASE_AFTER_BATTLE
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            parse_mode=ParseMode.HTML)
+        return
 
-            report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
-                                                  Report.user_id == update.message.from_user.id).all()
+    report = re.search(REPORT, update.message.text)
+    if report and user.character and str(report.group(2)) == user.character.name:
+        date= update.message.forward_date
+        if (update.message.forward_date.hour < 7):
+            date= update.message.forward_date - timedelta(days=1)
 
-            if len(report) > 0 and report[0].castle != CASTLE:
+        time_from = date.replace(hour=(int((update.message.forward_date.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
+
+        date= update.message.forward_date
+        if (update.message.forward_date.hour == 23):
+            date= update.message.forward_date + timedelta(days=1)
+
+        time_to = date.replace(hour=(int((update.message.forward_date.hour+1) / 8 + 1) * 8 - 1) % 24, minute=0, second=0)
+
+
+        report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
+                                              Report.user_id == update.message.from_user.id).all()
+
+        if len(report) > 0 and report[0].castle != CASTLE:
+            ban_traitor(bot, session,update.message.from_user.id)
+
+        if len(report) == 0:
+            parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
+            if report and report.castle != CASTLE:
                 ban_traitor(bot, session,update.message.from_user.id)
 
-            if len(report) == 0:
-                parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
-                send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
-                if report and report.castle != CASTLE:
-                    ban_traitor(bot, session,update.message.from_user.id)
-
-            else:
-                send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
+        else:
+            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
 
 
 @user_allowed(False)
 def char_update(bot: Bot, update: Update, session):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
-    else:
-        char = None
-        if re.search(HERO, update.message.text):
-            char = parse_hero(update.message.text,
-                              update.message.from_user.id,
-                              update.message.forward_date,
-                              session)
-        elif re.search(PROFILE, update.message.text):
-            char = parse_profile(update.message.text,
-                                 update.message.from_user.id,
-                                 update.message.forward_date,
-                                 session)
-        if CASTLE:
-            if char and (char.castle == CASTLE or update.message.from_user.id == EXT_ID) :
-                char.castle = CASTLE
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
-                           parse_mode=ParseMode.HTML)
-            else:
-                send_async(bot, chat_id=update.message.chat.id,
-                           text=MSG_PROFILE_CASTLE_MISTAKE, parse_mode=ParseMode.HTML)
-        else:
+        return
+
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+
+    state = get_game_state()
+    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
+        text = MSG_NO_REPORT_PHASE_BEFORE_BATTLE if GameState.NIGHT in state else MSG_NO_REPORT_PHASE_AFTER_BATTLE
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            parse_mode=ParseMode.HTML)
+        return
+
+    char = None
+    if re.search(HERO, update.message.text):
+        char = parse_hero(update.message.text,
+                          update.message.from_user.id,
+                          update.message.forward_date,
+                          session)
+    elif re.search(PROFILE, update.message.text):
+        char = parse_profile(update.message.text,
+                             update.message.from_user.id,
+                             update.message.forward_date,
+                             session)
+    if CASTLE:
+        if char and (char.castle == CASTLE or update.message.from_user.id == EXT_ID) :
+            char.castle = CASTLE
             send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
                        parse_mode=ParseMode.HTML)
-        if char and char.castle != CASTLE:
-            ban_traitor(bot, session , update.message.from_user.id)
-
+        else:
+            send_async(bot, chat_id=update.message.chat.id,
+                       text=MSG_PROFILE_CASTLE_MISTAKE, parse_mode=ParseMode.HTML)
+    else:
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
+                   parse_mode=ParseMode.HTML)
+    if char and char.castle != CASTLE:
+        ban_traitor(bot, session , update.message.from_user.id)
 
 @user_allowed(False)
 def profession_update(bot: Bot, update: Update, session):
@@ -284,13 +390,22 @@ def profession_update(bot: Bot, update: Update, session):
             if profession:
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_SKILLS_SAVED.format(profession.name),parse_mode=ParseMode.HTML)
 
-
-
 @user_allowed
 def char_show(bot: Bot, update: Update, session):
     if update.message.chat.type == 'private':
         user = session.query(User).filter_by(id=update.message.from_user.id).first()
-        if user is not None and user.character is not None:
+
+        if user.is_api_profile_allowed and user.is_api_stock_allowed:
+            p.publish({
+                "token": user.api_token,
+                "action": "requestStock"
+            })
+            p.publish({
+                "token": user.api_token,
+                "action": "requestProfile"
+            })
+
+        if user is not None and user.character:
             char = user.character
             profession = user.profession
             if CASTLE:
@@ -303,6 +418,101 @@ def char_show(bot: Bot, update: Update, session):
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
+        elif user is not None and not user.character:
+            text = MSG_NO_PROFILE_IN_BOT
+            btns = generate_profile_buttons(user)
+            send_async(
+                bot,
+                chat_id=update.message.chat.id,
+                text=text,
+                reply_markup=btns,
+                parse_mode=ParseMode.HTML
+            )
+
+
+@user_allowed()
+def revoke(bot: Bot, update: Update, session):
+    if update.message.chat.type == 'private':
+        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+        user.api_token = None
+        user.is_api_profile_allowed = False
+        user.is_api_stock_allowed = False
+        session.add(user)
+        session.commit()
+
+        btns = generate_profile_buttons(user)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_API_ACCESS_RESET, reply_markup=btns, parse_mode=ParseMode.HTML)
+
+
+@user_allowed
+def grant_access(bot: Bot, update: Update, session):
+    if update.message.chat.type == 'private':
+        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+
+        reg_req = {
+            "action": "createAuthCode",
+            "payload": {
+                "userId": update.message.chat.id
+            }
+        }
+        p.publish(reg_req)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_API_INFO, parse_mode=ParseMode.HTML)
+
+@user_allowed
+def handle_access_token(bot: Bot, update: Update, session):
+    """ Handle a forwarded access code to authorize API access by bot.
+    Note: We do not send back a confirmation at this point. User should be notified after async answer from APMQ
+    TODO: Maybe add some kind of timeout if API is not availiable? """
+
+    if update.message.chat.type == 'private':
+        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+        # Extract token...
+        code = re.search(ACCESS_CODE, update.message.text)
+        if not code:
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_API_INVALID_CODE, parse_mode=ParseMode.HTML)
+            return
+
+        # For what is this code. Send the right response
+        if user.api_request_id and user.api_grant_operation:
+            add_grant_req = {
+                "action": "grantAdditionalOperation",
+                "token": user.api_token,
+                "payload": {
+                    "requestId": user.api_request_id,
+                    "authCode": code.group(2),
+                }
+            }
+            p.publish(add_grant_req)
+        else:
+            grant_req = {
+                "action": "grantToken",
+                "payload": {
+                    "userId": update.message.chat.id,
+                    "authCode": code.group(2),
+                }
+            }
+            p.publish(grant_req)
+
+@user_allowed
+def settings(bot: Bot, update: Update, session):
+    if update.message.chat.type == 'private':
+        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+
+        text = MSG_SETTINGS_INFO.format(
+            (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
+            (MSG_NEEDS_API_ACCESS if not user.setting_automated_deal_report and not user.api_token else user.setting_automated_deal_report),
+            user.stock.date,
+            user.character.date
+        )
+
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            reply_markup=generate_settings_buttons(user),
+            parse_mode=ParseMode.HTML
+        )
+        return
 
 
 @admin_allowed()
