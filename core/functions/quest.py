@@ -51,16 +51,34 @@ def analyze_text(text):
         return {
             'type': QuestType.NORMAL,
             'items': items,
-            'gold': find_quest_gold_exp[0][1],
-            'exp':  find_quest_gold_exp[0][2],
+            'gold': find_quest_gold_exp[0][2],
+            'exp':  find_quest_gold_exp[0][1],
             'text': text_stripped,
         }
     elif find_foray_success:
-        return QuestType.FORAY
+        return {
+            'type': QuestType.FORAY,
+            'items': {},
+            'gold': 0,
+            'exp': 0,
+            'text': text_stripped,
+        }
     elif find_foray_tried_to_stop:
-        return QuestType.FORAY_STOP
+        return {
+            'type': QuestType.FORAY_STOP,
+            'items': {},
+            'gold': 0,
+            'exp': 0,
+            'text': text_stripped,
+        }
     elif find_arena:
-        return QuestType.ARENA
+        return {
+            'type': QuestType.ARENA,
+            'items': {},
+            'gold': 0,
+            'exp': 0,
+            'text': text_stripped,
+        }
     else:
         return {
             'type': QuestType.NORMAL_FAILED,
@@ -72,7 +90,7 @@ def analyze_text(text):
 
 
 def parse_quest(bot, update):
-    data = analyze_text(update.message.text)
+    quest_data = analyze_text(update.message.text)
 
     session = Session()
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
@@ -93,20 +111,20 @@ def parse_quest(bot, update):
     uq = UserQuest()
     uq.user = user
     uq.forward_date = update.message.forward_date
-    uq.exp = data['exp']
-    uq.gold = data['gold']
+    uq.exp = quest_data['exp']
+    uq.gold = quest_data['gold']
     uq.level = user.character.level
 
-    quest = session.query(Quest).filter_by(text=data['text']).first()
+    quest = session.query(Quest).filter_by(text=quest_data['text']).first()
     if quest:
         uq.quest = quest
     else:
         q = Quest()
-        q.text = data['text']
+        q.text = quest_data['text']
         session.add(q)
         uq.quest = q
 
-    for name, count in data['items'].items():
+    for name, count in quest_data['items'].items():
         item = session.query(Item).filter_by(name=name).first()
         if not item:
             item = Item()
@@ -123,7 +141,7 @@ def parse_quest(bot, update):
     # We need details about the location of the quest if it's a normal one...
     # Note: Max. 64 bytes for callback data. Because of this there is no user_id. Instead we're getting that one in
     # callback handler via sql...
-    if data['type'] == QuestType.NORMAL:
+    if quest_data['type'] == QuestType.NORMAL:
         inline_keys = []
         for location in session.query(Location).all():
             inline_keys.append(
@@ -141,7 +159,7 @@ def parse_quest(bot, update):
 
         bot.sendMessage(
             chat_id=user.id,
-            text=MSG_QUEST.format(data['text']),
+            text=MSG_QUEST.format(quest_data['text']),
             parse_mode=ParseMode.HTML,
             reply_markup=inline_keyboard
         )
