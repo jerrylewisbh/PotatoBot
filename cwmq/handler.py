@@ -23,6 +23,11 @@ logger.setLevel(logging.DEBUG)
 def mq_handler(channel, method, properties, body, dispatcher):
     logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
+
+    # Code to just flush everything out...
+    #channel.basic_ack(method.delivery_tag)
+    #return
+
     # Get user details if possible...
     user = None
     if data and "payload" in data and data["payload"] and "userId" in data['payload']:
@@ -152,13 +157,18 @@ def mq_handler(channel, method, properties, body, dispatcher):
             #    user.set_profile_access_granted(True)
             #   user.save()
 
+            if not user:
+                # Shouldn't happen!?
+                channel.basic_ack(method.delivery_tag)
+                return
+
             c = Character()
             c.user_id = user.id
             c.date = datetime.datetime.now()
             guildTag = "[" + data['payload']['profile']['guild_tag'] +"]"  if 'guild_tag' in data['payload']['profile'] and data['payload']['profile']['guild_tag'] else ''
             c.name = guildTag + data['payload']['profile']['userName']
             c.prof = CASTLE_MAP[data['payload']['profile']['castle']]
-            c.characterClass = CLASS_MAP[data['payload']['profile']['class']] # TODO
+            c.characterClass = CLASS_MAP.get(data['payload']['profile']['class'], "Unknown class")
             c.pet = None
             c.maxStamina = -1 # TODO?
             c.level = data['payload']['profile']['lvl']
@@ -231,6 +241,10 @@ def mq_handler(channel, method, properties, body, dispatcher):
             }
             p.publish(grant_req)
         elif data['result'] == "Ok":
+            if not user:
+                # Shouldn't happen!?
+                channel.basic_ack(method.delivery_tag)
+                return
             logger.info("Stock update for %s...", user.id)
 
             # FixMe: Filled stock slots is currently not tracked. Maybe calculate it?

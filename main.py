@@ -378,7 +378,7 @@ def report_after_battle(bot: Bot, job_queue):
             # We must have the actual access rights and user has to be in a testing squad to allow onboarding of this
             # feature!
             onboarding_squad_member = False
-            if user.member and user.member.approved and user.member.squad.testing_squad:
+            if user and user.member and user.member.approved and user.member.squad and user.member.squad.testing_squad:
                 onboarding_squad_member = True
 
             if user.is_api_profile_allowed and user.is_api_stock_allowed and \
