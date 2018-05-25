@@ -155,7 +155,8 @@ def mq_handler(channel, method, properties, body, dispatcher):
             c = Character()
             c.user_id = user.id
             c.date = datetime.datetime.now()
-            c.name = data['payload']['profile']['userName']
+            guildTag = "[" + data['payload']['profile']['guild_tag'] +"]"  if 'guild_tag' in data['payload']['profile'] and data['payload']['profile']['guild_tag'] else ''
+            c.name = guildTag + data['payload']['profile']['userName']
             c.prof = CASTLE_MAP[data['payload']['profile']['castle']]
             c.characterClass = CLASS_MAP[data['payload']['profile']['class']] # TODO
             c.pet = None
