@@ -422,8 +422,8 @@ def report_after_battle(bot: Bot, job_queue):
                 r.earned_gold = earned_gold
                 r.earned_stock = diff_stock
                 r.preliminary_report = True
-                session.add(r)
-                session.commit()
+                #session.add(r)
+                #session.commit()
 
                 # Text with prelim. battle report
                 """text += MSG_USER_BATTLE_REPORT_PRELIM.format(
