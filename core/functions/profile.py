@@ -316,8 +316,12 @@ def report_received(bot: Bot, update: Update, session):
         time_to = date.replace(hour=(int((update.message.forward_date.hour+1) / 8 + 1) * 8 - 1) % 24, minute=0, second=0)
 
 
-        report = session.query(Report).filter(Report.date > time_from, Report.date < time_to,
-                                              Report.user_id == update.message.from_user.id).all()
+        report = session.query(Report).filter(
+            Report.date > time_from,
+            Report.date < time_to,
+            Report.preliminary_report.is_(False), 
+            Report.user_id == update.message.from_user.id
+        ).all()
 
         if len(report) > 0 and report[0].castle != CASTLE:
             ban_traitor(bot, session,update.message.from_user.id)
