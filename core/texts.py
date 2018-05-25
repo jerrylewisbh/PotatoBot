@@ -461,12 +461,9 @@ MSG_API_REQUIRE_ACCESS_STOCK = "Seems like I don't have permission to access you
 MSG_API_REQUIRE_ACCESS_PROFILE = "Seems like I don't have permission to access your profile yet. You'll get a " \
                                "request from me please forward this code to me!"
 MSG_API_REVOKED_PERMISSIONS = "It seems I'm unable to access your data. Did you /revoke your permission?"
-MSG_API_SETUP_STEP_1_COMPLETE = "👌 First step is complete! Now you will receive another request to allow me access to " \
-                                "your profile. Please also forward this code to me."
-MSG_API_SETUP_STEP_2_COMPLETE = "👌 Second step is complete! Now as a last step please allow me access to your stock. " \
-                                "Please also forward this code to me."
-MSG_API_SETUP_STEP_3_COMPLETE = "👌 All set up now! Thank you!"
-
+MSG_API_SETUP_STEP_1_COMPLETE = "👌 Profile access is now granted! If I need additional permissions I will let you " \
+                                "know!"
+MSG_API_SETUP_STEP_2_COMPLETE = "👌 Thanks for granting additional permissions!"
 MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock update:</b>"
 
 MSG_USER_BATTLE_REPORT = "<b>Your after action report:\n</b>"

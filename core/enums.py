@@ -19,7 +19,7 @@ CLASS_MAP = {
     '🏹': 'Ranger',
     '⚗️': 'Alchemist',
     '🛡': 'Sentinel',
-    '⚒️': 'Blacksmith',
+    '⚒': 'Blacksmith',
     '📦': 'Collector',
     '🐣': 'Esquire / Master'
 }

@@ -6,8 +6,7 @@ from telegram import ParseMode
 
 from core.enums import CASTLE_MAP, CLASS_MAP
 from core.functions.common import stock_compare, MSG_API_REQUIRE_ACCESS_STOCK, MSG_API_REQUIRE_ACCESS_PROFILE, \
-    MSG_API_REVOKED_PERMISSIONS, MSG_API_SETUP_STEP_1_COMPLETE, MSG_API_SETUP_STEP_2_COMPLETE, \
-    MSG_API_SETUP_STEP_3_COMPLETE
+    MSG_API_REVOKED_PERMISSIONS, MSG_API_SETUP_STEP_1_COMPLETE, MSG_API_SETUP_STEP_2_COMPLETE
 from core.functions.profile import get_required_xp
 from core.functions.reply_markup import generate_user_markup
 from core.state import get_game_state, GameState
@@ -49,6 +48,10 @@ def mq_handler(channel, method, properties, body, dispatcher):
     elif data['action'] == "grantToken" and data['result'] == "Ok":
         user.api_token = data['payload']['token']
         user.api_user_id = data['payload']['id']
+
+        # Botato is granted this all in one step!
+        user.is_api_profile_allowed = True
+        user.is_api_stock_allowed = True
         session.add(user)
         session.commit()
 
@@ -59,15 +62,19 @@ def mq_handler(channel, method, properties, body, dispatcher):
             reply_markup=generate_user_markup(user.id)
         )
 
-        logger.info("Requesting profile access")
-        grant_req = {
+        p.publish({
             "token": user.api_token,
-            "action": "authAdditionalOperation",
-            "payload": {
-                "operation": "GetUserProfile",
-            }
-        }
-        p.publish(grant_req)
+            "action": "requestProfile"
+        })
+
+        #grant_req = {
+        #    "token": user.api_token,
+        #    "action": "authAdditionalOperation",
+        #    "payload": {
+        #        "operation": "GetUserProfile",
+        #    }
+        #}
+        #p.publish(grant_req)
     elif data['action'] == "grantAdditionalOperation" and data['result'] == "Ok":
         logger.info("grantAdditionalOperation was successful!")
 
@@ -89,7 +96,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
             }
             p.publish(grant_req)
         elif user.api_grant_operation == "GetStock":
-            message = MSG_API_SETUP_STEP_3_COMPLETE
+            message = MSG_API_SETUP_STEP_2_COMPLETE
             user.api_grant_operation = None # We don't need this code anymore!
             user.is_api_stock_allowed = True
 
