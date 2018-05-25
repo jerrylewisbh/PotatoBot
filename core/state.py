@@ -70,7 +70,7 @@ def get_game_state(custom_time=None):
         states.append(GameState.BATTLE_SILENCE)
 
     # No Report phase...
-    if (mod == 7 and now.minute >= 57) or (mod == 0 and now.minute <= 5):
+    if (mod == 7 and now.minute >= 57) or (mod == 0 and now.minute <= 3):
         states.append(GameState.NO_REPORTS)
 
     state = 0
