@@ -91,15 +91,23 @@ def parse_hero(profile, user_id, date, session):
 
 def parse_reports(report, user_id, date, session):
     parsed_data = re.search(REPORT, report)
-    report = session.query(Report).filter_by(user_id=user_id, date=date).first()
-    if report is None:
-        report = Report()
+    existing_report = session.query(Report).filter_by(user_id=user_id, date=date).first()
+
+    # New one...
+    if not existing_report or (existing_report and existing_report.preliminary_report):
+        if not report:
+            # New one
+            report = Report()
+        else:
+            report = report
+
         report.user_id = user_id
         report.date = date
         report.castle = str(parsed_data.group(1))
         report.name = str(parsed_data.group(2))
         report.attack = int(parsed_data.group(3))  #+ int(parsed_data.group(4) if parsed_data.group(4) else 0)
         report.defence = int(parsed_data.group(6))  #+ int(parsed_data.group(7) if parsed_data.group(7) else 0)
+        report.preliminary_report = False
         report.level = int(parsed_data.group(9))
         if parsed_data.group(10):
             report.earned_exp = int(parsed_data.group(10))
@@ -319,19 +327,18 @@ def report_received(bot: Bot, update: Update, session):
         report = session.query(Report).filter(
             Report.date > time_from,
             Report.date < time_to,
-            Report.preliminary_report.is_(False), 
             Report.user_id == update.message.from_user.id
-        ).all()
+        ).first()
 
-        if len(report) > 0 and report[0].castle != CASTLE:
+        if report and report.castle != CASTLE:
             ban_traitor(bot, session,update.message.from_user.id)
+            return
 
-        if len(report) == 0:
+        if not report or (report and report.preliminary_report):
             parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
             if report and report.castle != CASTLE:
                 ban_traitor(bot, session,update.message.from_user.id)
-
         else:
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
 
