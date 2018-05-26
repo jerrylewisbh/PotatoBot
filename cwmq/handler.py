@@ -185,7 +185,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
             c.needExp = get_required_xp(data['payload']['profile']['lvl'])
             c.castle = data['payload']['profile']['castle']
             c.gold = data['payload']['profile']['gold']
-            c.donateGold = data['payload']['profile']['pouches']
+            c.donateGold = data['payload']['profile']['pouches'] if 'pouches' in data['payload']['profile'] else 0
             session.add(c)
             session.commit()
 

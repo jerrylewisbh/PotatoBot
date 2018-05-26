@@ -399,6 +399,7 @@ MSG_REPORT_SUMMARY_RATING = "Reports for the battle {}"
 ATTACK_ICON  = '⚔'
 DEFENSE_ICON = '🛡'
 REST_ICON = '🛌'
+PRELIMINARY_ICON = '⚠️'
 
 
 MSG_NO_CLASS = ' Please forward me your /class first'
@@ -481,7 +482,7 @@ MSG_USER_BATTLE_REPORT_PRELIM = "{}{} - Lvl: {}\n\n"\
 
 MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n <i>{}: {}</i>"
 
-MSG_SETTINGS_INFO = "Automatic battle report enabled: {}\n" \
+MSG_SETTINGS_INFO = "Automatic stock report enabled: {}\n" \
                     "Send notification when I sell something: {}\n\n" \
                     "<i>Last profile update: {}</i>\n" \
                     "<i>Last stock update: {}</i>"
@@ -494,6 +495,6 @@ MSG_DEAL_SOLD = "⚖️You sold <b>{}</b> for {}💰 ({} x {}💰)\nBuyer: {}{}\
 
 #text += "\n\n<b>Please do not forget to forward me your /report command!</b>"
 
-MSG_QUEST = "<b>Please tell me where did you your quest?</b>\n\n<i>{}</i>"
+MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Thank you for your quest details!"

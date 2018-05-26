@@ -562,9 +562,10 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 session.commit()
 
             msg = MSG_SETTINGS_INFO.format(
-                (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
-                user.stock.date,
-                user.character.date
+            (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
+            (MSG_NEEDS_API_ACCESS if not user.setting_automated_deal_report and not user.api_token else user.setting_automated_deal_report),
+            user.stock.date,
+            user.character.date
             )
 
             bot.editMessageText(
@@ -642,6 +643,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 total_members += 1
                 if report:
                     icon = REST_ICON if report.earned_exp  == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
+                    icon =  PRELIMINARY_ICON + icon if report.preliminary_report else icon
                     text = MSG_REPORT_SUMMARY_ROW.format(icon,
                         report.name, user.username, report.attack, report.defence,
                         report.earned_exp, report.earned_gold, report.earned_stock)
