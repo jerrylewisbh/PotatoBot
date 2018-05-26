@@ -408,6 +408,7 @@ def battle_attendance_show(bot: Bot, update: Update, session):
                     Character.date > datetime.now() - timedelta(days=7))\
             .filter(SquadMember.squad_id == adm.admin_group).group_by(Character)\
             .filter(Report.date > today - timedelta(days=today.weekday())) \
+            .filter(Report.earned_exp > 0)\
             .order_by(func.count(Report.user_id).desc())
         battles = battles.all()
         text =  MSG_TOP_WEEK_WARRIORS_SQUAD.format(squad.squad_name)
@@ -452,6 +453,7 @@ def battle_reports_show(bot: Bot, update: Update, session):
             total_members += 1
             if report:
                 icon = REST_ICON if report.earned_exp  == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
+                icon =  PRELIMINARY_ICON + icon if report.preliminary_report else icon
                 text = MSG_REPORT_SUMMARY_ROW.format(
                     icon, report.name, user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
