@@ -384,10 +384,6 @@ def report_after_battle(bot: Bot, job_queue):
             if user.is_api_profile_allowed and user.is_api_stock_allowed and \
                     user.setting_automated_report and user.api_token and \
                     onboarding_squad_member:
-                prev_stock = session.query(Stock).filter_by(
-                    user_id=user.id,
-                    stock_type=StockType.Stock.value
-                ).order_by(Stock.date.desc()).limit(1).offset(1).one()
 
                 prev_character = session.query(Character).filter_by(
                     user_id=user.id,

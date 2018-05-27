@@ -482,8 +482,9 @@ MSG_USER_BATTLE_REPORT_PRELIM = "{}{} - Lvl: {}\n\n"\
 
 MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n <i>{}: {}</i>"
 
-MSG_SETTINGS_INFO = "Automatic stock report enabled: {}\n" \
-                    "Send notification when I sell something: {}\n\n" \
+MSG_SETTINGS_INFO = "<b>Your settings:</b>\n" \
+                    "- Automatic stock report after war: {}\n" \
+                    "- Send notification when I sell something: {}\n\n" \
                     "<i>Last profile update: {}</i>\n" \
                     "<i>Last stock update: {}</i>"
 MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"
