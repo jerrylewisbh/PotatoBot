@@ -374,7 +374,6 @@ def report_after_battle(bot: Bot, job_queue):
             logging.info("Updating data for %s", user.id)
 
             text = MSG_USER_BATTLE_REPORT
-
             # We must have the actual access rights and user has to be in a testing squad to allow onboarding of this
             # feature!
             onboarding_squad_member = False
@@ -392,19 +391,27 @@ def report_after_battle(bot: Bot, job_queue):
                 earned_exp = user.character.exp - prev_character.exp
                 earned_gold = user.character.gold - prev_character.gold
 
-                # cmp stock
-                second_newest = session.query(Stock).filter_by(
-                    user_id=user.id,
-                    stock_type=StockType.Stock.value
+                # Get the newest stock-report from before war for this comparison...
+                filter_latest = datetime.now().replace(minute=0, second=0, microsecond=0)
+
+                second_newest = session.query(Stock).filter(
+                    Stock.user_id == user.id,
+                    Stock.stock_type == StockType.Stock.value,
+                    Stock.date < filter_latest
                 ).order_by(Stock.date.desc()).limit(1).offset(1).one()
 
-                resources_new, resources_old = stock_split(second_newest.stock, user.stock.stock)
-                resource_diff_add, resource_diff_del = get_weighted_diff(resources_old, resources_new)
-                stock_diff = stock_compare_text(second_newest.stock, user.stock.stock)
+                stock_diff = "<i>Missing before/after war data to generate comparison. Sorry.</i>"
+                gained_sum = 0
+                lost_sum = 0
+                diff_stock = 0
+                if second_newest and user.stock.date >= filter_latest:
+                    resources_new, resources_old = stock_split(second_newest.stock, user.stock.stock)
+                    resource_diff_add, resource_diff_del = get_weighted_diff(resources_old, resources_new)
+                    stock_diff = stock_compare_text(second_newest.stock, user.stock.stock)
 
-                gained_sum = sum([x[1] for x in resource_diff_add])
-                lost_sum = sum([x[1] for x in resource_diff_del])
-                diff_stock = gained_sum + lost_sum
+                    gained_sum = sum([x[1] for x in resource_diff_add])
+                    lost_sum = sum([x[1] for x in resource_diff_del])
+                    diff_stock = gained_sum + lost_sum
 
                 r = Report()
                 r.user = user
@@ -704,7 +711,7 @@ def main():
     updater.job_queue.run_daily(callback=report_after_battle, time=time(hour=23, minute=5))
 
     # THIS IS FOR DEBUGGING AND TESTING!
-    #updater.job_queue.run_once(report_after_battle, datetime.now()+timedelta(seconds=5))
+    #updater.job_queue.run_once(report_after_battle, datetime.now()+timedelta(seconds=15))
 
     # Start the Bot
     updater.start_polling()
