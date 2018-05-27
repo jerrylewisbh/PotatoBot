@@ -33,12 +33,10 @@ def mq_handler(channel, method, properties, body, dispatcher):
     try:
         if data and "payload" in data and data["payload"] and "userId" in data['payload']:
             user = session.query(User).filter_by(id=data['payload']['userId']).first()
-    except InterfaceError as ex:
-        logging.warning("InterfaceError occured, doing rollback...")
+    except (InterfaceError, InvalidRequestError) as ex:
+        logging.warning("Request/Interface Error occured, doing rollback and trying again...")
         session.rollback()
-    except InvalidRequestError as ex:
-        logging.warning("InvalidRequest occure, doing rollback...")
-        session.rollback()
+        user = session.query(User).filter_by(id=data['payload']['userId']).first()
 
     if "action" not in data:
         if data['payload']['operation'] in ("GetUserProfile", "GetStock"):
