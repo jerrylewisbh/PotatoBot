@@ -136,17 +136,18 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 user = session.query(User).filter_by(api_token=data['payload']['token']).first()
 
                 if user:
-                    dispatcher.bot.send_message(
-                        user.id,
-                        MSG_API_REVOKED_PERMISSIONS,
-                        reply_markup=generate_user_markup(user.id)
-                    )
                     # Remove api settings...
                     user.is_api_stock_allowed = False
                     user.is_api_profile_allowed = False
                     user.api_token = None
                     session.add(user)
                     session.commit()
+
+                    dispatcher.bot.send_message(
+                        user.id,
+                        MSG_API_REVOKED_PERMISSIONS,
+                        reply_markup=generate_user_markup(user.id)
+                    )
             elif data['result'] == "Forbidden":
                 logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
 
@@ -222,19 +223,18 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 user = session.query(User).filter_by(api_token=data['payload']['token']).first()
 
                 if user:
-                    dispatcher.bot.send_message(
-                        user.id,
-                        MSG_API_REVOKED_PERMISSIONS,
-                        reply_markup=generate_user_markup(user.id)
-                    )
-                    # TODO: Keyboard refresh?
-
                     # Remove api settings...
                     user.is_api_stock_allowed = False
                     user.is_api_profile_allowed = False
                     user.api_token = None
                     session.add(user)
                     session.commit()
+
+                    dispatcher.bot.send_message(
+                        user.id,
+                        MSG_API_REVOKED_PERMISSIONS,
+                        reply_markup=generate_user_markup(user.id)
+                    )
             elif data['result'] == "Forbidden":
                 logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
 
