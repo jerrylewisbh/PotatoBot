@@ -386,19 +386,21 @@ def report_after_battle(bot: Bot, job_queue):
 
                 prev_character = session.query(Character).filter_by(
                     user_id=user.id,
-                ).order_by(Character.date.desc()).limit(1).offset(1).one()
+                ).order_by(Character.date.desc()).limit(1).offset(1).first()
 
                 earned_exp = user.character.exp - prev_character.exp
                 earned_gold = user.character.gold - prev_character.gold
 
                 # Get the newest stock-report from before war for this comparison...
                 filter_latest = datetime.now().replace(minute=0, second=0, microsecond=0)
+                filter_cutoff = filter_latest - timedelta(minutes=30)
 
                 second_newest = session.query(Stock).filter(
                     Stock.user_id == user.id,
                     Stock.stock_type == StockType.Stock.value,
-                    Stock.date < filter_latest
-                ).order_by(Stock.date.desc()).limit(1).offset(1).one()
+                    Stock.date < filter_latest,
+                    Stock.date > filter_cutoff
+                ).order_by(Stock.date.desc()).first()
 
                 stock_diff = "<i>Missing before/after war data to generate comparison. Sorry.</i>"
                 gained_sum = 0
