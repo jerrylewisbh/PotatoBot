@@ -225,7 +225,7 @@ class Publisher(Thread, metaclass=Singleton):
         def publish(self, body):
             # Dear future me: Currently correlation_ids are not sent back by the CW API making some things hard...
             # Check for it again in the future...
-            LOGGER.info("[Publisher] Got item: %s", json.dumps(body))
+            LOGGER.info("[Publisher] Publishing item: %s", json.dumps(body))
 
             self._channel.basic_publish(
                 exchange=self.EXCHANGE,
@@ -235,7 +235,7 @@ class Publisher(Thread, metaclass=Singleton):
                     correlation_id=str(uuid.uuid4())
                 ),
             )
-            LOGGER.info("[Publisher] ... published")
+            LOGGER.debug("[Publisher] ... published")
 
         def run(self):
             """ Run the example code by connecting and then starting the IOLoop. """

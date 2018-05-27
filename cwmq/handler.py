@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 
+from sqlalchemy.exc import InterfaceError, InvalidRequestError
 from telegram import ParseMode
 
 from core.enums import CASTLE_MAP, CLASS_MAP
@@ -29,8 +30,15 @@ def mq_handler(channel, method, properties, body, dispatcher):
 
     # Get user details if possible...
     user = None
-    if data and "payload" in data and data["payload"] and "userId" in data['payload']:
-        user = session.query(User).filter_by(id=data['payload']['userId']).first()
+    try:
+        if data and "payload" in data and data["payload"] and "userId" in data['payload']:
+            user = session.query(User).filter_by(id=data['payload']['userId']).first()
+    except InterfaceError as ex:
+        logging.warning("InterfaceError occured, doing rollback...")
+        session.rollback()
+    except InvalidRequestError as ex:
+        logging.warning("InvalidRequest occure, doing rollback...")
+        session.rollback()
 
     if "action" not in data:
         if data['payload']['operation'] in ("GetUserProfile", "GetStock"):
