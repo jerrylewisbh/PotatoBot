@@ -56,7 +56,7 @@ from core.functions.orders import order, orders
 from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
 from core.functions.profile import char_update, profession_update, char_show, find_by_username, find_by_character, \
     find_by_id, report_received, build_report_received, \
-    repair_report_received, grant_access, handle_access_token, settings, revoke
+    repair_report_received, grant_access, handle_access_token, settings, revoke, get_latest_report
 from core.functions.quest import parse_quest
 from core.functions.squad import (
     add_squad, del_squad, set_invite_link, set_squad_name,
@@ -415,20 +415,23 @@ def report_after_battle(bot: Bot, job_queue):
                     lost_sum = sum([x[1] for x in resource_diff_del])
                     diff_stock = gained_sum + lost_sum
 
-                r = Report()
-                r.user = user
-                r.name = user.character.name
-                r.date = datetime.now()
-                r.level = user.character.level
-                r.attack = user.character.attack
-                r.defence = user.character.defence
-                r.castle = user.character.castle
-                r.earned_exp = earned_exp
-                r.earned_gold = earned_gold
-                r.earned_stock = diff_stock
-                r.preliminary_report = True
-                #session.add(r)
-                #session.commit()
+                # Only create a preliminary report if user hasn't already sent in a complete one.
+                existing_report = get_latest_report(session, user.id)
+                if not existing_report:
+                    r = Report()
+                    r.user = user
+                    r.name = user.character.name
+                    r.date = datetime.now()
+                    r.level = user.character.level
+                    r.attack = user.character.attack
+                    r.defence = user.character.defence
+                    r.castle = user.character.castle
+                    r.earned_exp = earned_exp
+                    r.earned_gold = earned_gold
+                    r.earned_stock = diff_stock
+                    r.preliminary_report = True
+                    session.add(r)
+                    session.commit()
 
                 # Text with prelim. battle report
                 """text += MSG_USER_BATTLE_REPORT_PRELIM.format(

@@ -88,17 +88,11 @@ def parse_hero(profile, user_id, date, session):
             print('Traitor')
     return char
 
-
 def parse_reports(report_text, user_id, date, session):
     parsed_data = re.search(REPORT, report_text)
     print(report_text)
     print(date)
-    now = datetime.now()
-    if (now.hour < 7):
-        now= now - timedelta(days=1)
-
-    time_from = now.replace(hour=(int((now.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0, microsecond=0)
-    existing_report = session.query(Report).filter(Report.user_id==user_id, Report.date>time_from).first()
+    existing_report = get_latest_report(session, user_id)
     # New one or update to preliminary
     if not existing_report or (existing_report and existing_report.preliminary_report):
         if not existing_report:
@@ -136,8 +130,18 @@ def parse_reports(report_text, user_id, date, session):
             session.commit()
         else:
             print('Traitor')
-            
+
     return report
+
+
+def get_latest_report(session, user_id):
+    now = datetime.now()
+    if (now.hour < 7):
+        now = now - timedelta(days=1)
+    time_from = now.replace(hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0, microsecond=0)
+    existing_report = session.query(Report).filter(Report.user_id == user_id, Report.date > time_from).first()
+
+    return existing_report
 
 
 def parse_profession(prof, user_id, date, session):
