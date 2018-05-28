@@ -97,7 +97,7 @@ def parse_reports(report, user_id, date, session):
     if (now.hour < 7):
         now= now - timedelta(days=1)
 
-    time_from = now.replace(hour=(int((now.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
+    time_from = now.replace(hour=(int((now.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0, microsecond=0)
     existing_report = session.query(Report).filter(Report.user_id==user_id, Report.date>time_from).first()
     # New one...
     if not existing_report or (existing_report and existing_report.preliminary_report):
