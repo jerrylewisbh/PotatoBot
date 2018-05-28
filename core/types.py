@@ -133,6 +133,15 @@ class User(Base):
     # Relationship
     admin_permission = relationship("Admin")
 
+    ban = relationship("Ban", back_populates='user', order_by="Ban.to_date.desc()", lazy='dynamic')
+
+    def is_banned(self):
+        # Get longest running ban still valid...
+        ban = self.ban.first()
+        if datetime.now() < ban.to_date:
+            return True
+        return False
+
     def __repr__(self):
         user = ''
         if self.first_name:
@@ -152,7 +161,6 @@ class User(Base):
         return user
 
 
-
 class Quest(Base):
     __tablename__ = 'quest'
 
@@ -168,8 +176,6 @@ class UserQuest(Base):
     __tablename__ = 'user_quest'
 
     id = Column(BigInteger, autoincrement=True, primary_key=True)
-
-    location_id = Column(Integer, ForeignKey('location.id'))
     user_id = Column(BigInteger, ForeignKey(User.id))
 
     from_date = Column(DATETIME(fsp=6), default=datetime.utcnow)
@@ -413,6 +419,8 @@ class Ban(Base):
     reason = Column(UnicodeText(2500))
     from_date = Column(DATETIME(fsp=6))
     to_date = Column(DATETIME(fsp=6))
+
+    user = relationship(User, back_populates="ban", uselist=False)
 
 
 class Log(Base):

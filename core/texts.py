@@ -215,6 +215,15 @@ MSG_PROFILE_SHOW_FORMAT = """\
 %pet%
 🕑 Last update %date%"""
 
+MSG_PROFILE_ADMIN_INFO_ADDON = "<b>\n\nAdmin-Info:</b>\n" \
+                               "Banned: {}\n" \
+                               "Token: {}\n" \
+                               "API ID: {}\n" \
+                               "Profile allowed: {}\n" \
+                               "Stock allowed: {}\n" \
+                               "Report enabled: {}\n" \
+                               "Exchange enabled: {}\n" \
+
 # | 🔋 %maxStamina% - Removed until api provides it or sth else happens...
 
 # main.py texts

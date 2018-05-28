@@ -551,6 +551,15 @@ def find_by_username(bot: Bot, update: Update, session):
                 char = user.character
                 profession = user.profession
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
+                text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
+                    bool(user.is_banned()),
+                    bool(user.api_token),
+                    bool(user.api_user_id),
+                    bool(user.is_api_profile_allowed),
+                    bool(user.is_api_stock_allowed),
+                    bool(user.setting_automated_report),
+                    bool(user.setting_automated_deal_report),
+                )
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
@@ -567,10 +576,20 @@ def find_by_character(bot: Bot, update: Update, session):
                 user = char.user
                 profession = user.profession
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
+                text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
+                    bool(user.is_banned()),
+                    bool(user.api_token),
+                    bool(user.api_user_id),
+                    bool(user.is_api_profile_allowed),
+                    bool(user.is_api_stock_allowed),
+                    bool(user.setting_automated_report),
+                    bool(user.setting_automated_deal_report),
+                )
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+
 
 @admin_allowed()
 def find_by_id(bot: Bot, update: Update, session):
@@ -583,6 +602,15 @@ def find_by_id(bot: Bot, update: Update, session):
                 char = user.character
                 profession = user.profession
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
+                text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
+                    bool(user.is_banned()),
+                    bool(user.api_token),
+                    bool(user.api_user_id),
+                    bool(user.is_api_profile_allowed),
+                    bool(user.is_api_stock_allowed),
+                    bool(user.setting_automated_report),
+                    bool(user.setting_automated_deal_report),
+                )
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
