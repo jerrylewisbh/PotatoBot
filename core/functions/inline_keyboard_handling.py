@@ -348,7 +348,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 stock_type=StockType.Stock.value
             ).order_by(Stock.date.desc()).limit(1).offset(1).one()
 
-            stock_diff = stock_compare_text(user.stock.stock, second_newest.stock)
+            stock_diff = stock_compare_text(second_newest.stock, user.stock.stock)
             stock_text = "{}\n{}\n{}\n <i>{}: {}</i>".format(
                 user.stock.stock,
                 MSG_CHANGES_SINCE_LAST_UPDATE,
