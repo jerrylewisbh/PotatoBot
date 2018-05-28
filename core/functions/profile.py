@@ -115,23 +115,28 @@ def parse_reports(report_text, user_id, date, session):
         report.defence = int(parsed_data.group(6))  #+ int(parsed_data.group(7) if parsed_data.group(7) else 0)
         report.preliminary_report = False
         report.level = int(parsed_data.group(9))
+
         if parsed_data.group(10):
             report.earned_exp = int(parsed_data.group(10))
         else:
             report.earned_exp = 0
+
         if parsed_data.group(11):
             report.earned_gold = int(parsed_data.group(11))
         else:
             report.earned_gold = 0
+
         if parsed_data.group(12):
             report.earned_stock = int(parsed_data.group(12))
         else:
             report.earned_stock = 0
+
         if report.castle == CASTLE:
             session.add(report)
             session.commit()
         else:
             print('Traitor')
+            
     return report
 
 
