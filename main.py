@@ -29,7 +29,7 @@ from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COM
     TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, \
     ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE, TOP_COMMAND_BUILD, \
     TOP_COMMAND_BATTLES, STATISTICS_COMMAND_SKILLS, USER_COMMAND_REGISTER, \
-    USER_COMMAND_SETTINGS
+    USER_COMMAND_SETTINGS, STATISTICS_COMMAND_QUESTS
 from core.constants import DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
 from core.functions.activity import (
     day_activity, week_activity, battle_activity
@@ -64,7 +64,7 @@ from core.functions.squad import (
     squad_list, squad_request, list_squad_requests,
     open_hiring, close_hiring, remove_from_squad, add_to_squad, force_add_to_squad,
     leave_squad_request, squad_about, call_squad, battle_reports_show, battle_attendance_show)
-from core.functions.statistics import statistic_about, exp_statistic, skill_statistic
+from core.functions.statistics import statistic_about, exp_statistic, skill_statistic, quest_statistic
 from core.functions.top import top_about, attack_top, exp_top, def_top, week_build_top, \
     week_battle_top
 from core.functions.triggers import (
@@ -257,6 +257,8 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 exp_statistic(bot, update)
             elif text == STATISTICS_COMMAND_SKILLS.lower():
                 skill_statistic(bot, update)
+            elif text == STATISTICS_COMMAND_QUESTS.lower():
+                quest_statistic(bot, update)
             elif text == USER_COMMAND_SQUAD.lower():
                 squad_about(bot, update)
             elif text == USER_COMMAND_SQUAD_LEAVE.lower():
