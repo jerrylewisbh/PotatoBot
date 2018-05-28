@@ -89,9 +89,9 @@ def parse_hero(profile, user_id, date, session):
     return char
 
 
-def parse_reports(report, user_id, date, session):
-    parsed_data = re.search(REPORT, report)
-    print(report)
+def parse_reports(report_text, user_id, date, session):
+    parsed_data = re.search(REPORT, report_text)
+    print(report_text)
     print(date)
     now = datetime.now()
     if (now.hour < 7):
@@ -99,7 +99,7 @@ def parse_reports(report, user_id, date, session):
 
     time_from = now.replace(hour=(int((now.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0, microsecond=0)
     existing_report = session.query(Report).filter(Report.user_id==user_id, Report.date>time_from).first()
-    # New one...
+    # New one or update to preliminary
     if not existing_report or (existing_report and existing_report.preliminary_report):
         if not existing_report:
             # New one
