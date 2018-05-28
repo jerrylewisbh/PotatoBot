@@ -317,18 +317,17 @@ def report_received(bot: Bot, update: Update, session):
 
     report = re.search(REPORT, update.message.text)
     if report and user.character and str(report.group(2)) == user.character.name:
-        date= update.message.forward_date
+        date = update.message.forward_date
         if (update.message.forward_date.hour < 7):
             date= update.message.forward_date - timedelta(days=1)
 
         time_from = date.replace(hour=(int((update.message.forward_date.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
 
-        date= update.message.forward_date
+        date = update.message.forward_date
         if (update.message.forward_date.hour == 23):
             date= update.message.forward_date + timedelta(days=1)
 
         time_to = date.replace(hour=(int((update.message.forward_date.hour+1) / 8 + 1) * 8 - 1) % 24, minute=0, second=0)
-
 
         report = session.query(Report).filter(
             Report.date > time_from,

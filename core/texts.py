@@ -498,4 +498,4 @@ MSG_DEAL_SOLD = "⚖️You sold <b>{}</b> for {}💰 ({} x {}💰)\nBuyer: {}{}\
 
 MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
-MSG_QUEST_OK = "Thank you for your quest details!"
+MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"

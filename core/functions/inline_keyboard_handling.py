@@ -711,7 +711,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 session.commit()
 
                 bot.editMessageText(
-                    MSG_QUEST_OK,
+                    MSG_QUEST_OK.format(location.name),
                     update.callback_query.message.chat.id,
                     update.callback_query.message.message_id
                 )
