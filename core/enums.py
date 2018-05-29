@@ -59,6 +59,7 @@ STOCK_WHITELIST = [
     'thread',
     'wooden shaft',
     'crafted leather',
+    'metallic fiber',
 ]
 
 # these /stock items take up TWO slots in inventory
@@ -74,6 +75,7 @@ HEAVY_ITEMS = [
     'steel',
     'sapphire',
     'crafted leather',
+    'metallic fiber',
 ]
 
 TACTICTS_COMMAND_PREFIX = "/tactics_"
