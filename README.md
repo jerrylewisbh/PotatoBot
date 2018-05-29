@@ -6,6 +6,7 @@ https://trello.com/b/gFo4UASZ/botato-20
 
 # Additional Information
 * CW API v0.6: https://hackmd.io/s/Hk60PGm0z
+* See STYLE.md for additional Style information
 
 # Installation 
 Create a `config.py` file based on the provided `config.py.sample` file. You'll need: 
