@@ -138,7 +138,7 @@ class User(Base):
     def is_banned(self):
         # Get longest running ban still valid...
         ban = self.ban.first()
-        if datetime.now() < ban.to_date:
+        if ban is not None and datetime.now() < ban.to_date:
             return True
         return False
 
