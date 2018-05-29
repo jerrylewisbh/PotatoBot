@@ -66,7 +66,7 @@ def get_game_state(custom_time=None):
         states.append(GameState.HOWLING_WIND)
 
     # Silence
-    if mod == 7 and now.minute >= 57:
+    if (mod == 7 and now.minute >= 57) or (mod == 0 and now.minute == 0 and now.second == 0):
         states.append(GameState.BATTLE_SILENCE)
 
     # No Report phase...
