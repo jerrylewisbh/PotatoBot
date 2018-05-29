@@ -8,14 +8,14 @@ def fill_template(msg: str, user: User):
     if user.username:
         msg = msg.replace('%username%', '@' + escape(user.username))
     else:
-        msg = msg.replace('%username%', (escape(user.first_name) or '') + ' ' + (escape(user.last_name) or ''))
-    msg = msg.replace('%first_name%', escape(user.first_name) or '')
-    msg = msg.replace('%last_name%', escape(user.last_name) or '')
+        msg = msg.replace('%username%', (escape(user.first_nameor '') ) + ' ' + (escape(user.last_name) or ''))
+    msg = msg.replace('%first_name%', escape(user.first_name or '') )
+    msg = msg.replace('%last_name%', escape(user.last_name  or '' ) )
     msg = msg.replace('%id%', str(user.id))
     if user.character:
         msg = msg.replace('%ign%', str(user.character.name or ''))
     else:
-        msg = msg.replace('%ign%', (escape(user.first_name) or '') + ' ' + (escape(user.last_name) or ''))
+        msg = msg.replace('%ign%', (escape(user.first_name or '') ) + ' ' + (escape(user.last_name or '') ))
     return msg
 
 

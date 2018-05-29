@@ -4,6 +4,7 @@ from core.utils import send_async, update_group
 from core.texts import *
 from json import loads
 import telegram
+from html import escape
 
 
 def trigger_decorator(func):
