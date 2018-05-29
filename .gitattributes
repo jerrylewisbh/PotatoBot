@@ -1,0 +1,6 @@
+*  text=lf
+*.py text eol=lf
+*.sample text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.ppk text eol=lf
