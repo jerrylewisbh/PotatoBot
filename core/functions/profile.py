@@ -16,6 +16,7 @@ from core.texts import *
 from core.types import Character, Report, User, admin_allowed, Equip, user_allowed, BuildReport, Profession
 from core.utils import send_async
 from cwmq import Publisher
+from html import escape
 
 
 class BuildType(Enum):
@@ -438,9 +439,11 @@ def char_show(bot: Bot, update: Update, session):
                     char.castle = CASTLE
                     text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                     btns = generate_profile_buttons(user)
+                    text = escape(text)
                     send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
+                text = escape(text)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
         elif user is not None and not user.character:
@@ -560,6 +563,7 @@ def find_by_username(bot: Bot, update: Update, session):
                     bool(user.setting_automated_report),
                     bool(user.setting_automated_deal_report),
                 )
+                text = escape(text)
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
@@ -586,6 +590,7 @@ def find_by_character(bot: Bot, update: Update, session):
                     bool(user.setting_automated_deal_report),
                 )
                 btns = generate_profile_buttons(user)
+                text = escape(text)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
@@ -612,6 +617,7 @@ def find_by_id(bot: Bot, update: Update, session):
                     bool(user.setting_automated_deal_report),
                 )
                 btns = generate_profile_buttons(user)
+                text = escape(text)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
             else:
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)

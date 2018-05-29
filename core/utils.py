@@ -3,6 +3,7 @@ from telegram.error import TelegramError
 from telegram.ext.dispatcher import run_async
 
 from core.types import Session, User, Group
+from html import escape
 
 @run_async
 def send_async(bot: Bot, *args, **kwargs):

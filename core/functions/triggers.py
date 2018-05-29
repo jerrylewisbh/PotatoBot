@@ -4,6 +4,7 @@ from core.utils import send_async, update_group
 from core.texts import *
 from json import loads
 import telegram
+from html import escape
 
 
 def trigger_decorator(func):
@@ -124,7 +125,7 @@ def trigger_show(bot: Bot, update: Update, session):
         elif trigger.message_type == MessageType.PHOTO.value:
             bot.send_photo(update.message.chat.id, trigger.message)
         else:
-            send_async(bot, chat_id=update.message.chat.id, text=trigger.message, disable_web_page_preview=True)
+            send_async(bot, chat_id=update.message.chat.id, text=escape(trigger.message), disable_web_page_preview=True)
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
