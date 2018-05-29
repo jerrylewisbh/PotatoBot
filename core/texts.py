@@ -215,7 +215,7 @@ MSG_PROFILE_SHOW_FORMAT = """\
 %pet%
 🕑 Last update %date%"""
 
-MSG_PROFILE_ADMIN_INFO_ADDON = "<b>\n\nAdmin-Info:</b>\n" \
+MSG_PROFILE_ADMIN_INFO_ADDON = "\n\n<b>Admin-Info:</b>\n" \
                                "Banned: {}\n" \
                                "Token: {}\n" \
                                "API ID: {}\n" \

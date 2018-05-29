@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 from core.texts import MSG_NO_SQUAD, MSG_WANTS_TO_JOIN, MSG_NO_PET, MSG_NO_PROFESSION
 from core.types import User, Character, Profession
+from html import escape
 
 
 def fill_template(msg: str, user: User):
     if user.username:
-        msg = msg.replace('%username%', '@' + user.username)
+        msg = msg.replace('%username%', '@' + esape(user.username))
     else:
-        msg = msg.replace('%username%', (user.first_name or '') + ' ' + (user.last_name or ''))
-    msg = msg.replace('%first_name%', user.first_name or '')
-    msg = msg.replace('%last_name%', user.last_name or '')
+        msg = msg.replace('%username%', (escape(user.first_name) or '') + ' ' + (escape(user.last_name) or ''))
+    msg = msg.replace('%first_name%', escape(user.first_name) or '')
+    msg = msg.replace('%last_name%', escape(user.last_name) or '')
     msg = msg.replace('%id%', str(user.id))
     if user.character:
         msg = msg.replace('%ign%', str(user.character.name or ''))
     else:
-        msg = msg.replace('%ign%', (user.first_name or '') + ' ' + (user.last_name or ''))
+        msg = msg.replace('%ign%', (escape(user.first_name) or '') + ' ' + (escape(user.last_name) or ''))
     return msg
 
 
