@@ -8,33 +8,93 @@ from core.texts import MSG_MAIN_READY_TO_BATTLE_30, MSG_MAIN_READY_TO_BATTLE_45,
 
 
 def add_war_warning_messages(updater: Updater):
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=6, minute=30),
-                                context=MSG_MAIN_READY_TO_BATTLE_30)  # 6
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=6, minute=45),
-                                context=MSG_MAIN_READY_TO_BATTLE_45)
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=7, minute=3), context=MSG_MAIN_SEND_REPORTS)
-    updater.job_queue.run_daily(callback=ready_to_battle_result, time=time(hour=8, minute=0))
+    # Battle 1
+    updater.job_queue.run_daily(
+        callback=ready_to_battle,
+        time=time(hour=6, minute=30),
+        context=MSG_MAIN_READY_TO_BATTLE_30
+    )
 
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=14, minute=30),
-                                context=MSG_MAIN_READY_TO_BATTLE_30)
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=14, minute=45),
-                                context=MSG_MAIN_READY_TO_BATTLE_45)
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=15, minute=3), context=MSG_MAIN_SEND_REPORTS)
-    updater.job_queue.run_daily(callback=ready_to_battle_result, time=time(hour=16, minute=0))
+    updater.job_queue.run_daily(
+        callback=ready_to_battle,
+        time=time(hour=6, minute=45),
+        context=MSG_MAIN_READY_TO_BATTLE_45
+    )
 
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=22, minute=30),
-                                context=MSG_MAIN_READY_TO_BATTLE_30)
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=22, minute=45),
-                                context=MSG_MAIN_READY_TO_BATTLE_45)
-    updater.job_queue.run_daily(callback=ready_to_battle, time=time(hour=23, minute=3), context=MSG_MAIN_SEND_REPORTS)
-    updater.job_queue.run_daily(callback=ready_to_battle_result, time=time(hour=0, minute=0))
+    updater.job_queue.run_daily(
+        callback=ready_to_battle,
+        time=time(hour=7, minute=3),
+        context=MSG_MAIN_SEND_REPORTS
+    )
 
-    updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=6, minute=40))
-    updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=14, minute=40))
-    updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=22, minute=40))
+    updater.job_queue.run_daily(
+        callback=ready_to_battle_result,
+        time=time(hour=8, minute=0)
+    )
+
+    # Battle 2
+    updater.job_queue.run_daily(
+        callback=ready_to_battle,
+        time=time(hour=14, minute=30),
+        context=MSG_MAIN_READY_TO_BATTLE_30
+    )
+
+    updater.job_queue.run_daily(
+        callback=ready_to_battle,
+        time=time(hour=14, minute=45),
+        context=MSG_MAIN_READY_TO_BATTLE_45
+    )
+
+    updater.job_queue.run_daily(
+        callback=ready_to_battle,
+        time=time(hour=15, minute=3),
+        context=MSG_MAIN_SEND_REPORTS
+    )
+
+    updater.job_queue.run_daily(
+        callback=ready_to_battle_result,
+        time=time(hour=16, minute=0)
+    )
+
+    # Battle 3
+    updater.job_queue.run_daily(
+        callback=ready_to_battle,
+        time=time(hour=22, minute=30),
+        context=MSG_MAIN_READY_TO_BATTLE_30
+    )
+
+    updater.job_queue.run_daily(
+        callback=ready_to_battle,
+        time=time(hour=22, minute=45),
+        context=MSG_MAIN_READY_TO_BATTLE_45
+    )
+
+    updater.job_queue.run_daily(
+        callback=ready_to_battle,
+        time=time(hour=23, minute=3),
+        context=MSG_MAIN_SEND_REPORTS
+    )
+
+    updater.job_queue.run_daily(
+        callback=ready_to_battle_result,
+        time=time(hour=0, minute=0)
+    )
+
+    # Profiles...
+    updater.job_queue.run_daily(
+        fresh_profiles,
+        time(hour=6, minute=40)
+    )
+
+    updater.job_queue.run_daily(
+        fresh_profiles,
+        time(hour=14, minute=40)
+    )
+
+    updater.job_queue.run_daily(
+        fresh_profiles,
+        time(hour=22, minute=40)
+    )
 
 
 def add_pre_war_messages(updater: Updater):
