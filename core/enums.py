@@ -58,6 +58,7 @@ STOCK_WHITELIST = [
     'sugar',
     'thread',
     'wooden shaft',
+    'crafted leather',
 ]
 
 # these /stock items take up TWO slots in inventory
