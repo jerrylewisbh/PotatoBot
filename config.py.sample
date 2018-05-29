@@ -1,3 +1,5 @@
+DEBUG = False
+
 TOKEN = '<SOME_TOKEN>'
 DB = 'mysql+pymysql://<username>:<password>@<host>/<dbname>?charset=utf8mb4' # Строчка подключения к базе данных (поддерживается только MySql, о формате можно прочитать тут http://docs.sqlalchemy.org/en/latest/dialects/mysql.html)
 API_PORT = 88
