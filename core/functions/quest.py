@@ -113,7 +113,7 @@ def parse_quest(bot, update):
     uq.forward_date = update.message.forward_date
     uq.exp = quest_data['exp']
     uq.gold = quest_data['gold']
-    uq.level = user.character.level
+    uq.level = user.character.level if user.character or 0  # If we don't have a profile yet just assume "0" level
 
     quest = session.query(Quest).filter_by(text=quest_data['text']).first()
     if quest:
