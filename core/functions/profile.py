@@ -526,8 +526,8 @@ def settings(bot: Bot, update: Update, session):
         text = MSG_SETTINGS_INFO.format(
             (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
             (MSG_NEEDS_API_ACCESS if not user.setting_automated_deal_report and not user.api_token else user.setting_automated_deal_report),
-            user.stock.date,
-            user.character.date
+            user.stock.date if user.stock else "Never",
+            user.character.date if user.character else "Never",
         )
 
         send_async(

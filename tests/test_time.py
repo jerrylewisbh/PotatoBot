@@ -59,23 +59,23 @@ class TestTime(unittest.TestCase):
     def test_no_reports(self):
         """ Test if GameState returns Morning state... """
 
-        sample_1 = get_game_state(datetime.time(hour=23, minute=3))
+        sample_1 = get_game_state(datetime.time(hour=23, minute=2, microsecond=999))
         self.assertIn(GameState.NO_REPORTS, sample_1, "State should contain NO_REPORT state")
 
-        sample_2 = get_game_state(datetime.time(hour=7, minute=3))
+        sample_2 = get_game_state(datetime.time(hour=7, minute=2, microsecond=999))
         self.assertIn(GameState.NO_REPORTS, sample_2, "State should contain NO_REPORT state")
 
-        sample_3 = get_game_state(datetime.time(hour=15, minute=3))
+        sample_3 = get_game_state(datetime.time(hour=15, minute=2, microsecond=999))
         self.assertIn(GameState.NO_REPORTS, sample_3, "State should contain NO_REPORT state")
 
         sample_4 = get_game_state(datetime.time(hour=23, minute=5))
-        self.assertIn(GameState.NO_REPORTS, sample_3, "State should contain NO_REPORT state")
+        self.assertNotIn(GameState.NO_REPORTS, sample_4, "State NOT should contain NO_REPORT state")
 
         sample_5 = get_game_state(datetime.time(hour=8, minute=5))
-        self.assertIn(GameState.NO_REPORTS, sample_3, "State should contain NO_REPORT state")
+        self.assertNotIn(GameState.NO_REPORTS, sample_5, "State NOT should contain NO_REPORT state")
 
         sample_6 = get_game_state(datetime.time(hour=16, minute=5))
-        self.assertIn(GameState.NO_REPORTS, sample_3, "State should contain NO_REPORT state")
+        self.assertNotIn(GameState.NO_REPORTS, sample_6, "State NOT should contain NO_REPORT state")
 
     def test_silence(self):
         """ Test if GameState returns Morning state... """
@@ -119,5 +119,41 @@ class TestTime(unittest.TestCase):
         sample_6 = get_game_state(datetime.time(hour=0, minute=3))
         self.assertIn(GameState.HOWLING_WIND, sample_3, "State should contain HOWLING_WIND state")
 
+    def test_silence_whole_day(self):
+        expected_silence = [
+            # Cycle 1
+            datetime.time(hour=6, minute=57, second=0, microsecond=0),
+            datetime.time(hour=6, minute=58, second=0, microsecond=0),
+            datetime.time(hour=6, minute=59, second=0, microsecond=0),
+            datetime.time(hour=7, minute=00, second=0, microsecond=0),
+
+            # Cycle 2
+            datetime.time(hour=14, minute=57, second=0, microsecond=0),
+            datetime.time(hour=14, minute=58, second=0, microsecond=0),
+            datetime.time(hour=14, minute=59, second=0, microsecond=0),
+            datetime.time(hour=15, minute=00, second=0, microsecond=0),
+
+            # Cycle 3
+            datetime.time(hour=22, minute=57, second=0, microsecond=0),
+            datetime.time(hour=22, minute=58, second=0, microsecond=0),
+            datetime.time(hour=22, minute=59, second=0, microsecond=0),
+            datetime.time(hour=23, minute=00, second=0, microsecond=0),
+        ]
+        t = datetime.datetime(year=2018, month=1, day = 1, hour=0, minute=0, second=0, microsecond=0)
+        for minute in range(0, 3601):
+            t += datetime.timedelta(minutes=1)
+            t_state =  get_game_state(t.time())
+            #print(t)
+            #print(t.time() in expected_silence)
+            if t.time() in expected_silence:
+                self.assertIn(GameState.BATTLE_SILENCE, t_state, "Expected silence at {}!".format(t))
+            else:
+                self.assertNotIn(GameState.BATTLE_SILENCE, t_state, "NO silence expected at {}?!".format(t))
+
+
 if __name__ == '__main__':
+    # Force TZ!
+    import os
+    os.environ['TZ'] = 'UTC'
+
     unittest.main()
