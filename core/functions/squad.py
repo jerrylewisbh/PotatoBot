@@ -17,7 +17,7 @@ from core.texts import *
 from core.types import (Admin, AdminType, Character, Group, Report, Squad,
                         SquadMember, User, admin_allowed, user_allowed)
 from core.utils import chunks, send_async
-from sqlalchemy import and_ as text_
+from sqlalchemy import and_ as text_, and_
 from sqlalchemy import func, text, tuple_
 from telegram import Bot, ParseMode, TelegramError, Update
 
