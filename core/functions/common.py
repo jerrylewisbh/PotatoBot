@@ -113,6 +113,7 @@ def get_weighted_diff(dict_one, dict_two):
     """ Same as get_diff but accounts for item weight """
     resource_diff_add = {}
     resource_diff_del = {}
+
     for key, val in dict_one.items():
         weight_multiplier = get_weight_multiplier(key)
         if key in dict_two:
@@ -124,6 +125,7 @@ def get_weighted_diff(dict_one, dict_two):
         else:
             resource_diff_add[key] = val * weight_multiplier
     for key, val in dict_two.items():
+        weight_multiplier = get_weight_multiplier(key)
         if key not in dict_one:
             resource_diff_del[key] = -val * weight_multiplier
     resource_diff_add = sorted(resource_diff_add.items(), key=lambda x: x[0])

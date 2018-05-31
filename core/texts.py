@@ -348,7 +348,6 @@ MSG_SQUAD_ADD_IN_SQUAD = '{} is already in a squad (perhaps not yours)'
 MSG_SQUAD_ADD_ACCEPTED = '{} Accepted the offer'
 MSG_SQUAD_ADD_FORCED = '{} was added to the squad'
 MSG_SQUAD_ADD_DECLINED = '{} declined, 😰'
-MSG_SQUAD_NONE = 'It looks like you are not in a squad'
 
 MSG_SQUAD_READY = '{} warriors of <b>{}</b> are ready to battle!\n{}⚔ {}🛡'
 MSG_FULL_TEXT_LINE = '<b>{}</b>: {}👥 {}⚔ {}🛡\n'

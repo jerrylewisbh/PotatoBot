@@ -166,6 +166,7 @@ def exp_statistic(bot: Bot, update: Update, session):
     text = ''
     if day_exp:
         delta_days = round(delta_exp / day_exp) or 1
+        days_text = MSG_DAY_SINGLE
         if delta_days == 1:
             days_text = MSG_DAY_SINGLE
         elif (delta_days % 10 == 0) or (delta_days % 10 >= 5) or ((delta_days % 100) in (11, 12, 13, 14)):

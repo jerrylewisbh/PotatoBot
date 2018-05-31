@@ -97,6 +97,7 @@ def parse_reports(report_text, user_id, date, session):
     logging.info("Report: report_text='%s', user_id='%s', date='%s'", report_text, user_id, date)
     existing_report = get_latest_report(session, user_id)
     # New one or update to preliminary
+    report = None
     if not existing_report or (existing_report and existing_report.preliminary_report):
         if not existing_report:
             # New one

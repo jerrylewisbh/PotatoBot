@@ -47,6 +47,7 @@ def generate_user_markup(user_id=None):
     if user and user.member and user.member.approved and user.member.squad and user.member.squad.testing_squad:
         onboarding_squad_member = True
     if onboarding_squad_member:
+        user_menu = None
         if not user or not user.api_token:
             # New
             user_menu = [KeyboardButton(USER_COMMAND_REGISTER)]

@@ -66,8 +66,8 @@ def add_squad(bot: Bot, update: Update, session):
 @admin_allowed()
 def set_invite_link(bot: Bot, update: Update, session):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    new_invite_link = ''
     if update.message.chat.type == 'supergroup' and squad is not None:
-        new_invite_link = ''
         msg = update.message.text.split(' ', 1)
         if len(msg) == 2:
             new_invite_link = msg[1]
