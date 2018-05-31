@@ -10,11 +10,6 @@ from core.functions.inline_markup import QueryType
 from core.texts import MSG_QUEST, MSG_QUEST_DUPLICATE
 from core.types import Session, User, UserQuest, Quest, Item, Location, UserQuestItem
 
-LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
-              '-35s %(lineno) -5d: %(message)s')
-logging.getLogger()
-logging.basicConfig(level=logging.DEBUG)
-
 
 class QuestType(IntFlag):
     NORMAL = auto()
@@ -113,7 +108,7 @@ def parse_quest(bot, update):
     uq.forward_date = update.message.forward_date
     uq.exp = quest_data['exp']
     uq.gold = quest_data['gold']
-    uq.level = user.character.level
+    uq.level = user.character.level if user.character else 0  # If we don't have a profile yet just assume "0" level
 
     quest = session.query(Quest).filter_by(text=quest_data['text']).first()
     if quest:

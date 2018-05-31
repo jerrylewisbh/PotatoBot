@@ -2,7 +2,8 @@
 
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
+from logging.handlers import TimedRotatingFileHandler
 
 from telegram import (
     Bot, Update, ParseMode
@@ -81,11 +82,6 @@ TRADEBOT_ID = 0
 # 278525885
 # -------------------
 
-logging.basicConfig(
-    level=logging.WARNING,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-
 @run_async
 @user_allowed
 def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
@@ -99,8 +95,14 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         admin = session.query(Admin).filter(
             Admin.user_id == update.message.from_user.id and
             Admin.admin_group in [update.message.chat.id, 0]).first()
+        
+        print("DEBUG SILENCE: State: {}, Squad: {}, Admin: {}".format(
+            get_game_state(),
+            squad.squad_name if squad else 'NO SQUAD', 
+            admin,
+        ))
 
-        if squad is not None and squad.silence_enabled and admin is None and get_game_state() == GameState.BATTLE_SILENCE:
+        if squad and squad.silence_enabled and not admin and get_game_state() == GameState.BATTLE_SILENCE:
             bot.delete_message(update.message.chat.id,
                                update.message.message_id)
         if not update.message.text:
@@ -282,8 +284,26 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
 
 
 def main():
+    # Logging!
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # Logging for console
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.WARNING)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    rh = TimedRotatingFileHandler('botato.log', when='midnight', backupCount=10)
+    rh.setLevel(logging.DEBUG)
+    rh.setFormatter(formatter)
+    logger.addHandler(rh)
+
+
     # Create the EventHandler and pass it your bot's token.
     updater = Updater(TOKEN)
+    updater.bot.logger.setLevel(logging.INFO)
 
     # Get the dispatcher to register handlers
     disp = updater.dispatcher

@@ -12,8 +12,6 @@ import pika
 import queue
 import logging
 
-LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
-              '-35s %(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
 
@@ -52,7 +50,8 @@ class Consumer(Thread):
         self.dispatcher = dispatcher
 
     def connect(self):
-        LOGGER.info('[Consumer] Connecting to %s', self._url)
+        LOGGER.info('[Consumer] Connecting to Queue')
+        LOGGER.debug('[Consumer] Connecting to Queue %s', self._url)
 
         return pika.SelectConnection(
             pika.URLParameters(self._url),
@@ -174,7 +173,8 @@ class Publisher(Thread, metaclass=Singleton):
             self._stopping = False
 
         def connect(self):
-            LOGGER.info('[Publisher] Connecting to %s', self._url)
+            LOGGER.info('[Consumer] Connecting to Queue')
+            LOGGER.debug('[Consumer] Connecting to Queue %s', self._url)
             return pika.SelectConnection(pika.URLParameters(self._url),
                                          on_open_callback=self.on_connection_open,
                                          on_close_callback=self.on_connection_closed,
