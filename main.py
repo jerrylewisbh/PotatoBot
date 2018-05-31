@@ -446,7 +446,7 @@ def report_after_battle(bot: Bot, job_queue):
                     MSG_CHANGES_SINCE_LAST_UPDATE,
                     stock_diff,
                     MSG_LAST_UPDATE,
-                    user.stock.date.strftime("%Y-%m-%d %H:%M:%S") if user.stock or 'Unknown'
+                    user.stock.date.strftime("%Y-%m-%d %H:%M:%S") if user.stock else 'Unknown'
                 )
                 text += stock_text
 
