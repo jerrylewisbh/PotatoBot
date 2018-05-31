@@ -3,9 +3,6 @@ from datetime import time, datetime
 
 from enum import IntFlag, auto
 
-logging.basicConfig()
-log = logging.getLogger("LOG")
-
 """ Helper for getting current game state(s)... """
 
 """ 

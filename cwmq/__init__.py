@@ -12,11 +12,8 @@ import pika
 import queue
 import logging
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
-LOGGER.setFormatter(formatter)
 
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARN)

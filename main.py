@@ -4,6 +4,7 @@ import json
 import logging
 import re
 from datetime import datetime, time, timedelta
+from logging.handlers import TimedRotatingFileHandler
 
 from sqlalchemy import func, tuple_, and_
 from sqlalchemy.exc import SQLAlchemyError
@@ -93,11 +94,6 @@ CWBOT_ID = 408101137
 TRADEBOT_ID = 0
 #278525885
 # -------------------
-
-logging.basicConfig(
-    level=logging.WARNING,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
 
 @run_async
 @user_allowed
@@ -592,8 +588,26 @@ def fresh_profiles(bot: Bot, job_queue):
 
 
 def main():
+    # Logging!
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # Logging for console
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.WARNING)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    rh = TimedRotatingFileHandler('botato.log', when='midnight', backupCount=10)
+    rh.setLevel(logging.DEBUG)
+    rh.setFormatter(formatter)
+    logger.addHandler(rh)
+
+
     # Create the EventHandler and pass it your bot's token.
     updater = Updater(TOKEN)
+    updater.bot.logger.setLevel(logging.INFO)
 
     # Get the dispatcher to register handlers
     disp = updater.dispatcher
