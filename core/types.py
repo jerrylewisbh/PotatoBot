@@ -19,7 +19,6 @@ class AdminType(Enum):
     FULL = 1
     GROUP = 2
 
-    '''Дополнительные группы. Не используйте их в параметре adm_type!!!'''
     WARLORD = 10
     SQUAD_CONTROLLER = 11
 

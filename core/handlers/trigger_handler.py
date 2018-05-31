@@ -1,6 +1,8 @@
+import logging
+
 from core.functions.admins import (del_admin, del_global_admin, list_admins,
                                    set_admin, set_global_admin,
-                                   set_super_admin)
+                                   set_super_admin, get_log)
 from core.functions.ban import ban, unban
 from core.functions.common import admin_panel, help_msg, kick, ping, user_panel
 from core.functions.profile import (char_show, find_by_character, find_by_id,
@@ -21,7 +23,8 @@ from core.functions.welcome import (disable_welcome, enable_welcome,
 from telegram.ext import CommandHandler, Dispatcher
 
 
-def add_triggers(disp: Dispatcher):
+def add_commands(disp: Dispatcher):
+    logging.debug("Starting adding command handlers")
     # on different commands - answer in Telegram
     disp.add_handler(CommandHandler("start", user_panel))
     disp.add_handler(CommandHandler("admin", admin_panel))
@@ -67,3 +70,5 @@ def add_triggers(disp: Dispatcher):
     disp.add_handler(CommandHandler("ban", ban))
     disp.add_handler(CommandHandler("unban", unban))
     disp.add_handler(CommandHandler("revoke", revoke))
+    disp.add_handler(CommandHandler("get_log", get_log))
+    logging.info("Finished adding command handlers")

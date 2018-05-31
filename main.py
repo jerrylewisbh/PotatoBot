@@ -2,7 +2,7 @@
 
 import logging
 import re
-from config import CASTLE, DEBUG, EXT_ID, TOKEN
+from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE
 from datetime import datetime, time, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
@@ -65,7 +65,7 @@ from core.functions.triggers import (del_trigger, disable_trigger_all,
                                      set_trigger, trigger_show)
 from core.functions.welcome import (disable_welcome, enable_welcome,
                                     set_welcome, show_welcome, welcome)
-from core.handlers.trigger_handler import add_triggers
+from core.handlers.trigger_handler import add_commands
 from core.jobs.job_queue import (add_after_war_messages,
                                  add_battle_report_messages,
                                  add_pre_war_messages,
@@ -305,7 +305,7 @@ def main():
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
-    rh = TimedRotatingFileHandler('botato.log', when='midnight', backupCount=10)
+    rh = TimedRotatingFileHandler(LOGFILE, when='midnight', backupCount=10)
     rh.setLevel(logging.DEBUG)
     rh.setFormatter(formatter)
     logger.addHandler(rh)
@@ -317,7 +317,7 @@ def main():
     # Get the dispatcher to register handler
     disp = updater.dispatcher
 
-    add_triggers(disp)
+    add_commands(disp)
 
     disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True, pass_job_queue=True))
 

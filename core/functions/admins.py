@@ -1,4 +1,6 @@
-from config import SUPER_ADMIN_ID
+import logging
+
+from config import SUPER_ADMIN_ID, LOGFILE
 
 # from core.texts import *
 from core.texts import (MSG_DEL_GLOBAL_ADMIN, MSG_DEL_GLOBAL_ADMIN_NOT_EXIST,
@@ -240,3 +242,19 @@ def del_global_admin(bot: Bot, update: Update, session):
                 send_async(bot,
                            chat_id=update.message.chat.id,
                            text=MSG_DEL_GLOBAL_ADMIN.format(user.username))
+
+
+@user_allowed(False)
+def get_log(bot: Bot, update: Update, session):
+    # Fixme: Decorator "@admin_allowed(adm_type=AdminType.SUPER)" instead of other check... But this is NYI
+    if update.message.from_user.id != SUPER_ADMIN_ID:
+        logging.info("User %s tried to request logs and is not allowed to!", update.message.from_user.id)
+        return
+
+    logging.info("User %s requrested logs", update.message.from_user.id)
+    if update.message.chat.type == 'private':
+        with open(LOGFILE, 'rb') as file:
+            bot.send_document(
+                chat_id = update.message.chat.id,
+                document = file
+            )

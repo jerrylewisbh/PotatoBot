@@ -57,6 +57,7 @@ Super administrator commands:
 /find <user> - Show user status by telegram user name
 /findc <ign> - Show user status by ingame name
 /findi <id> - Show user status by telegram uquique id
+/get_log - Get latest logfile
 
 
 
