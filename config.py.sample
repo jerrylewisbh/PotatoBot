@@ -1,3 +1,5 @@
+DEBUG = False
+
 TOKEN = '<SOME_TOKEN>'
 DB = 'mysql+pymysql://<username>:<password>@<host>/<dbname>?charset=utf8mb4' # Строчка подключения к базе данных (поддерживается только MySql, о формате можно прочитать тут http://docs.sqlalchemy.org/en/latest/dialects/mysql.html)
 API_PORT = 88
@@ -19,3 +21,5 @@ CW_OUT_Q = "<username>_<botname>_o"
 CW_DEALS_Q = "<username>_<botname>_deals"
 
 CW_URL = "amqps://<username>:<pass>@api.chatwars.me:5673/?socket_timeout=10&connection_attempts=5&retry_delay=5"
+
+LOGFILE = 'botato.log'

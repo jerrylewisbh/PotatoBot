@@ -1,11 +1,13 @@
 from datetime import datetime
 
-from telegram import Bot, Update, TelegramError
-
-from core.texts import MSG_USER_UNKNOWN, MSG_USER_BANNED, MSG_YOU_BANNED, MSG_BAN_COMPLETE, MSG_ALREADY_BANNED, \
-    MSG_USER_NOT_BANNED, MSG_USER_UNBANNED, MSG_YOU_UNBANNED, MSG_NO_REASON, MSG_REASON_TRAITOR, MSG_USER_BANNED_TRAITOR
-from core.types import admin_allowed, Ban, User, Squad, SquadMember, Admin
+from core.texts import (MSG_ALREADY_BANNED, MSG_BAN_COMPLETE, MSG_NO_REASON,
+                        MSG_REASON_TRAITOR, MSG_USER_BANNED,
+                        MSG_USER_BANNED_TRAITOR, MSG_USER_NOT_BANNED,
+                        MSG_USER_UNBANNED, MSG_USER_UNKNOWN, MSG_YOU_BANNED,
+                        MSG_YOU_UNBANNED)
+from core.types import Admin, Ban, Squad, SquadMember, User, admin_allowed
 from core.utils import send_async
+from telegram import Bot, TelegramError, Update
 
 
 @admin_allowed()
@@ -41,7 +43,6 @@ def ban(bot: Bot, update: Update, session):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
 
 
-
 def ban_traitor(bot: Bot, session, user_id):
     user = session.query(User).filter_by(id=user_id).first()
     if user:
@@ -61,14 +62,13 @@ def ban_traitor(bot: Bot, session, user_id):
             except TelegramError as err:
                 bot.logger.error(err.message)
         admins = session.query(Admin).filter_by(user_id=user.id).all()
-        #for admin in admins:
-            #session.delete(admin)
+        # for admin in admins:
+        # session.delete(admin)
         session.add(banned)
         session.commit()
         squads = session.query(Squad).all()
         for squad in squads:
             send_async(bot, chat_id=squad.chat_id, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
-
 
 
 @admin_allowed()

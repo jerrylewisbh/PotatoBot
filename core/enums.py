@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
 
-
-CASTLE_LIST = ['🌑', '🐺', '🥔','🦅','🦌','🐉','🦈']
+CASTLE_LIST = ['🌑', '🐺', '🥔', '🦅', '🦌', '🐉', '🦈']
 
 CASTLE_MAP = {
     '🌑': 'Moonlight',
@@ -79,6 +78,7 @@ HEAVY_ITEMS = [
 ]
 
 TACTICTS_COMMAND_PREFIX = "/tactics_"
+
 
 class Castle(Enum):
     UNDEFINED = 0

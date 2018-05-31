@@ -1,9 +1,11 @@
-from telegram import Update, Bot
-from core.types import User, Group, user_allowed
-from core.template import fill_template
-from core.utils import send_async
-from core.texts import *
 from config import ACADEM_CHAT_ID, CASTLE_CHAT_ID
+
+from core.template import fill_template
+from core.texts import *
+from core.types import Group, User, user_allowed
+from core.utils import send_async
+from telegram import Bot, Update
+
 
 @user_allowed
 def newbie(bot: Bot, update: Update, session):

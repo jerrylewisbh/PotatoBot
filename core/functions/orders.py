@@ -1,8 +1,9 @@
-from telegram import Update, Bot
-from core.types import AdminType, Admin, admin_allowed, MessageType
-from core.utils import send_async
-from core.functions.inline_markup import generate_order_groups_markup, generate_flag_orders
+from core.functions.inline_markup import (generate_flag_orders,
+                                          generate_order_groups_markup)
 from core.texts import *
+from core.types import Admin, AdminType, MessageType, admin_allowed
+from core.utils import send_async
+from telegram import Bot, Update
 
 
 @admin_allowed(adm_type=AdminType.GROUP)

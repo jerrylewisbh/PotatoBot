@@ -1,18 +1,18 @@
 import json
 import logging
 
-from telegram import ParseMode
-
 from core.functions.common import MSG_DEAL_SOLD
 from core.functions.reply_markup import generate_user_markup
 from core.types import Session, User
 from cwmq import Publisher
+from telegram import ParseMode
 
 session = Session()
 p = Publisher()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
 
 def deals_handler(channel, method, properties, body, dispatcher):
     logger.debug('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
@@ -32,12 +32,12 @@ def deals_handler(channel, method, properties, body, dispatcher):
                                          data['buyerCastle'],
                                          data['buyerName']),
                     reply_markup=generate_user_markup(user.id),
-                    parse_mode = ParseMode.HTML,
+                    parse_mode=ParseMode.HTML,
                 )
 
         # We're done...
         channel.basic_ack(method.delivery_tag)
-    except Exception as ex:
+    except Exception:
         try:
             # Acknowledge if possible...
             channel.basic_ack(method.delivery_tag)
@@ -46,7 +46,7 @@ def deals_handler(channel, method, properties, body, dispatcher):
 
         try:
             session.rollback()
-        except:
+        except BaseException:
             logging.exception("Can't do rollback")
 
         logging.exception("Exception in MQ handler occured!")

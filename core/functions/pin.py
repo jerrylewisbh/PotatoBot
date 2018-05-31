@@ -1,8 +1,7 @@
+from core.texts import MSG_PIN_ALL_DISABLED, MSG_PIN_ALL_ENABLED
+from core.types import AdminType, admin_allowed, check_admin, user_allowed
+from core.utils import send_async, update_group
 from telegram import Bot, Update
-
-from core.texts import MSG_PIN_ALL_ENABLED, MSG_PIN_ALL_DISABLED
-from core.types import AdminType, admin_allowed, user_allowed, check_admin
-from core.utils import update_group, send_async
 
 
 def pin_decorator(func):

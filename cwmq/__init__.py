@@ -18,6 +18,7 @@ LOGGER.setLevel(logging.DEBUG)
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARN)
 
+
 class Singleton(type):
     def __init__(cls, name, bases, attrs, **kwargs):
         super().__init__(name, bases, attrs)
@@ -28,6 +29,7 @@ class Singleton(type):
             cls._instance = super().__call__(*args, **kwargs)
         return cls._instance
 
+
 class Consumer(Thread):
     def __init__(self, handler, deals_handler, dispatcher):
         """ Initialize Queue-Handler. We're passing a custom handler and a telegram-bot dispatcher
@@ -35,7 +37,7 @@ class Consumer(Thread):
         Thread.__init__(self)
 
         self.EXCHANGE = CW_EXCHANGE
-        self.EXCHANGE_TYPE = 'topic' 
+        self.EXCHANGE_TYPE = 'topic'
         self.QUEUE = CW_IN_Q
         self.QUEUE_DEALS = CW_DEALS_Q
         self._url = CW_URL
@@ -152,127 +154,126 @@ class Consumer(Thread):
         LOGGER.info('[Consumer] Closing connection')
         self._connection.close()
 
+
 class Publisher(Thread, metaclass=Singleton):
-        def __init__(self):
-            Thread.__init__(self)
+    def __init__(self):
+        Thread.__init__(self)
 
-            self.EXCHANGE = CW_EXCHANGE
-            self.EXCHANGE_TYPE = 'topic'
-            self.QUEUE = CW_OUT_Q
-            self._url = CW_URL
+        self.EXCHANGE = CW_EXCHANGE
+        self.EXCHANGE_TYPE = 'topic'
+        self.QUEUE = CW_OUT_Q
+        self._url = CW_URL
 
-            self._queue = queue.Queue()
+        self._queue = queue.Queue()
+        self._connection = None
+        self._channel = None
+
+        self._deliveries = None
+        self._acked = None
+        self._nacked = None
+        self._message_number = None
+
+        self._stopping = False
+
+    def connect(self):
+        LOGGER.info('[Consumer] Connecting to Queue')
+        LOGGER.debug('[Consumer] Connecting to Queue %s', self._url)
+        return pika.SelectConnection(pika.URLParameters(self._url),
+                                     on_open_callback=self.on_connection_open,
+                                     on_close_callback=self.on_connection_closed,
+                                     stop_ioloop_on_close=False)
+
+    def on_connection_open(self, unused_connection):
+        LOGGER.info('[Publisher] Connection opened')
+        self.open_channel()
+
+    def on_connection_closed(self, connection, reply_code, reply_text):
+        self._channel = None
+        if self._stopping:
+            self._connection.ioloop.stop()
+        else:
+            LOGGER.warning('[Publisher] Connection closed, reopening in 5 seconds: (%s) %s',
+                           reply_code, reply_text)
+            self._connection.add_timeout(5, self._connection.ioloop.stop)
+
+    def open_channel(self):
+        LOGGER.info('[Publisher] Creating a new channel')
+        self._connection.channel(on_open_callback=self.on_channel_open)
+
+    def on_channel_open(self, channel):
+        LOGGER.info('[Publisher] Channel opened')
+        self._channel = channel
+        self._channel.add_on_close_callback(self.on_channel_closed)
+        self.setup_exchange(self.EXCHANGE)
+
+    def on_channel_closed(self, channel, reply_code, reply_text):
+        LOGGER.warning('[Publisher] Channel was closed: (%s) %s', reply_code, reply_text)
+        self._channel = None
+        if not self._stopping:
+            self._connection.close()
+
+    def setup_exchange(self, exchange_name):
+        LOGGER.info('[Publisher] Declaring exchange %s', exchange_name)
+        self._channel.exchange_bind(
+            self.on_exchange_declareok,
+            exchange_name,
+            exchange_name
+        )
+
+    def on_exchange_declareok(self, unused_frame):
+        LOGGER.info('[Publisher] Exchange declared')
+        # self.run_publisher()
+        # self.bind_queue(self.QUEUE)
+
+    def publish(self, body):
+        # Dear future me: Currently correlation_ids are not sent back by the CW API making some things hard...
+        # Check for it again in the future...
+        LOGGER.info("[Publisher] Publishing item: %s", json.dumps(body))
+
+        self._channel.basic_publish(
+            exchange=self.EXCHANGE,
+            routing_key=self.QUEUE,
+            body=json.dumps(body),
+            properties=pika.BasicProperties(
+                correlation_id=str(uuid.uuid4())
+            ),
+        )
+        LOGGER.debug("[Publisher] ... published")
+
+    def run(self):
+        """ Run the example code by connecting and then starting the IOLoop. """
+        while not self._stopping:
             self._connection = None
-            self._channel = None
+            self._deliveries = []
+            self._acked = 0
+            self._nacked = 0
+            self._message_number = 0
 
-            self._deliveries = None
-            self._acked = None
-            self._nacked = None
-            self._message_number = None
-
-            self._stopping = False
-
-        def connect(self):
-            LOGGER.info('[Consumer] Connecting to Queue')
-            LOGGER.debug('[Consumer] Connecting to Queue %s', self._url)
-            return pika.SelectConnection(pika.URLParameters(self._url),
-                                         on_open_callback=self.on_connection_open,
-                                         on_close_callback=self.on_connection_closed,
-                                         stop_ioloop_on_close=False)
-
-        def on_connection_open(self, unused_connection):
-            LOGGER.info('[Publisher] Connection opened')
-            self.open_channel()
-
-        def on_connection_closed(self, connection, reply_code, reply_text):
-            self._channel = None
-            if self._stopping:
-                self._connection.ioloop.stop()
-            else:
-                LOGGER.warning('[Publisher] Connection closed, reopening in 5 seconds: (%s) %s',
-                               reply_code, reply_text)
-                self._connection.add_timeout(5, self._connection.ioloop.stop)
-
-        def open_channel(self):
-            LOGGER.info('[Publisher] Creating a new channel')
-            self._connection.channel(on_open_callback=self.on_channel_open)
-
-        def on_channel_open(self, channel):
-            LOGGER.info('[Publisher] Channel opened')
-            self._channel = channel
-            self._channel.add_on_close_callback(self.on_channel_closed)
-            self.setup_exchange(self.EXCHANGE)
-
-        def on_channel_closed(self, channel, reply_code, reply_text):
-            LOGGER.warning('[Publisher] Channel was closed: (%s) %s', reply_code, reply_text)
-            self._channel = None
-            if not self._stopping:
-                self._connection.close()
-
-        def setup_exchange(self, exchange_name):
-            LOGGER.info('[Publisher] Declaring exchange %s', exchange_name)
-            self._channel.exchange_bind(
-                self.on_exchange_declareok,
-                exchange_name,
-                exchange_name
-            )
-
-        def on_exchange_declareok(self, unused_frame):
-            LOGGER.info('[Publisher] Exchange declared')
-            #self.run_publisher()
-            #self.bind_queue(self.QUEUE)
-
-        def publish(self, body):
-            # Dear future me: Currently correlation_ids are not sent back by the CW API making some things hard...
-            # Check for it again in the future...
-            LOGGER.info("[Publisher] Publishing item: %s", json.dumps(body))
-
-            self._channel.basic_publish(
-                exchange=self.EXCHANGE,
-                routing_key=self.QUEUE,
-                body=json.dumps(body),
-                properties=pika.BasicProperties(
-                    correlation_id=str(uuid.uuid4())
-                ),
-            )
-            LOGGER.debug("[Publisher] ... published")
-
-        def run(self):
-            """ Run the example code by connecting and then starting the IOLoop. """
-            while not self._stopping:
-                self._connection = None
-                self._deliveries = []
-                self._acked = 0
-                self._nacked = 0
-                self._message_number = 0
-
-                try:
-                    self._connection = self.connect()
+            try:
+                self._connection = self.connect()
+                self._connection.ioloop.start()
+            except KeyboardInterrupt:
+                self.stop()
+                if (self._connection is not None and
+                        not self._connection.is_closed):
+                    # Finish closing
                     self._connection.ioloop.start()
-                except KeyboardInterrupt:
-                    self.stop()
-                    if (self._connection is not None and
-                            not self._connection.is_closed):
-                        # Finish closing
-                        self._connection.ioloop.start()
 
-            LOGGER.info('[Publisher] Stopped')
+        LOGGER.info('[Publisher] Stopped')
 
-        def stop(self):
-            LOGGER.info('Stopping')
-            self._stopping = True
-            self.close_channel()
-            self.close_connection()
+    def stop(self):
+        LOGGER.info('Stopping')
+        self._stopping = True
+        self.close_channel()
+        self.close_connection()
 
-        def close_channel(self):
-            if self._channel is not None:
-                LOGGER.info('[Publisher] Closing the channel')
-                self._channel.close()
+    def close_channel(self):
+        if self._channel is not None:
+            LOGGER.info('[Publisher] Closing the channel')
+            self._channel.close()
 
-        def close_connection(self):
-            """This method closes the connection to RabbitMQ."""
-            if self._connection is not None:
-                LOGGER.info('[Publisher] Closing connection')
-                self._connection.close()
-
-
+    def close_connection(self):
+        """This method closes the connection to RabbitMQ."""
+        if self._connection is not None:
+            LOGGER.info('[Publisher] Closing connection')
+            self._connection.close()

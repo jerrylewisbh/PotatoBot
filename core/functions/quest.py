@@ -1,14 +1,12 @@
-import re
 import json
-import logging
-
-from enum import auto, IntFlag
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+import re
+from enum import IntFlag, auto
 
 from core.functions.inline_markup import QueryType
 from core.texts import MSG_QUEST, MSG_QUEST_DUPLICATE
-from core.types import Session, User, UserQuest, Quest, Item, Location, UserQuestItem
+from core.types import (Item, Location, Quest, Session, User, UserQuest,
+                        UserQuestItem)
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
 
 class QuestType(IntFlag):
@@ -25,6 +23,7 @@ REGEX_FORAY_SUCCESS = r"((?:Received )(?:([0-9]+) gold and )([0-9]+) exp.)"
 REGEX_FORAY_TRIED = r"((?:Received: )([0-9]+) exp.)"
 REGEX_ARENA = r"((?:You received: )([0-9]+) exp.)"
 
+
 def analyze_text(text):
     find_quest_gold_exp = re.findall(REGEX_GOLD_EXP, text)
     find_quest_earned = re.findall(REGEX_EARNED, text)
@@ -39,7 +38,7 @@ def analyze_text(text):
     text_stripped = re.sub(REGEX_ARENA, '', text_stripped)
     text_stripped = text_stripped.strip()
 
-    if  find_quest_gold_exp or find_quest_earned:
+    if find_quest_gold_exp or find_quest_earned:
         items = {}
         for item in find_quest_earned:
             items[item[1]] = item[2]
@@ -47,7 +46,7 @@ def analyze_text(text):
             'type': QuestType.NORMAL,
             'items': items,
             'gold': find_quest_gold_exp[0][2],
-            'exp':  find_quest_gold_exp[0][1],
+            'exp': find_quest_gold_exp[0][1],
             'text': text_stripped,
         }
     elif find_foray_success:
@@ -79,7 +78,7 @@ def analyze_text(text):
             'type': QuestType.NORMAL_FAILED,
             'items': {},
             'gold': 0,
-            'exp':  0,
+            'exp': 0,
             'text': text_stripped,
         }
 

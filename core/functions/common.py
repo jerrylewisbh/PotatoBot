@@ -1,20 +1,19 @@
+import logging
 import uuid
+from config import WEB_LINK
 from datetime import datetime
 from enum import Enum
-import logging
 
-from telegram import Update, Bot, ParseMode
-
-from core.enums import STOCK_WHITELIST, HEAVY_ITEMS
+from core.enums import HEAVY_ITEMS, STOCK_WHITELIST
+from core.functions.reply_markup import (generate_admin_markup,
+                                         generate_user_markup)
 from core.functions.triggers import trigger_decorator
-from core.functions.reply_markup import generate_admin_markup, generate_user_markup
 from core.state import GameState, get_game_state
 from core.texts import *
-from core.types import AdminType, Admin, Stock, admin_allowed, user_allowed, SquadMember, Auth, User
-from core.utils import send_async, add_user
-
-from config import WEB_LINK
-
+from core.types import (Admin, AdminType, Auth, SquadMember, Stock, User,
+                        admin_allowed, user_allowed)
+from core.utils import add_user, send_async
+from telegram import Bot, ParseMode, Update
 
 LOGGER = logging.getLogger(__name__)
 
@@ -102,16 +101,19 @@ def get_diff(dict_one, dict_two):
     resource_diff_del = sorted(resource_diff_del.items(), key=lambda x: x[0])
     return resource_diff_add, resource_diff_del
 
+
 def get_weight_multiplier(item_name):
     if item_name.lower() in HEAVY_ITEMS:
         return 2
     else:
         return 1
 
+
 def get_weighted_diff(dict_one, dict_two):
     """ Same as get_diff but accounts for item weight """
     resource_diff_add = {}
     resource_diff_del = {}
+
     for key, val in dict_one.items():
         weight_multiplier = get_weight_multiplier(key)
         if key in dict_two:
@@ -123,11 +125,13 @@ def get_weighted_diff(dict_one, dict_two):
         else:
             resource_diff_add[key] = val * weight_multiplier
     for key, val in dict_two.items():
+        weight_multiplier = get_weight_multiplier(key)
         if key not in dict_one:
             resource_diff_del[key] = -val * weight_multiplier
     resource_diff_add = sorted(resource_diff_add.items(), key=lambda x: x[0])
     resource_diff_del = sorted(resource_diff_del.items(), key=lambda x: x[0])
     return resource_diff_add, resource_diff_del
+
 
 def stock_split(old_stock, new_stock):
     """ Split stock text... """
@@ -145,6 +149,7 @@ def stock_split(old_stock, new_stock):
         resources_new[resource[0]] = int(resource[1])
 
     return (resources_old, resources_new)
+
 
 def stock_compare_text(old_stock, new_stock):
     """ Compare stock... """

@@ -1,11 +1,14 @@
-from telegram import Update, Bot
-from core.types import Wellcomed, WelcomeMsg, AdminType, admin_allowed, Admin, user_allowed
-from core.template import fill_template
+import logging
+from config import ACADEM_CHAT_ID, CASTLE, CASTLE_CHAT_ID
 from time import time
-from core.utils import send_async, add_user, update_group
+
 from core.functions.newbies import newbie
+from core.template import fill_template
 from core.texts import *
-from config import CASTLE, CASTLE_CHAT_ID, ACADEM_CHAT_ID
+from core.types import (Admin, AdminType, WelcomeMsg, Wellcomed, admin_allowed,
+                        user_allowed)
+from core.utils import add_user, send_async, update_group
+from telegram import Bot, Update
 
 last_welcome = 0
 
@@ -14,29 +17,31 @@ last_welcome = 0
 def welcome(bot: Bot, update: Update, session):
     #newbie(bot, update)
     global last_welcome
-    print('welcome')
+    logging.debug("Welcome")
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
         for new_chat_member in update.message.new_chat_members:
             user = add_user(new_chat_member, session)
-            print(user)
+            logging.debug("Welcome: user=%s", user)
             administrator = session.query(Admin).filter_by(user_id=user.id).all()
             allow_anywhere = False
             for adm in administrator:
                 if adm.admin_type == AdminType.FULL.value:
                     allow_anywhere = True
                     break
-            print(update.message.chat.id)
-            print(CASTLE_CHAT_ID == update.message.chat.id)
+            logging.debug("Welcome: chat_id=%s", update.message.chat.id)
+            logging.debug(
+                "Welcome: castle_chat_id==update.message.chat.id = %s",
+                CASTLE_CHAT_ID == update.message.chat.id)
             if str(update.message.chat.id) == CASTLE_CHAT_ID or str(update.message.chat.id) == ACADEM_CHAT_ID:
-                print('equal')
+                logging.debug("Welcome: equal")
                 if group.welcome_enabled:
-                    print('enable_welcome')
+                    logging.debug("Welcome: enable")
                     welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
                     send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
 
-            elif (user is None or user.character is None or user.character.castle != CASTLE  or user.member is None and not allow_anywhere and user.id != bot.id):
-                send_async(bot, chat_id=update.message.chat.id,vtext=MSG_THORNS.format("SPY"))
+            elif (user is None or user.character is None or user.character.castle != CASTLE or user.member is None and not allow_anywhere and user.id != bot.id):
+                send_async(bot, chat_id=update.message.chat.id, vtext=MSG_THORNS.format("SPY"))
                 bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
                 bot.kickChatMember(update.message.chat.id, new_chat_member.id)
             elif len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != bot.id and \

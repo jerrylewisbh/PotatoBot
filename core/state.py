@@ -1,12 +1,10 @@
-import logging
-from datetime import time, datetime
-
+from datetime import datetime
 from enum import IntFlag, auto
 
 """ Helper for getting current game state(s)... """
 
-""" 
-Notes: 
+"""
+Notes:
 
 Times are based on UTC!
 
@@ -23,6 +21,7 @@ Times are based on UTC!
 +------------+----------------+----------------+----------------+
 
 """
+
 
 class GameState(IntFlag):
     NO_STATE = auto()

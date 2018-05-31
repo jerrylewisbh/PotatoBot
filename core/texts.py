@@ -35,7 +35,7 @@ MSG_HELP_GLOBAL_ADMIN = """Welcome commands:
 /disable_welcome — disable welcome message.
 /set_welcome <text> — set welcome message. \
 Can contain %username% — will be shown as @username, %ign% - will show user ingame name, \
-if not set to First and Last name, or ID, 
+if not set to First and Last name, or ID,
 using %last_name%, %first_name%, %id%.
 /show_welcome — show welcome message.
 
@@ -57,38 +57,39 @@ Super administrator commands:
 /find <user> - Show user status by telegram user name
 /findc <ign> - Show user status by ingame name
 /findi <id> - Show user status by telegram uquique id
+/get_log - Get latest logfile
 
 
 
 Squad commands:
 /add_squad - Create a new squad and associates it to the current group
-/del_squad - Delete the squad associated with teh group  
+/del_squad - Delete the squad associated with teh group
 /enable_thorns - Prevent non members of the squad be in the group
 /disable_thorns - Allow non members of the group to be in the squad
 /enable_silence  - Deletes all messages typed 3 minutes before battle
 /disable_silence - Allow user to type even 3 minutes before batte
-/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle 
+/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
 /disable_reminders - Disable reminders
-/set_squad_name <name> - Change the name of the squad 
+/set_squad_name <name> - Change the name of the squad
 /set_invite_link <link> - Set up the invite link that will be sent to approved members
-/add <user> - Ask an user to join the squad 
+/add <user> - Ask an user to join the squad
 /forceadd <user> - add user to a squad without asking for confirmation
-/ban <user> <reason> - Ban an user from the squad 
+/ban <user> <reason> - Ban an user from the squad
 /unban <user> - Unban an user from the squad
 
 
 Free text commands:
-daily stats  - Show squad daily stats 
-weekly stats - Show squad weekly stats  
-battle stats - Show last batle stats for batle 
+daily stats  - Show squad daily stats
+weekly stats - Show squad weekly stats
+battle stats - Show last batle stats for batle
 prevent everyone from triggering - Allow only admins to call triggers
-allow everyone to pin - Allow all members to pin messages 
+allow everyone to pin - Allow all members to pin messages
 prevent everyone from pinning - Allow only admins to pin messages
 squad - mention every squad member
 
 Reply any message with Pin to Pin it (admins always can do that, other members if its enabled)
 Reply any message with Pin and notify to pin and send notificaion
-Reply any message with Delete to delete it 
+Reply any message with Delete to delete it
 
 """
 
@@ -97,7 +98,7 @@ MSG_HELP_GROUP_ADMIN = """Welcome commands:
 /disable_welcome — disable welcome message.
 /set_welcome <text> — set welcome message. \
 Can contain %username% — will be shown as @username, \
-if not set to First and Last name, or ID, 
+if not set to First and Last name, or ID,
 using %last_name%, %first_name%, %id%.
 /show_welcome — show welcome message.
 
@@ -106,27 +107,27 @@ Squad commands:
 /disable_thorns - Allow non members of the group to be in the squad
 /enable_silence  - Deletes all messages typed 3 minutes before battle
 /disable_silence - Allow user to type even 3 minutes before batte
-/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle 
+/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
 /disable_reminders - Disable reminders
 /set_invite_link <link> - Set up the invite link that will be sent to approved members
-/add <user> - Ask an user to join the squad 
-/ban <user> <reason>  - Ban an user from the squad 
+/add <user> - Ask an user to join the squad
+/ban <user> <reason>  - Ban an user from the squad
 /unban <user> - Unban an user from the squad
 
 
 Free text commands:
-daily stats  - Show squad daily stats 
-weekly stats - Show squad weekly stats  
-battle stats - Show last batle stats for batle 
+daily stats  - Show squad daily stats
+weekly stats - Show squad weekly stats
+battle stats - Show last batle stats for batle
 allow everyone to trigger - Allow every member to call triggers
 prevent everyone from triggering - Allow only admins to call triggers
-allow everyone to pin - Allow all members to pin messages 
+allow everyone to pin - Allow all members to pin messages
 prevent everyone from pinning - Allow only admins to pin messages
 squad - mention every squad member
 
 Reply any message with Pin to Pin it (admins always can do that, other members if its enabled)
 Reply any message with Pin and notify to pin and send notificaion
-Reply any message with Delete to delete it 
+Reply any message with Delete to delete it
 
 
 """
@@ -187,7 +188,7 @@ MSG_ORDER_GROUP_DEL = '🔥🚨Delete group🚨🔥'
 MSG_NEWBIE = """There is a new player in castle!\n
 Hurry up to recruit %username%!"""
 
-MSG_NO_USERNAME = "You have not set up a telegram username, you need to set one up to join squad." 
+MSG_NO_USERNAME = "You have not set up a telegram username, you need to set one up to join squad."
 MSG_FLAG_CHOOSE_HEADER = 'Choose a castle or send me the order'
 
 MSG_PROFILE_OLD = 'Your profile smells rotten, forward a new one generated within one minute.'
@@ -204,14 +205,15 @@ You saw a beautiful potato field not far away from you.
 There was just a fence between you.
 You decided to walk around and find a way in.
 Two hours later you returned to the same place you started at..."""
+
 MSG_PROFILE_SHOW_FORMAT = """\
-👤 %first_name% %last_name% (%username%) 
+👤 %first_name% %last_name% (%username%)
 %castle% %name% of %prof% Castle
-🏛 %profession% 
-🏅 Level %level% 
+🏛 %profession%
+🏅 Level %level%
 ⚜️ %squad%
 ⚔️ %attack% | 🛡 %defence% | 🔥 %exp%/%needExp%
-💰 %gold% | 👝 %pouches% 
+💰 %gold% | 👝 %pouches%
 %pet%
 🕑 Last update %date%"""
 
@@ -222,7 +224,7 @@ MSG_PROFILE_ADMIN_INFO_ADDON = "\n\n<b>Admin-Info:</b>\n" \
                                "Profile allowed: {}\n" \
                                "Stock allowed: {}\n" \
                                "Report enabled: {}\n" \
-                               "Exchange enabled: {}\n" \
+                               "Exchange enabled: {}\n"
 
 # | 🔋 %maxStamina% - Removed until api provides it or sth else happens...
 
@@ -237,7 +239,7 @@ Equip dagger 🗡/ shield 🛡\
 \n\n\
 Set default status to DEF 🛡 and wait for orders.'
 
-MSG_MAIN_READY_TO_BATTLE_45 ='WAAARRR IN 15 MINS!!\
+MSG_MAIN_READY_TO_BATTLE_45 = 'WAAARRR IN 15 MINS!!\
 \n\n\
 1) 💰➡️🚫HIDE GOLD&STOCK NOW\
 \n\n\
@@ -346,7 +348,6 @@ MSG_SQUAD_ADD_IN_SQUAD = '{} is already in a squad (perhaps not yours)'
 MSG_SQUAD_ADD_ACCEPTED = '{} Accepted the offer'
 MSG_SQUAD_ADD_FORCED = '{} was added to the squad'
 MSG_SQUAD_ADD_DECLINED = '{} declined, 😰'
-MSG_SQUAD_NONE = 'It looks like you are not in a squad'
 
 MSG_SQUAD_READY = '{} warriors of <b>{}</b> are ready to battle!\n{}⚔ {}🛡'
 MSG_FULL_TEXT_LINE = '<b>{}</b>: {}👥 {}⚔ {}🛡\n'
@@ -405,7 +406,7 @@ MSG_REPORT_SUMMARY_HEADER = 'Reports of the squad {} for the battle {}' \
 
 MSG_REPORT_SUMMARY_RATING = "Reports for the battle {}"
 
-ATTACK_ICON  = '⚔'
+ATTACK_ICON = '⚔'
 DEFENSE_ICON = '🛡'
 REST_ICON = '🛌'
 PRELIMINARY_ICON = '⚠️'
@@ -414,14 +415,14 @@ PRELIMINARY_ICON = '⚠️'
 MSG_NO_CLASS = ' Please forward me your /class first'
 
 MSG_REPORT_SUMMARY = '\n\n{} ({}/{})\n' \
-                            'Attack: ⚔{}\n' \
-                            'Defense: 🛡{}\n' \
-                            'Profit: 🔥{} 💰{} 📦{}' \
+    'Attack: ⚔{}\n' \
+    'Defense: 🛡{}\n' \
+    'Profit: 🔥{} 💰{} 📦{}' \
 
 
 MSG_REPORT_TOTAL = '\n\n({} attacked / {} defended)\n' \
-                            'Attack: ⚔{}\n' \
-                            'Defense: 🛡{}\n' \
+    'Attack: ⚔{}\n' \
+    'Defense: 🛡{}\n' \
 
 
 
@@ -469,7 +470,7 @@ MSG_API_ACCESS_RESET = "API access was reset!"
 MSG_API_REQUIRE_ACCESS_STOCK = "Seems like I don't have permission to access your stock yet. You'll get a " \
                                "request from me please forward this code to me!"
 MSG_API_REQUIRE_ACCESS_PROFILE = "Seems like I don't have permission to access your profile yet. You'll get a " \
-                               "request from me please forward this code to me!"
+    "request from me please forward this code to me!"
 MSG_API_REVOKED_PERMISSIONS = "It seems I'm unable to access your data. Did you /revoke your permission?"
 MSG_API_SETUP_STEP_1_COMPLETE = "👌 Profile access is now granted! If I need additional permissions I will let you " \
                                 "know!"

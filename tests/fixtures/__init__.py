@@ -59,7 +59,17 @@ You received: 168 exp and 3 gold
 Earned: Stick (3)
 Earned: Coal (1)"""
 
-QUESTS_SUCCESSFUL = [QUEST_SUCCESS_1, QUEST_SUCCESS_2, QUEST_SUCCESS_3, QUEST_SUCCESS_4, QUEST_SUCCESS_5, QUEST_SUCCESS_6, QUEST_SUCCESS_7, QUEST_SUCCESS_8, QUEST_SUCCESS_8, QUEST_SUCCESS_9]
+QUESTS_SUCCESSFUL = [
+    QUEST_SUCCESS_1,
+    QUEST_SUCCESS_2,
+    QUEST_SUCCESS_3,
+    QUEST_SUCCESS_4,
+    QUEST_SUCCESS_5,
+    QUEST_SUCCESS_6,
+    QUEST_SUCCESS_7,
+    QUEST_SUCCESS_8,
+    QUEST_SUCCESS_8,
+    QUEST_SUCCESS_9]
 
 QUEST_FAIL_1 = """Wandering around, you saw a little golden ball flying around. Quickly, you hopped on your broom and started chasing it. Just as you were about to catch the ball, you woke up, realising it was just a dream"""
 QUEST_FAIL_2 = """It was a really nice and sunny day, so you sat under a tree and enjoyed the weather..."""
@@ -69,7 +79,7 @@ QUESTS_FAILED = [QUEST_FAIL_1, QUEST_FAIL_2]
 FORAY_GO_SUCCESS = """You successfully defeated Caio Raio. As he was crawling away, you picked up some of the gold he left behind. Received 10 gold and 39 exp."""
 FORAY_NOTICED = """You were strolling around on your horse when you noticed Caio Raio of 🦅Highnest Castle trying to pillage a local village. To stop him click /go"""
 FORAY_TRIED_STOPPING = """Lagoon tried stopping you, but you were stronger. You have satisfied your lust for violence and left back home. Received: 73 exp."""
-FORAY_TRIED_STOPPING_YOU="You tried stopping Kamelot. Sadly, he was too strong. Your body hurts, but for some reason you feel enlightened. Received: 2 exp."
+FORAY_TRIED_STOPPING_YOU = "You tried stopping Kamelot. Sadly, he was too strong. Your body hurts, but for some reason you feel enlightened. Received: 2 exp."
 FORAY_WONT_NOTICE = """Next to the village you spotted a knight of the 🦅Highnest Castle - Lagoon. Let's hope he won't notice you."""
 FORAY_CLUELESS = """PaganAngel was completely clueless. Village was successfully pillaged. You feel pleased about yourself.
 Received 33 gold and 12 exp."""

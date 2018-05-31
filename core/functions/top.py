@@ -1,16 +1,19 @@
-from sqlalchemy import func, text as text_, tuple_
-from telegram import Update, Bot
-
-from core.functions.inline_markup import generate_build_top, generate_battle_top
-from core.functions.reply_markup import generate_top_markup
-from core.texts import MSG_TOP_ABOUT, MSG_TOP_FORMAT, MSG_TOP_ATTACK, MSG_TOP_DEFENCE, MSG_TOP_EXPERIENCE, \
-    MSG_TOP_GLOBAL_BUILDERS, MSG_TOP_WEEK_BUILDERS, MSG_TOP_WEEK_WARRIORS, MSG_SQUAD_TOP_FORMAT
-from core.types import user_allowed, Character, BuildReport, Report, Squad, SquadMember
-from core.utils import send_async
-
 from config import CASTLE
-
 from datetime import datetime, timedelta
+
+from core.functions.inline_markup import (generate_battle_top,
+                                          generate_build_top)
+from core.functions.reply_markup import generate_top_markup
+from core.texts import (MSG_SQUAD_TOP_FORMAT, MSG_TOP_ABOUT, MSG_TOP_ATTACK,
+                        MSG_TOP_DEFENCE, MSG_TOP_EXPERIENCE, MSG_TOP_FORMAT,
+                        MSG_TOP_GLOBAL_BUILDERS, MSG_TOP_WEEK_BUILDERS,
+                        MSG_TOP_WEEK_WARRIORS)
+from core.types import (BuildReport, Character, Report, Squad, SquadMember,
+                        user_allowed)
+from core.utils import send_async
+from sqlalchemy import text as text_
+from sqlalchemy import func, tuple_
+from telegram import Bot, Update
 
 TOP_START_DATE = datetime(2017, 12, 11)
 
@@ -46,13 +49,13 @@ def get_top(condition, session, header, field_name, icon, user_id, additional_fi
             for i in range(10, len(characters)):
                 if characters[i].user_id == user_id:
                     text += '...\n'
-                    text += str_format.format(i, characters[i - 1].name, characters[i-1].level,
-                                              getattr(characters[i-1], field_name), icon)
+                    text += str_format.format(i, characters[i - 1].name, characters[i - 1].level,
+                                              getattr(characters[i - 1], field_name), icon)
                     text += str_format.format(i + 1, characters[i].name, characters[i].level,
                                               getattr(characters[i], field_name), icon)
                     if i != len(characters) - 1:
-                        text += str_format.format(i + 2, characters[i + 1].name, characters[i+1].level,
-                                                  getattr(characters[i+1], field_name), icon)
+                        text += str_format.format(i + 2, characters[i + 1].name, characters[i + 1].level,
+                                                  getattr(characters[i + 1], field_name), icon)
                     break
     return text
 
@@ -113,7 +116,7 @@ def gen_squad_top_msg(data, counts, header, icon):
                 squad_count = count
                 break
         text += str_format.format(i + 1, data[i][0].squad_name, squad_count,
-                                  data[i][1], icon, round(data[i][1]/squad_count, 2), icon)
+                                  data[i][1], icon, round(data[i][1] / squad_count, 2), icon)
     return text
 
 
