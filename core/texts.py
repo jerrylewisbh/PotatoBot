@@ -205,6 +205,7 @@ You saw a beautiful potato field not far away from you.
 There was just a fence between you.
 You decided to walk around and find a way in.
 Two hours later you returned to the same place you started at..."""
+
 MSG_PROFILE_SHOW_FORMAT = """\
 👤 %first_name% %last_name% (%username%)
 %castle% %name% of %prof% Castle
@@ -223,7 +224,7 @@ MSG_PROFILE_ADMIN_INFO_ADDON = "\n\n<b>Admin-Info:</b>\n" \
                                "Profile allowed: {}\n" \
                                "Stock allowed: {}\n" \
                                "Report enabled: {}\n" \
-                               "Exchange enabled: {}\n" \
+                               "Exchange enabled: {}\n"
 
 # | 🔋 %maxStamina% - Removed until api provides it or sth else happens...
 
