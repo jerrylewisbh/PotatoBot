@@ -77,8 +77,8 @@ from core.texts import MSG_IN_DEV
 from core.types import Admin, Squad, User, user_allowed
 from core.utils import add_user, send_async
 from cwmq import Consumer, Publisher
-from cwmq.deals_handler import deals_handler
-from cwmq.handler import mq_handler
+from cwmq.handler.deals import deals_handler
+from cwmq.handler.profiles import profile_handler
 from telegram import Bot, ParseMode, Update
 from telegram.error import TelegramError
 from telegram.ext import (CallbackQueryHandler, Filters, InlineQueryHandler,
@@ -314,7 +314,7 @@ def main():
     updater = Updater(TOKEN)
     updater.bot.logger.setLevel(logging.INFO)
 
-    # Get the dispatcher to register handlers
+    # Get the dispatcher to register handler
     disp = updater.dispatcher
 
     add_triggers(disp)
@@ -352,7 +352,7 @@ def main():
     # Consumer...
     logging.info("Setting up MQ Consumer")
     q_in = Consumer(
-        mq_handler,
+        profile_handler,
         deals_handler,
         dispatcher=updater
     )
