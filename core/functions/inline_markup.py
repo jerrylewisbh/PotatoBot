@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime, timedelta
 from enum import IntFlag, auto
 
@@ -460,7 +461,7 @@ def generate_fire_up(members):
     limit = 50
     count = 0
     limit = limit if len(members) > limit else len(members) 
-    print(limit)
+    logging.debug("generate_fire_up - limit: %s", limit)
     for member in members:
         inline_keys.append([InlineKeyboardButton('🔥{}: {}⚔ {}🛡'.format(member.user, member.user.character.attack,
                                                                        member.user.character.defence),

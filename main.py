@@ -96,7 +96,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             Admin.user_id == update.message.from_user.id and
             Admin.admin_group in [update.message.chat.id, 0]).first()
         
-        print("DEBUG SILENCE: State: {}, Squad: {}, Admin: {}".format(
+        logging.warning("SILENCE STATE: State: {}, Squad: {}, Admin: {}".format(
             get_game_state(),
             squad.squad_name if squad else 'NO SQUAD', 
             admin,
@@ -354,8 +354,6 @@ def main():
     q_out = Publisher()
     q_out.setName("T1_OUT")
     q_out.start()
-
-    print("Current game time: {}".format(get_game_state()))
 
     # app.run(port=API_PORT)
     # Run the bot until you press Ctrl-C or the process receives SIGINT,

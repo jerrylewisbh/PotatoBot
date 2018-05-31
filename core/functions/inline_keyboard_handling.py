@@ -134,9 +134,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             order_type = chat_data['order_type']
             order_pin = chat_data['pin'] if 'pin' in chat_data else True
             order_btn = chat_data['btn'] if 'btn' in chat_data else True
-            print("order text: " + order_text)
-            print("order order_btn: " + str(order_btn))
-            print(order_text in CASTLE_LIST)
+            logging.info("Order: text='%s', order_btn='%s', order_text IN CASTLE_LIST='%s'", order_text, order_btn, (order_text in CASTLE_LIST))
             if not data['g']:
                 if order_btn:
                     order = Order()

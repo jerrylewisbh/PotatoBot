@@ -1,3 +1,4 @@
+import logging
 import re
 
 from datetime import timedelta, datetime
@@ -50,7 +51,7 @@ def parse_profile(profile, user_id, date, session):
         if char.castle == CASTLE:
             session.commit()
         else:
-            print('Traitor')
+            logging.warning('%s is a traitor!', user_id)
     return char
 
 
@@ -85,13 +86,12 @@ def parse_hero(profile, user_id, date, session):
         if char.castle == CASTLE:
             session.commit()
         else:
-            print('Traitor')
+            logging.warning('%s is a traitor!', user_id)
     return char
 
 def parse_reports(report_text, user_id, date, session):
     parsed_data = re.search(REPORT, report_text)
-    print(report_text)
-    print(date)
+    logging.info("Report: report_text='%s', user_id='%s', date='%s'", report_text, user_id, date)
     existing_report = get_latest_report(session, user_id)
     # New one or update to preliminary
     if not existing_report or (existing_report and existing_report.preliminary_report):
@@ -129,7 +129,7 @@ def parse_reports(report_text, user_id, date, session):
             session.add(report)
             session.commit()
         else:
-            print('Traitor')
+            logging.warning('%s is a traitor!', user_id)
 
     return report
 
