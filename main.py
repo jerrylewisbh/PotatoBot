@@ -86,14 +86,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-
-def del_msg(bot, job):
-    try:
-        bot.delete_message(job.context[0], job.context[1])
-    except TelegramError:
-        pass
-
-
 @run_async
 @user_allowed
 def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):

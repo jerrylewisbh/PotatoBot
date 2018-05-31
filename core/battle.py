@@ -9,6 +9,7 @@ from telegram import (
     Bot, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 )
 from telegram.error import TelegramError
+from telegram.ext import Job
 from telegram.ext.dispatcher import run_async
 
 from config import GOVERNMENT_CHAT, CASTLE
@@ -34,7 +35,7 @@ from cwmq import Publisher
 
 
 @run_async
-def ready_to_battle(bot: Bot, job_queue):
+def ready_to_battle(bot: Bot, job_queue: Job):
     session = Session()
     try:
         group = session.query(Squad).all()
@@ -60,7 +61,7 @@ def ready_to_battle(bot: Bot, job_queue):
 
             try:
                 msg = msg.result().result()
-                if msg is not None:
+                if msg:
                     bot.request.post(bot.base_url + '/pinChatMessage',
                                      {'chat_id': new_order.chat_id,
                                       'message_id': msg.message_id,
@@ -75,8 +76,8 @@ def ready_to_battle(bot: Bot, job_queue):
 
 
 @run_async
-def ready_to_battle_result(bot: Bot):
-    if GOVERNMENT_CHAT is None:
+def ready_to_battle_result(bot: Bot, job_queue: Job):
+    if not GOVERNMENT_CHAT:
         return
 
     global_def = 0
@@ -149,7 +150,7 @@ def ready_to_battle_result(bot: Bot):
 
 
 @run_async
-def fresh_profiles(bot: Bot, job_queue):
+def fresh_profiles(bot: Bot, job_queue: Job):
     session = Session()
     try:
         actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
@@ -205,7 +206,7 @@ def fresh_profiles(bot: Bot, job_queue):
 
 
 @run_async
-def refresh_api_users(bot: Bot, job_queue):
+def refresh_api_users(bot: Bot, job_queue: Job):
     logging.info("API REFRESH type %s")
     session = Session()
     try:
@@ -229,7 +230,7 @@ def refresh_api_users(bot: Bot, job_queue):
 
 
 @run_async
-def report_after_battle(bot: Bot, job_queue):
+def report_after_battle(bot: Bot, job_queue: Job):
     logging.info("API REFRESH type %s")
     session = Session()
     try:
