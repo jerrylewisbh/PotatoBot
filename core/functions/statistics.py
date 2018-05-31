@@ -1,4 +1,6 @@
+import logging
 import os
+import numpy
 from datetime import datetime, time, timedelta
 from math import pi
 
@@ -9,7 +11,7 @@ from core.texts import (MSG_DATE_FORMAT, MSG_DAY_PLURAL1, MSG_DAY_PLURAL2,
                         MSG_DAY_SINGLE, MSG_NO_CLASS, MSG_PLOT_DESCRIPTION,
                         MSG_PLOT_DESCRIPTION_SKILL, MSG_STATISTICS_ABOUT,
                         PLOT_X_LABEL, PLOT_Y_LABEL)
-from core.types import Character, Profession, user_allowed
+from core.types import Character, Profession, user_allowed, UserQuest, Location
 from core.utils import send_async
 from sqlalchemy import text as text_
 from sqlalchemy import func, tuple_
@@ -23,6 +25,94 @@ def statistic_about(bot: Bot, update: Update, session):
                chat_id=update.message.chat.id,
                text=MSG_STATISTICS_ABOUT,
                reply_markup=markup)
+
+
+@user_allowed
+def quest_statistic(bot: Bot, update: Update, session):
+    logging.debug("Quest statistics")
+
+    # Render for every level we know...
+    max_level = session.query(func.max(UserQuest.level)).first()
+    if not max_level:
+        return
+
+    times = (
+        (2, 'Morning', 'gold'),
+        (4, 'Day', 'goldenrod'),
+        (8, 'Evening', 'orange'),
+        (16, 'Night', 'silver'),
+    )
+
+    fig, ax = plot.subplots(figsize=(20, 15))
+    ind = numpy.arange(max_level[0] + 1)
+    width = 0.25
+
+    bars = []
+    for counter, daytime in enumerate(times, start=1):
+        logging.warning("Getting stats for %s", daytime)
+        stats = session.query(
+            UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
+        ).join(Location).filter(UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(UserQuest.level).group_by(UserQuest.level).all()
+
+        values = []
+        stddev = []
+        for stat in stats:
+            while len(values) < stat[0]:
+                #logging.warning("Filling up list...")
+                values.append(0)
+                stddev.append(0)
+            values.append(int(stat[1]))
+            stddev.append(int(stat[2]))
+        while len(values) <= max_level[0]:
+            values.append(0)
+            stddev.append(0)
+
+        logging.warning(values)
+        logging.warning(len(values))
+        logging.warning(stddev)
+        logging.warning(len(stddev))
+
+        b = ax.bar(
+            ind + (width*counter),
+            tuple(values),
+            width,
+            color=daytime[2],
+            yerr=tuple(stddev)
+        )
+        bars.append(b)
+
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel('XP')
+    ax.set_title('Experience in Forest')
+    ax.set_xticks(ind + (width * 4) / 2)
+    ax.set_xticklabels(range(1, max_level[0]+1))
+
+    ax.legend(
+        [rect for rect in bars],
+        [daytime[1] for daytime in times],
+    )
+    [autolabel(ax, bar) for bar in bars]
+
+    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
+    with open(filename, 'wb') as file:
+        plot.savefig(file, format='png')
+
+    with open(filename, 'rb') as file:
+        bot.sendPhoto(update.message.chat.id, file, "Forest!")
+
+    plot.clf()
+    os.remove(filename)
+
+def autolabel(ax, rects):
+    """
+    Attach a text label above each bar displaying its height
+    """
+    for rect in rects:
+        height = rect.get_height()
+        if int(height) > 0:
+            ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                '%d' % int(height),
+                ha='center', va='bottom')
 
 
 @user_allowed
