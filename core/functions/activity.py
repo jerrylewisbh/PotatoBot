@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
 
-from telegram import Update, Bot
-
 from core.texts import MSG_ORDER_STATISTIC, MSG_ORDER_STATISTIC_OUT_FORMAT
-from core.types import AdminType, admin_allowed, Squad
+from core.types import AdminType, Squad, admin_allowed
 from core.utils import send_async
+from telegram import Bot, Update
 
 
 def activity(squad, days=0, hours=0):

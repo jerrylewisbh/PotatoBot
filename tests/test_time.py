@@ -1,11 +1,13 @@
+import datetime
 import os
 import sys
-import datetime
 import unittest
+
+from core.state import GameState, get_game_state
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from core.state import get_game_state, GameState
+
 
 class TestTime(unittest.TestCase):
     def test_game_state_morning(self):
@@ -139,11 +141,11 @@ class TestTime(unittest.TestCase):
             datetime.time(hour=22, minute=59, second=0, microsecond=0),
             datetime.time(hour=23, minute=00, second=0, microsecond=0),
         ]
-        t = datetime.datetime(year=2018, month=1, day = 1, hour=0, minute=0, second=0, microsecond=0)
+        t = datetime.datetime(year=2018, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         for minute in range(0, 3601):
             t += datetime.timedelta(minutes=1)
-            t_state =  get_game_state(t.time())
-            #print(t)
+            t_state = get_game_state(t.time())
+            # print(t)
             #print(t.time() in expected_silence)
             if t.time() in expected_silence:
                 self.assertIn(GameState.BATTLE_SILENCE, t_state, "Expected silence at {}!".format(t))

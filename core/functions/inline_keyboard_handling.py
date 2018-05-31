@@ -1,32 +1,42 @@
-from datetime import datetime, timedelta
 import json
-from json import loads
 import logging
+from datetime import datetime, timedelta
+from json import loads
 
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle,  InputTextMessageContent, TelegramError, ParseMode
-from telegram.ext import JobQueue, Job
-from telegram.ext.dispatcher import run_async
-
-from core.enums import Castle, Icons, CASTLE_LIST, TACTICTS_COMMAND_PREFIX
+from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Castle, Icons
 from core.functions.admins import del_adm
 from core.functions.common import StockType, stock_compare_text
-from core.functions.inline_markup import generate_group_info, generate_order_chats_markup, generate_order_groups_markup, \
-    generate_ok_markup, generate_forward_markup, generate_groups_manage, generate_group_manage, \
-    generate_profile_buttons, generate_squad_list, \
-    generate_leave_squad, generate_other_reports, generate_squad_members, QueryType, generate_settings_buttons
+from core.functions.inline_markup import (QueryType, generate_forward_markup,
+                                          generate_group_info,
+                                          generate_group_manage,
+                                          generate_groups_manage,
+                                          generate_leave_squad,
+                                          generate_ok_markup,
+                                          generate_order_chats_markup,
+                                          generate_order_groups_markup,
+                                          generate_other_reports,
+                                          generate_profile_buttons,
+                                          generate_settings_buttons,
+                                          generate_squad_list,
+                                          generate_squad_members)
 from core.functions.reply_markup import generate_user_markup
 from core.functions.squad import leave_squad
-from core.functions.top import global_build_top, week_build_top, week_battle_top, global_battle_top, \
-    week_squad_build_top, global_squad_build_top
+from core.functions.top import (global_battle_top, global_build_top,
+                                global_squad_build_top, week_battle_top,
+                                week_build_top, week_squad_build_top)
 from core.template import fill_char_template
-from core.types import (
-    User, Admin, admin_allowed, Order, OrderGroup,
-    OrderGroupItem, OrderCleared, Squad, user_allowed,
-    SquadMember, MessageType, AdminType, Report, Stock, Location, UserQuest)
 from core.texts import *
-from core.utils import send_async, update_group, add_user
-
+from core.types import (Admin, AdminType, Location, MessageType, Order,
+                        OrderCleared, OrderGroup, OrderGroupItem, Report,
+                        Squad, SquadMember, Stock, User, UserQuest,
+                        admin_allowed, user_allowed)
+from core.utils import add_user, send_async, update_group
 from sqlalchemy import and_
+from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
+                      InlineQueryResultArticle, InputTextMessageContent,
+                      ParseMode, TelegramError, Update)
+from telegram.ext import Job, JobQueue
+from telegram.ext.dispatcher import run_async
 
 LOGGER = logging.getLogger('MyApp')
 
@@ -134,7 +144,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             order_type = chat_data['order_type']
             order_pin = chat_data['pin'] if 'pin' in chat_data else True
             order_btn = chat_data['btn'] if 'btn' in chat_data else True
-            logging.info("Order: text='%s', order_btn='%s', order_text IN CASTLE_LIST='%s'", order_text, order_btn, (order_text in CASTLE_LIST))
+            logging.info("Order: text='%s', order_btn='%s', order_text IN CASTLE_LIST='%s'",
+                         order_text, order_btn, (order_text in CASTLE_LIST))
             if not data['g']:
                 if order_btn:
                     order = Order()
@@ -148,12 +159,13 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                         order.confirmed_msg = 0
                     session.add(order)
                     session.commit()
-                    markup = generate_ok_markup(order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX) , order_text)
+                    markup = generate_ok_markup(
+                        order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX), order_text)
                     msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
                 else:
                     markup = None
-                    if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX) :
-                        markup = generate_forward_markup(order_text,0)
+                    if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
+                        markup = generate_forward_markup(order_text, 0)
                     msg = send_order(bot, order_text, order_type, data['id'], markup).result().result()
                 if order_pin and msg:
                     try:
@@ -170,19 +182,24 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                         order.text = order_text
                         order.chat_id = item.chat_id
                         order.date = datetime.now()
-                        msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY).result()
+                        msg = send_async(
+                            bot,
+                            chat_id=order.chat_id,
+                            text=MSG_ORDER_CLEARED_BY_HEADER +
+                            MSG_EMPTY).result()
                         if msg:
                             order.confirmed_msg = msg.message_id
                         else:
                             order.confirmed_msg = 0
                         session.add(order)
                         session.commit()
-                        markup = generate_ok_markup(order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX) , order_text)
+                        markup = generate_ok_markup(
+                            order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX), order_text)
                         msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
                     else:
                         markup = None
                         if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
-                            markup = generate_forward_markup(order_text,0)
+                            markup = generate_forward_markup(order_text, 0)
                         msg = send_order(bot, order_text, order_type, item.chat_id, markup).result().result()
                     if order_pin and msg:
                         try:
@@ -325,7 +342,6 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                 reply_markup=generate_profile_buttons(user, back)
                                 )
 
-
         elif data['t'] == QueryType.ShowSkills.value:
             user = session.query(User).filter_by(id=data['id']).first()
             update.callback_query.answer(text=MSG_CLEARED)
@@ -359,7 +375,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
                                 reply_markup=generate_profile_buttons(user, back),
-                                parse_mode = ParseMode.HTML
+                                parse_mode=ParseMode.HTML
                                 )
         elif data['t'] == QueryType.ShowHero.value:
             user = session.query(User).filter_by(id=data['id']).first()
@@ -380,7 +396,6 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 )
                 return
 
-
             bot.editMessageText(fill_char_template(MSG_PROFILE_SHOW_FORMAT,
                                                    user, user.character, user.profession),
                                 update.callback_query.message.chat.id,
@@ -392,8 +407,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             markups = generate_squad_members(squad.members, session)
             for markup in markups:
                 send_async(bot, chat_id=update.callback_query.message.chat.id,
-                       text=squad.squad_name,
-                       reply_markup=markup, parse_mode=ParseMode.HTML)
+                           text=squad.squad_name,
+                           reply_markup=markup, parse_mode=ParseMode.HTML)
         elif data['t'] == QueryType.LeaveSquad.value:
             member = session.query(SquadMember).filter_by(user_id=data['id']).first()
             leave_squad(bot, user, member, update.effective_message, session)
@@ -425,11 +440,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 member.approved = True
                 session.add(member)
                 session.commit()
-                bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username),
+                bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@' + member.user.username),
                                     update.callback_query.message.chat.id,
                                     update.callback_query.message.message_id)
 
-                squad = session.query(Squad).filter_by(chat_id = member.squad_id).first();
+                squad = session.query(Squad).filter_by(chat_id=member.squad_id).first()
                 answer = ""
                 if squad.invite_link is None:
                     answer = MSG_SQUAD_REQUEST_ACCEPTED_ANSWER
@@ -437,7 +452,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                     answer = MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK.format(member.squad.invite_link)
                 send_async(bot, chat_id=member.user_id, text=answer,
                            reply_markup=generate_user_markup(member.user_id))
-                send_async(bot, chat_id=member.squad_id, text=MSG_SQUAD_REQUEST_ACCEPTED.format('@'+member.user.username))
+                send_async(
+                    bot,
+                    chat_id=member.squad_id,
+                    text=MSG_SQUAD_REQUEST_ACCEPTED.format(
+                        '@' + member.user.username))
         elif data['t'] == QueryType.RequestSquadDecline.value:
             member = session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
             if member:
@@ -459,7 +478,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 member.approved = True
                 session.add(member)
                 session.commit()
-                bot.editMessageText(MSG_SQUAD_ADD_ACCEPTED.format('@'+user.username),
+                bot.editMessageText(MSG_SQUAD_ADD_ACCEPTED.format('@' + user.username),
                                     update.callback_query.message.chat.id,
                                     update.callback_query.message.message_id)
         elif data['t'] == QueryType.InviteSquadDecline.value:
@@ -477,8 +496,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 chat_data['pin'] = False
             if data['g']:
                 admin_user = session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
-                markup = generate_order_groups_markup(session, admin_user, chat_data['pin'] if 'pin' in chat_data else True,
-                                                      chat_data['btn'] if 'btn' in chat_data else True)
+                markup = generate_order_groups_markup(
+                    session,
+                    admin_user,
+                    chat_data['pin'] if 'pin' in chat_data else True,
+                    chat_data['btn'] if 'btn' in chat_data else True)
                 bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
                                     update.callback_query.message.chat.id,
                                     update.callback_query.message.message_id,
@@ -497,8 +519,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 chat_data['btn'] = False
             if data['g']:
                 admin_user = session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
-                markup = generate_order_groups_markup(session, admin_user, chat_data['pin'] if 'pin' in chat_data else True,
-                                                      chat_data['btn'] if 'btn' in chat_data else True)
+                markup = generate_order_groups_markup(
+                    session,
+                    admin_user,
+                    chat_data['pin'] if 'pin' in chat_data else True,
+                    chat_data['btn'] if 'btn' in chat_data else True)
                 bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
                                     update.callback_query.message.chat.id,
                                     update.callback_query.message.message_id,
@@ -560,11 +585,12 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                 session.commit()
 
             msg = MSG_SETTINGS_INFO.format(
-            (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
-            (MSG_NEEDS_API_ACCESS if not user.setting_automated_deal_report and not user.api_token else user.setting_automated_deal_report),
-            user.stock.date,
-            user.character.date
-            )
+                (MSG_NEEDS_API_ACCESS
+                 if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
+                (MSG_NEEDS_API_ACCESS
+                 if not user.setting_automated_deal_report and not user.api_token else
+                 user.setting_automated_deal_report),
+                user.stock.date, user.character.date)
 
             bot.editMessageText(
                 msg,
@@ -585,11 +611,12 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             session.commit()
 
             msg = MSG_SETTINGS_INFO.format(
-                (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
-                (MSG_NEEDS_API_ACCESS if not user.setting_automated_deal_report and not user.api_token else user.setting_automated_deal_report),
-                user.stock.date,
-                user.character.date
-            )
+                (MSG_NEEDS_API_ACCESS
+                 if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
+                (MSG_NEEDS_API_ACCESS
+                 if not user.setting_automated_deal_report and not user.api_token else
+                 user.setting_automated_deal_report),
+                user.stock.date, user.character.date)
 
             bot.editMessageText(
                 msg,
@@ -608,11 +635,12 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             session.commit()
 
             msg = MSG_SETTINGS_INFO.format(
-                (MSG_NEEDS_API_ACCESS if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
-                (MSG_NEEDS_API_ACCESS if not user.setting_automated_deal_report and not user.api_token else user.setting_automated_deal_report),
-                user.stock.date,
-                user.character.date
-            )
+                (MSG_NEEDS_API_ACCESS
+                 if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
+                (MSG_NEEDS_API_ACCESS
+                 if not user.setting_automated_deal_report and not user.api_token else
+                 user.setting_automated_deal_report),
+                user.stock.date, user.character.date)
 
             bot.editMessageText(
                 msg,
@@ -640,12 +668,12 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             for user, report in reports:
                 total_members += 1
                 if report:
-                    icon = REST_ICON if report.earned_exp  == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
-                    icon =  PRELIMINARY_ICON + icon if report.preliminary_report else icon
+                    icon = REST_ICON if report.earned_exp == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
+                    icon = PRELIMINARY_ICON + icon if report.preliminary_report else icon
                     text = MSG_REPORT_SUMMARY_ROW.format(icon,
-                        report.name, user.username, report.attack, report.defence,
-                        report.earned_exp, report.earned_gold, report.earned_stock)
-                    texts.append(text);
+                                                         report.name, user.username, report.attack, report.defence,
+                                                         report.earned_exp, report.earned_gold, report.earned_stock)
+                    texts.append(text)
                     full_atk += report.attack
                     full_def += report.defence
                     full_exp += report.earned_exp
@@ -654,16 +682,21 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                     total_reports += 1
                 else:
                     text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
-                    texts.append(text);
+                    texts.append(text)
 
+            template = MSG_REPORT_SUMMARY_HEADER.format(
+                squad.squad_name,
+                time_from.strftime('%d-%m-%Y %H:%M'),
+                total_reports,
+                total_members,
+                full_atk,
+                full_def,
+                full_exp,
+                full_gold,
+                full_stock)
 
-            template = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports, total_members,full_atk, full_def,
-                                            full_exp, full_gold, full_stock)
-
-
-
-            limit = 50;
-            count = 0;
+            limit = 50
+            count = 0
             repo_list = ''
             limit = limit if len(texts) > limit else len(texts)
             for element in texts:
@@ -673,7 +706,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                     count = 0
                     text = template + repo_list
                     markup = generate_other_reports(time_from, squad.chat_id)
-                    bot.sendMessage(chat_id=update.callback_query.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
+                    bot.sendMessage(
+                        chat_id=update.callback_query.message.chat.id,
+                        text=text,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=markup)
                     repo_list = ''
 
         elif data['t'] == QueryType.GlobalBuildTop.value:
@@ -716,7 +753,9 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
 
     except TelegramError as e:
         # Ignore Message is not modified errors
-        if str(e) != "Message is not modified": raise e
+        if str(e) != "Message is not modified":
+            raise e
+
 
 def inlinequery(bot, update):
     """Handle the inline query."""
@@ -724,10 +763,7 @@ def inlinequery(bot, update):
     if query not in CASTLE_LIST and not query.startswith(TACTICTS_COMMAND_PREFIX):
         return
 
-    results = [
-        InlineQueryResultArticle(
-            id=0,
-            title= ( "DEFEND " if Castle.BLUE.value == query or query.startswith(TACTICTS_COMMAND_PREFIX) else "ATTACK ") + query,
-            input_message_content=InputTextMessageContent(query))]
+    results = [InlineQueryResultArticle(id=0, title=("DEFEND " if Castle.BLUE.value == query or query.startswith(
+        TACTICTS_COMMAND_PREFIX) else "ATTACK ") + query, input_message_content=InputTextMessageContent(query))]
 
     update.inline_query.answer(results)

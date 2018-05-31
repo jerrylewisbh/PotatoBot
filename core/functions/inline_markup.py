@@ -1,21 +1,30 @@
 import json
 import logging
+from config import CASTLE
 from datetime import datetime, timedelta
 from enum import IntFlag, auto
 
+from core.enums import Castle, Icons
+from core.texts import (BTN_ACCEPT, BTN_ALL_TIME, BTN_DECLINE, BTN_EQUIPMENT,
+                        BTN_HERO, BTN_LEAVE, BTN_NO, BTN_PROFESSIONS,
+                        BTN_SETTING_API_DISABLE,
+                        BTN_SETTING_DISABLE_DEAL_REPORT,
+                        BTN_SETTING_DISABLE_REPORT,
+                        BTN_SETTING_ENABLE_DEAL_REPORT,
+                        BTN_SETTING_ENABLE_REPORT, BTN_SQUAD_ALL_TIME,
+                        BTN_SQUAD_WEEK, BTN_STOCK, BTN_WEEK, BTN_YES, MSG_BACK,
+                        MSG_GROUP_STATUS, MSG_GROUP_STATUS_ADMIN_FORMAT,
+                        MSG_GROUP_STATUS_DEL_ADMIN, MSG_OFF, MSG_ON,
+                        MSG_ORDER_ACCEPT, MSG_ORDER_BUTTON, MSG_ORDER_FORWARD,
+                        MSG_ORDER_GROUP_ADD, MSG_ORDER_GROUP_DEL,
+                        MSG_ORDER_NO_BUTTON, MSG_ORDER_NO_PIN, MSG_ORDER_PIN,
+                        MSG_ORDER_TO_SQUADS, MSG_SQUAD_GREEN_INLINE_BUTTON,
+                        MSG_SQUAD_RED_INLINE_BUTTON, MSG_SYMBOL_OFF,
+                        MSG_SYMBOL_ON)
+from core.types import (Admin, AdminType, Character, Group, OrderGroup, Squad,
+                        User)
 from sqlalchemy import func, tuple_
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
-from config import CASTLE
-from core.enums import Castle, Icons
-from core.texts import MSG_GROUP_STATUS_ADMIN_FORMAT, MSG_GROUP_STATUS_DEL_ADMIN, MSG_GROUP_STATUS, MSG_ON, MSG_OFF, \
-    MSG_ORDER_GROUP_DEL, MSG_BACK, MSG_ORDER_PIN, MSG_ORDER_NO_PIN, MSG_ORDER_BUTTON, MSG_ORDER_NO_BUTTON, \
-    MSG_ORDER_TO_SQUADS, MSG_ORDER_ACCEPT, MSG_ORDER_FORWARD, MSG_ORDER_GROUP_ADD, MSG_SYMBOL_ON, MSG_SYMBOL_OFF, \
-    MSG_SQUAD_GREEN_INLINE_BUTTON, MSG_SQUAD_RED_INLINE_BUTTON, BTN_HERO, BTN_STOCK, BTN_EQUIPMENT, BTN_YES, BTN_NO, \
-    BTN_LEAVE, BTN_ACCEPT, BTN_DECLINE, BTN_WEEK, BTN_ALL_TIME, BTN_SQUAD_WEEK, BTN_SQUAD_ALL_TIME, BTN_PROFESSIONS, \
-    BTN_SETTING_DISABLE_REPORT, BTN_SETTING_API_DISABLE, BTN_SETTING_ENABLE_REPORT, BTN_SETTING_DISABLE_DEAL_REPORT, \
-    BTN_SETTING_ENABLE_DEAL_REPORT
-from core.types import Group, Admin, User, Squad, AdminType, OrderGroup, Character
 
 
 class QueryType(IntFlag):
@@ -97,26 +106,26 @@ def generate_group_info(group_id, session):
 
 def generate_flag_orders():
     flag_btns = [InlineKeyboardButton(Castle.BLACK.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.BLACK.value})),
-                 InlineKeyboardButton(Castle.WHITE.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.WHITE.value})),
-                 InlineKeyboardButton(Castle.BLUE.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.BLUE.value})),
-                 InlineKeyboardButton(Castle.YELLOW.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.YELLOW.value})),
-                 InlineKeyboardButton(Castle.RED.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.RED.value})),
-                 InlineKeyboardButton(Castle.DUSK.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.DUSK.value})),
-                 InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
-                     {'t': QueryType.OrderGroup.value, 'txt': Castle.MINT.value})),
-                 # InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
-                 #     {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
-                 # InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
-                 #     {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value})),
-                 # InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
-                 #     {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))
-                 ]
+        {'t': QueryType.OrderGroup.value, 'txt': Castle.BLACK.value})),
+        InlineKeyboardButton(Castle.WHITE.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.WHITE.value})),
+        InlineKeyboardButton(Castle.BLUE.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.BLUE.value})),
+        InlineKeyboardButton(Castle.YELLOW.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.YELLOW.value})),
+        InlineKeyboardButton(Castle.RED.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.RED.value})),
+        InlineKeyboardButton(Castle.DUSK.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.DUSK.value})),
+        InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.MINT.value})),
+        # InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
+        #     {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
+        # InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
+        #     {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value})),
+        # InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
+        #     {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))
+    ]
     btns = []
     i = 0
     for btn in flag_btns:
@@ -192,18 +201,19 @@ def generate_order_groups_markup(session, admin_user: list=None, pin: bool=True,
             return inline_markup
 
 
-def generate_ok_markup(order_id, count, forward = False, order =''):
+def generate_ok_markup(order_id, count, forward=False, order=''):
 
     buttons = [[InlineKeyboardButton(MSG_ORDER_ACCEPT.format(count),
-                                                                callback_data=json.dumps(
-                                                                    {'t': QueryType.OrderOk.value, 'id': order_id}))]]
+                                     callback_data=json.dumps(
+        {'t': QueryType.OrderOk.value, 'id': order_id}))]]
     if forward:
-      buttons.append([InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order)])
+        buttons.append([InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order)])
     inline_markup = InlineKeyboardMarkup(buttons)
     return inline_markup
 
+
 def generate_forward_markup(order_id, count):
-    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order_id) ]])
+    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order_id)]])
     return inline_markup
 
 
@@ -256,6 +266,7 @@ def generate_profile_buttons(user, back_key=False):
                                       {'t': QueryType.MemberList.value, 'id': user.member.squad_id}
                                   ))])
     return InlineKeyboardMarkup(inline_keys)
+
 
 def generate_settings_buttons(user, back_key=False):
     inline_keys = []
@@ -328,7 +339,7 @@ def generate_squad_list_key(squad, session):
             attack,
             defence,
             len(members),
-            int(level/(len(members) or 1))
+            int(level / (len(members) or 1))
         ),
         callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))]
 
@@ -370,15 +381,15 @@ def generate_squad_request(session):
 def generate_other_reports(time: datetime, squad_id):
     inline_keys = [[InlineKeyboardButton('<< ' + (time - timedelta(hours=8)).strftime('%d-%m-%Y %H:%M'),
                                          callback_data=json.dumps(
-                                                     {'t': QueryType.OtherReport.value,
-                                                      'ts': (time - timedelta(hours=8)).timestamp(),
-                                                      'c': squad_id}))]]
+        {'t': QueryType.OtherReport.value,
+         'ts': (time - timedelta(hours=8)).timestamp(),
+         'c': squad_id}))]]
     if time + timedelta(hours=4) < datetime.now():
         inline_keys[0].append(InlineKeyboardButton((time + timedelta(hours=8)).strftime('%d-%m-%Y %H:%M') + ' >>',
                                                    callback_data=json.dumps(
-                                                     {'t': QueryType.OtherReport.value,
-                                                      'ts': (time + timedelta(hours=8)).timestamp(),
-                                                      'c': squad_id})))
+            {'t': QueryType.OtherReport.value,
+             'ts': (time + timedelta(hours=8)).timestamp(),
+             'c': squad_id})))
     return InlineKeyboardMarkup(inline_keys)
 
 
@@ -388,7 +399,7 @@ def generate_squad_members(members, session):
     user_ids = []
     limit = 50
     count = 0
-    limit = limit if len(members) > limit else len(members) 
+    limit = limit if len(members) > limit else len(members)
     for member in members:
         user_ids.append(member.user_id)
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
@@ -420,18 +431,18 @@ def generate_squad_members(members, session):
                                        'id': character.user_id,
                                        'b': True}
                                   ))])
-    
+
         count = count + 1
         if count >= limit:
-            count = 0;
+            count = 0
             inline_keys.append(
-        [InlineKeyboardButton(MSG_BACK,
-                              callback_data=json.dumps(
-                                  {'t': QueryType.SquadList.value}
-                              ))])
+                [InlineKeyboardButton(MSG_BACK,
+                                      callback_data=json.dumps(
+                                          {'t': QueryType.SquadList.value}
+                                      ))])
             inline_list.append(InlineKeyboardMarkup(inline_keys))
             inline_keys = []
-    
+
     return inline_list
 
 
@@ -460,16 +471,16 @@ def generate_fire_up(members):
     inline_list = []
     limit = 50
     count = 0
-    limit = limit if len(members) > limit else len(members) 
+    limit = limit if len(members) > limit else len(members)
     logging.debug("generate_fire_up - limit: %s", limit)
     for member in members:
         inline_keys.append([InlineKeyboardButton('🔥{}: {}⚔ {}🛡'.format(member.user, member.user.character.attack,
-                                                                       member.user.character.defence),
+                                                                         member.user.character.defence),
                                                  callback_data=json.dumps(
                                                      {'t': QueryType.LeaveSquad.value, 'id': member.user_id}))])
         count = count + 1
         if count >= limit:
-            count = 0;
+            count = 0
             inline_list.append(InlineKeyboardMarkup(inline_keys))
             inline_keys = []
 

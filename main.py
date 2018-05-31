@@ -2,85 +2,95 @@
 
 import logging
 import re
+from config import CASTLE, DEBUG, EXT_ID, TOKEN
 from datetime import datetime, time, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
-from telegram import (
-    Bot, Update, ParseMode
-)
-from telegram.error import TelegramError
-from telegram.ext import (
-    Updater, MessageHandler,
-    Filters, CallbackQueryHandler, InlineQueryHandler
-)
-from telegram.ext.dispatcher import run_async
-
-from config import TOKEN, CASTLE, EXT_ID, DEBUG
 from core.battle import report_after_battle
-from core.chat_commands import CC_SET_WELCOME, CC_HELP, CC_SQUAD, CC_SHOW_WELCOME, CC_TURN_ON_WELCOME, \
-    CC_TURN_OFF_WELCOME, CC_SET_TRIGGER, CC_UNSET_TRIGGER, CC_TRIGGER_LIST, CC_ADMIN_LIST, CC_PING, CC_DAY_STATISTICS, \
-    CC_WEEK_STATISTICS, CC_BATTLE_STATISTICS, CC_ALLOW_TRIGGER_ALL, CC_DISALLOW_TRIGGER_ALL, CC_ADMINS, \
-    CC_ALLOW_PIN_ALL, CC_DISALLOW_PIN_ALL, CC_BOSS_1, CC_BOSS_2, CC_BOSS_3, CC_BOSS_4, CC_OPEN_HIRING, CC_CLOSE_HIRING, \
-    CC_PIN, CC_SILENT_PIN, CC_DELETE, CC_KICK
-from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COMMAND_ORDER, ADMIN_COMMAND_SQUAD_LIST, \
-    ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, \
-    USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP, USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, \
-    TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, \
-    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE, TOP_COMMAND_BUILD, \
-    TOP_COMMAND_BATTLES, STATISTICS_COMMAND_SKILLS, USER_COMMAND_REGISTER, \
-    USER_COMMAND_SETTINGS
-from core.functions.activity import (
-    day_activity, week_activity, battle_activity
-)
-from core.functions.admins import (
-    list_admins, admins_for_users
-)
-from core.functions.bosses import (
-    boss_leader, boss_zhalo, boss_monoeye, boss_hydra)
-from core.functions.common import (
-    help_msg, ping, error, admin_panel, stock_compare_forwarded, trade_compare, delete_msg, delete_user, user_panel,
-    web_auth)
-from core.functions.inline_keyboard_handling import (
-    callback_query, inlinequery, send_status
-)
-from core.functions.order_groups import group_list, add_group
+from core.chat_commands import (CC_ADMIN_LIST, CC_ADMINS, CC_ALLOW_PIN_ALL,
+                                CC_ALLOW_TRIGGER_ALL, CC_BATTLE_STATISTICS,
+                                CC_BOSS_1, CC_BOSS_2, CC_BOSS_3, CC_BOSS_4,
+                                CC_CLOSE_HIRING, CC_DAY_STATISTICS, CC_DELETE,
+                                CC_DISALLOW_PIN_ALL, CC_DISALLOW_TRIGGER_ALL,
+                                CC_HELP, CC_KICK, CC_OPEN_HIRING, CC_PIN,
+                                CC_PING, CC_SET_TRIGGER, CC_SET_WELCOME,
+                                CC_SHOW_WELCOME, CC_SILENT_PIN, CC_SQUAD,
+                                CC_TRIGGER_LIST, CC_TURN_OFF_WELCOME,
+                                CC_TURN_ON_WELCOME, CC_UNSET_TRIGGER,
+                                CC_WEEK_STATISTICS)
+from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
+                           ADMIN_COMMAND_FIRE_UP, ADMIN_COMMAND_GROUPS,
+                           ADMIN_COMMAND_ORDER, ADMIN_COMMAND_RECRUIT,
+                           ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_SQUAD_LIST,
+                           ADMIN_COMMAND_STATUS, STATISTICS_COMMAND_EXP,
+                           STATISTICS_COMMAND_SKILLS, TOP_COMMAND_ATTACK,
+                           TOP_COMMAND_BATTLES, TOP_COMMAND_BUILD,
+                           TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP,
+                           USER_COMMAND_BACK, USER_COMMAND_BUILD,
+                           USER_COMMAND_CONTACTS, USER_COMMAND_ME,
+                           USER_COMMAND_REGISTER, USER_COMMAND_SETTINGS,
+                           USER_COMMAND_SQUAD, USER_COMMAND_SQUAD_LEAVE,
+                           USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
+                           USER_COMMAND_TOP)
+from core.functions.activity import (battle_activity, day_activity,
+                                     week_activity)
+from core.functions.admins import admins_for_users, list_admins
+from core.functions.bosses import (boss_hydra, boss_leader, boss_monoeye,
+                                   boss_zhalo)
+from core.functions.common import (admin_panel, delete_msg, delete_user, error,
+                                   help_msg, ping, stock_compare_forwarded,
+                                   trade_compare, user_panel, web_auth)
+from core.functions.inline_keyboard_handling import (callback_query,
+                                                     inlinequery, send_status)
+from core.functions.order_groups import add_group, group_list
 from core.functions.orders import order, orders
-from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
-from core.functions.profile import char_update, profession_update, char_show, report_received, build_report_received, \
-    repair_report_received, grant_access, handle_access_token, settings
+from core.functions.pin import not_pin_all, pin, pin_all, silent_pin
+from core.functions.profile import (build_report_received, char_show,
+                                    char_update, grant_access,
+                                    handle_access_token, profession_update,
+                                    repair_report_received, report_received,
+                                    settings)
 from core.functions.quest import parse_quest
-from core.functions.squad import (
-    squad_list, squad_request, list_squad_requests,
-    open_hiring, close_hiring, remove_from_squad, leave_squad_request, squad_about, call_squad, battle_reports_show,
-    battle_attendance_show)
-from core.functions.statistics import statistic_about, exp_statistic, skill_statistic
-from core.functions.top import top_about, attack_top, exp_top, def_top, week_build_top, \
-    week_battle_top
-from core.functions.triggers import (
-    set_trigger, del_trigger, list_triggers, enable_trigger_all,
-    disable_trigger_all, trigger_show
-)
-from core.functions.welcome import (
-    welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
-)
+from core.functions.squad import (battle_attendance_show, battle_reports_show,
+                                  call_squad, close_hiring,
+                                  leave_squad_request, list_squad_requests,
+                                  open_hiring, remove_from_squad, squad_about,
+                                  squad_list, squad_request)
+from core.functions.statistics import (exp_statistic, skill_statistic,
+                                       statistic_about)
+from core.functions.top import (attack_top, def_top, exp_top, top_about,
+                                week_battle_top, week_build_top)
+from core.functions.triggers import (del_trigger, disable_trigger_all,
+                                     enable_trigger_all, list_triggers,
+                                     set_trigger, trigger_show)
+from core.functions.welcome import (disable_welcome, enable_welcome,
+                                    set_welcome, show_welcome, welcome)
 from core.handlers.trigger_handler import add_triggers
-from core.jobs.job_queue import add_war_warning_messages, add_pre_war_messages, add_after_war_messages, \
-    add_battle_report_messages
-from core.regexp import HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT, PROFESSION, ACCESS_CODE
-from core.state import get_game_state, GameState
-from core.texts import (
-    MSG_IN_DEV)
-from core.types import Squad, Admin, user_allowed, User
+from core.jobs.job_queue import (add_after_war_messages,
+                                 add_battle_report_messages,
+                                 add_pre_war_messages,
+                                 add_war_warning_messages)
+from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
+                         REPAIR_REPORT, REPORT, STOCK, TRADE_BOT)
+from core.state import GameState, get_game_state
+from core.texts import MSG_IN_DEV
+from core.types import Admin, Squad, User, user_allowed
 from core.utils import add_user, send_async
 from cwmq import Consumer, Publisher
 from cwmq.deals_handler import deals_handler
 from cwmq.handler import mq_handler
+from telegram import Bot, ParseMode, Update
+from telegram.error import TelegramError
+from telegram.ext import (CallbackQueryHandler, Filters, InlineQueryHandler,
+                          MessageHandler, Updater)
+from telegram.ext.dispatcher import run_async
 
 # -----constants----
 CWBOT_ID = 408101137
 TRADEBOT_ID = 0
 # 278525885
 # -------------------
+
 
 @run_async
 @user_allowed
@@ -95,10 +105,10 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         admin = session.query(Admin).filter(
             Admin.user_id == update.message.from_user.id and
             Admin.admin_group in [update.message.chat.id, 0]).first()
-        
+
         logging.warning("SILENCE STATE: State: {}, Squad: {}, Admin: {}".format(
             get_game_state(),
-            squad.squad_name if squad else 'NO SQUAD', 
+            squad.squad_name if squad else 'NO SQUAD',
             admin,
         ))
 
@@ -299,7 +309,6 @@ def main():
     rh.setLevel(logging.DEBUG)
     rh.setFormatter(formatter)
     logger.addHandler(rh)
-
 
     # Create the EventHandler and pass it your bot's token.
     updater = Updater(TOKEN)

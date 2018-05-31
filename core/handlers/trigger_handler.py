@@ -1,16 +1,24 @@
-from telegram.ext import Dispatcher, CommandHandler
-
-from core.functions.admins import set_admin, set_global_admin, del_global_admin, set_super_admin, del_admin, list_admins
-from core.functions.ban import unban, ban
-from core.functions.common import (
-    help_msg, ping, kick,
-    admin_panel, user_panel)
-from core.functions.profile import char_show, grant_access, find_by_username, find_by_character, find_by_id, revoke
-from core.functions.squad import add_squad, del_squad, enable_thorns, enable_silence, enable_reminders, disable_thorns, \
-    disable_silence, disable_reminders, set_squad_name, set_invite_link, add_to_squad, force_add_to_squad
-from core.functions.triggers import set_global_trigger, add_global_trigger, del_global_trigger, set_trigger, \
-    add_trigger, del_trigger, list_triggers, enable_trigger_all, disable_trigger_all
-from core.functions.welcome import set_welcome, enable_welcome, disable_welcome, show_welcome
+from core.functions.admins import (del_admin, del_global_admin, list_admins,
+                                   set_admin, set_global_admin,
+                                   set_super_admin)
+from core.functions.ban import ban, unban
+from core.functions.common import admin_panel, help_msg, kick, ping, user_panel
+from core.functions.profile import (char_show, find_by_character, find_by_id,
+                                    find_by_username, grant_access, revoke)
+from core.functions.squad import (add_squad, add_to_squad, del_squad,
+                                  disable_reminders, disable_silence,
+                                  disable_thorns, enable_reminders,
+                                  enable_silence, enable_thorns,
+                                  force_add_to_squad, set_invite_link,
+                                  set_squad_name)
+from core.functions.triggers import (add_global_trigger, add_trigger,
+                                     del_global_trigger, del_trigger,
+                                     disable_trigger_all, enable_trigger_all,
+                                     list_triggers, set_global_trigger,
+                                     set_trigger)
+from core.functions.welcome import (disable_welcome, enable_welcome,
+                                    set_welcome, show_welcome)
+from telegram.ext import CommandHandler, Dispatcher
 
 
 def add_triggers(disp: Dispatcher):

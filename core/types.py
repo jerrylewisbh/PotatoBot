@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
+import logging
+from config import DB
 from datetime import datetime
 from enum import Enum
-import logging
 
-from sqlalchemy import (
-    create_engine,
-    Column, Integer, DateTime, Boolean, ForeignKey, UnicodeText, BigInteger, Text,
-    Table, UniqueConstraint)
+from sqlalchemy import (BigInteger, Boolean, Column, DateTime, ForeignKey,
+                        Integer, Table, Text, UnicodeText, UniqueConstraint,
+                        create_engine)
 from sqlalchemy.dialects.mysql import DATETIME
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
 from sqlalchemy.exc import SQLAlchemyError
-
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import backref, relationship, scoped_session, sessionmaker
 from telegram import Bot
-
-from config import DB
 
 
 class AdminType(Enum):
@@ -52,6 +49,7 @@ ENGINE = create_engine(DB,
 LOGGER = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
 Session = scoped_session(sessionmaker(bind=ENGINE))
+
 
 class UserQuestItem(Base):
     __tablename__ = 'user_quest_item'
@@ -112,9 +110,9 @@ class User(Base):
                                 order_by='BuildReport.date.desc()')
 
     profession = relationship('Profession',
-                         back_populates='user',
-                         order_by='Profession.date.desc()',
-                         uselist=False)
+                              back_populates='user',
+                              order_by='Profession.date.desc()',
+                              uselist=False)
 
     quests = relationship('UserQuest', back_populates='user')
 
@@ -179,7 +177,8 @@ class UserQuest(Base):
     user_id = Column(BigInteger, ForeignKey(User.id))
 
     from_date = Column(DATETIME(fsp=6), default=datetime.utcnow)
-    forward_date = Column(DATETIME(fsp=6), nullable=False) # When was the msg originally received? servces as uniqueness-factor together with user_id
+    # When was the msg originally received? servces as uniqueness-factor together with user_id
+    forward_date = Column(DATETIME(fsp=6), nullable=False)
 
     exp = Column(BigInteger, default=0)
     level = Column(BigInteger)
@@ -292,6 +291,7 @@ class Stock(Base):
     stock_type = Column(Integer)
 
     user = relationship('User', back_populates='stock')
+
 
 class Profession(Base):
     __tablename__ = 'profession'
@@ -506,7 +506,8 @@ def admin_allowed(adm_type=AdminType.FULL, ban_enable=True, allowed_types=()):
                         log(session, update.effective_user.id, update.effective_chat.id, func.__name__,
                             update.message.text if update.message else None or
                             update.callback_query.data if update.callback_query else None)
-                    # Fixme: Issues a message-update even if message did not change. This raises a telegram.error.BadRequest exception!
+                    # Fixme: Issues a message-update even if message did not change. This
+                    # raises a telegram.error.BadRequest exception!
                     func(bot, update, session, *args, **kwargs)
             except SQLAlchemyError as err:
                 bot.logger.error(str(err))

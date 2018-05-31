@@ -1,25 +1,27 @@
 # -*- coding: utf-8 -*-
-from core.texts import MSG_NO_SQUAD, MSG_WANTS_TO_JOIN, MSG_NO_PET, MSG_NO_PROFESSION
-from core.types import User, Character, Profession
 from html import escape
+
+from core.texts import (MSG_NO_PET, MSG_NO_PROFESSION, MSG_NO_SQUAD,
+                        MSG_WANTS_TO_JOIN)
+from core.types import Character, Profession, User
 
 
 def fill_template(msg: str, user: User):
     if user.username:
         msg = msg.replace('%username%', '@' + escape(user.username))
     else:
-        msg = msg.replace('%username%', (escape(user.first_name or '') ) + ' ' + (escape(user.last_name) or ''))
-    msg = msg.replace('%first_name%', escape(user.first_name or '') )
-    msg = msg.replace('%last_name%', escape(user.last_name  or '' ) )
+        msg = msg.replace('%username%', (escape(user.first_name or '')) + ' ' + (escape(user.last_name) or ''))
+    msg = msg.replace('%first_name%', escape(user.first_name or ''))
+    msg = msg.replace('%last_name%', escape(user.last_name or ''))
     msg = msg.replace('%id%', str(user.id))
     if user.character:
         msg = msg.replace('%ign%', str(user.character.name or ''))
     else:
-        msg = msg.replace('%ign%', (escape(user.first_name or '') ) + ' ' + (escape(user.last_name or '') ))
+        msg = msg.replace('%ign%', (escape(user.first_name or '')) + ' ' + (escape(user.last_name or '')))
     return msg
 
 
-def fill_char_template(msg: str, user: User, char: Character, profession: Profession,squad_request=False):
+def fill_char_template(msg: str, user: User, char: Character, profession: Profession, squad_request=False):
     msg = fill_template(msg, user)
     msg = msg.replace('%date%', str(char.date))
     msg = msg.replace('%name%', str(char.name))

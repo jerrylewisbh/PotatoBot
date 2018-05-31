@@ -1,10 +1,12 @@
-from telegram import Update, Bot, Message, ParseMode
-from core.types import Trigger, AdminType, admin_allowed, MessageType, LocalTrigger, user_allowed, check_admin
-from core.utils import send_async, update_group
-from core.texts import *
-from json import loads
-import telegram
 from html import escape
+from json import loads
+
+import telegram
+from core.texts import *
+from core.types import (AdminType, LocalTrigger, MessageType, Trigger,
+                        admin_allowed, check_admin, user_allowed)
+from core.utils import send_async, update_group
+from telegram import Bot, Message, ParseMode, Update
 
 
 def trigger_decorator(func):
@@ -163,8 +165,8 @@ def list_triggers(bot: Bot, update: Update, session):
     triggers = session.query(Trigger).all()
     local_triggers = session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id).all()
     msg = MSG_TRIGGER_LIST_HEADER + \
-          MSG_TRIGGER_GLOBAL + ('\n'.join([escape(trigger.trigger) for trigger in triggers]) or MSG_EMPTY) + \
-          MSG_TRIGGER_LOCAL + ('\n'.join([escape(trigger.trigger) for trigger in local_triggers]) or MSG_EMPTY)
+        MSG_TRIGGER_GLOBAL + ('\n'.join([escape(trigger.trigger) for trigger in triggers]) or MSG_EMPTY) + \
+        MSG_TRIGGER_LOCAL + ('\n'.join([escape(trigger.trigger) for trigger in local_triggers]) or MSG_EMPTY)
     send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
 
 

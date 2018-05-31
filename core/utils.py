@@ -1,9 +1,10 @@
+from html import escape
+
+from core.types import Group, Session, User
 from telegram import Bot
 from telegram.error import TelegramError
 from telegram.ext.dispatcher import run_async
 
-from core.types import Session, User, Group
-from html import escape
 
 @run_async
 def send_async(bot: Bot, *args, **kwargs):
@@ -71,6 +72,7 @@ def update_group(grp, session):
         return group
     return None
 
+
 def chunks(l, n):
     n = max(1, n)
-    return (l[i:i+n] for i in xrange(0, len(l), n))
+    return (l[i:i + n] for i in xrange(0, len(l), n))

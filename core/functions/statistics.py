@@ -1,20 +1,19 @@
-from telegram import Update, Bot
-from sqlalchemy import func, text as text_, tuple_
-
-from core.functions.reply_markup import generate_statistics_markup
-from core.texts import MSG_STATISTICS_ABOUT, PLOT_X_LABEL, PLOT_Y_LABEL, MSG_DAY_SINGLE, MSG_DAY_PLURAL1, \
-    MSG_DAY_PLURAL2, MSG_DATE_FORMAT, MSG_PLOT_DESCRIPTION, MSG_PLOT_DESCRIPTION_SKILL, MSG_NO_CLASS
-from core.types import user_allowed, Character, Profession
-from core.utils import send_async
-
-import matplotlib.pyplot as plot
-
+import os
 from datetime import datetime, time, timedelta
-import pandas as pd
 from math import pi
 
-
-import os
+import matplotlib.pyplot as plot
+import pandas as pd
+from core.functions.reply_markup import generate_statistics_markup
+from core.texts import (MSG_DATE_FORMAT, MSG_DAY_PLURAL1, MSG_DAY_PLURAL2,
+                        MSG_DAY_SINGLE, MSG_NO_CLASS, MSG_PLOT_DESCRIPTION,
+                        MSG_PLOT_DESCRIPTION_SKILL, MSG_STATISTICS_ABOUT,
+                        PLOT_X_LABEL, PLOT_Y_LABEL)
+from core.types import Character, Profession, user_allowed
+from core.utils import send_async
+from sqlalchemy import text as text_
+from sqlalchemy import func, tuple_
+from telegram import Bot, Update
 
 
 @user_allowed
@@ -28,24 +27,22 @@ def statistic_about(bot: Bot, update: Update, session):
 
 @user_allowed
 def skill_statistic(bot: Bot, update: Update, session):
-    my_class = session.query(Profession).filter_by(user_id=update.message.from_user.id).order_by(Profession.date.desc()).first()
+    my_class = session.query(Profession).filter_by(
+        user_id=update.message.from_user.id).order_by(
+        Profession.date.desc()).first()
     if not my_class:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_NO_CLASS)
         return
 
-
-
     recent_classes = session.query(Profession.user_id, func.max(Profession.date)). \
         group_by(Profession.user_id)
-    
 
     classes = session.query(Profession).filter(tuple_(Profession.user_id, Profession.date)
-                                                 .in_([(a[0], a[1]) for a in recent_classes]))\
+                                               .in_([(a[0], a[1]) for a in recent_classes]))\
 
     recent_classes = recent_classes.all()
 
     classes = classes.all()
-
 
     my_skills = dict()
     max_value = -1
@@ -54,8 +51,7 @@ def skill_statistic(bot: Bot, update: Update, session):
     for string in strings:
         skill_name = string.split(": ")[1]
         skill_value = int(string.split(": ")[0])
-        my_skills[skill_name] = [skill_value, 0,0,0,0]
-
+        my_skills[skill_name] = [skill_value, 0, 0, 0, 0]
 
     for class_data in classes:
         strings = class_data.skillList.splitlines()
@@ -72,60 +68,56 @@ def skill_statistic(bot: Bot, update: Update, session):
                 my_skills[skill_name][3] += skill_value
                 my_skills[skill_name][4] += 1
 
-
-
     for skill in my_skills:
-        my_skills[skill][1]/=my_skills[skill][2]
-        my_skills[skill][3]/=my_skills[skill][4]
+        my_skills[skill][1] /= my_skills[skill][2]
+        my_skills[skill][3] /= my_skills[skill][4]
         del my_skills[skill][2]
         del my_skills[skill][3]
 
     # Set data
     df = pd.DataFrame(my_skills)
-    categories=list(df)
+    categories = list(df)
     N = len(categories)
-        # What will be the angle of each axis in the plot? (we divide the plot / number of variable)
+    # What will be the angle of each axis in the plot? (we divide the plot / number of variable)
     angles = [n / float(N) * 2 * pi for n in range(N)]
     #angles += angles[:1]
 
-     
     # Initialise the spider plot
     ax = plot.subplot(111, polar=True)
-     
+
     # If you want the first axis to be on top:
     ax.set_theta_offset(pi / 2)
     ax.set_theta_direction(-1)
-     
+
     # Draw one axe per variable + add labels labels yet
     plot.xticks(angles, categories)
-     
+
     # Draw ylabels
     ax.set_rlabel_position(0)
-    plot.yticks(range(1,max_value), [str(i) for i in range(1,max_value)], color="grey", size=7)
-    plot.ylim(0,max_value + 1)
-     
-     
+    plot.yticks(range(1, max_value), [str(i) for i in range(1, max_value)], color="grey", size=7)
+    plot.ylim(0, max_value + 1)
+
     # ------- PART 2: Add plots
-     
+
     # Plot each individual = each line of the data
     # I don't do a loop, because plotting more than 3 groups makes the chart unreadable
-     
+
     # Ind1
-    values=df.loc[0].values.flatten().tolist()
+    values = df.loc[0].values.flatten().tolist()
 
     ax.plot(angles, values, linewidth=1, linestyle='solid', label="You")
     ax.fill(angles, values, 'b', alpha=0.1)
-     
+
     # Ind2
-    values=df.loc[1].values.flatten().tolist()
+    values = df.loc[1].values.flatten().tolist()
     ax.plot(angles, values, linewidth=1, linestyle='solid', label="Castle")
     ax.fill(angles, values, 'r', alpha=0.1)
 
     # Ind2
-    values=df.loc[2].values.flatten().tolist()
+    values = df.loc[2].values.flatten().tolist()
     ax.plot(angles, values, linewidth=1, linestyle='solid', label="Class")
     ax.fill(angles, values, 'g', alpha=0.1)
-     
+
     # Add legend
     plot.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
     filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
@@ -136,6 +128,7 @@ def skill_statistic(bot: Bot, update: Update, session):
         bot.sendPhoto(update.message.chat.id, file, MSG_PLOT_DESCRIPTION_SKILL)
     plot.clf()
     os.remove(filename)
+
 
 @user_allowed
 def exp_statistic(bot: Bot, update: Update, session):

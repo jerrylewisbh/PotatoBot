@@ -1,13 +1,14 @@
 import logging
-
-from telegram import Update, Bot
-from core.types import Wellcomed, WelcomeMsg, AdminType, admin_allowed, Admin, user_allowed
-from core.template import fill_template
+from config import ACADEM_CHAT_ID, CASTLE, CASTLE_CHAT_ID
 from time import time
-from core.utils import send_async, add_user, update_group
+
 from core.functions.newbies import newbie
+from core.template import fill_template
 from core.texts import *
-from config import CASTLE, CASTLE_CHAT_ID, ACADEM_CHAT_ID
+from core.types import (Admin, AdminType, WelcomeMsg, Wellcomed, admin_allowed,
+                        user_allowed)
+from core.utils import add_user, send_async, update_group
+from telegram import Bot, Update
 
 last_welcome = 0
 
@@ -29,7 +30,9 @@ def welcome(bot: Bot, update: Update, session):
                     allow_anywhere = True
                     break
             logging.debug("Welcome: chat_id=%s", update.message.chat.id)
-            logging.debug("Welcome: castle_chat_id==update.message.chat.id = %s", CASTLE_CHAT_ID == update.message.chat.id)
+            logging.debug(
+                "Welcome: castle_chat_id==update.message.chat.id = %s",
+                CASTLE_CHAT_ID == update.message.chat.id)
             if str(update.message.chat.id) == CASTLE_CHAT_ID or str(update.message.chat.id) == ACADEM_CHAT_ID:
                 logging.debug("Welcome: equal")
                 if group.welcome_enabled:
@@ -37,8 +40,8 @@ def welcome(bot: Bot, update: Update, session):
                     welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
                     send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
 
-            elif (user is None or user.character is None or user.character.castle != CASTLE  or user.member is None and not allow_anywhere and user.id != bot.id):
-                send_async(bot, chat_id=update.message.chat.id,vtext=MSG_THORNS.format("SPY"))
+            elif (user is None or user.character is None or user.character.castle != CASTLE or user.member is None and not allow_anywhere and user.id != bot.id):
+                send_async(bot, chat_id=update.message.chat.id, vtext=MSG_THORNS.format("SPY"))
                 bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
                 bot.kickChatMember(update.message.chat.id, new_chat_member.id)
             elif len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != bot.id and \

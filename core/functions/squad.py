@@ -1,21 +1,28 @@
-from datetime import timedelta, datetime
+from config import CASTLE
+from datetime import datetime, timedelta
 
-from sqlalchemy import func, text, and_ as text_, tuple_, and_
-from telegram import Update, Bot, ParseMode, TelegramError
-
+from core.constants import *
+from core.functions.inline_markup import (generate_fire_up,
+                                          generate_leave_squad,
+                                          generate_other_reports,
+                                          generate_squad_invite_answer,
+                                          generate_squad_list,
+                                          generate_squad_request,
+                                          generate_squad_request_answer,
+                                          generate_yes_no)
 from core.functions.reply_markup import generate_squad_markup
 from core.functions.top import gen_top_msg, generate_battle_top
 from core.template import fill_char_template
-from core.types import User, AdminType, Admin, admin_allowed, Group, Squad, SquadMember, user_allowed, Report, Character
-from core.utils import send_async, chunks
-from core.functions.inline_markup import generate_squad_list, generate_leave_squad, generate_squad_request, \
-    generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, generate_fire_up, \
-    generate_yes_no
 from core.texts import *
-from core.constants import *
-from config import CASTLE
+from core.types import (Admin, AdminType, Character, Group, Report, Squad,
+                        SquadMember, User, admin_allowed, user_allowed)
+from core.utils import chunks, send_async
+from sqlalchemy import and_ as text_
+from sqlalchemy import func, text, tuple_
+from telegram import Bot, ParseMode, TelegramError, Update
 
 TOP_START_DATE = datetime(2017, 12, 11)
+
 
 @user_allowed
 def squad_about(bot: Bot, update: Update, session):
@@ -112,6 +119,7 @@ def enable_thorns(bot: Bot, update: Update, session):
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_THORNS_ENABLED)
 
+
 @admin_allowed(AdminType.GROUP)
 def enable_reminders(bot: Bot, update: Update, session):
     group = session.query(Group).filter_by(id=update.message.chat.id).first()
@@ -120,7 +128,6 @@ def enable_reminders(bot: Bot, update: Update, session):
         session.add(group.squad[0])
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REMINDERS_ENABLED)
-
 
 
 @admin_allowed(AdminType.GROUP)
@@ -142,6 +149,7 @@ def disable_thorns(bot: Bot, update: Update, session):
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_THORNS_DISABLED)
 
+
 @admin_allowed(AdminType.GROUP)
 def disable_silence(bot: Bot, update: Update, session):
     group = session.query(Group).filter_by(id=update.message.chat.id).first()
@@ -160,8 +168,6 @@ def disable_reminders(bot: Bot, update: Update, session):
         session.add(group.squad[0])
         session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REMINDERS_DISABLED)
-
-
 
 
 @admin_allowed(AdminType.GROUP)
@@ -193,11 +199,11 @@ def squad_request(bot: Bot, update: Update, session):
             if user.member:
                 markup = generate_leave_squad(user.id)
                 send_async(bot, chat_id=update.message.chat.id,
-                                text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
+                           text=MSG_SQUAD_REQUEST_EXISTS, reply_markup=markup)
             else:
                 if user.character.level < MINIMUM_SQUAD_MEMBER_LEVEL:
                     send_async(bot, chat_id=update.message.chat.id,
-                                    text=MSG_SQUAD_LEVEL_TOO_LOW.format(MINIMUM_SQUAD_MEMBER_LEVEL))
+                               text=MSG_SQUAD_LEVEL_TOO_LOW.format(MINIMUM_SQUAD_MEMBER_LEVEL))
                 else:
                     markup = generate_squad_request(session)
                     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST, reply_markup=markup)
@@ -218,9 +224,17 @@ def list_squad_requests(bot: Bot, update: Update, session):
         for member in members:
             count += 1
             markup = generate_squad_request_answer(member.user_id)
-            send_async(bot, chat_id=update.message.chat.id,
-                       text=fill_char_template(MSG_PROFILE_SHOW_FORMAT, member.user, member.user.character,  member.user.profession,True),
-                       reply_markup=markup, parse_mode=ParseMode.HTML)
+            send_async(
+                bot,
+                chat_id=update.message.chat.id,
+                text=fill_char_template(
+                    MSG_PROFILE_SHOW_FORMAT,
+                    member.user,
+                    member.user.character,
+                    member.user.profession,
+                    True),
+                reply_markup=markup,
+                parse_mode=ParseMode.HTML)
     if count == 0:
         send_async(bot, chat_id=update.message.chat.id,
                    text=MSG_SQUAD_REQUEST_EMPTY)
@@ -260,8 +274,8 @@ def remove_from_squad(bot: Bot, update: Update, session):
         squad = session.query(Squad).filter_by(chat_id=adm.admin_group).first()
         for markup in markups:
             send_async(bot, chat_id=update.message.chat.id,
-                   text=MSG_SQUAD_CLEAN.format(squad.squad_name),
-                   reply_markup=markup, parse_mode=ParseMode.HTML)
+                       text=MSG_SQUAD_CLEAN.format(squad.squad_name),
+                       reply_markup=markup, parse_mode=ParseMode.HTML)
 
 
 @user_allowed
@@ -330,13 +344,12 @@ def add_to_squad(bot: Bot, update: Update, session):
                     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
                 elif user.member is not None:
                     send_async(bot, chat_id=update.message.chat.id,
-                            text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
+                               text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
                 else:
                     markup = generate_squad_invite_answer(user.id)
                     send_async(bot, chat_id=update.message.chat.id,
-                            text=MSG_SQUAD_ADD.format('@' + username),
-                            reply_markup=markup)
-
+                               text=MSG_SQUAD_ADD.format('@' + username),
+                               reply_markup=markup)
 
 
 @admin_allowed(AdminType.FULL)
@@ -352,7 +365,7 @@ def force_add_to_squad(bot: Bot, update: Update, session):
                     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
                 elif user.member is not None:
                     send_async(bot, chat_id=update.message.chat.id,
-                            text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
+                               text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
                 else:
                     member = session.query(SquadMember).filter_by(user_id=user.id).first()
                     if member is None:
@@ -362,13 +375,17 @@ def force_add_to_squad(bot: Bot, update: Update, session):
                         member.approved = True
                         session.add(member)
                         session.commit()
-                        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_ADD_FORCED.format('@'+user.username))
+                        send_async(
+                            bot,
+                            chat_id=update.message.chat.id,
+                            text=MSG_SQUAD_ADD_FORCED.format(
+                                '@' + user.username))
 
 
 @admin_allowed(AdminType.GROUP)
 def call_squad(bot: Bot, update: Update, session):
-    limit = 3;
-    count = 0;
+    limit = 3
+    count = 0
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         users = session.query(User).join(SquadMember).filter(User.id == SquadMember.user_id)\
@@ -381,9 +398,7 @@ def call_squad(bot: Bot, update: Update, session):
                 send_async(bot, chat_id=update.message.chat.id, text=msg)
                 msg = ""
                 count = 0
-            count += 1;
-
-
+            count += 1
 
 
 @admin_allowed(AdminType.GROUP)
@@ -403,7 +418,7 @@ def battle_attendance_show(bot: Bot, update: Update, session):
             .outerjoin(Report, Report.user_id == Character.user_id) \
             .join(SquadMember, SquadMember.user_id == Character.user_id)\
             .filter(Report.date > TOP_START_DATE) \
-            .filter(tuple_(Character.user_id, Character.date)\
+            .filter(tuple_(Character.user_id, Character.date)
                     .in_([(a[0], a[1]) for a in actual_profiles]),
                     Character.date > datetime.now() - timedelta(days=7))\
             .filter(SquadMember.squad_id == adm.admin_group).group_by(Character)\
@@ -411,7 +426,7 @@ def battle_attendance_show(bot: Bot, update: Update, session):
             .filter(Report.earned_exp > 0)\
             .order_by(func.count(Report.user_id).desc())
         battles = battles.all()
-        text =  MSG_TOP_WEEK_WARRIORS_SQUAD.format(squad.squad_name)
+        text = MSG_TOP_WEEK_WARRIORS_SQUAD.format(squad.squad_name)
         str_format = MSG_TOP_FORMAT
         for i in range(0, len(battles)):
             text += str_format.format(i + 1, battles[i][0].name, battles[i][0].level, battles[i][1], '⛳️')
@@ -419,7 +434,6 @@ def battle_attendance_show(bot: Bot, update: Update, session):
             send_async(bot,
                        chat_id=update.message.chat.id,
                        text=text)
-
 
 
 @admin_allowed(AdminType.GROUP)
@@ -433,10 +447,10 @@ def battle_reports_show(bot: Bot, update: Update, session):
     for adm, squad in group_admin:
         now = datetime.now()
         if (now.hour < 7):
-            now= now - timedelta(days=1)
-        
-        time_from = now.replace(hour=(int((now.hour+1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
- 
+            now = now - timedelta(days=1)
+
+        time_from = now.replace(hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
+
         reports = session.query(User, Report) \
             .join(SquadMember) \
             .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from)) \
@@ -452,12 +466,12 @@ def battle_reports_show(bot: Bot, update: Update, session):
         for user, report in reports:
             total_members += 1
             if report:
-                icon = REST_ICON if report.earned_exp  == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
-                icon =  PRELIMINARY_ICON + icon if report.preliminary_report else icon
+                icon = REST_ICON if report.earned_exp == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
+                icon = PRELIMINARY_ICON + icon if report.preliminary_report else icon
                 text = MSG_REPORT_SUMMARY_ROW.format(
                     icon, report.name, user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
-                texts.append(text);
+                texts.append(text)
                 full_atk += report.attack
                 full_def += report.defence
                 full_exp += report.earned_exp
@@ -466,14 +480,23 @@ def battle_reports_show(bot: Bot, update: Update, session):
                 total_reports += 1
             else:
                 text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
-                texts.append(text);
-        
-        template = MSG_REPORT_SUMMARY_HEADER.format(squad.squad_name, time_from.strftime('%d-%m-%Y %H:%M'), total_reports, total_members, full_atk, full_def, full_exp, full_gold, full_stock)
+                texts.append(text)
 
-        limit = 50;
-        count = 0;
+        template = MSG_REPORT_SUMMARY_HEADER.format(
+            squad.squad_name,
+            time_from.strftime('%d-%m-%Y %H:%M'),
+            total_reports,
+            total_members,
+            full_atk,
+            full_def,
+            full_exp,
+            full_gold,
+            full_stock)
+
+        limit = 50
+        count = 0
         repo_list = ''
-        limit = limit if len(texts) > limit else len(texts) 
+        limit = limit if len(texts) > limit else len(texts)
         for element in texts:
             repo_list += element
             count = count + 1
@@ -481,8 +504,10 @@ def battle_reports_show(bot: Bot, update: Update, session):
                 count = 0
                 text = template + repo_list
                 markup = generate_other_reports(time_from, squad.chat_id)
-                bot.sendMessage(chat_id=update.message.chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup)
+                bot.sendMessage(
+                    chat_id=update.message.chat.id,
+                    text=text,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=markup)
                 #send_async(bot, chat_id=update.message.chat.id, text=repo_list, parse_mode=ParseMode.HTML, reply_markup=markup)
                 repo_list = ''
-
-

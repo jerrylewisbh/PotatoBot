@@ -1,18 +1,17 @@
-from telegram import Update, Bot
+from config import SUPER_ADMIN_ID
 
 # from core.texts import *
-from core.texts import (
-    MSG_USER_UNKNOWN, MSG_NEW_GROUP_ADMIN, MSG_DEL_GROUP_ADMIN,
-    MSG_NEW_GROUP_ADMIN_EXISTS, MSG_DEL_GROUP_ADMIN_NOT_EXIST,
-    MSG_LIST_ADMINS_HEADER, MSG_LIST_ADMINS_FORMAT,
-    MSG_EMPTY, MSG_LIST_ADMINS_USER_FORMAT,
-    MSG_NEW_GLOBAL_ADMIN, MSG_NEW_GLOBAL_ADMIN_EXISTS,
-    MSG_NEW_SUPER_ADMIN, MSG_NEW_SUPER_ADMIN_EXISTS,
-    MSG_DEL_GLOBAL_ADMIN, MSG_DEL_GLOBAL_ADMIN_NOT_EXIST
-)
-from core.types import User, AdminType, Admin, admin_allowed, user_allowed
+from core.texts import (MSG_DEL_GLOBAL_ADMIN, MSG_DEL_GLOBAL_ADMIN_NOT_EXIST,
+                        MSG_DEL_GROUP_ADMIN, MSG_DEL_GROUP_ADMIN_NOT_EXIST,
+                        MSG_EMPTY, MSG_LIST_ADMINS_FORMAT,
+                        MSG_LIST_ADMINS_HEADER, MSG_LIST_ADMINS_USER_FORMAT,
+                        MSG_NEW_GLOBAL_ADMIN, MSG_NEW_GLOBAL_ADMIN_EXISTS,
+                        MSG_NEW_GROUP_ADMIN, MSG_NEW_GROUP_ADMIN_EXISTS,
+                        MSG_NEW_SUPER_ADMIN, MSG_NEW_SUPER_ADMIN_EXISTS,
+                        MSG_USER_UNKNOWN)
+from core.types import Admin, AdminType, User, admin_allowed, user_allowed
 from core.utils import send_async
-from config import SUPER_ADMIN_ID
+from telegram import Bot, Update
 
 
 @admin_allowed()

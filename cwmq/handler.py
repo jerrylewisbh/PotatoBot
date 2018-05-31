@@ -2,17 +2,19 @@ import datetime
 import json
 import logging
 
-from sqlalchemy.exc import InterfaceError, InvalidRequestError
-from telegram import ParseMode
-
 from core.enums import CASTLE_MAP, CLASS_MAP
-from core.functions.common import stock_compare, MSG_API_REQUIRE_ACCESS_STOCK, MSG_API_REQUIRE_ACCESS_PROFILE, \
-    MSG_API_REVOKED_PERMISSIONS, MSG_API_SETUP_STEP_1_COMPLETE, MSG_API_SETUP_STEP_2_COMPLETE
+from core.functions.common import (MSG_API_REQUIRE_ACCESS_PROFILE,
+                                   MSG_API_REQUIRE_ACCESS_STOCK,
+                                   MSG_API_REVOKED_PERMISSIONS,
+                                   MSG_API_SETUP_STEP_1_COMPLETE,
+                                   MSG_API_SETUP_STEP_2_COMPLETE,
+                                   stock_compare)
 from core.functions.profile import get_required_xp
 from core.functions.reply_markup import generate_user_markup
-from core.state import get_game_state, GameState
-from core.types import Session, User, Character
+from core.types import Character, Session, User
 from cwmq import Publisher
+from sqlalchemy.exc import InterfaceError, InvalidRequestError
+from telegram import ParseMode
 
 session = Session()
 p = Publisher()
@@ -20,21 +22,22 @@ p = Publisher()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 def mq_handler(channel, method, properties, body, dispatcher):
     logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
 
     try:
         # Code to just flush everything out...
-        #channel.basic_ack(method.delivery_tag)
-        #return
+        # channel.basic_ack(method.delivery_tag)
+        # return
 
         # Get user details if possible...
         user = None
         try:
             if data and "payload" in data and data["payload"] and "userId" in data['payload']:
                 user = session.query(User).filter_by(id=data['payload']['userId']).first()
-        except (InterfaceError, InvalidRequestError) as ex:
+        except (InterfaceError, InvalidRequestError):
             logging.warning("Request/Interface Error occured, doing rollback and trying again...")
             session.rollback()
             user = session.query(User).filter_by(id=data['payload']['userId']).first()
@@ -74,14 +77,14 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 "action": "requestProfile"
             })
 
-            #grant_req = {
+            # grant_req = {
             #    "token": user.api_token,
             #    "action": "authAdditionalOperation",
             #    "payload": {
             #        "operation": "GetUserProfile",
             #    }
             #}
-            #p.publish(grant_req)
+            # p.publish(grant_req)
         elif data['action'] == "grantAdditionalOperation" and data['result'] == "Ok":
             logger.info("grantAdditionalOperation was successful!")
 
@@ -104,7 +107,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 p.publish(grant_req)
             elif user.api_grant_operation == "GetStock":
                 message = MSG_API_SETUP_STEP_2_COMPLETE
-                user.api_grant_operation = None # We don't need this code anymore!
+                user.api_grant_operation = None  # We don't need this code anymore!
                 user.is_api_stock_allowed = True
 
                 p.publish({
@@ -167,7 +170,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 p.publish(grant_req)
             elif data['result'] == "Ok":
                 # Seems we have access although we thought we don't have it...
-                #if not user.is_profile_access_granted():
+                # if not user.is_profile_access_granted():
                 #    logger.warning("State is wrong? We already have granted persmissions for Profile!")
                 #    user.set_profile_access_granted(True)
                 #   user.save()
@@ -180,12 +183,13 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 c = Character()
                 c.user_id = user.id
                 c.date = datetime.datetime.now()
-                guildTag = "[" + data['payload']['profile']['guild_tag'] +"]"  if 'guild_tag' in data['payload']['profile'] and data['payload']['profile']['guild_tag'] else ''
+                guildTag = "[" + data['payload']['profile']['guild_tag'] + "]" if 'guild_tag' in data['payload'][
+                    'profile'] and data['payload']['profile']['guild_tag'] else ''
                 c.name = guildTag + data['payload']['profile']['userName']
                 c.prof = CASTLE_MAP[data['payload']['profile']['castle']]
                 c.characterClass = CLASS_MAP.get(data['payload']['profile']['class'], "Unknown class")
                 c.pet = None
-                c.maxStamina = -1 # TODO?
+                c.maxStamina = -1  # TODO?
                 c.level = data['payload']['profile']['lvl']
                 c.attack = data['payload']['profile']['atk']
                 c.defence = data['payload']['profile']['def']
@@ -208,7 +212,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
                   🏛Class info: {class}
                 """
 
-                #dispatcher.bot.send_message(
+                # dispatcher.bot.send_message(
                 #    data['payload']['userId'],
                 #    "{}".format(data['payload']),
                 #    # reply_markup=_get_keyboard(user)
@@ -238,7 +242,6 @@ def mq_handler(channel, method, properties, body, dispatcher):
             elif data['result'] == "Forbidden":
                 logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
 
-
                 dispatcher.bot.send_message(
                     user.id,
                     MSG_API_REQUIRE_ACCESS_STOCK,
@@ -262,13 +265,13 @@ def mq_handler(channel, method, properties, body, dispatcher):
                 logger.info("Stock update for %s...", user.id)
 
                 # FixMe: Filled stock slots is currently not tracked. Maybe calculate it?
-                text = "📦Storage (???/???):\n" # We don't have the overall size (yet) so we enter dummy text...
+                text = "📦Storage (???/???):\n"  # We don't have the overall size (yet) so we enter dummy text...
                 for item, count in data['payload']['stock'].items():
                     text += "{} ({})\n".format(item, count)
 
                 stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(session, user.id, text))
 
-                #if get_game_state() != GameState.HOWLING_WIND:
+                # if get_game_state() != GameState.HOWLING_WIND:
                 #    # Don't send stock change notification when wind is not howling...
                 #    # TODO: This might be too late?!
                 #
@@ -280,12 +283,12 @@ def mq_handler(channel, method, properties, body, dispatcher):
                     user.id,
                     stock_info,
                     parse_mode=ParseMode.HTML,
-                    reply_markup = generate_user_markup(user.id)
+                    reply_markup=generate_user_markup(user.id)
                 )
 
         # We're done...
         channel.basic_ack(method.delivery_tag)
-    except Exception as ex:
+    except Exception:
         try:
             # Acknowledge if possible...
             channel.basic_ack(method.delivery_tag)
@@ -294,10 +297,7 @@ def mq_handler(channel, method, properties, body, dispatcher):
 
         try:
             session.rollback()
-        except:
+        except BaseException:
             logging.exception("Can't do rollback")
 
         logging.exception("Exception in MQ handler occured!")
-
-
-

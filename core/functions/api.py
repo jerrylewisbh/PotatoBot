@@ -1,13 +1,11 @@
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
 
 import flask
-from werkzeug.routing import IntegerConverter as BaseIntegerConverter
 from core.texts import MSG_MAIN_READY_TO_BATTLE
-from core.types import Order, Session, Squad, SquadMember, OrderCleared
-
+from core.types import Order, OrderCleared, Session, Squad, SquadMember
 from sqlalchemy.exc import SQLAlchemyError
-
+from werkzeug.routing import IntegerConverter as BaseIntegerConverter
 
 app = flask.Flask(__name__)
 
