@@ -8,7 +8,6 @@ from core.state import GameState, get_game_state
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-
 class TestTime(unittest.TestCase):
     def test_game_state_morning(self):
         """ Test if GameState returns Morning state... """

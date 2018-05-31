@@ -20,7 +20,6 @@ from telegram import KeyboardButton, ReplyKeyboardMarkup
 session = Session()
 
 
-
 def generate_admin_markup(full=False):
     buttons = [[KeyboardButton(ADMIN_COMMAND_ORDER)]]
     if full:
