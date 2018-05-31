@@ -189,6 +189,7 @@ class UserQuest(Base):
     location = relationship('Location', back_populates='user_locations')
 
     user = relationship('User', back_populates='quests')
+    daytime = Column(BigInteger, nullable=False, default=0)
 
     items = relationship(UserQuestItem)
 
