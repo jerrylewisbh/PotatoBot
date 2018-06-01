@@ -112,7 +112,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             admin,
         ))
 
-        if squad and squad.silence_enabled and not admin and get_game_state() == GameState.BATTLE_SILENCE:
+        if squad and squad.silence_enabled and not admin and GameState.BATTLE_SILENCE in get_game_state():
             bot.delete_message(update.message.chat.id,
                                update.message.message_id)
         if not update.message.text:
