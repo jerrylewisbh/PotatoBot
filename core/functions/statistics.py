@@ -26,9 +26,160 @@ def statistic_about(bot: Bot, update: Update, session):
                text=MSG_STATISTICS_ABOUT,
                reply_markup=markup)
 
-
 @user_allowed
 def quest_statistic(bot: Bot, update: Update, session):
+    logging.debug("Quest statistics")
+
+    # Render for every level we know...
+    max_level = session.query(func.max(UserQuest.level)).first()
+    if not max_level:
+        return
+
+
+    fig, ax = plot.subplots(figsize=(20, 15))
+    ind = numpy.arange(max_level[0] + 1)
+    width = 0.25
+
+    bars = []
+    logging.warning("Getting stats for")
+    stats = session.query(
+        UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
+    ).join(Location).filter(UserQuest.location_id == 13).order_by(UserQuest.level).group_by(UserQuest.level).all()
+
+    values = []
+    stddev = []
+    for stat in stats:
+        while len(values) < stat[0]:
+            #logging.warning("Filling up list...")
+            values.append(float('nan'))
+            stddev.append(float('nan'))
+        values.append(int(stat[1]))
+        stddev.append(int(stat[2]))
+    while len(values) <= max_level[0]:
+        values.append(float('nan'))
+        stddev.append(float('nan'))
+
+    values = numpy.array(values).astype(numpy.double)
+    mask = numpy.isfinite(tuple(values))
+
+    logging.warning(values)
+    logging.warning(len(values))
+    logging.warning(stddev)
+    logging.warning(len(stddev))
+
+    b = ax.plot(
+        ind[mask],
+        values[mask],
+        width,
+        color='gold',
+        linestyle='-', marker='o'
+        #yerr=tuple(stddev)
+    )
+    bars.append(b)
+
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel('XP')
+    ax.set_title('Experience in Forest')
+    ax.set_xticks(ind + (width * 4) / 2)
+    ax.set_xticklabels(range(1, max_level[0]+1))
+
+    
+    #[autolabel(ax, bar) for bar in bars]
+
+    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
+    with open(filename, 'wb') as file:
+        plot.savefig(file, format='png')
+
+    with open(filename, 'rb') as file:
+        bot.sendPhoto(update.message.chat.id, file, "Forest!")
+
+    plot.clf()
+    os.remove(filename)
+
+
+@user_allowed
+def quest_statistic_line_one(bot: Bot, update: Update, session):
+    logging.debug("Quest statistics")
+
+    # Render for every level we know...
+    max_level = session.query(func.max(UserQuest.level)).first()
+    if not max_level:
+        return
+
+    times = (
+        (2, 'Morning', 'gold'),
+        (4, 'Day', 'goldenrod'),
+        (8, 'Evening', 'orange'),
+        (16, 'Night', 'silver'),
+    )
+
+    fig, ax = plot.subplots(figsize=(20, 15))
+    ind = numpy.arange(max_level[0] + 1)
+    width = 0.25
+
+    bars = []
+    for counter, daytime in enumerate(times, start=1):
+        logging.warning("Getting stats for %s", daytime)
+        stats = session.query(
+            UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
+        ).join(Location).filter(UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(UserQuest.level).group_by(UserQuest.level).all()
+
+        values = []
+        stddev = []
+        for stat in stats:
+            while len(values) < stat[0]:
+                #logging.warning("Filling up list...")
+                values.append(float('nan'))
+                stddev.append(float('nan'))
+            values.append(int(stat[1]))
+            stddev.append(int(stat[2]))
+        while len(values) <= max_level[0]:
+            values.append(float('nan'))
+            stddev.append(float('nan'))
+
+        values = numpy.array(values).astype(numpy.double)
+        mask = numpy.isfinite(tuple(values))
+
+        logging.warning(values)
+        logging.warning(len(values))
+        logging.warning(stddev)
+        logging.warning(len(stddev))
+
+        b = ax.plot(
+            ind[mask],
+            values[mask],
+            width,
+            color=daytime[2],
+            linestyle='-', marker='o'
+            #yerr=tuple(stddev)
+        )
+        bars.append(b)
+
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel('XP')
+    ax.set_title('Experience in Forest')
+    ax.set_xticks(ind + (width * 4) / 2)
+    ax.set_xticklabels(range(1, max_level[0]+1))
+
+    ax.legend(
+        [rect for rect in bars],
+        [daytime[1] for daytime in times],
+    )
+    #[autolabel(ax, bar) for bar in bars]
+
+    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
+    with open(filename, 'wb') as file:
+        plot.savefig(file, format='png')
+
+    with open(filename, 'rb') as file:
+        bot.sendPhoto(update.message.chat.id, file, "Forest!")
+
+    plot.clf()
+    os.remove(filename)
+
+
+@user_allowed
+def quest_statistic_split(bot: Bot, update: Update, session):
     logging.debug("Quest statistics")
 
     # Render for every level we know...
@@ -92,6 +243,72 @@ def quest_statistic(bot: Bot, update: Update, session):
         [daytime[1] for daytime in times],
     )
     [autolabel(ax, bar) for bar in bars]
+
+    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
+    with open(filename, 'wb') as file:
+        plot.savefig(file, format='png')
+
+    with open(filename, 'rb') as file:
+        bot.sendPhoto(update.message.chat.id, file, "Forest!")
+
+    plot.clf()
+    os.remove(filename)
+
+@user_allowed
+def quest_statistic_one(bot: Bot, update: Update, session):
+    logging.debug("Quest statistics")
+
+    # Render for every level we know...
+    max_level = session.query(func.max(UserQuest.level)).first()
+    if not max_level:
+        return
+
+    fig, ax = plot.subplots(figsize=(20, 15))
+    ind = numpy.arange(max_level[0] + 1)
+    width = 0.5
+
+    logging.warning("Getting stats")
+    stats = session.query(
+        UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
+    ).join(Location).filter(UserQuest.location_id == 13).order_by(UserQuest.level).group_by(UserQuest.level).all()
+
+    values = []
+    stddev = []
+    for stat in stats:
+        while len(values) < stat[0]:
+            #logging.warning("Filling up list...")
+            values.append(0)
+            stddev.append(0)
+        values.append(int(stat[1]))
+        stddev.append(int(stat[2]))
+    while len(values) <= max_level[0]:
+        values.append(0)
+        stddev.append(0)
+
+    logging.warning(values)
+    logging.warning(len(values))
+    logging.warning(stddev)
+    logging.warning(len(stddev))
+
+    b = ax.bar(
+        ind + (width),
+        tuple(values),
+        width,
+        color='gold',
+        yerr=tuple(stddev)
+    )
+
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel('XP')
+    ax.set_title('Experience in Forest')
+    ax.set_xticks(ind + (width * 4) / 2)
+    ax.set_xticklabels(range(1, max_level[0]+1))
+
+    """ax.legend(
+        [rect for rect in bars],
+        [daytime[1] for daytime in times],
+    )
+    [autolabel(ax, bar) for bar in bars]"""
 
     filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
     with open(filename, 'wb') as file:
