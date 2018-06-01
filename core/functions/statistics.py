@@ -83,7 +83,7 @@ def quest_statistic(bot: Bot, update: Update, session):
     ax.set_xticks(ind + (width * 4) / 2)
     ax.set_xticklabels(range(1, max_level[0]+1))
 
-    
+
     #[autolabel(ax, bar) for bar in bars]
 
     filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
