@@ -20,12 +20,14 @@ from core.texts import (BTN_ACCEPT, BTN_ALL_TIME, BTN_DECLINE, BTN_EQUIPMENT,
                         MSG_ORDER_NO_BUTTON, MSG_ORDER_NO_PIN, MSG_ORDER_PIN,
                         MSG_ORDER_TO_SQUADS, MSG_SQUAD_GREEN_INLINE_BUTTON,
                         MSG_SQUAD_RED_INLINE_BUTTON, MSG_SYMBOL_OFF,
-                        MSG_SYMBOL_ON)
+                        MSG_SYMBOL_ON, BTN_SETTING_ENABLE_SNIPING, BTN_SETTING_DISABLE_SNIPING,
+                        BTN_SETTING_DISABLE_HIDE_GOLD, BTN_SETTING_ENABLE_HIDE_GOLD)
 from core.types import (Admin, AdminType, Character, Group, OrderGroup, Squad,
-                        User)
+                        User, Session)
 from sqlalchemy import func, tuple_
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+session = Session()
 
 class QueryType(IntFlag):
     GroupList = auto()
@@ -73,11 +75,17 @@ class QueryType(IntFlag):
 
     QuestFeedbackRequired = auto()
 
+    DisableSniping = auto()
+    EnableSniping = auto()
+
+    DisableHideGold = auto()
+    EnableHideGold = auto()
+
     Yes = auto()
     No = auto()
 
 
-def generate_group_info(group_id, session):
+def generate_group_info(group_id):
     group = session.query(Group).filter(Group.id == group_id).first()
     admins = session.query(Admin).filter(Admin.admin_group == group_id).all()
     adm_msg = ''
@@ -217,7 +225,7 @@ def generate_forward_markup(order_id, count):
     return inline_markup
 
 
-def generate_groups_manage(session):
+def generate_groups_manage():
     groups = session.query(OrderGroup).all()
     inline_keys = []
     for group in groups:
@@ -228,7 +236,7 @@ def generate_groups_manage(session):
     return InlineKeyboardMarkup(inline_keys)
 
 
-def generate_group_manage(group_id, session):
+def generate_group_manage(group_id):
     squads = session.query(Squad).all()
     inline_keys = []
     for squad in squads:
@@ -278,7 +286,7 @@ def generate_settings_buttons(user, back_key=False):
                 ))
             ]
         )
-    if user.is_api_stock_allowed and user.is_api_profile_allowed and user.api_token:
+    if user.is_squadmember() and user.is_api_stock_allowed and user.is_api_profile_allowed and user.api_token:
         if user.setting_automated_report:
             inline_keys.append(
                 [
@@ -311,12 +319,45 @@ def generate_settings_buttons(user, back_key=False):
                     ))
                 ]
             )
+    if user.is_tester() and user.is_api_trade_allowed and user.api_token:
+        if user.setting_automated_sniping:
+            inline_keys.append(
+                [
+                    InlineKeyboardButton(BTN_SETTING_DISABLE_SNIPING, callback_data=json.dumps(
+                        {'t': QueryType.DisableSniping, 'id': user.id, 'b': back_key}
+                    ))
+                ]
+            )
+        else:
+            inline_keys.append(
+                [
+                    InlineKeyboardButton(BTN_SETTING_ENABLE_SNIPING, callback_data=json.dumps(
+                        {'t': QueryType.EnableSniping, 'id': user.id, 'b': back_key}
+                    ))
+                ]
+            )
+        if user.setting_automated_hiding:
+            inline_keys.append(
+                [
+                    InlineKeyboardButton(BTN_SETTING_DISABLE_HIDE_GOLD, callback_data=json.dumps(
+                        {'t': QueryType.DisableHideGold, 'id': user.id, 'b': back_key}
+                    ))
+                ]
+            )
+        else:
+            inline_keys.append(
+                [
+                    InlineKeyboardButton(BTN_SETTING_ENABLE_HIDE_GOLD, callback_data=json.dumps(
+                        {'t': QueryType.EnableHideGold, 'id': user.id, 'b': back_key}
+                    ))
+                ]
+            )
     if inline_keys:
         return InlineKeyboardMarkup(inline_keys)
     return None
 
 
-def generate_squad_list_key(squad, session):
+def generate_squad_list_key(squad):
     attack = 0
     defence = 0
     level = 0
@@ -354,7 +395,7 @@ def generate_yes_no(user_id):
     return InlineKeyboardMarkup([inline_keys])
 
 
-def generate_squad_list(squads, session):
+def generate_squad_list(squads):
     inline_keys = []
     for squad in squads:
         inline_keys.append(generate_squad_list_key(squad, session))
@@ -393,7 +434,7 @@ def generate_other_reports(time: datetime, squad_id):
     return InlineKeyboardMarkup(inline_keys)
 
 
-def generate_squad_members(members, session):
+def generate_squad_members(members):
     inline_keys = []
     inline_list = []
     user_ids = []

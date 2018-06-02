@@ -5,6 +5,7 @@ from telegram import Bot
 from telegram.error import TelegramError
 from telegram.ext.dispatcher import run_async
 
+session = Session()
 
 @run_async
 def send_async(bot: Bot, *args, **kwargs):
@@ -22,7 +23,7 @@ def send_async(bot: Bot, *args, **kwargs):
         return None
 
 
-def add_user(tg_user, session):
+def add_user(tg_user):
     user = session.query(User).filter_by(id=tg_user.id).first()
     if user is None:
         user = User(id=tg_user.id, username=tg_user.username or '',
@@ -46,7 +47,7 @@ def add_user(tg_user, session):
     return user
 
 
-def update_group(grp, session):
+def update_group(grp):
     if grp.type in ['group', 'supergroup', 'channel']:
         group = session.query(Group).filter_by(id=grp.id).first()
         if group is None:

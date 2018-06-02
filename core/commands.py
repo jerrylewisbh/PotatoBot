@@ -20,6 +20,8 @@ USER_COMMAND_SQUAD_LEAVE = '☄Leave Squad'
 USER_COMMAND_REGISTER = '🔑Register'
 USER_COMMAND_REGISTER_CONTINUE = '🔑Continue Registration'
 USER_COMMAND_SETTINGS = '⚙️Settings'
+USER_COMMAND_EXCHANGE = '⚖Exchange'
+USER_COMMAND_HIDE = '🙈Hide gold'
 
 USER_COMMAND_BACK = '🔙Go Back'
 

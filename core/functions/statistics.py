@@ -9,15 +9,16 @@ from core.texts import (MSG_DATE_FORMAT, MSG_DAY_PLURAL1, MSG_DAY_PLURAL2,
                         MSG_DAY_SINGLE, MSG_NO_CLASS, MSG_PLOT_DESCRIPTION,
                         MSG_PLOT_DESCRIPTION_SKILL, MSG_STATISTICS_ABOUT,
                         PLOT_X_LABEL, PLOT_Y_LABEL)
-from core.types import Character, Profession, user_allowed
+from core.types import Character, Profession, user_allowed, Session
 from core.utils import send_async
 from sqlalchemy import text as text_
 from sqlalchemy import func, tuple_
 from telegram import Bot, Update
 
+session = Session()
 
 @user_allowed
-def statistic_about(bot: Bot, update: Update, session):
+def statistic_about(bot: Bot, update: Update):
     markup = generate_statistics_markup()
     send_async(bot,
                chat_id=update.message.chat.id,
@@ -26,7 +27,7 @@ def statistic_about(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def skill_statistic(bot: Bot, update: Update, session):
+def skill_statistic(bot: Bot, update: Update):
     my_class = session.query(Profession).filter_by(
         user_id=update.message.from_user.id).order_by(
         Profession.date.desc()).first()
@@ -131,7 +132,7 @@ def skill_statistic(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def exp_statistic(bot: Bot, update: Update, session):
+def exp_statistic(bot: Bot, update: Update):
     profiles = session.query(Character).filter_by(user_id=update.message.from_user.id)\
         .order_by(Character.date).all()
     plot.switch_backend('ps')

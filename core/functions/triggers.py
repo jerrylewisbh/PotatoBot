@@ -4,10 +4,11 @@ from json import loads
 import telegram
 from core.texts import *
 from core.types import (AdminType, LocalTrigger, MessageType, Trigger,
-                        admin_allowed, check_admin, user_allowed)
+                        admin_allowed, check_admin, user_allowed, Session)
 from core.utils import send_async, update_group
 from telegram import Bot, Message, ParseMode, Update
 
+session = Session()
 
 def trigger_decorator(func):
     @user_allowed
@@ -22,7 +23,7 @@ def trigger_decorator(func):
     return wrapper
 
 
-def add_global_trigger_db(msg: Message, trigger_text: str, session):
+def add_global_trigger_db(msg: Message, trigger_text: str):
     trigger = session.query(Trigger).filter_by(trigger=trigger_text).first()
     if trigger is None:
         trigger = Trigger()
@@ -62,7 +63,7 @@ def add_global_trigger_db(msg: Message, trigger_text: str, session):
 
 
 @admin_allowed()
-def set_global_trigger(bot: Bot, update: Update, session):
+def set_global_trigger(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger = msg[1].strip()
@@ -74,7 +75,7 @@ def set_global_trigger(bot: Bot, update: Update, session):
 
 
 @admin_allowed()
-def add_global_trigger(bot: Bot, update: Update, session):
+def add_global_trigger(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger_text = msg[1].strip()
@@ -90,7 +91,7 @@ def add_global_trigger(bot: Bot, update: Update, session):
 
 
 @trigger_decorator
-def trigger_show(bot: Bot, update: Update, session):
+def trigger_show(bot: Bot, update: Update):
     trigger = session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id, trigger=update.message.text).first()
     if trigger is None:
         trigger = session.query(Trigger).filter_by(trigger=update.message.text).first()
@@ -131,7 +132,7 @@ def trigger_show(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def enable_global_trigger_all(bot: Bot, update: Update, session):
+def enable_global_trigger_all(bot: Bot, update: Update):
     group = update_group(update.message.chat, session)
     group.allow_trigger_all = True
     session.add(group)
@@ -140,7 +141,7 @@ def enable_global_trigger_all(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def disable_global_trigger_all(bot: Bot, update: Update, session):
+def disable_global_trigger_all(bot: Bot, update: Update):
     group = update_group(update.message.chat, session)
     group.allow_trigger_all = False
     session.add(group)
@@ -149,7 +150,7 @@ def disable_global_trigger_all(bot: Bot, update: Update, session):
 
 
 @admin_allowed()
-def del_global_trigger(bot: Bot, update: Update, session):
+def del_global_trigger(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)[1]
     trigger = session.query(Trigger).filter_by(trigger=msg).first()
     if trigger is not None:
@@ -161,7 +162,7 @@ def del_global_trigger(bot: Bot, update: Update, session):
 
 
 @trigger_decorator
-def list_triggers(bot: Bot, update: Update, session):
+def list_triggers(bot: Bot, update: Update):
     triggers = session.query(Trigger).all()
     local_triggers = session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id).all()
     msg = MSG_TRIGGER_LIST_HEADER + \
@@ -170,7 +171,7 @@ def list_triggers(bot: Bot, update: Update, session):
     send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
 
 
-def add_trigger_db(msg: Message, chat, trigger_text: str, session):
+def add_trigger_db(msg: Message, chat, trigger_text: str):
     trigger = session.query(LocalTrigger).filter_by(chat_id=chat.id, trigger=trigger_text).first()
     if trigger is None:
         trigger = LocalTrigger()
@@ -211,7 +212,7 @@ def add_trigger_db(msg: Message, chat, trigger_text: str, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def set_trigger(bot: Bot, update: Update, session):
+def set_trigger(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger = msg[1].strip()
@@ -223,7 +224,7 @@ def set_trigger(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def add_trigger(bot: Bot, update: Update, session):
+def add_trigger(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger_text = msg[1].strip()
@@ -239,7 +240,7 @@ def add_trigger(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def enable_trigger_all(bot: Bot, update: Update, session):
+def enable_trigger_all(bot: Bot, update: Update):
     group = update_group(update.message.chat, session)
     group.allow_trigger_all = True
     session.add(group)
@@ -248,7 +249,7 @@ def enable_trigger_all(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def disable_trigger_all(bot: Bot, update: Update, session):
+def disable_trigger_all(bot: Bot, update: Update):
     group = update_group(update.message.chat, session)
     group.allow_trigger_all = False
     session.add(group)
@@ -257,7 +258,7 @@ def disable_trigger_all(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def del_trigger(bot: Bot, update: Update, session):
+def del_trigger(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)[1]
     trigger = session.query(LocalTrigger).filter_by(trigger=msg).first()
     if trigger is not None:

@@ -237,13 +237,12 @@ def report_after_battle(bot: Bot, job_queue: Job):
             text = MSG_USER_BATTLE_REPORT
             # We must have the actual access rights and user has to be in a testing squad to allow onboarding of this
             # feature!
-            onboarding_squad_member = False
-            if user and user.member and user.member.approved and user.member.squad and user.member.squad.testing_squad:
-                onboarding_squad_member = True
+
+            if not user.is_squadmember():
+                return
 
             if user.is_api_profile_allowed and user.is_api_stock_allowed and \
-                    user.setting_automated_report and user.api_token and \
-                    onboarding_squad_member:
+                    user.setting_automated_report and user.api_token:
 
                 prev_character = session.query(Character).filter_by(
                     user_id=user.id,

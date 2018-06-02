@@ -89,7 +89,9 @@ class User(Base):
                              uselist=False)
 
     orders_confirmed = relationship('OrderCleared', back_populates='user')
+
     member = relationship('SquadMember', back_populates='user', uselist=False)
+
     equip = relationship('Equip',
                          back_populates='user',
                          order_by='Equip.date.desc()',
@@ -115,6 +117,9 @@ class User(Base):
 
     quests = relationship('UserQuest', back_populates='user')
 
+    hide_settings = relationship('UserStockHideSetting', back_populates='user', lazy='dynamic')
+    sniping_settings = relationship('UserExchangeOrder', back_populates='user', lazy='dynamic')
+
     # API Token and temporary stuff we need after we get an async answer...
     api_token = Column(UnicodeText(250))
     api_user_id = Column(UnicodeText(250))
@@ -123,9 +128,12 @@ class User(Base):
 
     is_api_profile_allowed = Column(Boolean())
     is_api_stock_allowed = Column(Boolean())
+    is_api_trade_allowed = Column(Boolean())
 
     setting_automated_report = Column(Boolean(), default=True)
     setting_automated_deal_report = Column(Boolean(), default=True)
+    setting_automated_hiding = Column(Boolean(), default=False)
+    setting_automated_sniping = Column(Boolean(), default=False)
 
     # Relationship
     admin_permission = relationship("Admin")
@@ -136,6 +144,20 @@ class User(Base):
         # Get longest running ban still valid...
         ban = self.ban.first()
         if ban is not None and datetime.now() < ban.to_date:
+            return True
+        return False
+
+    def is_squadmember(self):
+        if self.member and self.member.approved:
+            return True
+        return False
+
+    def is_tester(self):
+        # Check if user is a tester based on testing-squad membership
+        if not self.is_squadmember():
+            return False
+
+        if self.member and self.member.approved and self.member.squad and self.member.squad.testing_squad:
             return True
         return False
 
@@ -444,10 +466,48 @@ class Item(Base):
     __tablename__ = 'item'
 
     id = Column(BigInteger, autoincrement=True, primary_key=True)
+    cw_id = Column(UnicodeText(25), unique=True)
+
+    tradable = Column(Boolean(), default=False, nullable=False)
+    pillagable = Column(Boolean(), default=False, nullable=False)
+    weight = Column(BigInteger, default=1, nullable=False)
 
     name = Column(UnicodeText(250))
 
     user_quests = relationship(UserQuestItem)
+    user_orders = relationship('UserExchangeOrder', back_populates='item', lazy='dynamic')
+
+class UserExchangeOrder(Base):
+    __tablename__ = 'user_exchange'
+
+    id = Column(BigInteger, autoincrement=True, primary_key=True )
+
+    user_id = Column(BigInteger, ForeignKey(User.id))
+    user = relationship(User, back_populates="sniping_settings")
+
+    item_id = Column(BigInteger, ForeignKey(Item.id))
+    item = relationship(Item, back_populates='user_orders')
+
+    limit = Column(Integer, nullable=False)
+    max_price = Column(Integer, nullable=False)
+
+class UserStockHideSetting(Base):
+    __tablename__ = 'user_autohide'
+
+    id = Column(BigInteger, autoincrement=True, primary_key=True)
+
+    user_id = Column(BigInteger, ForeignKey(User.id))
+    user = relationship(User, back_populates="hide_settings")
+
+    item_id = Column(BigInteger, ForeignKey(Item.id))
+    item = relationship(Item)
+
+    priority = Column(Integer, nullable=False)
+    max_price = Column(Integer, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'priority', name='uc_usr_item'),
+    )
 
 
 def check_admin(update, session, adm_type, allowed_types=()):
@@ -507,7 +567,7 @@ def admin_allowed(adm_type=AdminType.FULL, ban_enable=True, allowed_types=()):
                             update.callback_query.data if update.callback_query else None)
                     # Fixme: Issues a message-update even if message did not change. This
                     # raises a telegram.error.BadRequest exception!
-                    func(bot, update, session, *args, **kwargs)
+                    func(bot, update, *args, **kwargs)
             except SQLAlchemyError as err:
                 bot.logger.error(str(err))
                 session.rollback()

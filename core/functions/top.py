@@ -9,7 +9,7 @@ from core.texts import (MSG_SQUAD_TOP_FORMAT, MSG_TOP_ABOUT, MSG_TOP_ATTACK,
                         MSG_TOP_GLOBAL_BUILDERS, MSG_TOP_WEEK_BUILDERS,
                         MSG_TOP_WEEK_WARRIORS)
 from core.types import (BuildReport, Character, Report, Squad, SquadMember,
-                        user_allowed)
+                        user_allowed, Session)
 from core.utils import send_async
 from sqlalchemy import text as text_
 from sqlalchemy import func, tuple_
@@ -17,9 +17,10 @@ from telegram import Bot, Update
 
 TOP_START_DATE = datetime(2017, 12, 11)
 
+session = Session();
 
 @user_allowed
-def top_about(bot: Bot, update: Update, session):
+def top_about(bot: Bot, update: Update):
     markup = generate_top_markup()
     send_async(bot,
                chat_id=update.message.chat.id,
@@ -61,7 +62,7 @@ def get_top(condition, session, header, field_name, icon, user_id, additional_fi
 
 
 @user_allowed
-def attack_top(bot: Bot, update: Update, session):
+def attack_top(bot: Bot, update: Update):
     text = get_top(Character.attack.desc(), session, MSG_TOP_ATTACK, 'attack', '⚔', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
@@ -69,7 +70,7 @@ def attack_top(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def def_top(bot: Bot, update: Update, session):
+def def_top(bot: Bot, update: Update):
     text = get_top(Character.defence.desc(), session, MSG_TOP_DEFENCE, 'defence', '🛡', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
@@ -77,7 +78,7 @@ def def_top(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def exp_top(bot: Bot, update: Update, session):
+def exp_top(bot: Bot, update: Update):
     text = get_top(Character.exp.desc(), session, MSG_TOP_EXPERIENCE, 'exp', '🔥', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
@@ -121,7 +122,7 @@ def gen_squad_top_msg(data, counts, header, icon):
 
 
 @user_allowed
-def global_build_top(bot: Bot, update: Update, session):
+def global_build_top(bot: Bot, update: Update):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -152,7 +153,7 @@ def global_build_top(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def week_build_top(bot: Bot, update: Update, session):
+def week_build_top(bot: Bot, update: Update):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -184,7 +185,7 @@ def week_build_top(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def week_squad_build_top(bot: Bot, update: Update, session):
+def week_squad_build_top(bot: Bot, update: Update):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -213,7 +214,7 @@ def week_squad_build_top(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def global_squad_build_top(bot: Bot, update: Update, session):
+def global_squad_build_top(bot: Bot, update: Update):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -241,7 +242,7 @@ def global_squad_build_top(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def week_battle_top(bot: Bot, update: Update, session):
+def week_battle_top(bot: Bot, update: Update):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -274,7 +275,7 @@ def week_battle_top(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def global_battle_top(bot: Bot, update: Update, session):
+def global_battle_top(bot: Bot, update: Update):
     actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()

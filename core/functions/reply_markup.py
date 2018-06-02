@@ -13,7 +13,7 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
                            USER_COMMAND_SETTINGS, USER_COMMAND_SQUAD,
                            USER_COMMAND_SQUAD_LEAVE,
                            USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
-                           USER_COMMAND_TOP)
+                           USER_COMMAND_TOP, USER_COMMAND_HIDE, USER_COMMAND_EXCHANGE)
 from core.types import Session, User
 from telegram import KeyboardButton, ReplyKeyboardMarkup
 
@@ -41,22 +41,27 @@ def generate_user_markup(user_id=None):
         #[KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)]
     ]
 
-    """# Create dynamic keyboard based on users state..."""
-    # Check if user is in a squad and if this is a "testing squad". This allows onboarding for new features...
-    onboarding_squad_member = False
-    if user and user.member and user.member.approved and user.member.squad and user.member.squad.testing_squad:
-        onboarding_squad_member = True
-    if onboarding_squad_member:
-        user_menu = None
+    if user.is_squadmember():
+        # Squad only features....
+        user_menu = []
+
+        # Exchange stuff...
+        # STILL IN TESTING
+        if user.api_token and user.is_api_profile_allowed and user.is_api_trade_allowed and user.is_tester():
+            user_menu.append(KeyboardButton(USER_COMMAND_HIDE))
+            user_menu.append(KeyboardButton(USER_COMMAND_EXCHANGE))
+
+        # Normal squad stuff...
         if not user or not user.api_token:
             # New
-            user_menu = [KeyboardButton(USER_COMMAND_REGISTER)]
+            user_menu.append(KeyboardButton(USER_COMMAND_REGISTER))
         elif user.api_token and (not user.is_api_profile_allowed or not user.is_api_stock_allowed):
             # Not complete access...
-            user_menu = [KeyboardButton(USER_COMMAND_REGISTER_CONTINUE)]
+            user_menu.append(KeyboardButton(USER_COMMAND_REGISTER_CONTINUE))
         elif user.api_token and user.is_api_profile_allowed and user.is_api_stock_allowed:
             # All set up
-            user_menu = [KeyboardButton(USER_COMMAND_SETTINGS)]
+            user_menu.append(KeyboardButton(USER_COMMAND_SETTINGS))
+
         buttons.append(user_menu)
 
     if user and user.admin_permission:

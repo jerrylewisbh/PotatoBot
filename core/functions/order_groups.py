@@ -1,13 +1,14 @@
 from core.functions.inline_keyboard_handling import (generate_group_manage,
                                                      generate_groups_manage)
 from core.texts import *
-from core.types import AdminType, OrderGroup, admin_allowed
+from core.types import AdminType, OrderGroup, admin_allowed, Session
 from core.utils import send_async
 from telegram import Bot, Update
 
+session = Session()
 
 @admin_allowed(AdminType.FULL)
-def group_list(bot: Bot, update: Update, session):
+def group_list(bot: Bot, update: Update):
     markup = generate_groups_manage(session)
     send_async(bot, chat_id=update.message.chat.id, text=MSG_ORDER_GROUP_LIST, reply_markup=markup)
 

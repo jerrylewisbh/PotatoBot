@@ -448,6 +448,10 @@ BTN_SETTING_DISABLE_REPORT = '❌Disable automated report'
 BTN_SETTING_ENABLE_REPORT = '✅Enable automated report'
 BTN_SETTING_DISABLE_DEAL_REPORT = '❌Disable exchange report'
 BTN_SETTING_ENABLE_DEAL_REPORT = '✅Enable exchange report'
+BTN_SETTING_DISABLE_SNIPING = '❌Disable sniping'
+BTN_SETTING_ENABLE_SNIPING = '✅Enable sniping'
+BTN_SETTING_DISABLE_HIDE_GOLD = '❌Disable gold hiding'
+BTN_SETTING_ENABLE_HIDE_GOLD = '✅Enable gold hiding'
 
 BTN_WEEK = "Week"
 BTN_ALL_TIME = "All Time"
@@ -468,6 +472,8 @@ MSG_API_INFO = "By registering you will allow me to automatically update your pr
 MSG_API_INVALID_CODE = "Sorry, your code is not valid!"
 MSG_API_ACCESS_RESET = "API access was reset!"
 MSG_API_REQUIRE_ACCESS_STOCK = "Seems like I don't have permission to access your stock yet. You'll get a " \
+                               "request from me please forward this code to me!"
+MSG_API_REQUIRE_ACCESS_TRADE = "Seems like I don't have permission to access your trade options yet. You'll get a " \
                                "request from me please forward this code to me!"
 MSG_API_REQUIRE_ACCESS_PROFILE = "Seems like I don't have permission to access your profile yet. You'll get a " \
     "request from me please forward this code to me!"
@@ -494,7 +500,9 @@ MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n\n <i>{}: {}</i>"
 
 MSG_SETTINGS_INFO = "<b>Your settings:</b>\n" \
                     "- Automatic stock report after war: {}\n" \
-                    "- Send notification when I sell something: {}\n\n" \
+                    "- Send notification when I sell something: {}\n" \
+                    "- Hide Gold: {}\n" \
+                    "- Sniping: {}\n\n" \
                     "<i>Last profile update: {}</i>\n" \
                     "<i>Last stock update: {}</i>"
 MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"
@@ -509,3 +517,49 @@ MSG_DEAL_SOLD = "⚖️You sold <b>{}</b> for {}💰 ({} x {}💰)\nBuyer: {}{}\
 MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"
+
+
+# Exchange stuff
+HIDE_WELCOME = "*Note: This is highly experimental! Please report any issues into your squad!*\n\n" \
+               "*With this feature enabled I will try to spend all your gold 15 Minutes before battle. I will remind " \
+               "you 15 Minutes before battle so that you can abort it if needed*. \n\n" \
+               "You can set your buy-preferences via `/ah <itemId> <prio> <maxPrice>`.\n" \
+               "Leave `<maxPrice>` out to always buy at market price.\n\n" \
+               "Examples: \n" \
+               "- `/ah 01 1 30` to buy Thread for a maximum price of 30 💰 until you can't afford another one\n" \
+               "- `/ah 20 2` to by Leather for the lowest price currently on the market until you can't buy any more of it.\n\n" \
+               "_Note: If you already have set an order for one priority this gets overriden._\n\n" \
+               "To remove a item from your settings do `/ah <itemId>`.\n\n" \
+               "*Your current settings are:*\n" \
+               "{}"
+
+HIDE_WRONG_ARGS = "Sorry, the /ah command you issued is not valid. Try again."
+HIDE_WRONG_LIMIT = "Sorry, the limit you specified is not valid. Try again."
+HIDE_WRONG_ITEM = "Sorry, the item `{}` you specified is not valid. Try again."
+HIDE_WRONG_PRIORITY = "Sorry, the item you specified is not valid. Try again."
+HIDE_BUY_UNLIMITED = "- P{}: Buy {} (`{}`)\n"
+HIDE_BUY_LIMITED = "- P{}: Buy {} (`{}`) for a maximum price of {} 💰\n"
+HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
+
+SNIPE_WELCOME = "*Note: This is highly experimental! Please report any issues into your squad!*\n\n" \
+               "*Automated buying of items at a given price*\n" \
+               "You can set your order via `/s <itemId> <price> <numberOfItems>`.\n\n" \
+               "Examples: \n" \
+               "- `/s 01 10` to buy one Thread 30 💰\n" \
+               "- `/s 20 2 10` to by Leather for 2 💰 until 10 are bought\n\n" \
+               "_How does it work?_: If your given item is sold for the price you specified I will try to buy it." \
+               "It can take some time until this item is available for that price. It is also possible that other" \
+               "players are searching for the same item. In this case you need a little bit of luck although we try" \
+               "first come, first served.\n\n" \
+               "To remove a buy order `/sr <itemId>`.\n\n" \
+               "*Your current orders are:*\n" \
+               "{}"
+SNIPE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
+SNIPE_WRONG_ARGS = "Sorry, the /s command you issued is not valid. Try again."
+SNIPE_WRONG_ARGS_SR = "Sorry, the /sr command you issued is not valid. Try again."
+SNIPE_WRONG_LIMIT = "Sorry, the limit you specified is not valid. Try again."
+SNIPE_WRONG_ITEM = "Sorry, the item `{}` you specified is not valid. Try again."
+SNIPE_BUY_UNLIMITED = "- Buy {} (`{}`) for a price of {} 💰\n"
+SNIPE_BUY_LIMITED = "- Buy {} {} (`{}`) for a price of {} 💰\n"
+SNIPE_REMOVED = "{} was removed from your order list!"
+SNIPED_ITEM = "⚖️Got it! You bought <b>{}</b> for {}💰 ({} x {}💰)\nSeller: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"

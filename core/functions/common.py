@@ -11,12 +11,13 @@ from core.functions.triggers import trigger_decorator
 from core.state import GameState, get_game_state
 from core.texts import *
 from core.types import (Admin, AdminType, Auth, SquadMember, Stock, User,
-                        admin_allowed, user_allowed)
+                        admin_allowed, user_allowed, Session)
 from core.utils import add_user, send_async
 from telegram import Bot, ParseMode, Update
 
 LOGGER = logging.getLogger(__name__)
 
+session = Session()
 
 class StockType(Enum):
     Stock = 0
@@ -30,14 +31,14 @@ def error(bot: Bot, update, error, **kwargs):
 
 
 @user_allowed
-def start(bot: Bot, update: Update, session):
+def start(bot: Bot, update: Update):
     add_user(update.message.from_user, session)
     if update.message.chat.type == 'private':
         send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME, parse_mode=ParseMode.HTML)
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def admin_panel(bot: Bot, update: Update, session):
+def admin_panel(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         full_adm = False
@@ -49,7 +50,7 @@ def admin_panel(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def user_panel(bot: Bot, update: Update, session):
+def user_panel(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME, parse_mode=ParseMode.HTML,
@@ -57,12 +58,12 @@ def user_panel(bot: Bot, update: Update, session):
 
 
 @admin_allowed()
-def kick(bot: Bot, update: Update, session):
+def kick(bot: Bot, update: Update):
     bot.leave_chat(update.message.chat.id)
 
 
 @trigger_decorator
-def help_msg(bot: Bot, update, session):
+def help_msg(bot: Bot, update):
     admin_user = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     global_adm = False
     for adm in admin_user:
@@ -78,7 +79,7 @@ def help_msg(bot: Bot, update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def ping(bot: Bot, update: Update, session):
+def ping(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text=MSG_PING.format(update.message.from_user.username))
 
 
@@ -218,13 +219,13 @@ def stock_compare_forwarded(bot: Bot, update: Update, session, chat_data: dict):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def delete_msg(bot: Bot, update: Update, session):
+def delete_msg(bot: Bot, update: Update):
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.reply_to_message.message_id)
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.message_id)
 
 
 @admin_allowed()
-def delete_user(bot: Bot, update: Update, session):
+def delete_user(bot: Bot, update: Update):
     bot.kickChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
     bot.unbanChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
 
@@ -274,7 +275,7 @@ def trade_compare(bot: Bot, update: Update, session, chat_data: dict):
 
 
 @user_allowed
-def web_auth(bot: Bot, update: Update, session):
+def web_auth(bot: Bot, update: Update):
     user = add_user(update.message.from_user, session)
     auth = session.query(Auth).filter_by(user_id=user.id).first()
     if auth is None:

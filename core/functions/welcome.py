@@ -6,15 +6,16 @@ from core.functions.newbies import newbie
 from core.template import fill_template
 from core.texts import *
 from core.types import (Admin, AdminType, WelcomeMsg, Wellcomed, admin_allowed,
-                        user_allowed)
+                        user_allowed, Session)
 from core.utils import add_user, send_async, update_group
 from telegram import Bot, Update
 
 last_welcome = 0
 
+session = Session()
 
 @user_allowed(False)
-def welcome(bot: Bot, update: Update, session):
+def welcome(bot: Bot, update: Update):
     #newbie(bot, update)
     global last_welcome
     logging.debug("Welcome")
@@ -70,7 +71,7 @@ def welcome(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def set_welcome(bot: Bot, update: Update, session):
+def set_welcome(bot: Bot, update: Update):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
         welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
@@ -84,7 +85,7 @@ def set_welcome(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def enable_welcome(bot: Bot, update: Update, session):
+def enable_welcome(bot: Bot, update: Update):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
         group.welcome_enabled = True
@@ -94,7 +95,7 @@ def enable_welcome(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def disable_welcome(bot: Bot, update: Update, session):
+def disable_welcome(bot: Bot, update: Update):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
         group.welcome_enabled = False
@@ -104,7 +105,7 @@ def disable_welcome(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def show_welcome(bot: Bot, update, session):
+def show_welcome(bot: Bot, update):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
         welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()

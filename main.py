@@ -31,7 +31,8 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
                            USER_COMMAND_REGISTER, USER_COMMAND_SETTINGS,
                            USER_COMMAND_SQUAD, USER_COMMAND_SQUAD_LEAVE,
                            USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
-                           USER_COMMAND_TOP)
+                           USER_COMMAND_TOP, USER_COMMAND_HIDE, USER_COMMAND_EXCHANGE)
+from core.exchange import sniping_info, hide_gold_info
 from core.functions.activity import (battle_activity, day_activity,
                                      week_activity)
 from core.functions.admins import admins_for_users, list_admins
@@ -74,10 +75,11 @@ from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
                          REPAIR_REPORT, REPORT, STOCK, TRADE_BOT)
 from core.state import GameState, get_game_state
 from core.texts import MSG_IN_DEV
-from core.types import Admin, Squad, User, user_allowed
+from core.types import Admin, Squad, User, user_allowed, Session
 from core.utils import add_user, send_async
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler
+from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
 from telegram import Bot, ParseMode, Update
 from telegram.error import TelegramError
@@ -94,8 +96,9 @@ TRADEBOT_ID = 0
 
 @run_async
 @user_allowed
-def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
-    add_user(update.message.from_user, session)
+def manage_all(bot: Bot, update: Update, chat_data, job_queue):
+    session = Session()
+    add_user(update.message.from_user)
 
     user = session.query(User).filter_by(id=update.message.from_user.id).first()
     registered = user and user.character and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID)
@@ -259,7 +262,10 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 admin_panel(bot, update)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
                 add_group(bot, update, chat_data)
-
+            elif text == USER_COMMAND_HIDE.lower():
+                hide_gold_info(bot, update)
+            elif text == USER_COMMAND_EXCHANGE.lower():
+                sniping_info(bot, update)
             elif update.message.forward_from:
                 from_id = update.message.forward_from.id
                 if from_id == CWBOT_ID:
@@ -327,8 +333,13 @@ def main():
     disp.add_handler(MessageHandler(Filters.status_update, welcome))
     # disp.add_handler(MessageHandler(
     # Filters.text, manage_text, pass_chat_data=True))
+
     disp.add_handler(MessageHandler(
-        Filters.all, manage_all, pass_chat_data=True, pass_job_queue=True))
+        Filters.all,
+        manage_all,
+        pass_chat_data=True,
+        pass_job_queue=True
+    ))
 
     # log all errors
     disp.add_error_handler(error)
@@ -354,6 +365,7 @@ def main():
     q_in = Consumer(
         profile_handler,
         deals_handler,
+        offers_handler,
         dispatcher=updater
     )
     q_in.setName("T1_IN")

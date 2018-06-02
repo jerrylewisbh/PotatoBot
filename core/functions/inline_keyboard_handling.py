@@ -19,6 +19,7 @@ from core.functions.inline_markup import (QueryType, generate_forward_markup,
                                           generate_settings_buttons,
                                           generate_squad_list,
                                           generate_squad_members)
+from core.functions.profile import send_settings
 from core.functions.reply_markup import generate_user_markup
 from core.functions.squad import leave_squad
 from core.functions.top import (global_battle_top, global_build_top,
@@ -29,7 +30,7 @@ from core.texts import *
 from core.types import (Admin, AdminType, Location, MessageType, Order,
                         OrderCleared, OrderGroup, OrderGroupItem, Report,
                         Squad, SquadMember, Stock, User, UserQuest,
-                        admin_allowed, user_allowed)
+                        admin_allowed, user_allowed, Session)
 from core.utils import add_user, send_async, update_group
 from sqlalchemy import and_
 from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
@@ -43,9 +44,10 @@ LOGGER = logging.getLogger('MyApp')
 
 order_updated = {}
 
+session = Session()
 
 @admin_allowed()
-def send_status(bot: Bot, update: Update, session):
+def send_status(bot: Bot, update: Update):
     msg = MSG_GROUP_STATUS_CHOOSE_CHAT
     squads = session.query(Squad).all()
     inline_keys = []
@@ -112,10 +114,10 @@ def update_confirmed(bot: Bot, job: Job):
 
 @run_async
 @user_allowed
-def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue: JobQueue):
+def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueue):
     try:
-        update_group(update.callback_query.message.chat, session)
-        user = add_user(update.effective_user, session)
+        update_group(update.callback_query.message.chat)
+        user = add_user(update.effective_user)
         data = json.loads(update.callback_query.data)
         if data['t'] == QueryType.GroupList.value:
             msg = MSG_GROUP_STATUS_CHOOSE_CHAT
@@ -326,12 +328,12 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             bot.editMessageText(MSG_ORDER_GROUP_LIST,
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
-                                reply_markup=generate_groups_manage(session))
+                                reply_markup=generate_groups_manage())
         elif data['t'] == QueryType.OrderGroupList.value:
             bot.editMessageText(MSG_ORDER_GROUP_LIST,
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
-                                reply_markup=generate_groups_manage(session))
+                                reply_markup=generate_groups_manage())
         elif data['t'] == QueryType.ShowEquip.value:
             user = session.query(User).filter_by(id=data['id']).first()
             update.callback_query.answer(text=MSG_CLEARED)
@@ -577,28 +579,20 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
 
             if user.api_token:
                 user.api_token = None
-                user.is_api_profile_allowed = None
-                user.is_api_stock_allowed = None
+
+                user.is_api_profile_allowed = False
+                user.is_api_stock_allowed = False
+                user.is_api_trade_allowed = False
+
                 user.api_request_id = None
                 user.api_grant_operation = None
+
+                # TODO: Do we need to reset settings?
+
                 session.add(user)
                 session.commit()
 
-            msg = MSG_SETTINGS_INFO.format(
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_deal_report and not user.api_token else
-                 user.setting_automated_deal_report),
-                user.stock.date, user.character.date)
-
-            bot.editMessageText(
-                msg,
-                update.callback_query.message.chat.id,
-                update.callback_query.message.message_id,
-                reply_markup=generate_settings_buttons(user),
-                parse_mode=ParseMode.HTML
-            )
+            send_settings(bot, update, user)
         elif data['t'] in [QueryType.EnableAutomatedReport, QueryType.DisableAutomatedReport]:
             user = session.query(User).filter_by(id=data['id']).first()
 
@@ -610,21 +604,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             session.add(user)
             session.commit()
 
-            msg = MSG_SETTINGS_INFO.format(
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_deal_report and not user.api_token else
-                 user.setting_automated_deal_report),
-                user.stock.date, user.character.date)
-
-            bot.editMessageText(
-                msg,
-                update.callback_query.message.chat.id,
-                update.callback_query.message.message_id,
-                reply_markup=generate_settings_buttons(user),
-                parse_mode=ParseMode.HTML
-            )
+            send_settings(bot, update, user)
         elif data['t'] in [QueryType.DisableDealReport, QueryType.EnableDealReport]:
             user = session.query(User).filter_by(id=data['id']).first()
             if user.setting_automated_deal_report:
@@ -634,21 +614,27 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             session.add(user)
             session.commit()
 
-            msg = MSG_SETTINGS_INFO.format(
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_deal_report and not user.api_token else
-                 user.setting_automated_deal_report),
-                user.stock.date, user.character.date)
+            send_settings(bot, update, user)
+        elif data['t'] in [QueryType.DisableHideGold, QueryType.EnableHideGold]:
+            user = session.query(User).filter_by(id=data['id']).first()
+            if user.setting_automated_hiding:
+                user.setting_automated_hiding = False
+            else:
+                user.setting_automated_hiding = True
+            session.add(user)
+            session.commit()
 
-            bot.editMessageText(
-                msg,
-                update.callback_query.message.chat.id,
-                update.callback_query.message.message_id,
-                reply_markup=generate_settings_buttons(user),
-                parse_mode=ParseMode.HTML
-            )
+            send_settings(bot, update, user)
+        elif data['t'] in [QueryType.DisableSniping, QueryType.EnableSniping]:
+            user = session.query(User).filter_by(id=data['id']).first()
+            if user.setting_automated_sniping:
+                user.setting_automated_sniping = False
+            else:
+                user.setting_automated_sniping = True
+            session.add(user)
+            session.commit()
+
+            send_settings(bot, update, user)
         elif data['t'] == QueryType.OtherReport.value:
             squad = session.query(Squad).filter(Squad.chat_id == data['c']).first()
             time_from = datetime.fromtimestamp(data['ts'])

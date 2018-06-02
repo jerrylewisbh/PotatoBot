@@ -5,13 +5,14 @@ from core.texts import (MSG_ALREADY_BANNED, MSG_BAN_COMPLETE, MSG_NO_REASON,
                         MSG_USER_BANNED_TRAITOR, MSG_USER_NOT_BANNED,
                         MSG_USER_UNBANNED, MSG_USER_UNKNOWN, MSG_YOU_BANNED,
                         MSG_YOU_UNBANNED)
-from core.types import Admin, Ban, Squad, SquadMember, User, admin_allowed
+from core.types import Admin, Ban, Squad, SquadMember, User, admin_allowed, Session
 from core.utils import send_async
 from telegram import Bot, TelegramError, Update
 
+session = Session()
 
 @admin_allowed()
-def ban(bot: Bot, update: Update, session):
+def ban(bot: Bot, update: Update):
     username, reason = update.message.text.split(' ', 2)[1:]
     username = username.replace('@', '')
     user = session.query(User).filter_by(username=username).first()
@@ -72,7 +73,7 @@ def ban_traitor(bot: Bot, session, user_id):
 
 
 @admin_allowed()
-def unban(bot: Bot, update: Update, session):
+def unban(bot: Bot, update: Update):
     username = update.message.text.split(' ', 1)[1]
     username = username.replace('@', '')
     user = session.query(User).filter_by(username=username).first()
