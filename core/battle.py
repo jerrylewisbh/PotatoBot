@@ -29,12 +29,12 @@ from telegram.error import TelegramError
 from telegram.ext import Job
 from telegram.ext.dispatcher import run_async
 
+Session()
 
 @run_async
 def ready_to_battle(bot: Bot, job_queue: Job):
-    session = Session()
     try:
-        group = session.query(Squad).all()
+        group = Session.query(Squad).all()
         for item in group:
             if not item.reminders_enabled:
                 continue
@@ -44,8 +44,8 @@ def ready_to_battle(bot: Bot, job_queue: Job):
             new_order.chat_id = item.chat_id
             new_order.date = datetime.now()
             new_order.confirmed_msg = 0
-            session.add(new_order)
-            session.commit()
+            Session.add(new_order)
+            Session.commit()
 
             callback_data = json.dumps(
                 {'t': QueryType.OrderOk.value, 'id': new_order.id})
@@ -88,9 +88,8 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
     real_atk = 0
     players_atk = 0
     players_def = 0
-    session = Session()
     try:
-        squads = session.query(Squad).all()
+        squads = Session.query(Squad).all()
         text = MSG_REPORT_SUMMARY_RATING
         now = datetime.now()
         if (now.hour < 7):
@@ -98,7 +97,7 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
         time_from = now.replace(hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
         text = MSG_REPORT_SUMMARY_RATING.format(time_from.strftime('%d-%m-%Y %H:%M'))
         for squad in squads:
-            reports = session.query(User, Report) \
+            reports = Session.query(User, Report) \
                 .join(SquadMember) \
                 .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from)) \
                 .filter(SquadMember.squad_id == squad.chat_id).order_by(Report.date.desc()).all()
@@ -147,12 +146,11 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
 
 @run_async
 def fresh_profiles(bot: Bot, job_queue: Job):
-    session = Session()
     try:
-        actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+        actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
             group_by(Character.user_id)
         actual_profiles = actual_profiles.all()
-        characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
+        characters = Session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                      .in_([(a[0], a[1]) for a in actual_profiles]),
                                                      datetime.now() - timedelta(
                                                          days=DAYS_PROFILE_REMIND) > Character.date,
@@ -166,16 +164,16 @@ def fresh_profiles(bot: Bot, job_queue: Job):
                        chat_id=character.user_id,
                        text=MSG_UPDATE_PROFILE,
                        parse_mode=ParseMode.HTML)
-        characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
+        characters = Session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                      .in_([(a[0], a[1]) for a in actual_profiles]),
                                                      Character.date < datetime.now() - timedelta(
                                                          days=DAYS_OLD_PROFILE_KICK)).all()
-        members = session.query(SquadMember, User).filter(SquadMember.user_id
+        members = Session.query(SquadMember, User).filter(SquadMember.user_id
                                                           .in_([character.user_id for character in characters])) \
             .join(User, User.id == SquadMember.user_id).all()
         for member, user in members:
-            session.delete(member)
-            admins = session.query(Admin).filter_by(admin_group=member.squad_id).all()
+            Session.delete(member)
+            admins = Session.query(Admin).filter_by(admin_group=member.squad_id).all()
             try:
                 bot.restrictChatMember(member.squad_id, member.user_id)
                 bot.kick_chat_member(member.squad_id, member.user_id)
@@ -195,7 +193,7 @@ def fresh_profiles(bot: Bot, job_queue: Job):
                        chat_id=member.user_id,
                        text=MSG_SQUAD_DELETE_OUTDATED,
                        parse_mode=ParseMode.HTML)
-        session.commit()
+        Session.commit()
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
         Session.rollback()
@@ -204,10 +202,9 @@ def fresh_profiles(bot: Bot, job_queue: Job):
 @run_async
 def refresh_api_users(bot: Bot, job_queue: Job):
     logging.info("API REFRESH type %s")
-    session = Session()
     try:
         p = Publisher()
-        api_users = session.query(User).filter(User.api_token is not None)
+        api_users = Session.query(User).filter(User.api_token is not None)
         for user in api_users:
             logging.info("Updating data for %s", user.id)
             if user.is_api_profile_allowed:
@@ -228,9 +225,8 @@ def refresh_api_users(bot: Bot, job_queue: Job):
 @run_async
 def report_after_battle(bot: Bot, job_queue: Job):
     logging.info("API REFRESH type %s")
-    session = Session()
     try:
-        api_users = session.query(User).filter(User.api_token is not None)
+        api_users = Session.query(User).filter(User.api_token is not None)
         for user in api_users:
             logging.info("Updating data for %s", user.id)
 
@@ -244,7 +240,7 @@ def report_after_battle(bot: Bot, job_queue: Job):
             if user.is_api_profile_allowed and user.is_api_stock_allowed and \
                     user.setting_automated_report and user.api_token:
 
-                prev_character = session.query(Character).filter_by(
+                prev_character = Session.query(Character).filter_by(
                     user_id=user.id,
                 ).order_by(Character.date.desc()).limit(1).offset(1).first()
 
@@ -255,7 +251,7 @@ def report_after_battle(bot: Bot, job_queue: Job):
                 filter_latest = datetime.now().replace(minute=0, second=0, microsecond=0)
                 filter_cutoff = filter_latest - timedelta(minutes=30)
 
-                second_newest = session.query(Stock).filter(
+                second_newest = Session.query(Stock).filter(
                     Stock.user_id == user.id,
                     Stock.stock_type == StockType.Stock.value,
                     Stock.date < filter_latest,
@@ -276,7 +272,7 @@ def report_after_battle(bot: Bot, job_queue: Job):
                     diff_stock = gained_sum + lost_sum
 
                 # Only create a preliminary report if user hasn't already sent in a complete one.
-                existing_report = get_latest_report(session, user.id)
+                existing_report = get_latest_report(user.id)
                 if not existing_report:
                     r = Report()
                     r.user = user
@@ -290,8 +286,8 @@ def report_after_battle(bot: Bot, job_queue: Job):
                     r.earned_gold = earned_gold
                     r.earned_stock = diff_stock
                     r.preliminary_report = True
-                    session.add(r)
-                    session.commit()
+                    Session.add(r)
+                    Session.commit()
 
                 # Text with prelim. battle report
                 """text += MSG_USER_BATTLE_REPORT_PRELIM.format(

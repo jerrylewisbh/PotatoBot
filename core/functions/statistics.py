@@ -15,7 +15,7 @@ from sqlalchemy import text as text_
 from sqlalchemy import func, tuple_
 from telegram import Bot, Update
 
-session = Session()
+Session()
 
 @user_allowed
 def statistic_about(bot: Bot, update: Update):
@@ -28,17 +28,17 @@ def statistic_about(bot: Bot, update: Update):
 
 @user_allowed
 def skill_statistic(bot: Bot, update: Update):
-    my_class = session.query(Profession).filter_by(
+    my_class = Session.query(Profession).filter_by(
         user_id=update.message.from_user.id).order_by(
         Profession.date.desc()).first()
     if not my_class:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_NO_CLASS)
         return
 
-    recent_classes = session.query(Profession.user_id, func.max(Profession.date)). \
+    recent_classes = Session.query(Profession.user_id, func.max(Profession.date)). \
         group_by(Profession.user_id)
 
-    classes = session.query(Profession).filter(tuple_(Profession.user_id, Profession.date)
+    classes = Session.query(Profession).filter(tuple_(Profession.user_id, Profession.date)
                                                .in_([(a[0], a[1]) for a in recent_classes]))\
 
     recent_classes = recent_classes.all()
@@ -133,7 +133,7 @@ def skill_statistic(bot: Bot, update: Update):
 
 @user_allowed
 def exp_statistic(bot: Bot, update: Update):
-    profiles = session.query(Character).filter_by(user_id=update.message.from_user.id)\
+    profiles = Session.query(Character).filter_by(user_id=update.message.from_user.id)\
         .order_by(Character.date).all()
     plot.switch_backend('ps')
     plot.xlabel(PLOT_X_LABEL)

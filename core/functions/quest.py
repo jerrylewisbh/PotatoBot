@@ -8,6 +8,7 @@ from core.types import (Item, Location, Quest, Session, User, UserQuest,
                         UserQuestItem)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
+Session()
 
 class QuestType(IntFlag):
     NORMAL = auto()
@@ -86,10 +87,9 @@ def analyze_text(text):
 def parse_quest(bot, update):
     quest_data = analyze_text(update.message.text)
 
-    session = Session()
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
 
-    existing_user_quest = session.query(UserQuest).filter_by(
+    existing_user_quest = Session.query(UserQuest).filter_by(
         forward_date=update.message.forward_date,
         user_id=user.id
     ).first()
@@ -109,35 +109,35 @@ def parse_quest(bot, update):
     uq.gold = quest_data['gold']
     uq.level = user.character.level if user.character else 0  # If we don't have a profile yet just assume "0" level
 
-    quest = session.query(Quest).filter_by(text=quest_data['text']).first()
+    quest = Session.query(Quest).filter_by(text=quest_data['text']).first()
     if quest:
         uq.quest = quest
     else:
         q = Quest()
         q.text = quest_data['text']
-        session.add(q)
+        Session.add(q)
         uq.quest = q
 
     for name, count in quest_data['items'].items():
-        item = session.query(Item).filter_by(name=name).first()
+        item = Session.query(Item).filter_by(name=name).first()
         if not item:
             item = Item()
             item.name = name
-            session.add(item)
-            session.commit()
+            Session.add(item)
+            Session.commit()
 
         uqi = UserQuestItem(count=count, item_id=item.id)
         uq.items.append(uqi)
 
-    session.add(uq)
-    session.commit()
+    Session.add(uq)
+    Session.commit()
 
     # We need details about the location of the quest if it's a normal one...
     # Note: Max. 64 bytes for callback data. Because of this there is no user_id. Instead we're getting that one in
     # callback handler via sql...
     if quest_data['type'] == QuestType.NORMAL:
         inline_keys = []
-        for location in session.query(Location).all():
+        for location in Session.query(Location).all():
             inline_keys.append(
                 [
                     InlineKeyboardButton(location.name, callback_data=json.dumps(

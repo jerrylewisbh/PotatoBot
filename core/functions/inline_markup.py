@@ -27,7 +27,7 @@ from core.types import (Admin, AdminType, Character, Group, OrderGroup, Squad,
 from sqlalchemy import func, tuple_
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-session = Session()
+Session()
 
 class QueryType(IntFlag):
     GroupList = auto()
@@ -86,12 +86,12 @@ class QueryType(IntFlag):
 
 
 def generate_group_info(group_id):
-    group = session.query(Group).filter(Group.id == group_id).first()
-    admins = session.query(Admin).filter(Admin.admin_group == group_id).all()
+    group = Session.query(Group).filter(Group.id == group_id).first()
+    admins = Session.query(Admin).filter(Admin.admin_group == group_id).all()
     adm_msg = ''
     adm_del_keys = []
     for adm in admins:
-        user = session.query(User).filter_by(id=adm.user_id).first()
+        user = Session.query(User).filter_by(id=adm.user_id).first()
         adm_msg += MSG_GROUP_STATUS_ADMIN_FORMAT.\
             format(user.id, user.username or '', user.first_name or '', user.last_name or '')
         adm_del_keys.append([InlineKeyboardButton(MSG_GROUP_STATUS_DEL_ADMIN.
@@ -156,7 +156,7 @@ def generate_flag_orders():
 
 
 def generate_order_chats_markup(session, pin=True, btn=True):
-    squads = session.query(Squad).all()
+    squads = Session.query(Squad).all()
     inline_keys = []
     for squad in squads:
         inline_keys.append([InlineKeyboardButton(squad.squad_name, callback_data=json.dumps(
@@ -169,7 +169,7 @@ def generate_order_chats_markup(session, pin=True, btn=True):
     return inline_markup
 
 
-def generate_order_groups_markup(session, admin_user: list=None, pin: bool=True, btn=True):
+def generate_order_groups_markup(admin_user: list=None, pin: bool=True, btn=True):
     if admin_user:
         group_adm = True
         for adm in admin_user:
@@ -179,7 +179,7 @@ def generate_order_groups_markup(session, admin_user: list=None, pin: bool=True,
         if group_adm:
             inline_keys = []
             for adm in admin_user:
-                group = session.query(Group).filter_by(id=adm.admin_group, bot_in_group=True).first()
+                group = Session.query(Group).filter_by(id=adm.admin_group, bot_in_group=True).first()
                 if group:
                     inline_keys.append([InlineKeyboardButton(group.title, callback_data=json.dumps(
                         {'t': QueryType.Order.value, 'g': False, 'id': group.id}))])
@@ -192,7 +192,7 @@ def generate_order_groups_markup(session, admin_user: list=None, pin: bool=True,
             inline_markup = InlineKeyboardMarkup(inline_keys)
             return inline_markup
         else:
-            groups = session.query(OrderGroup).all()
+            groups = Session.query(OrderGroup).all()
             inline_keys = []
             for group in groups:
                 inline_keys.append([InlineKeyboardButton(group.name, callback_data=json.dumps(
@@ -226,7 +226,7 @@ def generate_forward_markup(order_id, count):
 
 
 def generate_groups_manage():
-    groups = session.query(OrderGroup).all()
+    groups = Session.query(OrderGroup).all()
     inline_keys = []
     for group in groups:
         inline_keys.append([InlineKeyboardButton(group.name, callback_data=json.dumps(
@@ -237,7 +237,7 @@ def generate_groups_manage():
 
 
 def generate_group_manage(group_id):
-    squads = session.query(Squad).all()
+    squads = Session.query(Squad).all()
     inline_keys = []
     for squad in squads:
         in_group = False
@@ -365,10 +365,10 @@ def generate_squad_list_key(squad):
     user_ids = []
     for member in members:
         user_ids.append(member.user_id)
-    actual_profiles = session.query(Character.user_id, func.max(Character.date)).\
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)).\
         filter(Character.user_id.in_(user_ids)).\
         group_by(Character.user_id).all()
-    characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
+    characters = Session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                  .in_([(a[0], a[1]) for a in actual_profiles])).all()
     for character in characters:
         attack += character.attack
@@ -398,7 +398,7 @@ def generate_yes_no(user_id):
 def generate_squad_list(squads):
     inline_keys = []
     for squad in squads:
-        inline_keys.append(generate_squad_list_key(squad, session))
+        inline_keys.append(generate_squad_list_key(squad))
     return InlineKeyboardMarkup(inline_keys)
 
 
@@ -409,9 +409,9 @@ def generate_leave_squad(user_id):
     return InlineKeyboardMarkup(inline_keys)
 
 
-def generate_squad_request(session):
+def generate_squad_request():
     inline_keys = []
-    squads = session.query(Squad).filter_by(hiring=True).all()
+    squads = Session.query(Squad).filter_by(hiring=True).all()
     for squad in squads:
         inline_keys.append([InlineKeyboardButton(squad.squad_name,
                                                  callback_data=json.dumps(
@@ -443,10 +443,10 @@ def generate_squad_members(members):
     limit = limit if len(members) > limit else len(members)
     for member in members:
         user_ids.append(member.user_id)
-    actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         filter(Character.user_id.in_(user_ids)). \
         group_by(Character.user_id).all()
-    characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
+    characters = Session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                  .in_([(a[0], a[1]) for a in actual_profiles]))\
         .order_by(Character.level.desc()).all()
     for character in characters:

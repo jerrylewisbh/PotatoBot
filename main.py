@@ -94,27 +94,33 @@ TRADEBOT_ID = 0
 # 278525885
 # -------------------
 
+Session()
 
 @run_async
 @user_allowed
 def manage_all(bot: Bot, update: Update, chat_data, job_queue):
-    session = Session()
     add_user(update.message.from_user)
 
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    print(type(Session))
+    print(repr(Session))
+
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     registered = user and user.character and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
-        squad = session.query(Squad).filter_by(
+        squad = Session.query(Squad).filter_by(
             chat_id=update.message.chat.id).first()
-        admin = session.query(Admin).filter(
+        admin = Session.query(Admin).filter(
             Admin.user_id == update.message.from_user.id and
             Admin.admin_group in [update.message.chat.id, 0]).first()
 
-        logging.warning("SILENCE STATE: State: {}, Squad: {}, Admin: {}".format(
+        logging.debug("SILENCE STATE: State: {}, Squad: {}, Admin: {}".format(
             get_game_state(),
             squad.squad_name if squad else 'NO SQUAD',
             admin,
         ))
+
+        print(type(Session))
+        print(repr(Session))
 
         if squad and squad.silence_enabled and not admin and GameState.BATTLE_SILENCE in get_game_state():
             bot.delete_message(update.message.chat.id,
@@ -192,7 +198,7 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
             trigger_show(bot, update)
 
     elif update.message.chat.type == 'private':
-        admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         is_admin = False
         for _ in admin:
             is_admin = True

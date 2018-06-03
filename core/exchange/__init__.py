@@ -9,7 +9,7 @@ from telegram import Bot, Update, ParseMode
 
 from cwmq import wrapper
 
-session = Session()
+Session()
 
 def get_snipe_settings(user):
     logging.warning("Getting UserExchangeOrder for %s", user.id)
@@ -54,7 +54,7 @@ def get_autohide_settings(user):
 def hide_gold_info(bot: Bot, update: Update):
     logging.warning("hide_gold_info called by %s", update.message.chat.id)
 
-    user = session.query(User).filter_by(id=update.message.chat.id).first()
+    user = Session.query(User).filter_by(id=update.message.chat.id).first()
 
     if not user.is_api_trade_allowed:
         wrapper.request_trade_terminal(bot, user)
@@ -109,7 +109,7 @@ def auto_hide(bot: Bot, update: Update, args=None):
         )
         return
 
-    item = session.query(Item).filter(Item.cw_id == args[0]).first()
+    item = Session.query(Item).filter(Item.cw_id == args[0]).first()
     if not item:
         send_async(
             bot,
@@ -127,7 +127,7 @@ def auto_hide(bot: Bot, update: Update, args=None):
         )
         return
 
-    user = session.query(User).filter_by(id=update.message.chat.id).first()
+    user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user or not item or not priority:
         send_async(
             bot,
@@ -137,7 +137,7 @@ def auto_hide(bot: Bot, update: Update, args=None):
         )
         return
 
-    ushs = session.query(UserStockHideSetting).filter(
+    ushs = Session.query(UserStockHideSetting).filter(
         UserStockHideSetting.user == user,
         UserStockHideSetting.priority == priority
     ).first()
@@ -150,8 +150,8 @@ def auto_hide(bot: Bot, update: Update, args=None):
     ushs.priority = priority
     ushs.item = item
     ushs.max_price = limit
-    session.add(ushs)
-    session.commit()
+    Session.add(ushs)
+    Session.commit()
 
 
     send_async(
@@ -165,7 +165,7 @@ def auto_hide(bot: Bot, update: Update, args=None):
 def sniping_info(bot: Bot, update: Update):
     logging.warning("sniping_info called by %s", update.message.chat.id)
 
-    user = session.query(User).filter_by(id=update.message.chat.id).first()
+    user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user.is_api_trade_allowed:
         wrapper.request_trade_terminal(bot, user)
         return
@@ -190,7 +190,7 @@ def sniping_remove(bot: Bot, update: Update, args=None):
         )
         return
 
-    item = session.query(Item).filter(Item.cw_id == args[0]).first()
+    item = Session.query(Item).filter(Item.cw_id == args[0]).first()
     if not item:
         send_async(
             bot,
@@ -200,7 +200,7 @@ def sniping_remove(bot: Bot, update: Update, args=None):
         )
         return
 
-    user = session.query(User).filter_by(id=update.message.chat.id).first()
+    user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user:
         send_async(
             bot,
@@ -210,15 +210,15 @@ def sniping_remove(bot: Bot, update: Update, args=None):
         )
         return
 
-    ueo = session.query(UserExchangeOrder).filter(
+    ueo = Session.query(UserExchangeOrder).filter(
         UserExchangeOrder.user == user,
         UserExchangeOrder.item == item
     ).first()
 
     if ueo:
         logging.warning("Remove sniping order for item %s and user %s", item.name, user.id)
-        session.delete(ueo)
-        session.commit()
+        Session.delete(ueo)
+        Session.commit()
 
         send_async(
             bot,
@@ -268,7 +268,7 @@ def sniping(bot: Bot, update: Update, args=None):
         )
         return
 
-    item = session.query(Item).filter(Item.cw_id == args[0]).first()
+    item = Session.query(Item).filter(Item.cw_id == args[0]).first()
     if not item:
         send_async(
             bot,
@@ -287,7 +287,7 @@ def sniping(bot: Bot, update: Update, args=None):
         return
 
 
-    user = session.query(User).filter_by(id=update.message.chat.id).first()
+    user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user or not item or not limit:
         send_async(
             bot,
@@ -297,7 +297,7 @@ def sniping(bot: Bot, update: Update, args=None):
         )
         return
 
-    ueo = session.query(UserExchangeOrder).filter(
+    ueo = Session.query(UserExchangeOrder).filter(
         UserExchangeOrder.user == user,
         UserExchangeOrder.item == item
     ).first()
@@ -310,8 +310,8 @@ def sniping(bot: Bot, update: Update, args=None):
     ueo.limit = limit
     ueo.max_price = max_price
     ueo.item = item
-    session.add(ueo)
-    session.commit()
+    Session.add(ueo)
+    Session.commit()
 
     send_async(
         bot,
@@ -324,7 +324,7 @@ def sniping(bot: Bot, update: Update, args=None):
 def list_items(bot: Bot, update: Update):
     logging.warning("list_items called by %s", update.message.chat.id)
 
-    items = session.query(Item).order_by(Item.cw_id).all()
+    items = Session.query(Item).order_by(Item.cw_id).all()
 
     text = ITEM_LIST
     for item in items:

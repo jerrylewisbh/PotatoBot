@@ -230,7 +230,10 @@ MSG_PROFILE_ADMIN_INFO_ADDON = "\n\n<b>Admin-Info:</b>\n" \
                                "Stock allowed: {}\n" \
                                "Trade allowed: {}\n" \
                                "Report enabled: {}\n" \
-                               "Exchange enabled: {}\n"
+                               "Exchange enabled: {}\n" \
+                               "Hide enabled: {}\n" \
+                               "Sniping enabled: {}"
+
 
 # | 🔋 %maxStamina% - Removed until api provides it or sth else happens...
 

@@ -17,8 +17,7 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
 from core.types import Session, User
 from telegram import KeyboardButton, ReplyKeyboardMarkup
 
-session = Session()
-
+Session()
 
 def generate_admin_markup(full=False):
     buttons = [[KeyboardButton(ADMIN_COMMAND_ORDER)]]
@@ -33,7 +32,7 @@ def generate_user_markup(user_id=None):
     """ Create a users keyboard. If user_id is given check if there are settings... """
     user = None
     if user_id:
-        user = session.query(User).filter_by(id=user_id).first()
+        user = Session.query(User).filter_by(id=user_id).first()
 
     buttons = [
         [KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)],

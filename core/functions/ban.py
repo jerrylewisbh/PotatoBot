@@ -9,15 +9,15 @@ from core.types import Admin, Ban, Squad, SquadMember, User, admin_allowed, Sess
 from core.utils import send_async
 from telegram import Bot, TelegramError, Update
 
-session = Session()
+Session()
 
 @admin_allowed()
 def ban(bot: Bot, update: Update):
     username, reason = update.message.text.split(' ', 2)[1:]
     username = username.replace('@', '')
-    user = session.query(User).filter_by(username=username).first()
+    user = Session.query(User).filter_by(username=username).first()
     if user:
-        banned = session.query(Ban).filter_by(user_id=user.id).first()
+        banned = Session.query(Ban).filter_by(user_id=user.id).first()
         if banned:
             send_async(bot, chat_id=update.message.chat.id,
                        text=MSG_ALREADY_BANNED.format(banned.to_date, banned.reason))
@@ -27,15 +27,15 @@ def ban(bot: Bot, update: Update):
             banned.from_date = datetime.now()
             banned.to_date = datetime.max
             banned.reason = reason or MSG_NO_REASON
-            member = session.query(SquadMember).filter_by(user_id=user.id).first()
+            member = Session.query(SquadMember).filter_by(user_id=user.id).first()
             if member:
-                session.delete(member)
-            admins = session.query(Admin).filter_by(user_id=user.id).all()
+                Session.delete(member)
+            admins = Session.query(Admin).filter_by(user_id=user.id).all()
             for admin in admins:
-                session.delete(admin)
-            session.add(banned)
-            session.commit()
-            squads = session.query(Squad).all()
+                Session.delete(admin)
+            Session.add(banned)
+            Session.commit()
+            squads = Session.query(Squad).all()
             for squad in squads:
                 send_async(bot, chat_id=squad.chat_id, text=MSG_USER_BANNED.format('@' + username))
             send_async(bot, chat_id=user.id, text=MSG_YOU_BANNED.format(banned.reason))
@@ -44,8 +44,8 @@ def ban(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
 
 
-def ban_traitor(bot: Bot, session, user_id):
-    user = session.query(User).filter_by(id=user_id).first()
+def ban_traitor(bot: Bot, user_id):
+    user = Session.query(User).filter_by(id=user_id).first()
     if user:
         print(user)
         banned = Ban()
@@ -53,21 +53,21 @@ def ban_traitor(bot: Bot, session, user_id):
         banned.from_date = datetime.now()
         banned.to_date = datetime.max
         banned.reason = MSG_REASON_TRAITOR
-        member = session.query(SquadMember).filter_by(user_id=user.id).first()
+        member = Session.query(SquadMember).filter_by(user_id=user.id).first()
         print(member)
         if member:
-            session.delete(member)
+            Session.delete(member)
             try:
                 bot.restrictChatMember(member.squad_id, member.user_id)
                 bot.kickChatMember(member.squad_id, member.user_id)
             except TelegramError as err:
                 bot.logger.error(err.message)
-        admins = session.query(Admin).filter_by(user_id=user.id).all()
+        admins = Session.query(Admin).filter_by(user_id=user.id).all()
         # for admin in admins:
-        # session.delete(admin)
-        session.add(banned)
-        session.commit()
-        squads = session.query(Squad).all()
+        # Session.delete(admin)
+        Session.add(banned)
+        Session.commit()
+        squads = Session.query(Squad).all()
         for squad in squads:
             send_async(bot, chat_id=squad.chat_id, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
 
@@ -76,12 +76,12 @@ def ban_traitor(bot: Bot, session, user_id):
 def unban(bot: Bot, update: Update):
     username = update.message.text.split(' ', 1)[1]
     username = username.replace('@', '')
-    user = session.query(User).filter_by(username=username).first()
+    user = Session.query(User).filter_by(username=username).first()
     if user:
-        banned = session.query(Ban).filter_by(user_id=user.id).first()
+        banned = Session.query(Ban).filter_by(user_id=user.id).first()
         if banned:
-            session.delete(banned)
-            session.commit()
+            Session.delete(banned)
+            Session.commit()
             send_async(bot, chat_id=user.id, text=MSG_YOU_UNBANNED)
             send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNBANNED.format('@' + user.username))
         else:

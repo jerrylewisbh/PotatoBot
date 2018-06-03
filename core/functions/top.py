@@ -17,7 +17,7 @@ from telegram import Bot, Update
 
 TOP_START_DATE = datetime(2017, 12, 11)
 
-session = Session();
+Session();
 
 @user_allowed
 def top_about(bot: Bot, update: Update):
@@ -28,11 +28,11 @@ def top_about(bot: Bot, update: Update):
                reply_markup=markup)
 
 
-def get_top(condition, session, header, field_name, icon, user_id, additional_filter=text_('')):
-    actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+def get_top(condition, header, field_name, icon, user_id, additional_filter=text_('')):
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
-    characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
+    characters = Session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                  .in_([(a[0], a[1]) for a in actual_profiles]),
                                                  Character.date > datetime.now() - timedelta(days=7),
                                                  additional_filter)\
@@ -63,7 +63,7 @@ def get_top(condition, session, header, field_name, icon, user_id, additional_fi
 
 @user_allowed
 def attack_top(bot: Bot, update: Update):
-    text = get_top(Character.attack.desc(), session, MSG_TOP_ATTACK, 'attack', '⚔', update.message.from_user.id)
+    text = get_top(Character.attack.desc(), MSG_TOP_ATTACK, 'attack', '⚔', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
                text=text)
@@ -71,7 +71,7 @@ def attack_top(bot: Bot, update: Update):
 
 @user_allowed
 def def_top(bot: Bot, update: Update):
-    text = get_top(Character.defence.desc(), session, MSG_TOP_DEFENCE, 'defence', '🛡', update.message.from_user.id)
+    text = get_top(Character.defence.desc(), MSG_TOP_DEFENCE, 'defence', '🛡', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
                text=text)
@@ -79,7 +79,7 @@ def def_top(bot: Bot, update: Update):
 
 @user_allowed
 def exp_top(bot: Bot, update: Update):
-    text = get_top(Character.exp.desc(), session, MSG_TOP_EXPERIENCE, 'exp', '🔥', update.message.from_user.id)
+    text = get_top(Character.exp.desc(), MSG_TOP_EXPERIENCE, 'exp', '🔥', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
                text=text)
@@ -123,10 +123,10 @@ def gen_squad_top_msg(data, counts, header, icon):
 
 @user_allowed
 def global_build_top(bot: Bot, update: Update):
-    actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
-    builds = session.query(Character, func.count(BuildReport.user_id))\
+    builds = Session.query(Character, func.count(BuildReport.user_id))\
         .filter(tuple_(Character.user_id, Character.date)
                 .in_([(a[0], a[1]) for a in actual_profiles]),
                 Character.date > datetime.now() - timedelta(days=7))\
@@ -154,11 +154,11 @@ def global_build_top(bot: Bot, update: Update):
 
 @user_allowed
 def week_build_top(bot: Bot, update: Update):
-    actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
     today = datetime.today().date()
-    builds = session.query(Character, func.count(BuildReport.user_id))\
+    builds = Session.query(Character, func.count(BuildReport.user_id))\
         .filter(tuple_(Character.user_id, Character.date)
                 .in_([(a[0], a[1]) for a in actual_profiles]),
                 Character.date > datetime.now() - timedelta(days=7))\
@@ -186,11 +186,11 @@ def week_build_top(bot: Bot, update: Update):
 
 @user_allowed
 def week_squad_build_top(bot: Bot, update: Update):
-    actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
     today = datetime.today().date()
-    builds = session.query(Squad, func.count(BuildReport.user_id))\
+    builds = Session.query(Squad, func.count(BuildReport.user_id))\
         .join(SquadMember).join(Character, SquadMember.user_id == Character.user_id)\
         .filter(tuple_(Character.user_id, Character.date)
                 .in_([(a[0], a[1]) for a in actual_profiles]),
@@ -201,7 +201,7 @@ def week_squad_build_top(bot: Bot, update: Update):
     if CASTLE:
         builds = builds.filter(Character.castle == CASTLE)
     builds = builds.group_by(Squad).all()
-    counts = session.query(Squad, func.count(SquadMember.user_id)).join(SquadMember).group_by(Squad)
+    counts = Session.query(Squad, func.count(SquadMember.user_id)).join(SquadMember).group_by(Squad)
     text = gen_squad_top_msg(builds, counts, MSG_TOP_WEEK_BUILDERS, '⚒')
     markup = generate_build_top()
     if update.message:
@@ -215,10 +215,10 @@ def week_squad_build_top(bot: Bot, update: Update):
 
 @user_allowed
 def global_squad_build_top(bot: Bot, update: Update):
-    actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
-    builds = session.query(Squad, func.count(BuildReport.user_id))\
+    builds = Session.query(Squad, func.count(BuildReport.user_id))\
         .join(SquadMember).join(Character, SquadMember.user_id == Character.user_id)\
         .filter(tuple_(Character.user_id, Character.date)
                 .in_([(a[0], a[1]) for a in actual_profiles]),
@@ -229,7 +229,7 @@ def global_squad_build_top(bot: Bot, update: Update):
     if CASTLE:
         builds = builds.filter(Character.castle == CASTLE)
     builds = builds.group_by(Squad).all()
-    counts = session.query(Squad, func.count(SquadMember.user_id)).join(SquadMember).group_by(Squad)
+    counts = Session.query(Squad, func.count(SquadMember.user_id)).join(SquadMember).group_by(Squad)
     text = gen_squad_top_msg(builds, counts, MSG_TOP_GLOBAL_BUILDERS, '⚒')
     markup = generate_build_top()
     if update.message:
@@ -243,11 +243,11 @@ def global_squad_build_top(bot: Bot, update: Update):
 
 @user_allowed
 def week_battle_top(bot: Bot, update: Update):
-    actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
     today = datetime.today().date()
-    battles = session.query(Character, func.count(Report.user_id))\
+    battles = Session.query(Character, func.count(Report.user_id))\
         .filter(tuple_(Character.user_id, Character.date)
                 .in_([(a[0], a[1]) for a in actual_profiles]),
                 Character.date > datetime.now() - timedelta(days=7))\
@@ -276,10 +276,10 @@ def week_battle_top(bot: Bot, update: Update):
 
 @user_allowed
 def global_battle_top(bot: Bot, update: Update):
-    actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
-    battles = session.query(Character, func.count(Report.user_id))\
+    battles = Session.query(Character, func.count(Report.user_id))\
         .filter(tuple_(Character.user_id, Character.date)
                 .in_([(a[0], a[1]) for a in actual_profiles]),
                 Character.date > datetime.now() - timedelta(days=7))\

@@ -12,7 +12,7 @@ from telegram import Bot, Update
 
 last_welcome = 0
 
-session = Session()
+Session()
 
 @user_allowed(False)
 def welcome(bot: Bot, update: Update):
@@ -20,11 +20,11 @@ def welcome(bot: Bot, update: Update):
     global last_welcome
     logging.debug("Welcome")
     if update.message.chat.type in ['group', 'supergroup']:
-        group = update_group(update.message.chat, session)
+        group = update_group(update.message.chat)
         for new_chat_member in update.message.new_chat_members:
-            user = add_user(new_chat_member, session)
+            user = add_user(new_chat_member)
             logging.debug("Welcome: user=%s", user)
-            administrator = session.query(Admin).filter_by(user_id=user.id).all()
+            administrator = Session.query(Admin).filter_by(user_id=user.id).all()
             allow_anywhere = False
             for adm in administrator:
                 if adm.admin_type == AdminType.FULL.value:
@@ -38,7 +38,7 @@ def welcome(bot: Bot, update: Update):
                 logging.debug("Welcome: equal")
                 if group.welcome_enabled:
                     logging.debug("Welcome: enable")
-                    welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
+                    welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
                     send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
 
             elif (user is None or user.character is None or user.character.castle != CASTLE or user.member is None and not allow_anywhere and user.id != bot.id):
@@ -53,12 +53,12 @@ def welcome(bot: Bot, update: Update):
                 bot.kickChatMember(update.message.chat.id, new_chat_member.id)
             else:
                 if group.welcome_enabled:
-                    welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
+                    welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
                     if welcome_msg is None:
                         welcome_msg = WelcomeMsg(chat_id=group.id, message=MSG_WELCOME_DEFAULT)
-                        session.add(welcome_msg)
+                        Session.add(welcome_msg)
 
-                    welcomed = session.query(Wellcomed).filter_by(user_id=new_chat_member.id,
+                    welcomed = Session.query(Wellcomed).filter_by(user_id=new_chat_member.id,
                                                                   chat_id=update.message.chat.id).first()
                     if welcomed is None:
                         if time() - last_welcome > 30:
@@ -66,21 +66,21 @@ def welcome(bot: Bot, update: Update):
                                        text=fill_template(welcome_msg.message, user))
                             last_welcome = time()
                         welcomed = Wellcomed(user_id=new_chat_member.id, chat_id=update.message.chat.id)
-                        session.add(welcomed)
-                    session.commit()
+                        Session.add(welcomed)
+                    Session.commit()
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
 def set_welcome(bot: Bot, update: Update):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
-        welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
+        welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
         if welcome_msg is None:
             welcome_msg = WelcomeMsg(chat_id=group.id, message=update.message.text.split(' ', 1)[1])
         else:
             welcome_msg.message = update.message.text.split(' ', 1)[1]
-        session.add(welcome_msg)
-        session.commit()
+        Session.add(welcome_msg)
+        Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_WELCOME_SET)
 
 
@@ -89,8 +89,8 @@ def enable_welcome(bot: Bot, update: Update):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
         group.welcome_enabled = True
-        session.add(group)
-        session.commit()
+        Session.add(group)
+        Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_WELCOME_ENABLED)
 
 
@@ -99,8 +99,8 @@ def disable_welcome(bot: Bot, update: Update):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
         group.welcome_enabled = False
-        session.add(group)
-        session.commit()
+        Session.add(group)
+        Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_WELCOME_DISABLED)
 
 
@@ -108,9 +108,9 @@ def disable_welcome(bot: Bot, update: Update):
 def show_welcome(bot: Bot, update):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat, session)
-        welcome_msg = session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
+        welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
         if welcome_msg is None:
             welcome_msg = WelcomeMsg(chat_id=group.id, message=MSG_WELCOME_DEFAULT)
-            session.add(welcome_msg)
-            session.commit()
+            Session.add(welcome_msg)
+            Session.commit()
         send_async(bot, chat_id=group.id, text=welcome_msg.message)

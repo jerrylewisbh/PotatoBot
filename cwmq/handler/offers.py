@@ -14,7 +14,7 @@ from telegram import ParseMode
 
 from cwmq.handler.profiles import api_access_revoked
 
-session = Session()
+Session()
 p = Publisher()
 
 logger = logging.getLogger(__name__)
@@ -29,14 +29,14 @@ def offers_handler(channel, method, properties, body, dispatcher):
     data = json.loads(body)
 
     try:
-        item = session.query(Item).filter(func.lower(Item.name) == data['item'].lower()).first()
+        item = Session.query(Item).filter(func.lower(Item.name) == data['item'].lower()).first()
         if not item:
             # Create items we do not yet know in the database....
             item = Item()
             item.name = data['item']
             item.tradable = True
-            session.add(item)
-            session.commit()
+            Session.add(item)
+            Session.commit()
 
             dispatcher.bot.send_message(
                 SUPER_ADMIN_ID,
@@ -53,12 +53,18 @@ def offers_handler(channel, method, properties, body, dispatcher):
         for order in orders:
             logging.info("Order #%s - item='%s' - user_id='%s', is_api_trade_allowed='%s', setting_automated_sniping='%s'", order.id, order.item.name, order.user.id, order.user.is_api_trade_allowed, order.user.setting_automated_sniping)
 
-            if order.max_price != data['price'] or not order.user.is_api_trade_allowed or \
-                not order.user.setting_automated_sniping:
+            if order.max_price != data['price']:
                 # Done...
                 logging.info("Price '%s' does not match max_price '%s' or trade is not enabled '%s'/'%s'", data['price'], order.max_price, order.user.is_api_trade_allowed, order.user.setting_automated_sniping)
-                channel.basic_ack(method.delivery_tag)
-                return
+                continue # Next order!
+            elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping:
+                logging.info(
+                    "Trade disabled for %s ('%s'/'%s')",
+                    order.user.id,
+                    order.user.is_api_trade_allowed,
+                    order.user.setting_automated_sniping
+                )
+                continue # Next order!
 
             # TODO: On bot startup try to fullfil orders...
             remainings = order.limit
@@ -94,8 +100,8 @@ def offers_handler(channel, method, properties, body, dispatcher):
 
                 u = order.user
                 u.setting_automated_sniping = False
-                session.add(u)
-                session.commit()
+                Session.add(u)
+                Session.commit()
 
                 dispatcher.bot.send_message(
                     order.user.id,
@@ -106,8 +112,8 @@ def offers_handler(channel, method, properties, body, dispatcher):
                 wrapper.request_trade_terminal(dispatcher.bot, order.user)
             except wrapper.APIMissingUserException:
                 logging.error("No/Invalid user for create_want_to_uy specified")
-            except wrapper.APIWrongItemCode:
-                logging.error("Wrong item code was given")
+            except wrapper.APIWrongItemCode as ex:
+                logging.error("Wrong item code was given: %s", ex)
             except wrapper.APIMissingAccessRightsException:
                 logging.error("User has disabled all trade settings but you tried to create a Buy-Order")
 
@@ -121,7 +127,7 @@ def offers_handler(channel, method, properties, body, dispatcher):
             logging.exception("Can't acknowledge message")
 
         try:
-            session.rollback()
+            Session.rollback()
         except BaseException:
             logging.exception("Can't do rollback")
 

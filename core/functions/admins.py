@@ -15,21 +15,21 @@ from core.types import Admin, AdminType, User, admin_allowed, user_allowed, Sess
 from core.utils import send_async
 from telegram import Bot, Update
 
-session = Session()
+Session()
 
 @admin_allowed()
 def set_admin(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
-        user = session.query(User).filter_by(username=msg).first()
+        user = Session.query(User).filter_by(username=msg).first()
         if user is None:
             send_async(bot,
                        chat_id=update.message.chat.id,
                        text=MSG_USER_UNKNOWN)
 
         else:
-            adm = session.query(Admin).filter_by(user_id=user.id,
+            adm = Session.query(Admin).filter_by(user_id=user.id,
                                                  admin_group=update.message.chat.id).first()
 
             if adm is None:
@@ -37,8 +37,8 @@ def set_admin(bot: Bot, update: Update):
                                         admin_type=AdminType.GROUP.value,
                                         admin_group=update.message.chat.id)
 
-                session.add(new_group_admin)
-                session.commit()
+                Session.add(new_group_admin)
+                Session.commit()
                 send_async(bot,
                            chat_id=update.message.chat.id,
                            text=MSG_NEW_GROUP_ADMIN.format(user.username))
@@ -50,7 +50,7 @@ def set_admin(bot: Bot, update: Update):
 
 
 def del_adm(bot, chat_id, user):
-    adm = session.query(Admin).filter_by(user_id=user.id,
+    adm = Session.query(Admin).filter_by(user_id=user.id,
                                          admin_group=chat_id).first()
 
     if adm is None:
@@ -59,8 +59,8 @@ def del_adm(bot, chat_id, user):
                    text=MSG_DEL_GROUP_ADMIN_NOT_EXIST.format(user.username))
 
     else:
-        session.delete(adm)
-        session.commit()
+        Session.delete(adm)
+        Session.commit()
         send_async(bot,
                    chat_id=chat_id,
                    text=MSG_DEL_GROUP_ADMIN.format(user.username))
@@ -72,7 +72,7 @@ def del_admin(bot: Bot, update: Update):
     if msg.find('@') != -1:
         msg = msg.replace('@', '')
         if msg != '':
-            user = session.query(User).filter_by(username=msg).first()
+            user = Session.query(User).filter_by(username=msg).first()
             if user is None:
                 send_async(bot,
                            chat_id=update.message.chat.id,
@@ -81,7 +81,7 @@ def del_admin(bot: Bot, update: Update):
             else:
                 del_adm(bot, update.message.chat.id, user, session)
     else:
-        user = session.query(User).filter_by(id=msg).first()
+        user = Session.query(User).filter_by(id=msg).first()
         if user is None:
             send_async(bot,
                        chat_id=update.message.chat.id,
@@ -93,10 +93,10 @@ def del_admin(bot: Bot, update: Update):
 
 @admin_allowed()
 def list_admins(bot: Bot, update: Update):
-    admins = session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
+    admins = Session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
     users = []
     for admin_user in admins:
-        users.append(session.query(User).filter_by(id=admin_user.user_id).first())
+        users.append(Session.query(User).filter_by(id=admin_user.user_id).first())
     msg = MSG_LIST_ADMINS_HEADER
     for user in users:
         msg += MSG_LIST_ADMINS_FORMAT.format(user.id,
@@ -109,10 +109,10 @@ def list_admins(bot: Bot, update: Update):
 
 @user_allowed
 def admins_for_users(bot: Bot, update: Update):
-    admins = session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
+    admins = Session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
     users = []
     for admin_user in admins:
-        users.append(session.query(User).filter_by(id=admin_user.user_id).first())
+        users.append(Session.query(User).filter_by(id=admin_user.user_id).first())
     msg = MSG_LIST_ADMINS_HEADER
     if users is None:
         msg += MSG_EMPTY
@@ -130,22 +130,22 @@ def set_global_admin(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
-        user = session.query(User).filter_by(username=msg).first()
+        user = Session.query(User).filter_by(username=msg).first()
         if user is None:
             send_async(bot,
                        chat_id=update.message.chat.id,
                        text=MSG_USER_UNKNOWN)
 
         else:
-            adm = session.query(Admin).filter_by(user_id=user.id,
+            adm = Session.query(Admin).filter_by(user_id=user.id,
                                                  admin_type=AdminType.FULL.value).first()
 
             if adm is None:
                 new_group_admin = Admin(user_id=user.id,
                                         admin_type=AdminType.FULL.value,
                                         admin_group=0)
-                session.add(new_group_admin)
-                session.commit()
+                Session.add(new_group_admin)
+                Session.commit()
                 send_async(bot,
                            chat_id=update.message.chat.id,
                            text=MSG_NEW_GLOBAL_ADMIN.format(user.username))
@@ -161,7 +161,7 @@ def set_super_admin(bot: Bot, update: Update):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
-        user = session.query(User).filter_by(username=msg).first()
+        user = Session.query(User).filter_by(username=msg).first()
         if user is None:
             send_async(bot,
                        chat_id=update.message.chat.id,
@@ -169,7 +169,7 @@ def set_super_admin(bot: Bot, update: Update):
 
         else:
             if user.id == SUPER_ADMIN_ID and update.message.from_user.id == SUPER_ADMIN_ID:
-                adm = session.query(Admin).filter_by(user_id=user.id, admin_group=0).first()
+                adm = Session.query(Admin).filter_by(user_id=user.id, admin_group=0).first()
                 if adm is not None:
                     if adm.admin_type == AdminType.SUPER.value:
                         send_async(bot,
@@ -178,8 +178,8 @@ def set_super_admin(bot: Bot, update: Update):
 
                     else:
                         adm.admin_type = AdminType.SUPER.value
-                        session.add(adm)
-                        session.commit()
+                        Session.add(adm)
+                        Session.commit()
                         send_async(bot,
                                    chat_id=update.message.chat.id,
                                    text=MSG_NEW_SUPER_ADMIN.format(user.username))
@@ -189,8 +189,8 @@ def set_super_admin(bot: Bot, update: Update):
                                             admin_type=AdminType.SUPER.value,
                                             admin_group=0)
 
-                    session.add(new_super_admin)
-                    session.commit()
+                    Session.add(new_super_admin)
+                    Session.commit()
                     send_async(bot,
                                chat_id=update.message.chat.id,
                                text=MSG_NEW_SUPER_ADMIN.format(user.username))
@@ -202,14 +202,14 @@ def del_global_admin(bot: Bot, update: Update):
     if msg.find('@') != -1:
         msg = msg.replace('@', '')
         if msg != '':
-            user = session.query(User).filter_by(username=msg).first()
+            user = Session.query(User).filter_by(username=msg).first()
             if user is None:
                 send_async(bot,
                            chat_id=update.message.chat.id,
                            text=MSG_USER_UNKNOWN)
 
             else:
-                adm = session.query(Admin).filter_by(user_id=user.id,
+                adm = Session.query(Admin).filter_by(user_id=user.id,
                                                      admin_type=AdminType.FULL.value).first()
 
                 if adm is None:
@@ -218,28 +218,28 @@ def del_global_admin(bot: Bot, update: Update):
                                text=MSG_DEL_GLOBAL_ADMIN_NOT_EXIST.format(user.username))
 
                 else:
-                    session.delete(adm)
-                    session.commit()
+                    Session.delete(adm)
+                    Session.commit()
                     send_async(bot,
                                chat_id=update.message.chat.id,
                                text=MSG_DEL_GLOBAL_ADMIN.format(user.username))
     else:
-        user = session.query(User).filter_by(id=msg).first()
+        user = Session.query(User).filter_by(id=msg).first()
         if user is None:
             send_async(bot,
                        chat_id=update.message.chat.id,
                        text=MSG_USER_UNKNOWN)
 
         else:
-            adm = session.query(Admin).filter_by(user_id=user.id,
+            adm = Session.query(Admin).filter_by(user_id=user.id,
                                                  admin_type=AdminType.FULL.value).first()
             if adm is None:
                 send_async(bot,
                            chat_id=update.message.chat.id,
                            text=MSG_DEL_GLOBAL_ADMIN_NOT_EXIST.format(user.username))
             else:
-                session.delete(adm)
-                session.commit()
+                Session.delete(adm)
+                Session.commit()
                 send_async(bot,
                            chat_id=update.message.chat.id,
                            text=MSG_DEL_GLOBAL_ADMIN.format(user.username))

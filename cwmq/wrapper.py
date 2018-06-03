@@ -8,7 +8,7 @@ from core.texts import MSG_API_REQUIRE_ACCESS_TRADE
 from core.types import Session, Item
 from cwmq import Publisher
 
-session = Session()
+Session()
 p = Publisher()
 
 class APIInvalidTokenException(Exception):
@@ -38,11 +38,11 @@ def create_want_to_buy(user, item_code, quantity, price, exact_price=True):
         raise APIWrongSettings("User has disabled sniping and hiding. Trading is not allowed.")
 
     if not item_code:
-        raise APIWrongItemCode("Item code '{}' is invalid", item_code)
+        raise APIWrongItemCode("Item code '{}' is invalid".format(item_code))
 
-    item = session.query(Item).filter(func.lower(Item.name) == item_code.lower()).first()
+    item = Session.query(Item).filter(Item.cw_id == item_code).first()
     if not item:
-        raise APIWrongItemCode("Item code '{}' is invalid", item_code)
+        raise APIWrongItemCode("Item code '{}' is invalid".format(item_code))
 
     return {
         "token": user.api_token,

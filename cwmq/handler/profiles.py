@@ -17,7 +17,7 @@ from cwmq import Publisher, wrapper
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
 from telegram import ParseMode, Bot
 
-session = Session()
+Session()
 p = Publisher()
 
 logger = logging.getLogger(__name__)
@@ -37,11 +37,11 @@ def profile_handler(channel, method, properties, body, dispatcher):
         user = None
         try:
             if data and "payload" in data and data["payload"] and "userId" in data['payload']:
-                user = session.query(User).filter_by(id=data['payload']['userId']).first()
+                user = Session.query(User).filter_by(id=data['payload']['userId']).first()
         except (InterfaceError, InvalidRequestError):
             logging.warning("Request/Interface Error occured, doing rollback and trying again...")
-            session.rollback()
-            user = session.query(User).filter_by(id=data['payload']['userId']).first()
+            Session.rollback()
+            user = Session.query(User).filter_by(id=data['payload']['userId']).first()
 
         if "action" not in data:
             if data['payload']['operation'] in ("GetUserProfile", "GetStock", "TradeTerminal"):
@@ -50,8 +50,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                     # Since we're stateless we have to temporarily save the action and request_id
                     user.api_request_id = data['uuid']
                     user.api_grant_operation = data['payload']['operation']
-                    session.add(user)
-                    session.commit()
+                    Session.add(user)
+                    Session.commit()
                 else:
                     logger.error("TODO!? %r, %r", data, user)
             else:
@@ -66,8 +66,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 user.is_api_stock_allowed = True
                 user.is_api_trade_allowed = True
 
-            session.add(user)
-            session.commit()
+            Session.add(user)
+            Session.commit()
 
             logger.info("Added token for chat_id=%s", data['payload']['userId'])
             dispatcher.bot.send_message(
@@ -134,8 +134,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                     "action": "requestStock"
                 })
 
-            session.add(user)
-            session.commit()
+            Session.add(user)
+            Session.commit()
 
             dispatcher.bot.send_message(
                 user.id,
@@ -147,7 +147,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
         elif data['action'] == "requestProfile":
             if data['result'] == "InvalidToken":
                 # Revoked token?
-                user = session.query(User).filter_by(api_token=data['payload']['token']).first()
+                user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
                 logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
@@ -196,8 +196,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c.castle = data['payload']['profile']['castle']
                 c.gold = data['payload']['profile']['gold']
                 c.donateGold = data['payload']['profile']['pouches'] if 'pouches' in data['payload']['profile'] else 0
-                session.add(c)
-                session.commit()
+                Session.add(c)
+                Session.commit()
 
                 """
                   {castle}{userName}
@@ -212,7 +212,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
         elif data['action'] == "requestStock":
             if data['result'] == "InvalidToken":
                 # Revoked token?
-                user = session.query(User).filter_by(api_token=data['payload']['token']).first()
+                user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
                 logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
@@ -244,7 +244,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 for item, count in data['payload']['stock'].items():
                     text += "{} ({})\n".format(item, count)
 
-                stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(session, user.id, text))
+                stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(user.id, text))
 
                 # if get_game_state() != GameState.HOWLING_WIND:
                 #    # Don't send stock change notification when wind is not howling...
@@ -263,7 +263,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
         elif data['action'] == "wantToBuy":
             if data['result'] == "InvalidToken":
                 # Revoked token?
-                user = session.query(User).filter_by(api_token=data['payload']['token']).first()
+                user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
                 wrapper.request_trade_terminal(dispatcher.bot, user)
@@ -281,7 +281,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
             logging.exception("Can't acknowledge message")
 
         try:
-            session.rollback()
+            Session.rollback()
         except BaseException:
             logging.exception("Can't do rollback")
 
@@ -298,8 +298,8 @@ def api_access_revoked(bot: Bot, user):
         user.is_api_profile_allowed = False
         user.is_api_trade_allowed = False
         user.api_token = None
-        session.add(user)
-        session.commit()
+        Session.add(user)
+        Session.commit()
 
         bot.send_message(
             user.id,
