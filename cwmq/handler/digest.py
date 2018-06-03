@@ -71,7 +71,7 @@ def digest_handler(channel, method, properties, body, dispatcher):
                     pass
 
                 avail_qty = 0
-                for price in data['prices']:
+                for price in digest_item['prices']:
                     if price <= order.max_price:
                         avail_qty += 1
 
