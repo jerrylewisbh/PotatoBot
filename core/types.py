@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
+
+from sqlalchemy.ext.hybrid import hybrid_property
+
 from config import DB
 from datetime import datetime
 from enum import Enum
@@ -84,37 +87,24 @@ class User(Base):
     last_name = Column(UnicodeText(250))
     date_added = Column(DateTime, default=datetime.now())
 
-    character = relationship('Character',
-                             back_populates='user',
-                             order_by='Character.date.desc()',
-                             uselist=False)
+    # We save the history of all Builds, Characters, etc. Below are also convenience functions to allow getting
+    # the latest one...
+    characters = relationship('Character', back_populates='user', order_by='Character.date.desc()', lazy='dynamic')
+    equipments = relationship('Equip', back_populates='user', order_by='Equip.date.desc()', lazy='dynamic')
+    stocks = relationship('Stock', back_populates='user', order_by='Stock.date.desc()', lazy='dynamic')
+
 
     orders_confirmed = relationship('OrderCleared', back_populates='user')
 
     member = relationship('SquadMember', back_populates='user', uselist=False)
 
-    equip = relationship('Equip',
-                         back_populates='user',
-                         order_by='Equip.date.desc()',
-                         uselist=False)
 
-    stock = relationship('Stock',
-                         back_populates='user',
-                         order_by='Stock.date.desc()',
-                         uselist=False)
 
-    report = relationship('Report',
-                          back_populates='user',
-                          order_by='Report.date.desc()')
+    report = relationship('Report', back_populates='user', order_by='Report.date.desc()')
 
-    build_report = relationship('BuildReport',
-                                back_populates='user',
-                                order_by='BuildReport.date.desc()')
+    build_report = relationship('BuildReport', back_populates='user', order_by='BuildReport.date.desc()')
 
-    profession = relationship('Profession',
-                              back_populates='user',
-                              order_by='Profession.date.desc()',
-                              uselist=False)
+    profession = relationship('Profession', back_populates='user', order_by='Profession.date.desc()', uselist=False)
 
     quests = relationship('UserQuest', back_populates='user')
 
@@ -141,6 +131,19 @@ class User(Base):
 
     ban = relationship("Ban", back_populates='user', order_by="Ban.to_date.desc()", lazy='dynamic')
 
+    @hybrid_property
+    def equip(self):
+        return self.equipments.first()
+
+    @hybrid_property
+    def stock(self):
+        return self.stocks.first()
+
+    @hybrid_property
+    def character(self):
+        return self.characters.first()
+
+    @hybrid_property
     def is_banned(self):
         # Get longest running ban still valid...
         ban = self.ban.first()
@@ -148,14 +151,16 @@ class User(Base):
             return True
         return False
 
+    @hybrid_property
     def is_squadmember(self):
         if self.member and self.member.approved:
             return True
         return False
 
+    @hybrid_property
     def is_tester(self):
         # Check if user is a tester based on testing-squad membership
-        if not self.is_squadmember():
+        if not self.is_squadmember:
             return False
 
         if self.member and self.member.approved and self.member.squad and self.member.squad.testing_squad:
@@ -312,7 +317,7 @@ class Stock(Base):
     date = Column(DATETIME(fsp=6), default=datetime.now())
     stock_type = Column(Integer)
 
-    user = relationship('User', back_populates='stock')
+    user = relationship('User', back_populates='stocks')
 
 
 class Profession(Base):
@@ -351,7 +356,7 @@ class Character(Base):
     # (yet) available in the API
     characterClass = Column(UnicodeText(250))
 
-    user = relationship('User', back_populates='character')
+    user = relationship('User', back_populates='characters')
 
 
 class BuildReport(Base):
@@ -421,7 +426,7 @@ class Equip(Base):
 
     equip = Column(UnicodeText(250))
 
-    user = relationship('User', back_populates='equip')
+    user = relationship('User', back_populates='equipments')
 
 
 class LocalTrigger(Base):

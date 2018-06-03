@@ -286,7 +286,7 @@ def generate_settings_buttons(user, back_key=False):
                 ))
             ]
         )
-    if user.is_squadmember() and user.is_api_stock_allowed and user.is_api_profile_allowed and user.api_token:
+    if user.is_squadmember and user.is_api_stock_allowed and user.is_api_profile_allowed and user.api_token:
         if user.setting_automated_report:
             inline_keys.append(
                 [
@@ -319,7 +319,7 @@ def generate_settings_buttons(user, back_key=False):
                     ))
                 ]
             )
-    if user.is_tester() and user.is_api_trade_allowed and user.api_token:
+    if user.is_tester and user.is_api_trade_allowed and user.api_token:
         if user.setting_automated_sniping:
             inline_keys.append(
                 [

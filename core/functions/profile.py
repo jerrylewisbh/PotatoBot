@@ -610,7 +610,7 @@ def find_by_username(bot: Bot, update: Update):
                 profession = user.profession
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
-                    bool(user.is_banned()),
+                    bool(user.is_banned),
                     bool(user.api_token),
                     bool(user.api_user_id),
                     bool(user.is_api_profile_allowed),
@@ -639,7 +639,7 @@ def find_by_character(bot: Bot, update: Update):
                 profession = user.profession
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
-                    bool(user.is_banned()),
+                    bool(user.is_banned),
                     bool(user.api_token),
                     bool(user.api_user_id),
                     bool(user.is_api_profile_allowed),
@@ -668,7 +668,7 @@ def find_by_id(bot: Bot, update: Update):
                 profession = user.profession
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
-                    bool(user.is_banned()),
+                    bool(user.is_banned),
                     bool(user.api_token),
                     bool(user.api_user_id),
                     bool(user.is_api_profile_allowed),
