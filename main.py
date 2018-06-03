@@ -7,6 +7,7 @@ from datetime import datetime, time, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
 from core.battle import report_after_battle
+from core.bot import MQBot
 from core.chat_commands import (CC_ADMIN_LIST, CC_ADMINS, CC_ALLOW_PIN_ALL,
                                 CC_ALLOW_TRIGGER_ALL, CC_BATTLE_STATISTICS,
                                 CC_BOSS_1, CC_BOSS_2, CC_BOSS_3, CC_BOSS_4,
@@ -84,7 +85,7 @@ from cwmq.handler.profiles import profile_handler
 from telegram import Bot, ParseMode, Update
 from telegram.error import TelegramError
 from telegram.ext import (CallbackQueryHandler, Filters, InlineQueryHandler,
-                          MessageHandler, Updater)
+                          MessageHandler, Updater, MessageQueue)
 from telegram.ext.dispatcher import run_async
 
 # -----constants----
@@ -317,7 +318,15 @@ def main():
     logger.addHandler(rh)
 
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater(TOKEN)
+    from telegram.ext import MessageHandler, Filters
+    from telegram.utils.request import Request
+
+    token = TOKEN
+    # for test purposes limit global throughput to 3 messages per 3 seconds
+    q = MessageQueue(all_burst_limit=3, all_time_limit_ms=3000)
+    request = Request(con_pool_size=8)
+    bot = MQBot(token, request=request, mqueue=q)
+    updater = Updater(bot=bot)
     updater.bot.logger.setLevel(logging.INFO)
 
     # Get the dispatcher to register handler

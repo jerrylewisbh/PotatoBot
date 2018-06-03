@@ -4,10 +4,10 @@ from core.functions.inline_keyboard_handling import (generate_group_manage,
                                                      generate_groups_manage)
 from core.texts import *
 from core.types import user_allowed, Session, Item, UserStockHideSetting, User, UserExchangeOrder
-from core.utils import send_async
+from core.utils import send_async, pad_string
 from telegram import Bot, Update, ParseMode
 
-from cwmq.handler.profiles import request_trade_terminal
+from cwmq import wrapper
 
 session = Session()
 
@@ -57,7 +57,7 @@ def hide_gold_info(bot: Bot, update: Update):
     user = session.query(User).filter_by(id=update.message.chat.id).first()
 
     if not user.is_api_trade_allowed:
-        request_trade_terminal(bot, user.id)
+        wrapper.request_trade_terminal(bot, user)
         return
 
     text = get_autohide_settings(user)
@@ -167,7 +167,7 @@ def sniping_info(bot: Bot, update: Update):
 
     user = session.query(User).filter_by(id=update.message.chat.id).first()
     if not user.is_api_trade_allowed:
-        request_trade_terminal(bot, user.id)
+        wrapper.request_trade_terminal(bot, user)
         return
 
     text = get_snipe_settings(user)
@@ -317,5 +317,22 @@ def sniping(bot: Bot, update: Update, args=None):
         bot,
         chat_id=update.message.chat.id,
         text=SNIPE_WELCOME.format(get_snipe_settings(user)),
+        parse_mode=ParseMode.MARKDOWN,
+    )
+
+@user_allowed
+def list_items(bot: Bot, update: Update):
+    logging.warning("list_items called by %s", update.message.chat.id)
+
+    items = session.query(Item).order_by(Item.cw_id).all()
+
+    text = ITEM_LIST
+    for item in items:
+        text += "`{} {}\n`".format(pad_string(item.cw_id, 5), pad_string(item.name, 5))
+
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=text,
         parse_mode=ParseMode.MARKDOWN,
     )

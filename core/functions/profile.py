@@ -7,6 +7,7 @@ from enum import Enum
 from core.functions.ban import ban_traitor
 from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.functions.inline_markup import generate_settings_buttons
+from core.functions.reply_markup import generate_user_markup
 from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION, PROFILE,
                          REPAIR_REPORT, REPORT)
 from core.state import GameState, get_game_state
@@ -390,12 +391,12 @@ def char_update(bot: Bot, update: Update):
         char = parse_hero(update.message.text,
                           update.message.from_user.id,
                           update.message.forward_date,
-                          session)
+                          )
     elif re.search(PROFILE, update.message.text):
         char = parse_profile(update.message.text,
                              update.message.from_user.id,
                              update.message.forward_date,
-                             session)
+                             )
     if CASTLE:
         if char and (char.castle == CASTLE or update.message.from_user.id == EXT_ID):
             char.castle = CASTLE
@@ -552,11 +553,11 @@ def send_settings(bot, update, user):
     if user.setting_automated_deal_report and user.api_token and user.is_api_stock_allowed:
         automated_deal_report = user.setting_automated_deal_report
 
-    automated_sniping = MSG_NEEDS_API_ACCESS
+    automated_sniping = MSG_NEEDS_TRADE_ACCESS
     if user.setting_automated_sniping and user.api_token and user.is_api_trade_allowed:
         automated_deal_report = user.setting_automated_deal_report
 
-    automated_hiding = MSG_NEEDS_API_ACCESS
+    automated_hiding = MSG_NEEDS_TRADE_ACCESS
     if user.setting_automated_sniping and user.api_token and user.is_api_trade_allowed:
         automated_hiding = user.setting_automated_hiding
 
@@ -574,7 +575,10 @@ def send_settings(bot, update, user):
             text=msg,
             chat_id=user.id,
             message_id=update.callback_query.message.message_id,
-            reply_markup=generate_settings_buttons(user),
+            reply_markup=[
+                generate_settings_buttons(user),
+                generate_user_markup(user.id),
+            ],
             parse_mode=ParseMode.HTML
         )
     else:
@@ -611,6 +615,7 @@ def find_by_username(bot: Bot, update: Update):
                     bool(user.api_user_id),
                     bool(user.is_api_profile_allowed),
                     bool(user.is_api_stock_allowed),
+                    bool(user.is_api_trade_allowed),
                     bool(user.setting_automated_report),
                     bool(user.setting_automated_deal_report),
                 )
@@ -637,6 +642,7 @@ def find_by_character(bot: Bot, update: Update):
                     bool(user.api_user_id),
                     bool(user.is_api_profile_allowed),
                     bool(user.is_api_stock_allowed),
+                    bool(user.is_api_trade_allowed),
                     bool(user.setting_automated_report),
                     bool(user.setting_automated_deal_report),
                 )
@@ -663,6 +669,7 @@ def find_by_id(bot: Bot, update: Update):
                     bool(user.api_user_id),
                     bool(user.is_api_profile_allowed),
                     bool(user.is_api_stock_allowed),
+                    bool(user.is_api_trade_allowed),
                     bool(user.setting_automated_report),
                     bool(user.setting_automated_deal_report),
                 )

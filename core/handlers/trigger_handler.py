@@ -1,6 +1,6 @@
 import logging
 
-from core.exchange import auto_hide, sniping, sniping_remove
+from core.exchange import auto_hide, sniping, sniping_remove, list_items
 from core.functions.admins import (del_admin, del_global_admin, list_admins,
                                    set_admin, set_global_admin,
                                    set_super_admin, get_log)
@@ -78,5 +78,6 @@ def add_commands(disp: Dispatcher):
     disp.add_handler(CommandHandler('ah', auto_hide, pass_args=True))
     disp.add_handler(CommandHandler('s', sniping, pass_args=True))
     disp.add_handler(CommandHandler('sr', sniping_remove, pass_args=True))
+    disp.add_handler(CommandHandler('items', list_items))
 
     logging.info("Finished adding command handlers")

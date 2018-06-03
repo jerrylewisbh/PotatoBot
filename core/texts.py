@@ -1,4 +1,5 @@
 """ Строки """
+from core.commands import USER_COMMAND_EXCHANGE, USER_COMMAND_HIDE
 
 MSG_ORDER_STATISTIC = 'Statistics of who confirmed the orders for {} days:\n'
 MSG_ORDER_STATISTIC_OUT_FORMAT = '{}: {}/{}\n'
@@ -76,6 +77,10 @@ Squad commands:
 /forceadd <user> - add user to a squad without asking for confirmation
 /ban <user> <reason> - Ban an user from the squad
 /unban <user> - Unban an user from the squad
+
+
+User commands: 
+/items - List known items
 
 
 Free text commands:
@@ -223,6 +228,7 @@ MSG_PROFILE_ADMIN_INFO_ADDON = "\n\n<b>Admin-Info:</b>\n" \
                                "API ID: {}\n" \
                                "Profile allowed: {}\n" \
                                "Stock allowed: {}\n" \
+                               "Trade allowed: {}\n" \
                                "Report enabled: {}\n" \
                                "Exchange enabled: {}\n"
 
@@ -477,9 +483,13 @@ MSG_API_REQUIRE_ACCESS_TRADE = "Seems like I don't have permission to access you
                                "request from me please forward this code to me!"
 MSG_API_REQUIRE_ACCESS_PROFILE = "Seems like I don't have permission to access your profile yet. You'll get a " \
     "request from me please forward this code to me!"
-MSG_API_REVOKED_PERMISSIONS = "It seems I'm unable to access your data. Did you /revoke your permission?"
+MSG_API_REVOKED_PERMISSIONS = "It seems I'm unable to access your data. Did you /revoke your permission? Disabling API functions until you register again."
 MSG_API_SETUP_STEP_1_COMPLETE = "👌 Profile access is now granted! If I need additional permissions I will let you " \
                                 "know!"
+MSG_API_INCOMPLETE_SETUP = "It seems that you did not completely register. Please complete registration."
+
+MSG_DISABLED_TRADING = "\nDisabling trading until then."
+
 MSG_API_SETUP_STEP_2_COMPLETE = "👌 Thanks for granting additional permissions!"
 MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock update:</b>"
 
@@ -506,6 +516,7 @@ MSG_SETTINGS_INFO = "<b>Your settings:</b>\n" \
                     "<i>Last profile update: {}</i>\n" \
                     "<i>Last stock update: {}</i>"
 MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"
+MSG_NEEDS_TRADE_ACCESS = 'This requires trade permissions. I will request them once you select "{}" or "{}".'.format(USER_COMMAND_EXCHANGE, USER_COMMAND_HIDE)
 
 MSG_NO_REPORT_PHASE_BEFORE_BATTLE = "War is coming! Your Stock and Profile is getting updated automatically. No need to forward your data just yet!"
 MSG_NO_REPORT_PHASE_AFTER_BATTLE = "War is over but I don't accept reports just yet! I will remind you when it is time."
@@ -524,7 +535,7 @@ HIDE_WELCOME = "*Note: This is highly experimental! Please report any issues int
                "*With this feature enabled I will try to spend all your gold 15 Minutes before battle. I will remind " \
                "you 15 Minutes before battle so that you can abort it if needed*. \n\n" \
                "You can set your buy-preferences via `/ah <itemId> <prio> <maxPrice>`.\n" \
-               "Leave `<maxPrice>` out to always buy at market price.\n\n" \
+               "Leave `<maxPrice>` out to always buy at market price. You can get a list of items with `/items`. \n\n" \
                "Examples: \n" \
                "- `/ah 01 1 30` to buy Thread for a maximum price of 30 💰 until you can't afford another one\n" \
                "- `/ah 20 2` to by Leather for the lowest price currently on the market until you can't buy any more of it.\n\n" \
@@ -547,10 +558,10 @@ SNIPE_WELCOME = "*Note: This is highly experimental! Please report any issues in
                "Examples: \n" \
                "- `/s 01 10` to buy one Thread 30 💰\n" \
                "- `/s 20 2 10` to by Leather for 2 💰 until 10 are bought\n\n" \
-               "_How does it work?_: If your given item is sold for the price you specified I will try to buy it." \
-               "It can take some time until this item is available for that price. It is also possible that other" \
+               "_How does it work?_: If your given item is sold for the price you specified I will try to buy it. " \
+               "It can take some time until this item is available for that price. It is also possible that other " \
                "players are searching for the same item. In this case you need a little bit of luck although we try" \
-               "first come, first served.\n\n" \
+               "\"first came, first served\". You can issue `/items` to get a list of items. \n\n" \
                "To remove a buy order `/sr <itemId>`.\n\n" \
                "*Your current orders are:*\n" \
                "{}"
@@ -563,3 +574,5 @@ SNIPE_BUY_UNLIMITED = "- Buy {} (`{}`) for a price of {} 💰\n"
 SNIPE_BUY_LIMITED = "- Buy {} {} (`{}`) for a price of {} 💰\n"
 SNIPE_REMOVED = "{} was removed from your order list!"
 SNIPED_ITEM = "⚖️Got it! You bought <b>{}</b> for {}💰 ({} x {}💰)\nSeller: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"
+
+ITEM_LIST = "*Items I know:*\n"

@@ -49,6 +49,8 @@ LOGGER = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
 Session = scoped_session(sessionmaker(bind=ENGINE))
 
+session = Session()
+
 
 class UserQuestItem(Base):
     __tablename__ = 'user_quest_item'
@@ -510,7 +512,7 @@ class UserStockHideSetting(Base):
     )
 
 
-def check_admin(update, session, adm_type, allowed_types=()):
+def check_admin(update, adm_type, allowed_types=()):
     allowed = False
     if adm_type == AdminType.NOT_ADMIN:
         allowed = True
@@ -531,7 +533,7 @@ def check_admin(update, session, adm_type, allowed_types=()):
     return allowed
 
 
-def check_ban(update, session):
+def check_ban(update):
     ban = session.query(Ban).filter_by(user_id=update.message.from_user.id
                                        if update.message else update.callback_query.from_user.id).first()
     if ban is None or ban.to_date < datetime.now():
@@ -540,7 +542,7 @@ def check_ban(update, session):
         return False
 
 
-def log(session, user_id, chat_id, func_name, args):
+def log(user_id, chat_id, func_name, args):
     if user_id:
         log_item = Log()
         log_item.date = datetime.now()
@@ -557,12 +559,12 @@ def admin_allowed(adm_type=AdminType.FULL, ban_enable=True, allowed_types=()):
         def wrapper(bot: Bot, update, *args, **kwargs):
             session = Session()
             try:
-                allowed = check_admin(update, session, adm_type, allowed_types)
+                allowed = check_admin(update, adm_type, allowed_types)
                 if ban_enable:
-                    allowed &= check_ban(update, session)
+                    allowed &= check_ban(update)
                 if allowed:
                     if func.__name__ not in ['manage_all', 'trigger_show', 'user_panel', 'wrapper', 'welcome']:
-                        log(session, update.effective_user.id, update.effective_chat.id, func.__name__,
+                        log(update.effective_user.id, update.effective_chat.id, func.__name__,
                             update.message.text if update.message else None or
                             update.callback_query.data if update.callback_query else None)
                     # Fixme: Issues a message-update even if message did not change. This

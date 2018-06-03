@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 
+from config import BOT_ONE_STEP_API
 from core.enums import CASTLE_MAP, CLASS_MAP
 from core.functions.common import (MSG_API_REQUIRE_ACCESS_PROFILE,
                                    MSG_API_REQUIRE_ACCESS_STOCK,
@@ -12,7 +13,7 @@ from core.functions.common import (MSG_API_REQUIRE_ACCESS_PROFILE,
 from core.functions.profile import get_required_xp
 from core.functions.reply_markup import generate_user_markup
 from core.types import Character, Session, User
-from cwmq import Publisher
+from cwmq import Publisher, wrapper
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
 from telegram import ParseMode, Bot
 
@@ -60,8 +61,11 @@ def profile_handler(channel, method, properties, body, dispatcher):
             user.api_user_id = data['payload']['id']
 
             # Botato is granted this all in one step!
-            user.is_api_profile_allowed = True
-            user.is_api_stock_allowed = True
+            if BOT_ONE_STEP_API:
+                user.is_api_profile_allowed = True
+                user.is_api_stock_allowed = True
+                user.is_api_trade_allowed = True
+
             session.add(user)
             session.commit()
 
@@ -144,7 +148,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
             if data['result'] == "InvalidToken":
                 # Revoked token?
                 user = session.query(User).filter_by(api_token=data['payload']['token']).first()
-                api_access_revoked(dispatcher.bot, user.id)
+                api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
                 logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
 
@@ -205,18 +209,11 @@ def profile_handler(channel, method, properties, body, dispatcher):
                   💰{gold} 👝{pouches}
                   🏛Class info: {class}
                 """
-
-                # dispatcher.bot.send_message(
-                #    data['payload']['userId'],
-                #    "{}".format(data['payload']),
-                #    # reply_markup=_get_keyboard(user)
-                #)
-
         elif data['action'] == "requestStock":
             if data['result'] == "InvalidToken":
                 # Revoked token?
                 user = session.query(User).filter_by(api_token=data['payload']['token']).first()
-                api_access_revoked(dispatcher.bot, user.id)
+                api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
                 logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
 
@@ -267,9 +264,9 @@ def profile_handler(channel, method, properties, body, dispatcher):
             if data['result'] == "InvalidToken":
                 # Revoked token?
                 user = session.query(User).filter_by(api_token=data['payload']['token']).first()
-                api_access_revoked(dispatcher.bot, user.id)
+                api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
-                request_trade_terminal(dispatcher.bot, user)
+                wrapper.request_trade_terminal(dispatcher.bot, user)
             elif data['result'] == "Ok":
                 # Do we need to track OK results for buy orders?
                 pass
@@ -293,7 +290,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
 
 def api_access_revoked(bot: Bot, user):
     if user:
-        logger.warning("InvalidToken response for token %s", user.api_token)
+        logger.info("Revoking settings for user %s and token %s", user.id, user.api_token)
         # We have to get the user from by token since userId is not published and user is None currently...
 
         # Remove api settings...
@@ -311,19 +308,3 @@ def api_access_revoked(bot: Bot, user):
         )
 
 
-def request_trade_terminal(bot: Bot, user):
-    logger.warning("User has not granted Trade access but we have a token. Requesting access")
-    bot.send_message(
-        user.id,
-        MSG_API_REQUIRE_ACCESS_TRADE,
-        reply_markup=generate_user_markup(user.id)
-    )
-    # TODO: Keyboard update?
-    grant_req = {
-        "token": user.api_token,
-        "action": "authAdditionalOperation",
-        "payload": {
-            "operation": "TradeTerminal"
-        }
-    }
-    p.publish(grant_req)
