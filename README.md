@@ -27,6 +27,12 @@ python3 -m pip install -r requirements.txt
 2) Create a database, user and grant that account access to the database
 3) Enter credentials into your `config.py` file.
 
+## Redis
+You'll also need Redis for more volatile Data (for example CW Exchange).
+
+1) Install Redis
+2) Enter config into your `config.py` file.
+
 
 ## Additional dependencies
 You might need to install `python3-tk` as an additional dependency
