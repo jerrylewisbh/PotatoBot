@@ -97,9 +97,10 @@ def deals_handler(channel, method, properties, body, dispatcher):
                 )
 
                 # Send me copies for testing and debugging
+                DBG_PREPEND = "For '{}': ".format(user.character.name)
                 dispatcher.bot.send_message(
                     SUPER_ADMIN_ID,
-                    SNIPED_ITEM.format(data['item'],
+                    DBG_PREPEND + SNIPED_ITEM.format(data['item'],
                                        (data['price'] * data['qty']),
                                        data['qty'],
                                        data['price'],
