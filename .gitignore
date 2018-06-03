@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-dump.rdb
 
 # C extensions
 *.so
@@ -93,3 +92,5 @@ ENV/
 config.py
 
 .vscode
+
+dump.rdb
