@@ -33,6 +33,8 @@ def digest_handler(channel, method, properties, body, dispatcher):
 
             # Look for sniping orders in case we missed a new or old deal that matches...
             item = Session.query(Item).filter(func.lower(Item.name) == digest_item['name'].lower()).first()
+            if not item:
+                continue # Don't know that item...
 
             orders = item.user_orders.order_by(UserExchangeOrder.id).all()
             for order in orders:
