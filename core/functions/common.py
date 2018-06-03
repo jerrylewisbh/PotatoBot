@@ -1,17 +1,19 @@
 import logging
 import uuid
+
+from sqlalchemy import func
+
 from config import WEB_LINK
 from datetime import datetime
 from enum import Enum
 
-from core.enums import HEAVY_ITEMS, STOCK_WHITELIST
 from core.functions.reply_markup import (generate_admin_markup,
                                          generate_user_markup)
 from core.functions.triggers import trigger_decorator
 from core.state import GameState, get_game_state
 from core.texts import *
 from core.types import (Admin, AdminType, Auth, SquadMember, Stock, User,
-                        admin_allowed, user_allowed, Session)
+                        admin_allowed, user_allowed, Session, Item)
 from core.utils import add_user, send_async
 from telegram import Bot, ParseMode, Update
 
@@ -104,10 +106,12 @@ def get_diff(dict_one, dict_two):
 
 
 def get_weight_multiplier(item_name):
-    if item_name.lower() in HEAVY_ITEMS:
-        return 2
-    else:
+    item = __get_item(item_name)
+    if not item:
+        logging.warning("Could not find item %s in database! Guessing weight = 1", item_name)
         return 1
+
+    return item.weight
 
 
 def get_weighted_diff(dict_one, dict_two):
@@ -151,6 +155,8 @@ def stock_split(old_stock, new_stock):
 
     return (resources_old, resources_new)
 
+def __get_item(item_name):
+    return Session.query(Item).filter(func.lower(Item.name) == item_name.lower()).first()
 
 def stock_compare_text(old_stock, new_stock):
     """ Compare stock... """
@@ -160,14 +166,16 @@ def stock_compare_text(old_stock, new_stock):
         msg = MSG_STOCK_COMPARE_HARVESTED
         if len(resource_diff_add):
             for key, val in resource_diff_add:
-                if key.lower() in STOCK_WHITELIST:
+                item = __get_item(key)
+                if item and item.pillagable:
                     msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
             msg += MSG_EMPTY
         msg += MSG_STOCK_COMPARE_LOST
         if len(resource_diff_del):
             for key, val in resource_diff_del:
-                if key.lower() in STOCK_WHITELIST:
+                item = __get_item(key)
+                if item and item.pillagable:
                     msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
             msg += MSG_EMPTY
