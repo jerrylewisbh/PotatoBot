@@ -20,7 +20,7 @@ logger.setLevel(logging.INFO)
 
 
 def deals_handler(channel, method, properties, body, dispatcher):
-    logger.debug('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
+    logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
 
     try:
@@ -62,12 +62,12 @@ def deals_handler(channel, method, properties, body, dispatcher):
                     channel.basic_ack(method.delivery_tag)
                     return
 
-                if order.max_price != data['price']:
+                if data['price'] > order.max_price:
                     logging.warning("[Snipe] Price does not match price of order! Order Price=%s, Price=%s, User=%s", order.max_price, data['price'], user.id)
                     channel.basic_ack(method.delivery_tag)
                     return
 
-                outstanding_count = order.limit - data['qty']
+                outstanding_count = order.outstanding_order - data['qty']
                 if outstanding_count < 0:
                     logging.warning("outstanding_count < 0 for %s", user.id)
 
@@ -78,9 +78,9 @@ def deals_handler(channel, method, properties, body, dispatcher):
                     Session.delete(order)
                     Session.commit()
                 elif outstanding_count > 0:
-                    order.limit = outstanding_count
+                    order.outstanding_order = outstanding_count
                     logging.warning("[Snipe] Order for %s from %s and price %s now only needs %s items!", order.item.name, user.id,
-                                    order.max_price, order.limit)
+                                    order.max_price, order.outstanding_order)
                     Session.add(order)
                     Session.commit()
 
@@ -97,7 +97,7 @@ def deals_handler(channel, method, properties, body, dispatcher):
                 )
 
                 # Send me copies for testing and debugging
-                DBG_PREPEND = "For '{}': ".format(user.character.name)
+                DBG_PREPEND = "For '@{}': ".format(user.username or "<<emptyusername>>")
                 dispatcher.bot.send_message(
                     SUPER_ADMIN_ID,
                     DBG_PREPEND + SNIPED_ITEM.format(data['item'],

@@ -5,7 +5,7 @@ from threading import Thread
 
 import functools
 
-from config import CW_OUT_Q, CW_IN_Q, CW_EXCHANGE, CW_URL, CW_DEALS_Q, CW_OFFERS_Q
+from config import CW_OUT_Q, CW_IN_Q, CW_EXCHANGE, CW_URL, CW_DEALS_Q, CW_OFFERS_Q, CW_DIGEST_Q
 
 import json
 import pika
@@ -31,7 +31,7 @@ class Singleton(type):
 
 
 class Consumer(Thread):
-    def __init__(self, handler, deals_handler, offers_handler, dispatcher):
+    def __init__(self, handler, deals_handler, offers_handler, digest_handler, dispatcher):
         """ Initialize Queue-Handler. We're passing a custom handler and a telegram-bot dispatcher
         instance to allow easier usage..."""
         Thread.__init__(self)
@@ -41,6 +41,7 @@ class Consumer(Thread):
         self.QUEUE = CW_IN_Q
         self.QUEUE_DEALS = CW_DEALS_Q
         self.QUEUE_OFFERS = CW_OFFERS_Q
+        self.QUEUE_DIGEST = CW_DIGEST_Q
         self._url = CW_URL
 
         self._connection = None
@@ -51,6 +52,7 @@ class Consumer(Thread):
         self.handler = handler
         self.deals_handler = deals_handler
         self.offers_handler = offers_handler
+        self.digest_handler = digest_handler
         self.dispatcher = dispatcher
 
     def connect(self):
@@ -107,6 +109,10 @@ class Consumer(Thread):
         LOGGER.info('[Consumer] Setting up basic consumer for OFFERS')
         on_message_handler_offers = functools.partial(self.offers_handler, dispatcher=self.dispatcher)
         self._channel.basic_consume(on_message_handler_offers, self.QUEUE_OFFERS)
+
+        LOGGER.info('[Consumer] Setting up basic consumer for DIGEST')
+        on_message_handler_digest = functools.partial(self.digest_handler, dispatcher=self.dispatcher)
+        self._channel.basic_consume(on_message_handler_digest, self.QUEUE_DIGEST)
 
     def add_on_channel_close_callback(self):
         LOGGER.info('[Consumer] Adding channel close callback')

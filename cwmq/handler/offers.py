@@ -25,7 +25,7 @@ r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
 def offers_handler(channel, method, properties, body, dispatcher):
     p = Publisher()
 
-    logger.debug('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
+    logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
 
     try:
@@ -53,9 +53,9 @@ def offers_handler(channel, method, properties, body, dispatcher):
         for order in orders:
             logging.info("Order #%s - item='%s' - user_id='%s', is_api_trade_allowed='%s', setting_automated_sniping='%s'", order.id, order.item.name, order.user.id, order.user.is_api_trade_allowed, order.user.setting_automated_sniping)
 
-            if order.max_price != data['price']:
+            if data['price'] > order.max_price:
                 # Done...
-                logging.info("Price '%s' does not match max_price '%s' or trade is not enabled '%s'/'%s'", data['price'], order.max_price, order.user.is_api_trade_allowed, order.user.setting_automated_sniping)
+                logging.info("Price '%s' for '%s' is greater than max_price '%s'", data['price'], order.max_price, order.item.name)
                 continue # Next order!
             elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping:
                 logging.info(
@@ -67,17 +67,16 @@ def offers_handler(channel, method, properties, body, dispatcher):
                 continue # Next order!
 
             # TODO: On bot startup try to fullfil orders...
-            remainings = order.limit
 
             # Look in redis if there is a recent order. If yes, at maximum order the still outstanding items
             # This is to avoid over-buying on race-conditions. Redis Keys are expired after xx seconds (See: config)
             user_item_key = "{}_{}".format(order.user.id, item.cw_id)
             recently_ordered = r.get(user_item_key)
-            order_limit = order.limit
+            order_limit = order.outstanding_order
             try:
                 recently_ordered = int(recently_ordered)
-                if recently_ordered and order.limit > recently_ordered:
-                    order_limit = recently_ordered - order_limit.limit
+                if recently_ordered and order.outstanding_order > recently_ordered:
+                    order_limit = recently_ordered - order_limit.outstanding_order
             except:
                 pass
 
@@ -88,10 +87,7 @@ def offers_handler(channel, method, properties, body, dispatcher):
 
             # Let's try to fullfil this order
             try:
-                buy_order = wrapper.create_want_to_buy(order.user, item.cw_id, quantity, order.max_price)
-                logging.warning("I will publish: %s", buy_order)
-                p.publish(buy_order)
-
+                wrapper.want_to_buy(order.user, item.cw_id, quantity, data['price'])
                 # Store the ordered item + qty in REDIS
                 r.set(user_item_key, quantity, ex=REDIS_TTL)
             except wrapper.APIInvalidTokenException:
@@ -109,12 +105,12 @@ def offers_handler(channel, method, properties, body, dispatcher):
                 )
             except wrapper.APIMissingAccessRightsException:
                 logging.warning("Missing permissions for User '%s', requesting it.", order.user.id)
-                wrapper.request_trade_terminal(dispatcher.bot, order.user)
+                wrapper.request_trade_terminal_access(dispatcher.bot, order.user)
             except wrapper.APIMissingUserException:
                 logging.error("No/Invalid user for create_want_to_uy specified")
             except wrapper.APIWrongItemCode as ex:
                 logging.error("Wrong item code was given: %s", ex)
-            except wrapper.APIMissingAccessRightsException:
+            except wrapper.APIWrongSettings:
                 logging.error("User has disabled all trade settings but you tried to create a Buy-Order")
 
         channel.basic_ack(method.delivery_tag)

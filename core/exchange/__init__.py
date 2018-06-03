@@ -23,10 +23,10 @@ def get_snipe_settings(user):
         return text
     else:
         for order in user.sniping_settings.all():
-            if order.limit:
-                text += SNIPE_BUY_LIMITED.format(order.limit, order.item.name, order.item.cw_id, order.max_price)
+            if order.outstanding_order:
+                text += SNIPE_BUY_MULTIPLE.format(order.initial_order, order.item.name, order.item.cw_id, order.max_price, order.outstanding_order)
             else:
-                text += SNIPE_BUY_UNLIMITED.format(order.item.name, order.item.cw_id, order.max_price)
+                text += SNIPE_BUY_ONE.format(order.item.name, order.item.cw_id, order.max_price)
 
     return text
 
@@ -57,7 +57,7 @@ def hide_gold_info(bot: Bot, update: Update):
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
 
     if not user.is_api_trade_allowed:
-        wrapper.request_trade_terminal(bot, user)
+        wrapper.request_trade_terminal_access(bot, user)
         return
 
     text = get_autohide_settings(user)
@@ -83,11 +83,11 @@ def auto_hide(bot: Bot, update: Update, args=None):
         )
         return
 
-    limit = None
+    max_price = None
     if len(args) == 3:
-        logging.warning("Three arguments, assuming UPPER limit")
+        logging.warning("Three arguments, assuming UPPER max_price")
         try:
-            limit = int(args[2])
+            max_price = int(args[2])
         except:
             send_async(
                 bot,
@@ -149,7 +149,7 @@ def auto_hide(bot: Bot, update: Update, args=None):
     ushs.user = user
     ushs.priority = priority
     ushs.item = item
-    ushs.max_price = limit
+    ushs.max_price = max_price
     Session.add(ushs)
     Session.commit()
 
@@ -167,7 +167,7 @@ def sniping_info(bot: Bot, update: Update):
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user.is_api_trade_allowed:
-        wrapper.request_trade_terminal(bot, user)
+        wrapper.request_trade_terminal_access(bot, user)
         return
 
     text = get_snipe_settings(user)
@@ -243,10 +243,10 @@ def sniping(bot: Bot, update: Update, args=None):
         )
         return
 
-    limit = 1
+    initial_order = 1
     if len(args) == 3:
         try:
-            limit = int(args[2])
+            initial_order = int(args[2])
         except:
             send_async(
                 bot,
@@ -288,7 +288,7 @@ def sniping(bot: Bot, update: Update, args=None):
 
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
-    if not user or not item or not limit:
+    if not user or not item or not initial_order :
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -307,7 +307,8 @@ def sniping(bot: Bot, update: Update, args=None):
         ueo  = UserExchangeOrder()
 
     ueo.user = user
-    ueo.limit = limit
+    ueo.initial_order  = initial_order
+    ueo.outstanding_order = initial_order
     ueo.max_price = max_price
     ueo.item = item
     Session.add(ueo)
@@ -336,3 +337,18 @@ def list_items(bot: Bot, update: Update):
         text=text,
         parse_mode=ParseMode.MARKDOWN,
     )
+
+@user_allowed
+def hide_items(bot: Bot, update: Update):
+    # Manually triggered hide....
+    logging.warning("hide_items called by %s", update.message.chat.id)
+    user = Session.query(User).filter_by(id=update.message.chat.id).first()
+
+    if not user or not user.is_tester and not user.is_api_trade_allowed:
+        logging.info("No user, not a tester or no trade API")
+        return
+
+    # Request a profile update to get information about how much gold a user has.
+    # This should complete in a few seconds. And we just schedule a the rest in a few seconds
+    wrapper.update_profile(user)
+

@@ -151,21 +151,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
                 logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
-
-                dispatcher.bot.send_message(
-                    user.id,
-                    MSG_API_REQUIRE_ACCESS_PROFILE,
-                    reply_markup=generate_user_markup(user.id)
-                )
-
-                grant_req = {
-                    "token": user.api_token,
-                    "action": "authAdditionalOperation",
-                    "payload": {
-                        "operation": "GetUserProfile"
-                    }
-                }
-                p.publish(grant_req)
+                wrapper.request_profile_access(dispatcher.bot, user)
             elif data['result'] == "Ok":
                 # Seems we have access although we thought we don't have it...
                 # if not user.is_profile_access_granted():
@@ -215,23 +201,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
-                logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
-
-                dispatcher.bot.send_message(
-                    user.id,
-                    MSG_API_REQUIRE_ACCESS_STOCK,
-                    reply_markup=generate_user_markup(user.id)
-                )
-                # TODO: Keyboard update?
-
-                grant_req = {
-                    "token": user.api_token,
-                    "action": "authAdditionalOperation",
-                    "payload": {
-                        "operation": "GetStock"
-                    }
-                }
-                p.publish(grant_req)
+                logger.warning("User has not granted Stock access but we have a token. Requesting access")
+                wrapper.request_stock_access(dispatcher.bot, user)
             elif data['result'] == "Ok":
                 if not user:
                     # Shouldn't happen!?
@@ -266,7 +237,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
-                wrapper.request_trade_terminal(dispatcher.bot, user)
+                wrapper.request_trade_terminal_access(dispatcher.bot, user)
             elif data['result'] == "Ok":
                 # Do we need to track OK results for buy orders?
                 pass

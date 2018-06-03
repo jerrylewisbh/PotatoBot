@@ -4,7 +4,7 @@ from sqlalchemy import func
 from telegram import Bot
 
 from core.functions.reply_markup import generate_user_markup
-from core.texts import MSG_API_REQUIRE_ACCESS_TRADE
+from core.texts import MSG_API_REQUIRE_ACCESS_TRADE, MSG_API_REQUIRE_ACCESS_PROFILE, MSG_API_REQUIRE_ACCESS_STOCK
 from core.types import Session, Item
 from cwmq import Publisher
 
@@ -27,7 +27,35 @@ class APIWrongSettings(Exception):
     pass
 
 
-def create_want_to_buy(user, item_code, quantity, price, exact_price=True):
+def update_stock(user):
+    if not user:
+        raise APIMissingUserException("User is 'None'")
+    elif not user.api_token:
+        raise APIInvalidTokenException("User has no API token")
+    elif not user.is_api_profile_allowed:
+        raise APIMissingAccessRightsException("User has not given permission for stock")
+
+    p.publish({
+        "token": user.api_token,
+        "action": "requestStock"
+    })
+
+
+def update_profile(user):
+    if not user:
+        raise APIMissingUserException("User is 'None'")
+    elif not user.api_token:
+        raise APIInvalidTokenException("User has no API token")
+    elif not user.is_api_profile_allowed:
+        raise APIMissingAccessRightsException("User has not given permission for profile")
+
+    p.publish({
+        "token": user.api_token,
+        "action": "requestProfile"
+    })
+
+
+def want_to_buy(user, item_code, quantity, price, exact_price=True):
     if not user:
         raise APIMissingUserException("User is 'None'")
     elif not user.api_token:
@@ -44,7 +72,7 @@ def create_want_to_buy(user, item_code, quantity, price, exact_price=True):
     if not item:
         raise APIWrongItemCode("Item code '{}' is invalid".format(item_code))
 
-    return {
+    wtb_req = {
         "token": user.api_token,
         "action": "wantToBuy",
         "payload": {
@@ -54,8 +82,9 @@ def create_want_to_buy(user, item_code, quantity, price, exact_price=True):
             "exactPrice": exact_price
         }
     }
+    p.publish(wtb_req)
 
-def request_trade_terminal(bot: Bot, user):
+def request_trade_terminal_access(bot: Bot, user):
     if not user:
         return
 
@@ -70,6 +99,44 @@ def request_trade_terminal(bot: Bot, user):
         "action": "authAdditionalOperation",
         "payload": {
             "operation": "TradeTerminal"
+        }
+    }
+    p.publish(grant_req)
+
+def request_stock_access(bot: Bot, user):
+    if not user:
+        return
+
+    bot.send_message(
+        user.id,
+        MSG_API_REQUIRE_ACCESS_STOCK,
+        reply_markup=generate_user_markup(user.id)
+    )
+
+    grant_req = {
+        "token": user.api_token,
+        "action": "authAdditionalOperation",
+        "payload": {
+            "operation": "GetStock"
+        }
+    }
+    p.publish(grant_req)
+
+def request_profile_access(bot: Bot, user):
+    if not user:
+        return
+
+    bot.send_message(
+        user.id,
+        MSG_API_REQUIRE_ACCESS_PROFILE,
+        reply_markup=generate_user_markup(user.id)
+    )
+
+    grant_req = {
+        "token": user.api_token,
+        "action": "authAdditionalOperation",
+        "payload": {
+            "operation": "GetUserProfile"
         }
     }
     p.publish(grant_req)

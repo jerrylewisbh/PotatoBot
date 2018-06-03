@@ -80,6 +80,7 @@ from core.types import Admin, Squad, User, user_allowed, Session
 from core.utils import add_user, send_async
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler
+from cwmq.handler.digest import digest_handler
 from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
 from telegram import Bot, ParseMode, Update
@@ -381,6 +382,7 @@ def main():
         profile_handler,
         deals_handler,
         offers_handler,
+        digest_handler,
         dispatcher=updater
     )
     q_in.setName("T1_IN")

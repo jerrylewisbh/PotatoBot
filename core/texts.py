@@ -81,6 +81,7 @@ Squad commands:
 
 User commands: 
 /items - List known items
+/hide - Manually trigger hide
 
 
 Free text commands:
@@ -534,7 +535,7 @@ MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest detail
 
 
 # Exchange stuff
-HIDE_WELCOME = "*Note: This is highly experimental! Please report any issues into your squad!*\n\n" \
+HIDE_WELCOME = "*Note: This is highly experimental! Use at your own risk! Please report any issues into your squad!*\n\n" \
                "*With this feature enabled I will try to spend all your gold 15 Minutes before battle. I will remind " \
                "you 15 Minutes before battle so that you can abort it if needed*. \n\n" \
                "You can set your buy-preferences via `/ah <itemId> <prio> <maxPrice>`.\n" \
@@ -555,15 +556,15 @@ HIDE_BUY_UNLIMITED = "- P{}: Buy {} (`{}`)\n"
 HIDE_BUY_LIMITED = "- P{}: Buy {} (`{}`) for a maximum price of {} 💰\n"
 HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
 
-SNIPE_WELCOME = "*Note: This is highly experimental! Please report any issues into your squad!*\n\n" \
+SNIPE_WELCOME = "*Note: This is highly experimental! Use at your own risk! Please report any issues into your squad!*\n\n" \
                "*Automated buying of items at a given price*\n" \
                "You can set your order via `/s <itemId> <price> <numberOfItems>`.\n\n" \
                "Examples: \n" \
-               "- `/s 01 10` to buy one Thread 30 💰\n" \
-               "- `/s 20 2 10` to by Leather for 2 💰 until 10 are bought\n\n" \
+               "- `/s 01 10` to buy one Thread for 10💰 or less\n" \
+               "- `/s 20 2 10` to by Leather for 2💰 or less until 10 are bought\n\n" \
                "_How does it work?_: If your given item is sold for the price you specified I will try to buy it. " \
                "It can take some time until this item is available for that price. It is also possible that other " \
-               "players are searching for the same item. In this case you need a little bit of luck although we try" \
+               "players are searching for the same item. In this case you need a little bit of luck although we try " \
                "\"first came, first served\". You can issue `/items` to get a list of items. \n\n" \
                "To remove a buy order `/sr <itemId>`.\n\n" \
                "*Your current orders are:*\n" \
@@ -573,8 +574,8 @@ SNIPE_WRONG_ARGS = "Sorry, the /s command you issued is not valid. Try again."
 SNIPE_WRONG_ARGS_SR = "Sorry, the /sr command you issued is not valid. Try again."
 SNIPE_WRONG_LIMIT = "Sorry, the limit you specified is not valid. Try again."
 SNIPE_WRONG_ITEM = "Sorry, the item `{}` you specified is not valid. Try again."
-SNIPE_BUY_UNLIMITED = "- Buy {} (`{}`) for a price of {} 💰\n"
-SNIPE_BUY_LIMITED = "- Buy {} {} (`{}`) for a price of {} 💰\n"
+SNIPE_BUY_ONE = "- Buy one {} (`{}`) for a price of {}💰\n"
+SNIPE_BUY_MULTIPLE = "- Buy {} {} (`{}`) for a price of {}💰 (Remaining: {})\n"
 SNIPE_REMOVED = "{} was removed from your order list!"
 SNIPED_ITEM = "⚖️Got it! You bought <b>{}</b> for {}💰 ({} x {}💰)\nSeller: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"
 

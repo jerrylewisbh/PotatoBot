@@ -16,7 +16,7 @@ from core.texts import *
 from core.types import (BuildReport, Character, Equip, Profession, Report,
                         User, admin_allowed, user_allowed, Session)
 from core.utils import send_async
-from cwmq import Publisher
+from cwmq import Publisher, wrapper
 from telegram import Bot, ParseMode, Update
 
 
@@ -438,14 +438,20 @@ def char_show(bot: Bot, update: Update):
         user = Session.query(User).filter_by(id=update.message.from_user.id).first()
 
         if user.is_api_profile_allowed and user.is_api_stock_allowed:
-            p.publish({
-                "token": user.api_token,
-                "action": "requestStock"
-            })
-            p.publish({
-                "token": user.api_token,
-                "action": "requestProfile"
-            })
+
+            try:
+                wrapper.update_stock(user)
+                wrapper.update_profile(user)
+            except wrapper.APIInvalidTokenException as ex:
+                logging.error("This should not happen!?! %s", ex)
+            except wrapper.APIMissingAccessRightsException as ex:
+                logging.warning("Missing permissions for User '%s': %s", user.id, ex)
+                if str(ex) == "User has not given permission for stock":
+                    wrapper.request_stock_access()
+                elif str(ex) == "User has not given permission for profile":
+                    wrapper.request_profile_access()
+            except wrapper.APIMissingUserException:
+                logging.error("No/Invalid user for create_want_to_uy specified")
 
         if user is not None and user.character:
             char = user.character

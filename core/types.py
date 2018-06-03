@@ -494,7 +494,10 @@ class UserExchangeOrder(Base):
     item_id = Column(BigInteger, ForeignKey(Item.id))
     item = relationship(Item, back_populates='user_orders')
 
-    limit = Column(Integer, nullable=False)
+    outstanding_order = Column(Integer, nullable=False)
+    initial_order = Column(Integer, nullable=False)
+
+
     max_price = Column(Integer, nullable=False)
 
 class UserStockHideSetting(Base):
