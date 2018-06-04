@@ -155,7 +155,7 @@ def generate_flag_orders():
     return inline_markup
 
 
-def generate_order_chats_markup(session, pin=True, btn=True):
+def generate_order_chats_markup(pin=True, btn=True):
     squads = Session.query(Squad).all()
     inline_keys = []
     for squad in squads:

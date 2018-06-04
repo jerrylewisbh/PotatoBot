@@ -8,14 +8,14 @@ Session()
 
 def pin_decorator(func):
     @user_allowed
-    def wrapper(bot, update, session, *args, **kwargs):
-        group = update_group(update.message.chat, session)
+    def wrapper(bot, update, *args, **kwargs):
+        group = update_group(update.message.chat)
         if group is None and \
-                check_admin(update, session, AdminType.FULL) or \
+                check_admin(update, AdminType.FULL) or \
                 group is not None and \
                 (group.allow_pin_all or
-                 check_admin(update, session, AdminType.GROUP)):
-            func(bot, update, session, *args, **kwargs)
+                 check_admin(update, AdminType.GROUP)):
+            func(bot, update, *args, **kwargs)
 
     return wrapper
 

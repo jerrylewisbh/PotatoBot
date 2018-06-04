@@ -14,12 +14,12 @@ def group_list(bot: Bot, update: Update):
 
 
 @admin_allowed(AdminType.FULL)
-def add_group(bot: Bot, update: Update, session, chat_data):
+def add_group(bot: Bot, update: Update, chat_data):
     chat_data['wait_group_name'] = False
     group = OrderGroup()
     group.name = update.message.text
     Session.add(group)
     Session.commit()
-    markup = generate_group_manage(group.id, session)
+    markup = generate_group_manage(group.id)
     send_async(bot, chat_id=update.message.chat.id,
                text=MSG_ORDER_GROUP_CONFIG_HEADER.format(group.name), reply_markup=markup)

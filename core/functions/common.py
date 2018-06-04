@@ -205,7 +205,7 @@ def stock_compare(user_id, new_stock_text):
 
 
 @user_allowed(False)
-def stock_compare_forwarded(bot: Bot, update: Update, session, chat_data: dict):
+def stock_compare_forwarded(bot: Bot, update: Update, chat_data: dict):
     # If user-stock is automatically updated via API do not allow reports during SILENCE
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
 
@@ -239,7 +239,7 @@ def delete_user(bot: Bot, update: Update):
 
 
 @user_allowed(False)
-def trade_compare(bot: Bot, update: Update, session, chat_data: dict):
+def trade_compare(bot: Bot, update: Update, chat_data: dict):
     old_stock = Session.query(Stock).filter_by(user_id=update.message.from_user.id,
                                                stock_type=StockType.TradeBot.value).order_by(Stock.date.desc()).first()
     new_stock = Stock()
