@@ -9,7 +9,7 @@ from core.functions.common import (MSG_API_REQUIRE_ACCESS_PROFILE,
                                    MSG_API_REVOKED_PERMISSIONS,
                                    MSG_API_SETUP_STEP_1_COMPLETE,
                                    MSG_API_SETUP_STEP_2_COMPLETE,
-                                   stock_compare, MSG_API_REQUIRE_ACCESS_TRADE)
+                                   stock_compare, MSG_API_REQUIRE_ACCESS_TRADE, SNIPE_SUSPENDED)
 from core.functions.profile import get_required_xp
 from core.functions.reply_markup import generate_user_markup
 from core.types import Character, Session, User
@@ -100,14 +100,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 user.is_api_trade_allowed = True
                 user.api_grant_operation = None
                 message = MSG_API_SETUP_STEP_2_COMPLETE
-                grant_req = {
-                    "token": user.api_token,
-                    "action": "authAdditionalOperation",
-                    "payload": {
-                        "operation": "TradeTerminal",
-                    }
-                }
-                p.publish(grant_req)
+                # Revisit: Do we need to request another permission?
             elif user.api_grant_operation == "GetUserProfile":
                 user.is_api_profile_allowed = True
                 user.api_grant_operation = None
@@ -237,7 +230,20 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
+                logging.warning("TradeTerminal is Forbidden for user=%s. Requesting access", user.id)
                 wrapper.request_trade_terminal_access(dispatcher.bot, user)
+            elif data['result'] == "InsufficientFunds":
+                user.sniping_suspended = True
+
+                Session.add(user)
+                Session.commit()
+
+                dispatcher.bot.send_message(
+                    user.id,
+                    SNIPE_SUSPENDED,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=generate_user_markup(user.id)
+                )
             elif data['result'] == "Ok":
                 # Do we need to track OK results for buy orders?
                 pass

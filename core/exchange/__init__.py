@@ -57,6 +57,7 @@ def hide_gold_info(bot: Bot, update: Update):
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
 
     if not user.is_api_trade_allowed:
+        logging.info("TradeTerminal is not allowed for user_id=%s. Gold hiding not possible. Requesting access", user.id)
         wrapper.request_trade_terminal_access(bot, user)
         return
 
@@ -167,6 +168,7 @@ def sniping_info(bot: Bot, update: Update):
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user.is_api_trade_allowed:
+        logging.info("TradeTerminal is not allowed for user_id=%s. Sniping not possible. Requesting access", user.id)
         wrapper.request_trade_terminal_access(bot, user)
         return
 
@@ -227,11 +229,62 @@ def sniping_remove(bot: Bot, update: Update, args=None):
             parse_mode=ParseMode.MARKDOWN,
         )
 
+@user_allowed
+def sniping_resume(bot: Bot, update: Update):
+    logging.warning("sniping_resume called by %s", update.message.chat.id)
+    user = Session.query(User).filter_by(id=update.message.chat.id).first()
+
+    if not user:
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=SNIPE_WRONG_ARGS_SR,
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        return
+    elif not user.sniping_suspended:
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=SNIPE_NOT_SUSPENDED,
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        return
+
+    user.sniping_suspended = False
+    Session.add(user)
+    Session.commit()
+
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=SNIPE_CONTINUED,
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
 @user_allowed
 def sniping(bot: Bot, update: Update, args=None):
     logging.warning("snipe called by %s - args='%s'", update.message.chat.id, args)
     if update.message.chat.type != 'private':
+        return
+
+    user = Session.query(User).filter_by(id=update.message.chat.id).first()
+    if not user:
+        # TODO: Check again if this is OK!
+        return
+
+    # A user can directly enter snipe-commands. Check permissions and stop with processing.
+    if not user.is_api_trade_allowed:
+        logging.info("TradeTerminal is not allowed for user_id=%s. Sniping and setting sniping-options is not possible. Requesting access", user.id)
+        wrapper.request_trade_terminal_access(bot, user)
+        return
+    elif not user.setting_automated_sniping:
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=SNIPE_DISABLED,
+            parse_mode=ParseMode.MARKDOWN,
+        )
         return
 
     if len(args) < 1 or len(args) > 3:
@@ -260,6 +313,7 @@ def sniping(bot: Bot, update: Update, args=None):
     try:
         max_price = int(args[1])
     except:
+        logging.warning("Invalid max_price=%s from user_id=%s", args[1], user.id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -282,17 +336,6 @@ def sniping(bot: Bot, update: Update, args=None):
             bot,
             chat_id=update.message.chat.id,
             text=SNIPE_ITEM_NOT_TRADABLE.format(args[0]),
-            parse_mode=ParseMode.MARKDOWN,
-        )
-        return
-
-
-    user = Session.query(User).filter_by(id=update.message.chat.id).first()
-    if not user or not item or not initial_order :
-        send_async(
-            bot,
-            chat_id=update.message.chat.id,
-            text=SNIPE_WRONG_ARGS,
             parse_mode=ParseMode.MARKDOWN,
         )
         return

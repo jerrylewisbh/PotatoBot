@@ -558,10 +558,10 @@ HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
 
 SNIPE_WELCOME = "*Note: This is highly experimental! Use at your own risk! Please report any issues into your squad!*\n\n" \
                "*Automated buying of items at a given price*\n" \
-               "You can set your order via `/s <itemId> <price> <numberOfItems>`.\n\n" \
+               "You can set your order via `/s <itemId> <price> [<numberOfItems>]`.\n\n" \
                "Examples: \n" \
-               "- `/s 01 10` to buy one Thread for 10💰 or less\n" \
-               "- `/s 20 2 10` to by Leather for 2💰 or less until 10 are bought\n\n" \
+               "- `/s 01 10  ` - Buy one Thread for 10💰 or less\n" \
+               "- `/s 20 2 10` - Buy Leather for 2💰 or less until 10 are bought\n\n" \
                "_How does it work?_: If your given item is sold for the price you specified I will try to buy it. " \
                "It can take some time until this item is available for that price. It is also possible that other " \
                "players are searching for the same item. In this case you need a little bit of luck although we try " \
@@ -578,5 +578,8 @@ SNIPE_BUY_ONE = "- Buy one {} (`{}`) for a price of {}💰\n"
 SNIPE_BUY_MULTIPLE = "- Buy {} {} (`{}`) for a price of {}💰 (Remaining: {})\n"
 SNIPE_REMOVED = "{} was removed from your order list!"
 SNIPED_ITEM = "⚖️Got it! You bought <b>{}</b> for {}💰 ({} x {}💰)\nSeller: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"
-
+SNIPE_DISABLED = "You have to enable sniping in your settings first!"
+SNIPE_SUSPENDED = "I have tried to buy an item for you but you don't have the necessary funds. I suspended automated buying until. If you have enough gold again or after you adjusted your buying settings just send me /resume. "
+SNIPE_CONTINUED = "Automated buying will now be continued."
+SNIPE_NOT_SUSPENDED = "Automated buying is not suspended."
 ITEM_LIST = "*Items I know:*\n"

@@ -49,12 +49,13 @@ def digest_handler(channel, method, properties, body, dispatcher):
                     # Done...
                     logging.info("Targeted price '%s' for '%s' is not in digest list", order.max_price, order.item.name)
                     continue  # Next order!
-                elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping:
+                elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping or order.user.sniping_suspended:
                     logging.info(
-                        "Trade disabled for %s ('%s'/'%s')",
+                        "Trade disabled for %s (API: '%s'/ Setting: '%s' / Suspended: '%s')",
                         order.user.id,
                         order.user.is_api_trade_allowed,
-                        order.user.setting_automated_sniping
+                        order.user.setting_automated_sniping,
+                        order.user.sniping_suspended,
                     )
                     continue  # Next order!
 
@@ -99,8 +100,8 @@ def digest_handler(channel, method, properties, body, dispatcher):
                         MSG_API_INCOMPLETE_SETUP + MSG_DISABLED_TRADING,
                     )
                 except wrapper.APIMissingAccessRightsException:
-                    logging.warning("Missing permissions for User '%s', requesting it.", order.user.id)
-                    wrapper.request_trade_terminal_access(dispatcher.bot, order.user)
+                    logging.warning("Missing permissions for User '%s'", order.user.id)
+                    # Not requesting it since this might spam a user every 5 minutes...
                 except wrapper.APIMissingUserException:
                     logging.error("No/Invalid user for create_want_to_uy specified")
                 except wrapper.APIWrongItemCode as ex:

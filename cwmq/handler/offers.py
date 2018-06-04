@@ -25,7 +25,7 @@ r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
 def offers_handler(channel, method, properties, body, dispatcher):
     p = Publisher()
 
-    logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
+    logger.debug('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
 
     try:
@@ -51,11 +51,11 @@ def offers_handler(channel, method, properties, body, dispatcher):
             return
 
         for order in orders:
-            logging.info("Order #%s - item='%s' - user_id='%s', is_api_trade_allowed='%s', setting_automated_sniping='%s'", order.id, order.item.name, order.user.id, order.user.is_api_trade_allowed, order.user.setting_automated_sniping)
+            logging.info("Order #%s - item='%s' - user_id='%s', is_api_trade_allowed='%s', setting_automated_sniping='%s', sniping_suspended='%s'", order.id, order.item.name, order.user.id, order.user.is_api_trade_allowed, order.user.setting_automated_sniping, order.user.sniping_suspended)
 
             if data['price'] > order.max_price:
                 # Done...
-                logging.info("Price '%s' for '%s' is greater than max_price '%s'", data['price'], order.max_price, order.item.name)
+                logging.info("Price '%s' for '%s' is greater than max_price '%s'", data['price'], order.item.name, order.max_price)
                 continue # Next order!
             elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping:
                 logging.info(
@@ -104,8 +104,8 @@ def offers_handler(channel, method, properties, body, dispatcher):
                     MSG_API_INCOMPLETE_SETUP + MSG_DISABLED_TRADING,
                 )
             except wrapper.APIMissingAccessRightsException:
-                logging.warning("Missing permissions for User '%s', requesting it.", order.user.id)
-                wrapper.request_trade_terminal_access(dispatcher.bot, order.user)
+                logging.warning("Missing permissions for User '%s'.", order.user.id)
+                # Not requesting it since this might spam a user every 5 minutes...
             except wrapper.APIMissingUserException:
                 logging.error("No/Invalid user for create_want_to_uy specified")
             except wrapper.APIWrongItemCode as ex:

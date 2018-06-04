@@ -98,8 +98,6 @@ class User(Base):
 
     member = relationship('SquadMember', back_populates='user', uselist=False)
 
-
-
     report = relationship('Report', back_populates='user', order_by='Report.date.desc()')
 
     build_report = relationship('BuildReport', back_populates='user', order_by='BuildReport.date.desc()')
@@ -120,6 +118,8 @@ class User(Base):
     is_api_profile_allowed = Column(Boolean())
     is_api_stock_allowed = Column(Boolean())
     is_api_trade_allowed = Column(Boolean())
+
+    sniping_suspended = Column(Boolean(), default=False)
 
     setting_automated_report = Column(Boolean(), default=True)
     setting_automated_deal_report = Column(Boolean(), default=True)

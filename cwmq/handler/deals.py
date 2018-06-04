@@ -20,7 +20,7 @@ logger.setLevel(logging.INFO)
 
 
 def deals_handler(channel, method, properties, body, dispatcher):
-    logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
+    logger.debug('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
 
     try:
@@ -42,7 +42,7 @@ def deals_handler(channel, method, properties, body, dispatcher):
         if data and "buyerId" in data:
             user = Session.query(User).filter_by(api_user_id=data['buyerId']).first()
 
-            if user and user.setting_automated_sniping:
+            if user and user.setting_automated_sniping and not user.sniping_suspended:
                 logger.warning("[Snipe] Snipe-Check for %s", user.id)
                 # Check if we have a sniping order for this item + user
                 item = Session.query(Item).filter(func.lower(Item.name) == data['item'].lower()).first()

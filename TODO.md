@@ -8,3 +8,5 @@ TODO:
 * Check for concurrency/threading issues since "Session()!" was removed...
 * Discuss: 
     * Use consistent /s and /ah format or switch /s to CW Bot Format?
+
+**SUSPENDING SNIPING WHEN NOT ENOUGH FUNDS!!!**
