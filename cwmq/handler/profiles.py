@@ -2,21 +2,22 @@ import datetime
 import json
 import logging
 
+from config import BOT_ONE_STEP_API
 from core.enums import CASTLE_MAP, CLASS_MAP
 from core.functions.common import (MSG_API_REQUIRE_ACCESS_PROFILE,
                                    MSG_API_REQUIRE_ACCESS_STOCK,
                                    MSG_API_REVOKED_PERMISSIONS,
                                    MSG_API_SETUP_STEP_1_COMPLETE,
                                    MSG_API_SETUP_STEP_2_COMPLETE,
-                                   stock_compare)
+                                   stock_compare, MSG_API_REQUIRE_ACCESS_TRADE, SNIPE_SUSPENDED)
 from core.functions.profile import get_required_xp
 from core.functions.reply_markup import generate_user_markup
 from core.types import Character, Session, User
-from cwmq import Publisher
+from cwmq import Publisher, wrapper
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
-from telegram import ParseMode
+from telegram import ParseMode, Bot
 
-session = Session()
+Session()
 p = Publisher()
 
 logger = logging.getLogger(__name__)
@@ -36,21 +37,21 @@ def profile_handler(channel, method, properties, body, dispatcher):
         user = None
         try:
             if data and "payload" in data and data["payload"] and "userId" in data['payload']:
-                user = session.query(User).filter_by(id=data['payload']['userId']).first()
+                user = Session.query(User).filter_by(id=data['payload']['userId']).first()
         except (InterfaceError, InvalidRequestError):
             logging.warning("Request/Interface Error occured, doing rollback and trying again...")
-            session.rollback()
-            user = session.query(User).filter_by(id=data['payload']['userId']).first()
+            Session.rollback()
+            user = Session.query(User).filter_by(id=data['payload']['userId']).first()
 
         if "action" not in data:
-            if data['payload']['operation'] in ("GetUserProfile", "GetStock"):
+            if data['payload']['operation'] in ("GetUserProfile", "GetStock", "TradeTerminal"):
                 logger.info("authAdditionalOperation - Response")
                 if data['result'] == "Ok" and user:
                     # Since we're stateless we have to temporarily save the action and request_id
                     user.api_request_id = data['uuid']
                     user.api_grant_operation = data['payload']['operation']
-                    session.add(user)
-                    session.commit()
+                    Session.add(user)
+                    Session.commit()
                 else:
                     logger.error("TODO!? %r, %r", data, user)
             else:
@@ -60,10 +61,13 @@ def profile_handler(channel, method, properties, body, dispatcher):
             user.api_user_id = data['payload']['id']
 
             # Botato is granted this all in one step!
-            user.is_api_profile_allowed = True
-            user.is_api_stock_allowed = True
-            session.add(user)
-            session.commit()
+            if BOT_ONE_STEP_API:
+                user.is_api_profile_allowed = True
+                user.is_api_stock_allowed = True
+                user.is_api_trade_allowed = True
+
+            Session.add(user)
+            Session.commit()
 
             logger.info("Added token for chat_id=%s", data['payload']['userId'])
             dispatcher.bot.send_message(
@@ -92,10 +96,14 @@ def profile_handler(channel, method, properties, body, dispatcher):
             user.api_request_id = None
 
             message = ""
-            if user.api_grant_operation == "GetUserProfile":
-
+            if user.api_grant_operation == "TradeTerminal":
+                user.is_api_trade_allowed = True
+                user.api_grant_operation = None
+                message = MSG_API_SETUP_STEP_2_COMPLETE
+                # Revisit: Do we need to request another permission?
+            elif user.api_grant_operation == "GetUserProfile":
                 user.is_api_profile_allowed = True
-                user.api_grant_operation = "requestStock"
+                user.api_grant_operation = None
                 message = MSG_API_SETUP_STEP_2_COMPLETE
                 grant_req = {
                     "token": user.api_token,
@@ -119,8 +127,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                     "action": "requestStock"
                 })
 
-            session.add(user)
-            session.commit()
+            Session.add(user)
+            Session.commit()
 
             dispatcher.bot.send_message(
                 user.id,
@@ -132,42 +140,11 @@ def profile_handler(channel, method, properties, body, dispatcher):
         elif data['action'] == "requestProfile":
             if data['result'] == "InvalidToken":
                 # Revoked token?
-                # TODO: Inform user?
-                logger.warning("InvalidToken response for token %s", data['payload']['token'])
-
-                # We have to get the user from by token since userId is not published and user is None currently...
-                user = session.query(User).filter_by(api_token=data['payload']['token']).first()
-
-                if user:
-                    # Remove api settings...
-                    user.is_api_stock_allowed = False
-                    user.is_api_profile_allowed = False
-                    user.api_token = None
-                    session.add(user)
-                    session.commit()
-
-                    dispatcher.bot.send_message(
-                        user.id,
-                        MSG_API_REVOKED_PERMISSIONS,
-                        reply_markup=generate_user_markup(user.id)
-                    )
+                user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
+                api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
                 logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
-
-                dispatcher.bot.send_message(
-                    user.id,
-                    MSG_API_REQUIRE_ACCESS_PROFILE,
-                    reply_markup=generate_user_markup(user.id)
-                )
-
-                grant_req = {
-                    "token": user.api_token,
-                    "action": "authAdditionalOperation",
-                    "payload": {
-                        "operation": "GetUserProfile"
-                    }
-                }
-                p.publish(grant_req)
+                wrapper.request_profile_access(dispatcher.bot, user)
             elif data['result'] == "Ok":
                 # Seems we have access although we thought we don't have it...
                 # if not user.is_profile_access_granted():
@@ -198,8 +175,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c.castle = data['payload']['profile']['castle']
                 c.gold = data['payload']['profile']['gold']
                 c.donateGold = data['payload']['profile']['pouches'] if 'pouches' in data['payload']['profile'] else 0
-                session.add(c)
-                session.commit()
+                Session.add(c)
+                Session.commit()
 
                 """
                   {castle}{userName}
@@ -211,52 +188,14 @@ def profile_handler(channel, method, properties, body, dispatcher):
                   💰{gold} 👝{pouches}
                   🏛Class info: {class}
                 """
-
-                # dispatcher.bot.send_message(
-                #    data['payload']['userId'],
-                #    "{}".format(data['payload']),
-                #    # reply_markup=_get_keyboard(user)
-                #)
-
         elif data['action'] == "requestStock":
             if data['result'] == "InvalidToken":
                 # Revoked token?
-                logger.warning("InvalidToken response for token %s", data['payload']['token'])
-
-                # We have to get the user from by token since userId is not published and user is None currently...
-                user = session.query(User).filter_by(api_token=data['payload']['token']).first()
-
-                if user:
-                    # Remove api settings...
-                    user.is_api_stock_allowed = False
-                    user.is_api_profile_allowed = False
-                    user.api_token = None
-                    session.add(user)
-                    session.commit()
-
-                    dispatcher.bot.send_message(
-                        user.id,
-                        MSG_API_REVOKED_PERMISSIONS,
-                        reply_markup=generate_user_markup(user.id)
-                    )
+                user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
+                api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
-                logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
-
-                dispatcher.bot.send_message(
-                    user.id,
-                    MSG_API_REQUIRE_ACCESS_STOCK,
-                    reply_markup=generate_user_markup(user.id)
-                )
-                # TODO: Keyboard update?
-
-                grant_req = {
-                    "token": user.api_token,
-                    "action": "authAdditionalOperation",
-                    "payload": {
-                        "operation": "GetStock"
-                    }
-                }
-                p.publish(grant_req)
+                logger.warning("User has not granted Stock access but we have a token. Requesting access")
+                wrapper.request_stock_access(dispatcher.bot, user)
             elif data['result'] == "Ok":
                 if not user:
                     # Shouldn't happen!?
@@ -269,7 +208,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 for item, count in data['payload']['stock'].items():
                     text += "{} ({})\n".format(item, count)
 
-                stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(session, user.id, text))
+                stock_info = "<b>Your stock after war:</b> \n\n{}".format(stock_compare(user.id, text))
 
                 # if get_game_state() != GameState.HOWLING_WIND:
                 #    # Don't send stock change notification when wind is not howling...
@@ -285,6 +224,29 @@ def profile_handler(channel, method, properties, body, dispatcher):
                     parse_mode=ParseMode.HTML,
                     reply_markup=generate_user_markup(user.id)
                 )
+        elif data['action'] == "wantToBuy":
+            if data['result'] == "InvalidToken":
+                # Revoked token?
+                user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
+                api_access_revoked(dispatcher.bot, user)
+            elif data['result'] == "Forbidden":
+                logging.warning("TradeTerminal is Forbidden for user=%s. Requesting access", user.id)
+                wrapper.request_trade_terminal_access(dispatcher.bot, user)
+            elif data['result'] == "InsufficientFunds":
+                user.sniping_suspended = True
+
+                Session.add(user)
+                Session.commit()
+
+                dispatcher.bot.send_message(
+                    user.id,
+                    SNIPE_SUSPENDED,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=generate_user_markup(user.id)
+                )
+            elif data['result'] == "Ok":
+                # Do we need to track OK results for buy orders?
+                pass
 
         # We're done...
         channel.basic_ack(method.delivery_tag)
@@ -296,8 +258,30 @@ def profile_handler(channel, method, properties, body, dispatcher):
             logging.exception("Can't acknowledge message")
 
         try:
-            session.rollback()
+            Session.rollback()
         except BaseException:
             logging.exception("Can't do rollback")
 
         logging.exception("Exception in MQ handler occured!")
+
+
+def api_access_revoked(bot: Bot, user):
+    if user:
+        logger.info("Revoking settings for user %s and token %s", user.id, user.api_token)
+        # We have to get the user from by token since userId is not published and user is None currently...
+
+        # Remove api settings...
+        user.is_api_stock_allowed = False
+        user.is_api_profile_allowed = False
+        user.is_api_trade_allowed = False
+        user.api_token = None
+        Session.add(user)
+        Session.commit()
+
+        bot.send_message(
+            user.id,
+            MSG_API_REVOKED_PERMISSIONS,
+            reply_markup=generate_user_markup(user.id)
+        )
+
+

@@ -1,22 +1,25 @@
 import logging
 import uuid
+
+from sqlalchemy import func
+
 from config import WEB_LINK
 from datetime import datetime
 from enum import Enum
 
-from core.enums import HEAVY_ITEMS, STOCK_WHITELIST
 from core.functions.reply_markup import (generate_admin_markup,
                                          generate_user_markup)
 from core.functions.triggers import trigger_decorator
 from core.state import GameState, get_game_state
 from core.texts import *
 from core.types import (Admin, AdminType, Auth, SquadMember, Stock, User,
-                        admin_allowed, user_allowed)
+                        admin_allowed, user_allowed, Session, Item)
 from core.utils import add_user, send_async
 from telegram import Bot, ParseMode, Update
 
 LOGGER = logging.getLogger(__name__)
 
+Session()
 
 class StockType(Enum):
     Stock = 0
@@ -30,16 +33,16 @@ def error(bot: Bot, update, error, **kwargs):
 
 
 @user_allowed
-def start(bot: Bot, update: Update, session):
-    add_user(update.message.from_user, session)
+def start(bot: Bot, update: Update):
+    add_user(update.message.from_user)
     if update.message.chat.type == 'private':
         send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME, parse_mode=ParseMode.HTML)
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def admin_panel(bot: Bot, update: Update, session):
+def admin_panel(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
-        admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         full_adm = False
         for adm in admin:
             if adm.admin_type <= AdminType.FULL.value:
@@ -49,21 +52,21 @@ def admin_panel(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def user_panel(bot: Bot, update: Update, session):
+def user_panel(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
-        admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME, parse_mode=ParseMode.HTML,
                    reply_markup=generate_user_markup(user_id=update.message.from_user.id))
 
 
 @admin_allowed()
-def kick(bot: Bot, update: Update, session):
+def kick(bot: Bot, update: Update):
     bot.leave_chat(update.message.chat.id)
 
 
 @trigger_decorator
-def help_msg(bot: Bot, update, session):
-    admin_user = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+def help_msg(bot: Bot, update):
+    admin_user = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     global_adm = False
     for adm in admin_user:
         if adm.admin_type <= AdminType.FULL.value:
@@ -78,7 +81,7 @@ def help_msg(bot: Bot, update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def ping(bot: Bot, update: Update, session):
+def ping(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text=MSG_PING.format(update.message.from_user.username))
 
 
@@ -103,10 +106,12 @@ def get_diff(dict_one, dict_two):
 
 
 def get_weight_multiplier(item_name):
-    if item_name.lower() in HEAVY_ITEMS:
-        return 2
-    else:
+    item = __get_item(item_name)
+    if not item:
+        logging.warning("Could not find item %s in database! Guessing weight = 1", item_name)
         return 1
+
+    return item.weight
 
 
 def get_weighted_diff(dict_one, dict_two):
@@ -150,6 +155,8 @@ def stock_split(old_stock, new_stock):
 
     return (resources_old, resources_new)
 
+def __get_item(item_name):
+    return Session.query(Item).filter(func.lower(Item.name) == item_name.lower()).first()
 
 def stock_compare_text(old_stock, new_stock):
     """ Compare stock... """
@@ -159,14 +166,16 @@ def stock_compare_text(old_stock, new_stock):
         msg = MSG_STOCK_COMPARE_HARVESTED
         if len(resource_diff_add):
             for key, val in resource_diff_add:
-                if key.lower() in STOCK_WHITELIST:
+                item = __get_item(key)
+                if item and item.pillagable:
                     msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
             msg += MSG_EMPTY
         msg += MSG_STOCK_COMPARE_LOST
         if len(resource_diff_del):
             for key, val in resource_diff_del:
-                if key.lower() in STOCK_WHITELIST:
+                item = __get_item(key)
+                if item and item.pillagable:
                     msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
         else:
             msg += MSG_EMPTY
@@ -175,19 +184,19 @@ def stock_compare_text(old_stock, new_stock):
     return None
 
 
-def stock_compare(session, user_id, new_stock_text):
+def stock_compare(user_id, new_stock_text):
     """ Save new stock into database and compare it with the newest already saved.
     """
 
-    old_stock = session.query(Stock).filter_by(user_id=user_id,
+    old_stock = Session.query(Stock).filter_by(user_id=user_id,
                                                stock_type=StockType.Stock.value).order_by(Stock.date.desc()).first()
     new_stock = Stock()
     new_stock.stock = new_stock_text
     new_stock.stock_type = StockType.Stock.value
     new_stock.user_id = user_id
     new_stock.date = datetime.now()
-    session.add(new_stock)
-    session.commit()
+    Session.add(new_stock)
+    Session.commit()
 
     if old_stock:
         return stock_compare_text(old_stock.stock, new_stock.stock)
@@ -198,7 +207,7 @@ def stock_compare(session, user_id, new_stock_text):
 @user_allowed(False)
 def stock_compare_forwarded(bot: Bot, update: Update, session, chat_data: dict):
     # If user-stock is automatically updated via API do not allow reports during SILENCE
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
 
     state = get_game_state()
     if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
@@ -210,7 +219,7 @@ def stock_compare_forwarded(bot: Bot, update: Update, session, chat_data: dict):
             parse_mode=ParseMode.HTML)
         return
 
-    cmp_result = stock_compare(session, update.message.from_user.id, update.message.text)
+    cmp_result = stock_compare(update.message.from_user.id, update.message.text)
     if cmp_result:
         send_async(bot, chat_id=update.message.chat.id, text=cmp_result, parse_mode=ParseMode.HTML)
     else:
@@ -218,28 +227,28 @@ def stock_compare_forwarded(bot: Bot, update: Update, session, chat_data: dict):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def delete_msg(bot: Bot, update: Update, session):
+def delete_msg(bot: Bot, update: Update):
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.reply_to_message.message_id)
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.message_id)
 
 
 @admin_allowed()
-def delete_user(bot: Bot, update: Update, session):
+def delete_user(bot: Bot, update: Update):
     bot.kickChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
     bot.unbanChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
 
 
 @user_allowed(False)
 def trade_compare(bot: Bot, update: Update, session, chat_data: dict):
-    old_stock = session.query(Stock).filter_by(user_id=update.message.from_user.id,
+    old_stock = Session.query(Stock).filter_by(user_id=update.message.from_user.id,
                                                stock_type=StockType.TradeBot.value).order_by(Stock.date.desc()).first()
     new_stock = Stock()
     new_stock.stock = update.message.text
     new_stock.stock_type = StockType.TradeBot.value
     new_stock.user_id = update.message.from_user.id
     new_stock.date = datetime.now()
-    session.add(new_stock)
-    session.commit()
+    Session.add(new_stock)
+    Session.commit()
     if old_stock is not None:
         items_old = {}
         items_new = {}
@@ -274,15 +283,15 @@ def trade_compare(bot: Bot, update: Update, session, chat_data: dict):
 
 
 @user_allowed
-def web_auth(bot: Bot, update: Update, session):
+def web_auth(bot: Bot, update: Update):
     user = add_user(update.message.from_user, session)
-    auth = session.query(Auth).filter_by(user_id=user.id).first()
+    auth = Session.query(Auth).filter_by(user_id=user.id).first()
     if auth is None:
         auth = Auth()
         auth.id = uuid.uuid4().hex
         auth.user_id = user.id
-        session.add(auth)
-        session.commit()
+        Session.add(auth)
+        Session.commit()
     link = WEB_LINK.format(auth.id)
     send_async(bot, chat_id=update.message.chat.id, text=MSG_PERSONAL_SITE_LINK.format(link),
                parse_mode=ParseMode.HTML, disable_web_page_preview=True)

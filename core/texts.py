@@ -1,4 +1,5 @@
 """ Строки """
+from core.commands import USER_COMMAND_EXCHANGE, USER_COMMAND_HIDE
 
 MSG_ORDER_STATISTIC = 'Statistics of who confirmed the orders for {} days:\n'
 MSG_ORDER_STATISTIC_OUT_FORMAT = '{}: {}/{}\n'
@@ -76,6 +77,11 @@ Squad commands:
 /forceadd <user> - add user to a squad without asking for confirmation
 /ban <user> <reason> - Ban an user from the squad
 /unban <user> - Unban an user from the squad
+
+
+User commands: 
+/items - List known items
+/hide - Manually trigger hide
 
 
 Free text commands:
@@ -223,8 +229,12 @@ MSG_PROFILE_ADMIN_INFO_ADDON = "\n\n<b>Admin-Info:</b>\n" \
                                "API ID: {}\n" \
                                "Profile allowed: {}\n" \
                                "Stock allowed: {}\n" \
+                               "Trade allowed: {}\n" \
                                "Report enabled: {}\n" \
-                               "Exchange enabled: {}\n"
+                               "Exchange enabled: {}\n" \
+                               "Hide enabled: {}\n" \
+                               "Sniping enabled: {}"
+
 
 # | 🔋 %maxStamina% - Removed until api provides it or sth else happens...
 
@@ -448,6 +458,10 @@ BTN_SETTING_DISABLE_REPORT = '❌Disable automated report'
 BTN_SETTING_ENABLE_REPORT = '✅Enable automated report'
 BTN_SETTING_DISABLE_DEAL_REPORT = '❌Disable exchange report'
 BTN_SETTING_ENABLE_DEAL_REPORT = '✅Enable exchange report'
+BTN_SETTING_DISABLE_SNIPING = '❌Disable sniping'
+BTN_SETTING_ENABLE_SNIPING = '✅Enable sniping'
+BTN_SETTING_DISABLE_HIDE_GOLD = '❌Disable gold hiding'
+BTN_SETTING_ENABLE_HIDE_GOLD = '✅Enable gold hiding'
 
 BTN_WEEK = "Week"
 BTN_ALL_TIME = "All Time"
@@ -469,11 +483,17 @@ MSG_API_INVALID_CODE = "Sorry, your code is not valid!"
 MSG_API_ACCESS_RESET = "API access was reset!"
 MSG_API_REQUIRE_ACCESS_STOCK = "Seems like I don't have permission to access your stock yet. You'll get a " \
                                "request from me please forward this code to me!"
+MSG_API_REQUIRE_ACCESS_TRADE = "Seems like I don't have permission to access your trade options yet. You'll get a " \
+                               "request from me please forward this code to me!"
 MSG_API_REQUIRE_ACCESS_PROFILE = "Seems like I don't have permission to access your profile yet. You'll get a " \
     "request from me please forward this code to me!"
-MSG_API_REVOKED_PERMISSIONS = "It seems I'm unable to access your data. Did you /revoke your permission?"
+MSG_API_REVOKED_PERMISSIONS = "It seems I'm unable to access your data. Did you /revoke your permission? Disabling API functions until you register again."
 MSG_API_SETUP_STEP_1_COMPLETE = "👌 Profile access is now granted! If I need additional permissions I will let you " \
                                 "know!"
+MSG_API_INCOMPLETE_SETUP = "It seems that you did not completely register. Please complete registration."
+
+MSG_DISABLED_TRADING = "\nDisabling trading until then."
+
 MSG_API_SETUP_STEP_2_COMPLETE = "👌 Thanks for granting additional permissions!"
 MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock update:</b>"
 
@@ -494,10 +514,13 @@ MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n\n <i>{}: {}</i>"
 
 MSG_SETTINGS_INFO = "<b>Your settings:</b>\n" \
                     "- Automatic stock report after war: {}\n" \
-                    "- Send notification when I sell something: {}\n\n" \
+                    "- Send notification when I sell something: {}\n" \
+                    "- Hide Gold: {}\n" \
+                    "- Sniping: {}\n\n" \
                     "<i>Last profile update: {}</i>\n" \
                     "<i>Last stock update: {}</i>"
 MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"
+MSG_NEEDS_TRADE_ACCESS = 'This requires trade permissions. I will request them once you select "{}" or "{}".'.format(USER_COMMAND_EXCHANGE, USER_COMMAND_HIDE)
 
 MSG_NO_REPORT_PHASE_BEFORE_BATTLE = "War is coming! Your Stock and Profile is getting updated automatically. No need to forward your data just yet!"
 MSG_NO_REPORT_PHASE_AFTER_BATTLE = "War is over but I don't accept reports just yet! I will remind you when it is time."
@@ -509,3 +532,54 @@ MSG_DEAL_SOLD = "⚖️You sold <b>{}</b> for {}💰 ({} x {}💰)\nBuyer: {}{}\
 MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"
+
+
+# Exchange stuff
+HIDE_WELCOME = "*Note: This is highly experimental! Use at your own risk! Please report any issues into your squad!*\n\n" \
+               "*With this feature enabled I will try to spend all your gold 15 Minutes before battle. I will remind " \
+               "you 15 Minutes before battle so that you can abort it if needed*. \n\n" \
+               "You can set your buy-preferences via `/ah <itemId> <prio> <maxPrice>`.\n" \
+               "Leave `<maxPrice>` out to always buy at market price. You can get a list of items with `/items`. \n\n" \
+               "Examples: \n" \
+               "- `/ah 01 1 30` to buy Thread for a maximum price of 30 💰 until you can't afford another one\n" \
+               "- `/ah 20 2` to by Leather for the lowest price currently on the market until you can't buy any more of it.\n\n" \
+               "_Note: If you already have set an order for one priority this gets overriden._\n\n" \
+               "To remove a item from your settings do `/ah <itemId>`.\n\n" \
+               "*Your current settings are:*\n" \
+               "{}"
+
+HIDE_WRONG_ARGS = "Sorry, the /ah command you issued is not valid. Try again."
+HIDE_WRONG_LIMIT = "Sorry, the limit you specified is not valid. Try again."
+HIDE_WRONG_ITEM = "Sorry, the item `{}` you specified is not valid. Try again."
+HIDE_WRONG_PRIORITY = "Sorry, the item you specified is not valid. Try again."
+HIDE_BUY_UNLIMITED = "- P{}: Buy {} (`{}`)\n"
+HIDE_BUY_LIMITED = "- P{}: Buy {} (`{}`) for a maximum price of {} 💰\n"
+HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
+
+SNIPE_WELCOME = "*Note: This is highly experimental! Use at your own risk! Please report any issues into your squad!*\n\n" \
+               "*Automated buying of items at a given price*\n" \
+               "You can set your order via `/s <itemId> <price> [<numberOfItems>]`.\n\n" \
+               "Examples: \n" \
+               "- `/s 01 10  ` - Buy one Thread for 10💰 or less\n" \
+               "- `/s 20 2 10` - Buy Leather for 2💰 or less until 10 are bought\n\n" \
+               "_How does it work?_: If your given item is sold for the price you specified I will try to buy it. " \
+               "It can take some time until this item is available for that price. It is also possible that other " \
+               "players are searching for the same item. In this case you need a little bit of luck although we try " \
+               "\"first came, first served\". You can issue `/items` to get a list of items. \n\n" \
+               "To remove a buy order `/sr <itemId>`.\n\n" \
+               "*Your current orders are:*\n" \
+               "{}"
+SNIPE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
+SNIPE_WRONG_ARGS = "Sorry, the /s command you issued is not valid. Try again."
+SNIPE_WRONG_ARGS_SR = "Sorry, the /sr command you issued is not valid. Try again."
+SNIPE_WRONG_LIMIT = "Sorry, the limit you specified is not valid. Try again."
+SNIPE_WRONG_ITEM = "Sorry, the item `{}` you specified is not valid. Try again."
+SNIPE_BUY_ONE = "- Buy one {} (`{}`) for a price of {}💰\n"
+SNIPE_BUY_MULTIPLE = "- Buy {} {} (`{}`) for a price of {}💰 (Remaining: {})\n"
+SNIPE_REMOVED = "{} was removed from your order list!"
+SNIPED_ITEM = "⚖️Got it! You bought <b>{}</b> for {}💰 ({} x {}💰)\nSeller: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"
+SNIPE_DISABLED = "You have to enable sniping in your settings first!"
+SNIPE_SUSPENDED = "I have tried to buy an item for you but you don't have the necessary funds. I suspended automated buying until. If you have enough gold again or after you adjusted your buying settings just send me /resume. "
+SNIPE_CONTINUED = "Automated buying will now be continued."
+SNIPE_NOT_SUSPENDED = "Automated buying is not suspended."
+ITEM_LIST = "*Items I know:*\n"

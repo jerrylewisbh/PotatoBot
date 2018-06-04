@@ -7,15 +7,16 @@ from enum import Enum
 from core.functions.ban import ban_traitor
 from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.functions.inline_markup import generate_settings_buttons
+from core.functions.reply_markup import generate_user_markup
 from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION, PROFILE,
                          REPAIR_REPORT, REPORT)
 from core.state import GameState, get_game_state
 from core.template import fill_char_template
 from core.texts import *
 from core.types import (BuildReport, Character, Equip, Profession, Report,
-                        User, admin_allowed, user_allowed)
+                        User, admin_allowed, user_allowed, Session)
 from core.utils import send_async
-from cwmq import Publisher
+from cwmq import Publisher, wrapper
 from telegram import Bot, ParseMode, Update
 
 
@@ -27,10 +28,11 @@ class BuildType(Enum):
 # Get the Publisher Singleton
 p = Publisher()
 
+Session()
 
-def parse_profile(profile, user_id, date, session):
+def parse_profile(profile, user_id, date):
     parsed_data = re.search(PROFILE, profile)
-    char = session.query(Character).filter_by(user_id=user_id, date=date).first()
+    char = Session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
         char = Character()
         char.user_id = user_id
@@ -49,17 +51,17 @@ def parse_profile(profile, user_id, date, session):
         if parsed_data.group(16):
             char.pet = str(parsed_data.group(16))
             char.petLevel = int(parsed_data.group(18))
-        session.add(char)
+        Session.add(char)
         if char.castle == CASTLE:
-            session.commit()
+            Session.commit()
         else:
             logging.warning('%s is a traitor!', user_id)
     return char
 
 
-def parse_hero(profile, user_id, date, session):
+def parse_hero(profile, user_id, date):
     parsed_data = re.search(HERO, profile)
-    char = session.query(Character).filter_by(user_id=user_id, date=date).first()
+    char = Session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
         char = Character()
         char.user_id = user_id
@@ -83,19 +85,19 @@ def parse_hero(profile, user_id, date, session):
             equip.user_id = user_id
             equip.date = date
             equip.equip = str(parsed_data.group(18))
-            session.add(equip)
-        session.add(char)
+            Session.add(equip)
+        Session.add(char)
         if char.castle == CASTLE:
-            session.commit()
+            Session.commit()
         else:
             logging.warning('%s is a traitor!', user_id)
     return char
 
 
-def parse_reports(report_text, user_id, date, session):
+def parse_reports(report_text, user_id, date):
     parsed_data = re.search(REPORT, report_text)
     logging.info("Report: report_text='%s', user_id='%s', date='%s'", report_text, user_id, date)
-    existing_report = get_latest_report(session, user_id)
+    existing_report = get_latest_report(user_id)
     # New one or update to preliminary
     report = None
     if not existing_report or (existing_report and existing_report.preliminary_report):
@@ -130,25 +132,25 @@ def parse_reports(report_text, user_id, date, session):
             report.earned_stock = 0
 
         if report.castle == CASTLE:
-            session.add(report)
-            session.commit()
+            Session.add(report)
+            Session.commit()
         else:
             logging.warning('%s is a traitor!', user_id)
 
     return report
 
 
-def get_latest_report(session, user_id):
+def get_latest_report(user_id):
     now = datetime.now()
     if (now.hour < 7):
         now = now - timedelta(days=1)
     time_from = now.replace(hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0, microsecond=0)
-    existing_report = session.query(Report).filter(Report.user_id == user_id, Report.date > time_from).first()
+    existing_report = Session.query(Report).filter(Report.user_id == user_id, Report.date > time_from).first()
 
     return existing_report
 
 
-def parse_profession(prof, user_id, date, session):
+def parse_profession(prof, user_id, date):
     parsed_data = re.search(PROFESSION, prof)
     profession = None
     if parsed_data is not None:
@@ -161,8 +163,8 @@ def parse_profession(prof, user_id, date, session):
         for string in strings[2:]:
             skillList += string.split("/")[0] + "\n"
         profession.skillList = skillList
-        session.add(profession)
-        session.commit()
+        Session.add(profession)
+        Session.commit()
     return profession
 
 
@@ -244,9 +246,9 @@ def get_required_xp(level):
     return required[level]
 
 
-def parse_build_reports(report, user_id, date, session):
+def parse_build_reports(report, user_id, date):
     parsed_data = re.search(BUILD_REPORT, report)
-    report = session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
+    report = Session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
     if report is None:
         report = BuildReport()
         report.user_id = user_id
@@ -254,73 +256,73 @@ def parse_build_reports(report, user_id, date, session):
         report.building = str(parsed_data.group(1))
         report.progress_percent = str(parsed_data.group(2))
         report.report_type = BuildType.Build.value
-        session.add(report)
-        session.commit()
+        Session.add(report)
+        Session.commit()
     return report
 
 
-def parse_repair_reports(report, user_id, date, session):
+def parse_repair_reports(report, user_id, date):
     parsed_data = re.search(REPAIR_REPORT, report)
-    report = session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
+    report = Session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
     if report is None:
         report = BuildReport()
         report.user_id = user_id
         report.date = date
         report.building = str(parsed_data.group(1))
         report.report_type = BuildType.Repair.value
-        session.add(report)
-        session.commit()
+        Session.add(report)
+        Session.commit()
     return report
 
 
 @user_allowed(False)
-def build_report_received(bot: Bot, update: Update, session):
+def build_report_received(bot: Bot, update: Update):
     if datetime.now() - update.message.forward_date > timedelta(minutes=10):
         send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_TOO_OLD)
         return
     report = re.search(BUILD_REPORT, update.message.text)
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     if report and user.character:
-        old_report = session.query(BuildReport) \
+        old_report = Session.query(BuildReport) \
             .filter(BuildReport.user_id == user.id,
                     BuildReport.date > update.message.forward_date - timedelta(minutes=5),
                     BuildReport.date < update.message.forward_date + timedelta(minutes=5)).first()
         if old_report is None:
-            parse_build_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
-            user_builds = session.query(BuildReport).filter_by(user_id=user.id).count()
+            parse_build_reports(update.message.text, update.message.from_user.id, update.message.forward_date)
+            user_builds = Session.query(BuildReport).filter_by(user_id=user.id).count()
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK.format(user_builds))
         else:
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
 
 
 @user_allowed(False)
-def repair_report_received(bot: Bot, update: Update, session):
+def repair_report_received(bot: Bot, update: Update):
     if datetime.now() - update.message.forward_date > timedelta(minutes=10):
         send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_TOO_OLD)
         return
     report = re.search(REPAIR_REPORT, update.message.text)
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     if report and user.character:
-        old_report = session.query(BuildReport) \
+        old_report = Session.query(BuildReport) \
             .filter(BuildReport.user_id == user.id,
                     BuildReport.date > update.message.forward_date - timedelta(minutes=5),
                     BuildReport.date < update.message.forward_date + timedelta(minutes=5)).first()
         if old_report is None:
-            parse_repair_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
-            user_builds = session.query(BuildReport).filter_by(user_id=user.id).count()
+            parse_repair_reports(update.message.text, update.message.from_user.id, update.message.forward_date)
+            user_builds = Session.query(BuildReport).filter_by(user_id=user.id).count()
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK.format(user_builds))
         else:
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
 
 
 @user_allowed(False)
-def report_received(bot: Bot, update: Update, session):
+def report_received(bot: Bot, update: Update):
     if datetime.now() - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
         return
 
     state = get_game_state()
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
         text = MSG_NO_REPORT_PHASE_BEFORE_BATTLE if GameState.NIGHT in state else MSG_NO_REPORT_PHASE_AFTER_BATTLE
         send_async(
@@ -346,35 +348,35 @@ def report_received(bot: Bot, update: Update, session):
         time_to = date.replace(hour=(int((update.message.forward_date.hour + 1) / 8 + 1) * 8 - 1) %
                                24, minute=0, second=0)
 
-        report = session.query(Report).filter(
+        report = Session.query(Report).filter(
             Report.date > time_from,
             Report.date < time_to,
             Report.user_id == update.message.from_user.id
         ).first()
 
         if report and report.castle != CASTLE:
-            ban_traitor(bot, session, update.message.from_user.id)
+            ban_traitor(bot, update.message.from_user.id)
             return
 
         if not report or (report and report.preliminary_report):
-            parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date, session)
+            parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date)
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
             if report and report.castle != CASTLE:
-                ban_traitor(bot, session, update.message.from_user.id)
+                ban_traitor(bot, update.message.from_user.id)
         else:
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
 
 
 @user_allowed(False)
-def char_update(bot: Bot, update: Update, session):
+def char_update(bot: Bot, update: Update):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
         return
 
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
 
     state = get_game_state()
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
         text = MSG_NO_REPORT_PHASE_BEFORE_BATTLE if GameState.NIGHT in state else MSG_NO_REPORT_PHASE_AFTER_BATTLE
         send_async(
@@ -389,12 +391,12 @@ def char_update(bot: Bot, update: Update, session):
         char = parse_hero(update.message.text,
                           update.message.from_user.id,
                           update.message.forward_date,
-                          session)
+                          )
     elif re.search(PROFILE, update.message.text):
         char = parse_profile(update.message.text,
                              update.message.from_user.id,
                              update.message.forward_date,
-                             session)
+                             )
     if CASTLE:
         if char and (char.castle == CASTLE or update.message.from_user.id == EXT_ID):
             char.castle = CASTLE
@@ -407,11 +409,11 @@ def char_update(bot: Bot, update: Update, session):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
                    parse_mode=ParseMode.HTML)
     if char and char.castle != CASTLE:
-        ban_traitor(bot, session, update.message.from_user.id)
+        ban_traitor(bot, update.message.from_user.id)
 
 
 @user_allowed(False)
-def profession_update(bot: Bot, update: Update, session):
+def profession_update(bot: Bot, update: Update):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
     else:
@@ -420,7 +422,7 @@ def profession_update(bot: Bot, update: Update, session):
             profession = parse_profession(update.message.text,
                                           update.message.from_user.id,
                                           update.message.forward_date,
-                                          session)
+                                          )
             if profession:
                 send_async(
                     bot,
@@ -431,19 +433,25 @@ def profession_update(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def char_show(bot: Bot, update: Update, session):
+def char_show(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
-        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+        user = Session.query(User).filter_by(id=update.message.from_user.id).first()
 
         if user.is_api_profile_allowed and user.is_api_stock_allowed:
-            p.publish({
-                "token": user.api_token,
-                "action": "requestStock"
-            })
-            p.publish({
-                "token": user.api_token,
-                "action": "requestProfile"
-            })
+
+            try:
+                wrapper.update_stock(user)
+                wrapper.update_profile(user)
+            except wrapper.APIInvalidTokenException as ex:
+                logging.error("This should not happen!?! %s", ex)
+            except wrapper.APIMissingAccessRightsException as ex:
+                logging.warning("Missing permissions for User '%s': %s", user.id, ex)
+                if str(ex) == "User has not given permission for stock":
+                    wrapper.request_stock_access()
+                elif str(ex) == "User has not given permission for profile":
+                    wrapper.request_profile_access()
+            except wrapper.APIMissingUserException:
+                logging.error("No/Invalid user for create_want_to_uy specified")
 
         if user is not None and user.character:
             char = user.character
@@ -472,14 +480,14 @@ def char_show(bot: Bot, update: Update, session):
 
 
 @user_allowed()
-def revoke(bot: Bot, update: Update, session):
+def revoke(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
-        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+        user = Session.query(User).filter_by(id=update.message.from_user.id).first()
         user.api_token = None
         user.is_api_profile_allowed = False
         user.is_api_stock_allowed = False
-        session.add(user)
-        session.commit()
+        Session.add(user)
+        Session.commit()
 
         btns = generate_profile_buttons(user)
         send_async(
@@ -491,9 +499,9 @@ def revoke(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def grant_access(bot: Bot, update: Update, session):
+def grant_access(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
-        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+        user = Session.query(User).filter_by(id=update.message.from_user.id).first()
 
         reg_req = {
             "action": "createAuthCode",
@@ -506,13 +514,13 @@ def grant_access(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def handle_access_token(bot: Bot, update: Update, session):
+def handle_access_token(bot: Bot, update: Update):
     """ Handle a forwarded access code to authorize API access by bot.
     Note: We do not send back a confirmation at this point. User should be notified after async answer from APMQ
     TODO: Maybe add some kind of timeout if API is not availiable? """
 
     if update.message.chat.type == 'private':
-        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+        user = Session.query(User).filter_by(id=update.message.from_user.id).first()
         # Extract token...
         code = re.search(ACCESS_CODE, update.message.text)
         if not code:
@@ -541,51 +549,83 @@ def handle_access_token(bot: Bot, update: Update, session):
             p.publish(grant_req)
 
 
-@user_allowed
-def settings(bot: Bot, update: Update, session):
-    if update.message.chat.type == 'private':
-        user = session.query(User).filter_by(id=update.message.from_user.id).first()
+def send_settings(bot, update, user):
 
-        text = MSG_SETTINGS_INFO.format((MSG_NEEDS_API_ACCESS
-                                         if
-                                         not user.setting_automated_report and
-                                         not user.api_token else user.setting_automated_report),
-                                        (MSG_NEEDS_API_ACCESS
-                                         if
-                                         not user.setting_automated_deal_report and
-                                         not user.api_token else user.setting_automated_deal_report),
-                                        user.stock.date if user.stock else "Never", user.character.date
-                                        if user.character else "Never",)
+    automated_report = MSG_NEEDS_API_ACCESS
+    if user.setting_automated_report and user.api_token and user.is_api_profile_allowed:
+        automated_report = user.setting_automated_deal_report
 
-        send_async(
-            bot,
-            chat_id=update.message.chat.id,
-            text=text,
+    automated_deal_report = MSG_NEEDS_API_ACCESS
+    if user.setting_automated_deal_report and user.api_token and user.is_api_stock_allowed:
+        automated_deal_report = user.setting_automated_deal_report
+
+    automated_sniping = MSG_NEEDS_TRADE_ACCESS
+    if user.setting_automated_sniping and user.api_token and user.is_api_trade_allowed:
+        automated_deal_report = user.setting_automated_deal_report
+
+    automated_hiding = MSG_NEEDS_TRADE_ACCESS
+    if user.setting_automated_sniping and user.api_token and user.is_api_trade_allowed:
+        automated_hiding = user.setting_automated_hiding
+
+    msg = MSG_SETTINGS_INFO.format(
+        automated_report,
+        automated_deal_report,
+        automated_sniping,
+        automated_hiding,
+        user.stock.date, user.character.date
+    )
+
+    if update.callback_query:
+        logging.warning("CALLBACK")
+        bot.editMessageText(
+            text=msg,
+            chat_id=user.id,
+            message_id=update.callback_query.message.message_id,
+            reply_markup=[
+                generate_settings_buttons(user),
+                generate_user_markup(user.id),
+            ],
+            parse_mode=ParseMode.HTML
+        )
+    else:
+        logging.warning("NO CALLBACK")
+        bot.send_message(
+            text=msg,
+            chat_id=user.id,
             reply_markup=generate_settings_buttons(user),
             parse_mode=ParseMode.HTML
         )
-        return
+
+@user_allowed
+def settings(bot: Bot, update: Update):
+    if update.message.chat.type == 'private':
+        user = Session.query(User).filter_by(id=update.message.from_user.id).first()
+
+        send_settings(bot, update, user)
 
 
 @admin_allowed()
-def find_by_username(bot: Bot, update: Update, session):
+def find_by_username(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg != '':
-            user = session.query(User).filter_by(username=msg).first()
+            user = Session.query(User).filter_by(username=msg).first()
             if user is not None and user.character:
                 char = user.character
                 profession = user.profession
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
-                    bool(user.is_banned()),
+                    bool(user.is_banned),
                     bool(user.api_token),
                     bool(user.api_user_id),
                     bool(user.is_api_profile_allowed),
                     bool(user.is_api_stock_allowed),
+                    bool(user.is_api_trade_allowed),
                     bool(user.setting_automated_report),
                     bool(user.setting_automated_deal_report),
+                    bool(user.setting_automated_hiding),
+                    bool(user.setting_automated_sniping),
                 )
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
@@ -594,24 +634,27 @@ def find_by_username(bot: Bot, update: Update, session):
 
 
 @admin_allowed()
-def find_by_character(bot: Bot, update: Update, session):
+def find_by_character(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg != '':
-            char = session.query(Character).filter_by(name=msg).order_by(Character.date.desc()).first()
+            char = Session.query(Character).filter_by(name=msg).order_by(Character.date.desc()).first()
             if char is not None and char.user:
                 user = char.user
                 profession = user.profession
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
-                    bool(user.is_banned()),
+                    bool(user.is_banned),
                     bool(user.api_token),
                     bool(user.api_user_id),
                     bool(user.is_api_profile_allowed),
                     bool(user.is_api_stock_allowed),
+                    bool(user.is_api_trade_allowed),
                     bool(user.setting_automated_report),
                     bool(user.setting_automated_deal_report),
+                    bool(user.setting_automated_hiding),
+                    bool(user.setting_automated_sniping),
                 )
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
@@ -620,24 +663,27 @@ def find_by_character(bot: Bot, update: Update, session):
 
 
 @admin_allowed()
-def find_by_id(bot: Bot, update: Update, session):
+def find_by_id(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg != '':
-            user = session.query(User).filter_by(id=msg).first()
+            user = Session.query(User).filter_by(id=msg).first()
             if user is not None and user.character:
                 char = user.character
                 profession = user.profession
                 text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
                 text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
-                    bool(user.is_banned()),
+                    bool(user.is_banned),
                     bool(user.api_token),
                     bool(user.api_user_id),
                     bool(user.is_api_profile_allowed),
                     bool(user.is_api_stock_allowed),
+                    bool(user.is_api_trade_allowed),
                     bool(user.setting_automated_report),
                     bool(user.setting_automated_deal_report),
+                    bool(user.setting_automated_hiding),
+                    bool(user.setting_automated_sniping),
                 )
                 btns = generate_profile_buttons(user)
                 send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)

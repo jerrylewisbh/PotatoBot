@@ -7,6 +7,7 @@ from datetime import datetime, time, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
 from core.battle import report_after_battle
+from core.bot import MQBot
 from core.chat_commands import (CC_ADMIN_LIST, CC_ADMINS, CC_ALLOW_PIN_ALL,
                                 CC_ALLOW_TRIGGER_ALL, CC_BATTLE_STATISTICS,
                                 CC_BOSS_1, CC_BOSS_2, CC_BOSS_3, CC_BOSS_4,
@@ -31,7 +32,8 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
                            USER_COMMAND_REGISTER, USER_COMMAND_SETTINGS,
                            USER_COMMAND_SQUAD, USER_COMMAND_SQUAD_LEAVE,
                            USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
-                           USER_COMMAND_TOP)
+                           USER_COMMAND_TOP, USER_COMMAND_HIDE, USER_COMMAND_EXCHANGE)
+from core.exchange import sniping_info, hide_gold_info
 from core.functions.activity import (battle_activity, day_activity,
                                      week_activity)
 from core.functions.admins import admins_for_users, list_admins
@@ -74,15 +76,17 @@ from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
                          REPAIR_REPORT, REPORT, STOCK, TRADE_BOT)
 from core.state import GameState, get_game_state
 from core.texts import MSG_IN_DEV
-from core.types import Admin, Squad, User, user_allowed
+from core.types import Admin, Squad, User, user_allowed, Session
 from core.utils import add_user, send_async
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler
+from cwmq.handler.digest import digest_handler
+from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
 from telegram import Bot, ParseMode, Update
 from telegram.error import TelegramError
 from telegram.ext import (CallbackQueryHandler, Filters, InlineQueryHandler,
-                          MessageHandler, Updater)
+                          MessageHandler, Updater, MessageQueue)
 from telegram.ext.dispatcher import run_async
 
 # -----constants----
@@ -91,26 +95,33 @@ TRADEBOT_ID = 0
 # 278525885
 # -------------------
 
+Session()
 
 @run_async
 @user_allowed
-def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
-    add_user(update.message.from_user, session)
+def manage_all(bot: Bot, update: Update, chat_data, job_queue):
+    add_user(update.message.from_user)
 
-    user = session.query(User).filter_by(id=update.message.from_user.id).first()
+    print(type(Session))
+    print(repr(Session))
+
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     registered = user and user.character and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
-        squad = session.query(Squad).filter_by(
+        squad = Session.query(Squad).filter_by(
             chat_id=update.message.chat.id).first()
-        admin = session.query(Admin).filter(
+        admin = Session.query(Admin).filter(
             Admin.user_id == update.message.from_user.id and
             Admin.admin_group in [update.message.chat.id, 0]).first()
 
-        logging.warning("SILENCE STATE: State: {}, Squad: {}, Admin: {}".format(
+        logging.debug("SILENCE STATE: State: {}, Squad: {}, Admin: {}".format(
             get_game_state(),
             squad.squad_name if squad else 'NO SQUAD',
             admin,
         ))
+
+        print(type(Session))
+        print(repr(Session))
 
         if squad and squad.silence_enabled and not admin and GameState.BATTLE_SILENCE in get_game_state():
             bot.delete_message(update.message.chat.id,
@@ -188,7 +199,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             trigger_show(bot, update)
 
     elif update.message.chat.type == 'private':
-        admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         is_admin = False
         for _ in admin:
             is_admin = True
@@ -259,7 +270,10 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 admin_panel(bot, update)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
                 add_group(bot, update, chat_data)
-
+            elif text == USER_COMMAND_HIDE.lower():
+                hide_gold_info(bot, update)
+            elif text == USER_COMMAND_EXCHANGE.lower():
+                sniping_info(bot, update)
             elif update.message.forward_from:
                 from_id = update.message.forward_from.id
                 if from_id == CWBOT_ID:
@@ -311,7 +325,15 @@ def main():
     logger.addHandler(rh)
 
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater(TOKEN)
+    from telegram.ext import MessageHandler, Filters
+    from telegram.utils.request import Request
+
+    token = TOKEN
+    # for test purposes limit global throughput to 3 messages per 3 seconds
+    q = MessageQueue(all_burst_limit=3, all_time_limit_ms=3000)
+    request = Request(con_pool_size=8)
+    bot = MQBot(token, request=request, mqueue=q)
+    updater = Updater(bot=bot)
     updater.bot.logger.setLevel(logging.INFO)
 
     # Get the dispatcher to register handler
@@ -327,8 +349,13 @@ def main():
     disp.add_handler(MessageHandler(Filters.status_update, welcome))
     # disp.add_handler(MessageHandler(
     # Filters.text, manage_text, pass_chat_data=True))
+
     disp.add_handler(MessageHandler(
-        Filters.all, manage_all, pass_chat_data=True, pass_job_queue=True))
+        Filters.all,
+        manage_all,
+        pass_chat_data=True,
+        pass_job_queue=True
+    ))
 
     # log all errors
     disp.add_error_handler(error)
@@ -354,6 +381,8 @@ def main():
     q_in = Consumer(
         profile_handler,
         deals_handler,
+        offers_handler,
+        digest_handler,
         dispatcher=updater
     )
     q_in.setName("T1_IN")

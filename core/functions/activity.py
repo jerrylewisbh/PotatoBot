@@ -27,7 +27,7 @@ def activity(squad, days=0, hours=0):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def day_activity(bot: Bot, update: Update, session):
+def day_activity(bot: Bot, update: Update):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         msg = activity(squad, days=1)
@@ -35,7 +35,7 @@ def day_activity(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def week_activity(bot: Bot, update: Update, session):
+def week_activity(bot: Bot, update: Update):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         msg = activity(squad, days=7)
@@ -43,7 +43,7 @@ def week_activity(bot: Bot, update: Update, session):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def battle_activity(bot: Bot, update: Update, session):
+def battle_activity(bot: Bot, update: Update):
     squad = session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         msg = activity(squad, hours=4)

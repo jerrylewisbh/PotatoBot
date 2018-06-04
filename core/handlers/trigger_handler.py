@@ -1,5 +1,6 @@
 import logging
 
+from core.exchange import auto_hide, sniping, sniping_remove, list_items, hide_items, sniping_resume
 from core.functions.admins import (del_admin, del_global_admin, list_admins,
                                    set_admin, set_global_admin,
                                    set_super_admin, get_log)
@@ -71,4 +72,14 @@ def add_commands(disp: Dispatcher):
     disp.add_handler(CommandHandler("unban", unban))
     disp.add_handler(CommandHandler("revoke", revoke))
     disp.add_handler(CommandHandler("get_log", get_log))
+
+
+    # Exchange Stuff...
+    disp.add_handler(CommandHandler('ah', auto_hide, pass_args=True))
+    disp.add_handler(CommandHandler('s', sniping, pass_args=True))
+    disp.add_handler(CommandHandler('sr', sniping_remove, pass_args=True))
+    disp.add_handler(CommandHandler('resume', sniping_resume, pass_args=True))
+    disp.add_handler(CommandHandler('items', list_items))
+    disp.add_handler(CommandHandler('hide', hide_items))
+
     logging.info("Finished adding command handlers")

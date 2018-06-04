@@ -19,7 +19,17 @@ CW_IN_Q = "<username>_<botname>_i"
 CW_OUT_Q = "<username>_<botname>_o"
 
 CW_DEALS_Q = "<username>_<botname>_deals"
+CW_OFFERS_Q = "<username>_<botname>_offers"
+CW_DIGEST_Q = "<username>_<botname>_sex_digest"
 
 CW_URL = "amqps://<username>:<pass>@api.chatwars.me:5673/?socket_timeout=10&connection_attempts=5&retry_delay=5"
 
 LOGFILE = 'botato.log'
+
+
+REDIS_SERVER = "localhost"
+REDIS_PORT = 6379
+REDIS_TTL = 10
+
+# Botato has special treatment so API Access is allowed for all functions. Set this to False for testing.
+BOT_ONE_STEP_API = True

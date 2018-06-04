@@ -6,3 +6,4 @@ requests
 SQLAlchemy
 pandas
 pika
+redis

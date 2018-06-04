@@ -5,6 +5,7 @@ from telegram import Bot
 from telegram.error import TelegramError
 from telegram.ext.dispatcher import run_async
 
+Session()
 
 @run_async
 def send_async(bot: Bot, *args, **kwargs):
@@ -13,22 +14,21 @@ def send_async(bot: Bot, *args, **kwargs):
 
     except TelegramError as err:
         bot.logger.error(err.message)
-        session = Session()
-        group = session.query(Group).filter_by(id=kwargs['chat_id']).first()
+        group = Session.query(Group).filter_by(id=kwargs['chat_id']).first()
         if group is not None:
             group.bot_in_group = False
-            session.add(group)
-            session.commit()
+            Session.add(group)
+            Session.commit()
         return None
 
 
-def add_user(tg_user, session):
-    user = session.query(User).filter_by(id=tg_user.id).first()
+def add_user(tg_user):
+    user = Session.query(User).filter_by(id=tg_user.id).first()
     if user is None:
         user = User(id=tg_user.id, username=tg_user.username or '',
                     first_name=tg_user.first_name or '',
                     last_name=tg_user.last_name or '')
-        session.add(user)
+        Session.add(user)
     else:
         updated = False
         if user.username != tg_user.username:
@@ -41,18 +41,18 @@ def add_user(tg_user, session):
             user.last_name = tg_user.last_name
             updated = True
         if updated:
-            session.add(user)
-    session.commit()
+            Session.add(user)
+    Session.commit()
     return user
 
 
-def update_group(grp, session):
+def update_group(grp):
     if grp.type in ['group', 'supergroup', 'channel']:
-        group = session.query(Group).filter_by(id=grp.id).first()
+        group = Session.query(Group).filter_by(id=grp.id).first()
         if group is None:
             group = Group(id=grp.id, title=grp.title,
                           username=grp.username)
-            session.add(group)
+            Session.add(group)
 
         else:
             updated = False
@@ -66,13 +66,26 @@ def update_group(grp, session):
                 group.bot_in_group = True
                 updated = True
             if updated:
-                session.add(group)
+                Session.add(group)
 
-        session.commit()
+        Session.commit()
         return group
     return None
 
 
-def chunks(l, n):
-    n = max(1, n)
-    return (l[i:i + n] for i in xrange(0, len(l), n))
+# Not used?
+# def chunks(l, n):
+#    n = max(1, n)
+#    return (l[i:i + n] for i in range(0, len(l), n))
+
+
+def pad_string(text, padding):
+    """ Add whitespaces to a string to make different texts the same length for pre-formatted texts """
+    if not text:
+        text = ""
+
+    while len(text) <= padding:
+        text += " "
+
+    return text
+

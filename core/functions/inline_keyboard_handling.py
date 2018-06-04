@@ -19,6 +19,7 @@ from core.functions.inline_markup import (QueryType, generate_forward_markup,
                                           generate_settings_buttons,
                                           generate_squad_list,
                                           generate_squad_members)
+from core.functions.profile import send_settings
 from core.functions.reply_markup import generate_user_markup
 from core.functions.squad import leave_squad
 from core.functions.top import (global_battle_top, global_build_top,
@@ -29,7 +30,7 @@ from core.texts import *
 from core.types import (Admin, AdminType, Location, MessageType, Order,
                         OrderCleared, OrderGroup, OrderGroupItem, Report,
                         Squad, SquadMember, Stock, User, UserQuest,
-                        admin_allowed, user_allowed)
+                        admin_allowed, user_allowed, Session)
 from core.utils import add_user, send_async, update_group
 from sqlalchemy import and_
 from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
@@ -43,11 +44,12 @@ LOGGER = logging.getLogger('MyApp')
 
 order_updated = {}
 
+Session()
 
 @admin_allowed()
-def send_status(bot: Bot, update: Update, session):
+def send_status(bot: Bot, update: Update):
     msg = MSG_GROUP_STATUS_CHOOSE_CHAT
-    squads = session.query(Squad).all()
+    squads = Session.query(Squad).all()
     inline_keys = []
     for squad in squads:
         inline_keys.append(InlineKeyboardButton(squad.squad_name,
@@ -112,14 +114,14 @@ def update_confirmed(bot: Bot, job: Job):
 
 @run_async
 @user_allowed
-def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue: JobQueue):
+def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueue):
     try:
-        update_group(update.callback_query.message.chat, session)
-        user = add_user(update.effective_user, session)
+        update_group(update.callback_query.message.chat)
+        user = add_user(update.effective_user)
         data = json.loads(update.callback_query.data)
         if data['t'] == QueryType.GroupList.value:
             msg = MSG_GROUP_STATUS_CHOOSE_CHAT
-            squads = session.query(Squad).all()
+            squads = Session.query(Squad).all()
             inline_keys = []
             for squad in squads:
                 inline_keys.append(InlineKeyboardButton(squad.squad_name,
@@ -133,7 +135,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                                 reply_markup=inline_markup)
         elif data['t'] == QueryType.DelAdm.value:
-            admin_user = session.query(User).filter_by(id=data['uid']).first()
+            admin_user = Session.query(User).filter_by(id=data['uid']).first()
             if admin_user:
                 del_adm(bot, data['gid'], admin_user, session)
             msg, inline_markup = generate_group_info(data['gid'], session)
@@ -157,8 +159,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                         order.confirmed_msg = msg.message_id
                     else:
                         order.confirmed_msg = 0
-                    session.add(order)
-                    session.commit()
+                    Session.add(order)
+                    Session.commit()
                     markup = generate_ok_markup(
                         order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX), order_text)
                     msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
@@ -175,7 +177,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                     except TelegramError as err:
                         bot.logger.error(err.message)
             else:
-                group = session.query(OrderGroup).filter_by(id=data['id']).first()
+                group = Session.query(OrderGroup).filter_by(id=data['id']).first()
                 for item in group.items:
                     if order_btn:
                         order = Order()
@@ -191,8 +193,8 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                             order.confirmed_msg = msg.message_id
                         else:
                             order.confirmed_msg = 0
-                        session.add(order)
-                        session.commit()
+                        Session.add(order)
+                        Session.commit()
                         markup = generate_ok_markup(
                             order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX), order_text)
                         msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
@@ -210,22 +212,22 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                             bot.logger.error(err.message)
             update.callback_query.answer(text=MSG_ORDER_SENT)
         elif data['t'] == QueryType.OrderOk.value:
-            order = session.query(Order).filter_by(id=data['id']).first()
+            order = Session.query(Order).filter_by(id=data['id']).first()
             if order is not None:
-                squad = session.query(Squad).filter_by(chat_id=order.chat_id).first()
+                squad = Session.query(Squad).filter_by(chat_id=order.chat_id).first()
                 if squad is not None:
-                    squad_member = session.query(SquadMember).filter_by(squad_id=squad.chat_id,
+                    squad_member = Session.query(SquadMember).filter_by(squad_id=squad.chat_id,
                                                                         user_id=update.callback_query.from_user.id,
                                                                         approved=True).first()
                     if squad_member is not None:
-                        order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
+                        order_ok = Session.query(OrderCleared).filter_by(order_id=data['id'],
                                                                          user_id=squad_member.user_id).first()
                         if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
                             order_ok = OrderCleared()
                             order_ok.order_id = data['id']
                             order_ok.user_id = update.callback_query.from_user.id
-                            session.add(order_ok)
-                            session.commit()
+                            Session.add(order_ok)
+                            Session.commit()
                             if order.confirmed_msg != 0:
                                 if order.id not in order_updated or \
                                         datetime.now() - order_updated[order.id] > timedelta(seconds=4):
@@ -237,14 +239,14 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                     else:
                         update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
                 else:
-                    order_ok = session.query(OrderCleared).filter_by(order_id=data['id'],
+                    order_ok = Session.query(OrderCleared).filter_by(order_id=data['id'],
                                                                      user_id=update.callback_query.from_user.id).first()
                     if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
                         order_ok = OrderCleared()
                         order_ok.order_id = data['id']
                         order_ok.user_id = update.callback_query.from_user.id
-                        session.add(order_ok)
-                        session.commit()
+                        Session.add(order_ok)
+                        Session.commit()
                         if order.confirmed_msg != 0:
                             if order.id not in order_updated or \
                                     datetime.now() - order_updated[order.id] > timedelta(seconds=4):
@@ -282,7 +284,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                     chat_data['order'] = Castle.SEA.value
                 else:
                     chat_data['order'] = data['txt']
-            admin_user = session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
+            admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
             markup = generate_order_groups_markup(session, admin_user, chat_data['pin'] if 'pin' in chat_data else True,
                                                   chat_data['btn'] if 'btn' in chat_data else True)
             bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
@@ -290,26 +292,26 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                 update.callback_query.message.message_id,
                                 reply_markup=markup)
         elif data['t'] == QueryType.OrderGroupManage.value:
-            group = session.query(OrderGroup).filter_by(id=data['id']).first()
+            group = Session.query(OrderGroup).filter_by(id=data['id']).first()
             markup = generate_group_manage(data['id'], session)
             bot.editMessageText(MSG_ORDER_GROUP_CONFIG_HEADER.format(group.name),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
                                 reply_markup=markup)
         elif data['t'] == QueryType.OrderGroupTriggerChat.value:
-            group = session.query(OrderGroup).filter_by(id=data['id']).first()
+            group = Session.query(OrderGroup).filter_by(id=data['id']).first()
             deleted = False
             for item in group.items:
                 if item.chat_id == data['c']:
-                    session.delete(item)
-                    session.commit()
+                    Session.delete(item)
+                    Session.commit()
                     deleted = True
             if not deleted:
                 item = OrderGroupItem()
                 item.group_id = group.id
                 item.chat_id = data['c']
-                session.add(item)
-                session.commit()
+                Session.add(item)
+                Session.commit()
             markup = generate_group_manage(data['id'], session)
             bot.editMessageText(MSG_ORDER_GROUP_CONFIG_HEADER.format(group.name),
                                 update.callback_query.message.chat.id,
@@ -320,20 +322,20 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             send_async(bot, chat_id=update.callback_query.message.chat.id,
                        text=MSG_ORDER_GROUP_NEW)
         elif data['t'] == QueryType.OrderGroupDelete.value:
-            group = session.query(OrderGroup).filter_by(id=data['id']).first()
-            session.delete(group)
-            session.commit()
+            group = Session.query(OrderGroup).filter_by(id=data['id']).first()
+            Session.delete(group)
+            Session.commit()
             bot.editMessageText(MSG_ORDER_GROUP_LIST,
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
-                                reply_markup=generate_groups_manage(session))
+                                reply_markup=generate_groups_manage())
         elif data['t'] == QueryType.OrderGroupList.value:
             bot.editMessageText(MSG_ORDER_GROUP_LIST,
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
-                                reply_markup=generate_groups_manage(session))
+                                reply_markup=generate_groups_manage())
         elif data['t'] == QueryType.ShowEquip.value:
-            user = session.query(User).filter_by(id=data['id']).first()
+            user = Session.query(User).filter_by(id=data['id']).first()
             update.callback_query.answer(text=MSG_CLEARED)
             back = data['b'] if 'b' in data else False
             bot.editMessageText('{}\n\n{} {}'.format(user.equip.equip, MSG_LAST_UPDATE, user.equip.date),
@@ -343,7 +345,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                 )
 
         elif data['t'] == QueryType.ShowSkills.value:
-            user = session.query(User).filter_by(id=data['id']).first()
+            user = Session.query(User).filter_by(id=data['id']).first()
             update.callback_query.answer(text=MSG_CLEARED)
             back = data['b'] if 'b' in data else False
             bot.editMessageText('{}\n{} {}'.format(user.profession.skillList, MSG_LAST_UPDATE, user.profession.date),
@@ -353,11 +355,11 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                 )
 
         elif data['t'] == QueryType.ShowStock.value:
-            user = session.query(User).filter_by(id=data['id']).first()
+            user = Session.query(User).filter_by(id=data['id']).first()
             update.callback_query.answer(text=MSG_CLEARED)
             back = data['b'] if 'b' in data else False
 
-            second_newest = session.query(Stock).filter_by(
+            second_newest = Session.query(Stock).filter_by(
                 user_id=update.callback_query.message.chat.id,
                 stock_type=StockType.Stock.value
             ).order_by(Stock.date.desc()).limit(1).offset(1).one()
@@ -378,7 +380,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                 parse_mode=ParseMode.HTML
                                 )
         elif data['t'] == QueryType.ShowHero.value:
-            user = session.query(User).filter_by(id=data['id']).first()
+            user = Session.query(User).filter_by(id=data['id']).first()
             update.callback_query.answer(text=MSG_CLEARED)
             back = data['b'] if 'b' in data else False
 
@@ -403,29 +405,29 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                 reply_markup=generate_profile_buttons(user, back)
                                 )
         elif data['t'] == QueryType.MemberList.value:
-            squad = session.query(Squad).filter_by(chat_id=data['id']).first()
+            squad = Session.query(Squad).filter_by(chat_id=data['id']).first()
             markups = generate_squad_members(squad.members, session)
             for markup in markups:
                 send_async(bot, chat_id=update.callback_query.message.chat.id,
                            text=squad.squad_name,
                            reply_markup=markup, parse_mode=ParseMode.HTML)
         elif data['t'] == QueryType.LeaveSquad.value:
-            member = session.query(SquadMember).filter_by(user_id=data['id']).first()
+            member = Session.query(SquadMember).filter_by(user_id=data['id']).first()
             leave_squad(bot, user, member, update.effective_message, session)
         elif data['t'] == QueryType.RequestSquad.value:
-            member = session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
+            member = Session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
             if member is None:
                 member = SquadMember()
                 member.user_id = update.callback_query.from_user.id
                 member.squad_id = data['id']
-                session.add(member)
-                session.commit()
-                admins = session.query(Admin).filter_by(admin_group=data['id']).all()
-                usernames = ['@' + session.query(User).filter_by(id=admin.user_id).first().username for admin in admins]
+                Session.add(member)
+                Session.commit()
+                admins = Session.query(Admin).filter_by(admin_group=data['id']).all()
+                usernames = ['@' + Session.query(User).filter_by(id=admin.user_id).first().username for admin in admins]
                 bot.editMessageText(MSG_SQUAD_REQUESTED.format(member.squad.squad_name, ', '.join(usernames)),
                                     update.callback_query.message.chat.id,
                                     update.callback_query.message.message_id, parse_mode=ParseMode.HTML)
-                admins = session.query(Admin).filter_by(admin_group=member.squad.chat_id).all()
+                admins = Session.query(Admin).filter_by(admin_group=member.squad.chat_id).all()
                 for adm in admins:
                     send_async(bot, chat_id=adm.user_id, text=MSG_SQUAD_REQUEST_NEW)
             else:
@@ -435,16 +437,16 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                     update.callback_query.message.message_id,
                                     reply_markup=markup)
         elif data['t'] == QueryType.RequestSquadAccept.value:
-            member = session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
+            member = Session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
             if member:
                 member.approved = True
-                session.add(member)
-                session.commit()
+                Session.add(member)
+                Session.commit()
                 bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@' + member.user.username),
                                     update.callback_query.message.chat.id,
                                     update.callback_query.message.message_id)
 
-                squad = session.query(Squad).filter_by(chat_id=member.squad_id).first()
+                squad = Session.query(Squad).filter_by(chat_id=member.squad_id).first()
                 answer = ""
                 if squad.invite_link is None:
                     answer = MSG_SQUAD_REQUEST_ACCEPTED_ANSWER
@@ -458,26 +460,26 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                     text=MSG_SQUAD_REQUEST_ACCEPTED.format(
                         '@' + member.user.username))
         elif data['t'] == QueryType.RequestSquadDecline.value:
-            member = session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
+            member = Session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
             if member:
                 bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + member.user.username),
                                     update.callback_query.message.chat.id,
                                     update.callback_query.message.message_id)
-                session.delete(member)
-                session.commit()
+                Session.delete(member)
+                Session.commit()
                 send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_DECLINED_ANSWER)
         elif data['t'] == QueryType.InviteSquadAccept.value:
             if update.callback_query.from_user.id != data['id']:
                 update.callback_query.answer(text=MSG_GO_AWAY)
                 return
-            member = session.query(SquadMember).filter_by(user_id=data['id']).first()
+            member = Session.query(SquadMember).filter_by(user_id=data['id']).first()
             if member is None:
                 member = SquadMember()
                 member.user_id = user.id
                 member.squad_id = update.callback_query.message.chat.id
                 member.approved = True
-                session.add(member)
-                session.commit()
+                Session.add(member)
+                Session.commit()
                 bot.editMessageText(MSG_SQUAD_ADD_ACCEPTED.format('@' + user.username),
                                     update.callback_query.message.chat.id,
                                     update.callback_query.message.message_id)
@@ -485,7 +487,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             if update.callback_query.from_user.id != data['id']:
                 update.callback_query.answer(text=MSG_GO_AWAY)
                 return
-            user = session.query(User).filter_by(id=data['id']).first()
+            user = Session.query(User).filter_by(id=data['id']).first()
             bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + user.username),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
@@ -495,7 +497,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             else:
                 chat_data['pin'] = False
             if data['g']:
-                admin_user = session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
+                admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
                 markup = generate_order_groups_markup(
                     session,
                     admin_user,
@@ -518,7 +520,7 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             else:
                 chat_data['btn'] = False
             if data['g']:
-                admin_user = session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
+                admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
                 markup = generate_order_groups_markup(
                     session,
                     admin_user,
@@ -536,34 +538,34 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
                                     update.callback_query.message.message_id,
                                     reply_markup=markup)
         elif data['t'] == QueryType.SquadList.value:
-            admin = session.query(Admin).filter_by(user_id=update.callback_query.from_user.id).all()
+            admin = Session.query(Admin).filter_by(user_id=update.callback_query.from_user.id).all()
             global_adm = False
             for adm in admin:
                 if adm.admin_type <= AdminType.FULL.value:
                     global_adm = True
                     break
             if global_adm:
-                squads = session.query(Squad).all()
+                squads = Session.query(Squad).all()
             else:
                 group_ids = []
                 for adm in admin:
                     group_ids.append(adm.admin_group)
-                squads = session.query(Squad).filter(Squad.chat_id in group_ids).all()
+                squads = Session.query(Squad).filter(Squad.chat_id in group_ids).all()
             markup = generate_squad_list(squads, session)
             bot.editMessageText(MSG_SQUAD_LIST,
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
                                 reply_markup=markup)
         elif data['t'] == QueryType.GroupDelete.value:
-            squad = session.query(Squad).filter_by(chat_id=data['gid']).first()
+            squad = Session.query(Squad).filter_by(chat_id=data['gid']).first()
             if squad is not None:
                 for member in squad.members:
-                    session.delete(member)
-                session.delete(squad)
-                session.commit()
+                    Session.delete(member)
+                Session.delete(squad)
+                Session.commit()
                 send_async(bot, chat_id=data['gid'], text=MSG_SQUAD_DELETE)
             msg = MSG_GROUP_STATUS_CHOOSE_CHAT
-            squads = session.query(Squad).all()
+            squads = Session.query(Squad).all()
             inline_keys = []
             for squad in squads:
                 inline_keys.append(InlineKeyboardButton(squad.squad_name,
@@ -573,87 +575,71 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                                 reply_markup=inline_markup)
         elif data['t'] == QueryType.DisableAPIAccess:
-            user = session.query(User).filter_by(id=data['id']).first()
+            user = Session.query(User).filter_by(id=data['id']).first()
 
             if user.api_token:
                 user.api_token = None
-                user.is_api_profile_allowed = None
-                user.is_api_stock_allowed = None
+
+                user.is_api_profile_allowed = False
+                user.is_api_stock_allowed = False
+                user.is_api_trade_allowed = False
+
                 user.api_request_id = None
                 user.api_grant_operation = None
-                session.add(user)
-                session.commit()
 
-            msg = MSG_SETTINGS_INFO.format(
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_deal_report and not user.api_token else
-                 user.setting_automated_deal_report),
-                user.stock.date, user.character.date)
+                # TODO: Do we need to reset settings?
 
-            bot.editMessageText(
-                msg,
-                update.callback_query.message.chat.id,
-                update.callback_query.message.message_id,
-                reply_markup=generate_settings_buttons(user),
-                parse_mode=ParseMode.HTML
-            )
+                Session.add(user)
+                Session.commit()
+
+            send_settings(bot, update, user)
         elif data['t'] in [QueryType.EnableAutomatedReport, QueryType.DisableAutomatedReport]:
-            user = session.query(User).filter_by(id=data['id']).first()
+            user = Session.query(User).filter_by(id=data['id']).first()
 
             if user.setting_automated_report:
                 user.setting_automated_report = False
             else:
                 user.setting_automated_report = True
 
-            session.add(user)
-            session.commit()
+            Session.add(user)
+            Session.commit()
 
-            msg = MSG_SETTINGS_INFO.format(
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_deal_report and not user.api_token else
-                 user.setting_automated_deal_report),
-                user.stock.date, user.character.date)
-
-            bot.editMessageText(
-                msg,
-                update.callback_query.message.chat.id,
-                update.callback_query.message.message_id,
-                reply_markup=generate_settings_buttons(user),
-                parse_mode=ParseMode.HTML
-            )
+            send_settings(bot, update, user)
         elif data['t'] in [QueryType.DisableDealReport, QueryType.EnableDealReport]:
-            user = session.query(User).filter_by(id=data['id']).first()
+            user = Session.query(User).filter_by(id=data['id']).first()
             if user.setting_automated_deal_report:
                 user.setting_automated_deal_report = False
             else:
                 user.setting_automated_deal_report = True
-            session.add(user)
-            session.commit()
+            Session.add(user)
+            Session.commit()
 
-            msg = MSG_SETTINGS_INFO.format(
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_report and not user.api_token else user.setting_automated_report),
-                (MSG_NEEDS_API_ACCESS
-                 if not user.setting_automated_deal_report and not user.api_token else
-                 user.setting_automated_deal_report),
-                user.stock.date, user.character.date)
+            send_settings(bot, update, user)
+        elif data['t'] in [QueryType.DisableHideGold, QueryType.EnableHideGold]:
+            user = Session.query(User).filter_by(id=data['id']).first()
+            if user.setting_automated_hiding:
+                user.setting_automated_hiding = False
+            else:
+                user.setting_automated_hiding = True
+            Session.add(user)
+            Session.commit()
 
-            bot.editMessageText(
-                msg,
-                update.callback_query.message.chat.id,
-                update.callback_query.message.message_id,
-                reply_markup=generate_settings_buttons(user),
-                parse_mode=ParseMode.HTML
-            )
+            send_settings(bot, update, user)
+        elif data['t'] in [QueryType.DisableSniping, QueryType.EnableSniping]:
+            user = Session.query(User).filter_by(id=data['id']).first()
+            if user.setting_automated_sniping:
+                user.setting_automated_sniping = False
+            else:
+                user.setting_automated_sniping = True
+            Session.add(user)
+            Session.commit()
+
+            send_settings(bot, update, user)
         elif data['t'] == QueryType.OtherReport.value:
-            squad = session.query(Squad).filter(Squad.chat_id == data['c']).first()
+            squad = Session.query(Squad).filter(Squad.chat_id == data['c']).first()
             time_from = datetime.fromtimestamp(data['ts'])
             time_to = time_from + timedelta(hours=4)
-            reports = session.query(User, Report) \
+            reports = Session.query(User, Report) \
                 .join(SquadMember) \
                 .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from, Report.date < time_to)) \
                 .filter(SquadMember.squad_id == data['c']).order_by(Report.date.desc()).all()
@@ -732,18 +718,18 @@ def callback_query(bot: Bot, update: Update, session, chat_data: dict, job_queue
             update.callback_query.answer(text=MSG_TOP_GENERATING)
             week_battle_top(bot, update)
         elif data['t'] == QueryType.Yes.value:
-            leave_squad(bot, user, user.member, update.effective_message, session)
+            leave_squad(bot, user, user.member, update.effective_message)
         elif data['t'] == QueryType.No.value:
             bot.editMessageText(MSG_SQUAD_LEAVE_DECLINE,
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
         elif data['t'] == QueryType.QuestFeedbackRequired:
-            user_quest = session.query(UserQuest).filter_by(id=data['uq']).first()
+            user_quest = Session.query(UserQuest).filter_by(id=data['uq']).first()
             if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
-                location = session.query(Location).filter_by(id=data['l']).first()
+                location = Session.query(Location).filter_by(id=data['l']).first()
                 user_quest.location = location
-                session.add(user_quest)
-                session.commit()
+                Session.add(user_quest)
+                Session.commit()
 
                 bot.editMessageText(
                     MSG_QUEST_OK.format(location.name),
