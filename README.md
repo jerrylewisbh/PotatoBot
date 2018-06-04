@@ -37,6 +37,10 @@ You'll also need Redis for more volatile Data (for example CW Exchange).
 ## Additional dependencies
 You might need to install `python3-tk` as an additional dependency
 
+# Utilities
+When the bot was stopped for a longer period it might be wise to clear the stored messages in the Queue. 
+You can use utils/empty_queues.py for this purpose.
+
 # Starting the bot
 Start the bot with `python3 main.py`. 
 
