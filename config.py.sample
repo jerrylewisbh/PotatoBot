@@ -35,3 +35,7 @@ REDIS_TTL = 10
 BOT_ONE_STEP_API = True
 
 WAITING_ROOM_LINK='this is just a testing bot!'
+
+# Set this to some Telegram Chat-ID (or SUPER_ADMIN_ID) if you want to be CCed about fulfilled Sniping orders...
+# None to disable it. 
+CC_EXCHANGE_ORDERS = SUPER_ADMIN_ID

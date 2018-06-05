@@ -3,7 +3,7 @@ import logging
 
 from sqlalchemy import func
 
-from config import SUPER_ADMIN_ID
+from config import CC_EXCHANGE_ORDERS
 from core.functions.common import MSG_DEAL_SOLD
 from core.functions.reply_markup import generate_user_markup
 from core.texts import SNIPED_ITEM
@@ -98,17 +98,18 @@ def deals_handler(channel, method, properties, body, dispatcher):
 
                 # Send me copies for testing and debugging
                 DBG_PREPEND = "For '@{}': ".format(user.username or "<<emptyusername>>")
-                dispatcher.bot.send_message(
-                    SUPER_ADMIN_ID,
-                    DBG_PREPEND + SNIPED_ITEM.format(data['item'],
-                                       (data['price'] * data['qty']),
-                                       data['qty'],
-                                       data['price'],
-                                       data['sellerCastle'],
-                                       data['sellerName']),
-                    reply_markup=generate_user_markup(user.id),
-                    parse_mode=ParseMode.HTML,
-                )
+                if CC_EXCHANGE_ORDERS:
+                    dispatcher.bot.send_message(
+                        CC_EXCHANGE_ORDERS,
+                        DBG_PREPEND + SNIPED_ITEM.format(data['item'],
+                                           (data['price'] * data['qty']),
+                                           data['qty'],
+                                           data['price'],
+                                           data['sellerCastle'],
+                                           data['sellerName']),
+                        reply_markup=generate_user_markup(user.id),
+                        parse_mode=ParseMode.HTML,
+                    )
 
         # We're done...
         channel.basic_ack(method.delivery_tag)
