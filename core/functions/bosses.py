@@ -46,7 +46,7 @@ def boss_monoeye(bot: Bot, update: Update):
 
 @trigger_decorator
 def boss_hydra(bot: Bot, update: Update):
-    group = update_group(update.message.chat, session)
+    group = update_group(update.message.chat)
     if len(group.squad) == 1:
         members = []
         for member in group.squad[0].members:

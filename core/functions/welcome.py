@@ -73,7 +73,7 @@ def welcome(bot: Bot, update: Update):
 @admin_allowed(adm_type=AdminType.GROUP)
 def set_welcome(bot: Bot, update: Update):
     if update.message.chat.type in ['group', 'supergroup']:
-        group = update_group(update.message.chat, session)
+        group = update_group(update.message.chat)
         welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
         if welcome_msg is None:
             welcome_msg = WelcomeMsg(chat_id=group.id, message=update.message.text.split(' ', 1)[1])
@@ -87,7 +87,7 @@ def set_welcome(bot: Bot, update: Update):
 @admin_allowed(adm_type=AdminType.GROUP)
 def enable_welcome(bot: Bot, update: Update):
     if update.message.chat.type in ['group', 'supergroup']:
-        group = update_group(update.message.chat, session)
+        group = update_group(update.message.chat)
         group.welcome_enabled = True
         Session.add(group)
         Session.commit()
@@ -97,7 +97,7 @@ def enable_welcome(bot: Bot, update: Update):
 @admin_allowed(adm_type=AdminType.GROUP)
 def disable_welcome(bot: Bot, update: Update):
     if update.message.chat.type in ['group', 'supergroup']:
-        group = update_group(update.message.chat, session)
+        group = update_group(update.message.chat)
         group.welcome_enabled = False
         Session.add(group)
         Session.commit()
@@ -107,7 +107,7 @@ def disable_welcome(bot: Bot, update: Update):
 @admin_allowed(adm_type=AdminType.GROUP)
 def show_welcome(bot: Bot, update):
     if update.message.chat.type in ['group', 'supergroup']:
-        group = update_group(update.message.chat, session)
+        group = update_group(update.message.chat)
         welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
         if welcome_msg is None:
             welcome_msg = WelcomeMsg(chat_id=group.id, message=MSG_WELCOME_DEFAULT)

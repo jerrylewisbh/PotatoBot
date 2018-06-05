@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 from json import loads
 
+from config import WAITING_ROOM_LINK
 from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Castle, Icons
 from core.functions.admins import del_adm
 from core.functions.common import StockType, stock_compare_text
@@ -131,14 +132,14 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
             bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                                 reply_markup=inline_markup)
         elif data['t'] == QueryType.GroupInfo.value:
-            msg, inline_markup = generate_group_info(data['id'], session)
+            msg, inline_markup = generate_group_info(data['id'])
             bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                                 reply_markup=inline_markup)
         elif data['t'] == QueryType.DelAdm.value:
             admin_user = Session.query(User).filter_by(id=data['uid']).first()
             if admin_user:
-                del_adm(bot, data['gid'], admin_user, session)
-            msg, inline_markup = generate_group_info(data['gid'], session)
+                del_adm(bot, data['gid'], admin_user)
+            msg, inline_markup = generate_group_info(data['gid'])
             bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                                 reply_markup=inline_markup)
         elif data['t'] == QueryType.Order.value:
@@ -266,7 +267,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                     chat_data['order'] = Castle.SEA.value
                 else:
                     chat_data['order'] = data['txt']
-            markup = generate_order_chats_markup(session, chat_data['pin'] if 'pin' in chat_data else True,
+            markup = generate_order_chats_markup(chat_data['pin'] if 'pin' in chat_data else True,
                                                  chat_data['btn'] if 'btn' in chat_data else True)
             bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
                                 update.callback_query.message.chat.id,
@@ -285,7 +286,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                 else:
                     chat_data['order'] = data['txt']
             admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
-            markup = generate_order_groups_markup(session, admin_user, chat_data['pin'] if 'pin' in chat_data else True,
+            markup = generate_order_groups_markup(admin_user, chat_data['pin'] if 'pin' in chat_data else True,
                                                   chat_data['btn'] if 'btn' in chat_data else True)
             bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
                                 update.callback_query.message.chat.id,
@@ -293,7 +294,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                                 reply_markup=markup)
         elif data['t'] == QueryType.OrderGroupManage.value:
             group = Session.query(OrderGroup).filter_by(id=data['id']).first()
-            markup = generate_group_manage(data['id'], session)
+            markup = generate_group_manage(data['id'])
             bot.editMessageText(MSG_ORDER_GROUP_CONFIG_HEADER.format(group.name),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
@@ -312,7 +313,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                 item.chat_id = data['c']
                 Session.add(item)
                 Session.commit()
-            markup = generate_group_manage(data['id'], session)
+            markup = generate_group_manage(data['id'])
             bot.editMessageText(MSG_ORDER_GROUP_CONFIG_HEADER.format(group.name),
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,
@@ -406,14 +407,14 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                                 )
         elif data['t'] == QueryType.MemberList.value:
             squad = Session.query(Squad).filter_by(chat_id=data['id']).first()
-            markups = generate_squad_members(squad.members, session)
+            markups = generate_squad_members(squad.members)
             for markup in markups:
                 send_async(bot, chat_id=update.callback_query.message.chat.id,
                            text=squad.squad_name,
                            reply_markup=markup, parse_mode=ParseMode.HTML)
         elif data['t'] == QueryType.LeaveSquad.value:
             member = Session.query(SquadMember).filter_by(user_id=data['id']).first()
-            leave_squad(bot, user, member, update.effective_message, session)
+            leave_squad(bot, user, member, update.effective_message)
         elif data['t'] == QueryType.RequestSquad.value:
             member = Session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
             if member is None:
@@ -424,9 +425,13 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                 Session.commit()
                 admins = Session.query(Admin).filter_by(admin_group=data['id']).all()
                 usernames = ['@' + Session.query(User).filter_by(id=admin.user_id).first().username for admin in admins]
-                bot.editMessageText(MSG_SQUAD_REQUESTED.format(member.squad.squad_name, ', '.join(usernames)),
-                                    update.callback_query.message.chat.id,
-                                    update.callback_query.message.message_id, parse_mode=ParseMode.HTML)
+                bot.editMessageText(
+                    MSG_SQUAD_REQUESTED.format(
+                        member.squad.squad_name,
+                        WAITING_ROOM_LINK
+                    ),
+                    update.callback_query.message.chat.id,
+                    update.callback_query.message.message_id, parse_mode=ParseMode.HTML)
                 admins = Session.query(Admin).filter_by(admin_group=member.squad.chat_id).all()
                 for adm in admins:
                     send_async(bot, chat_id=adm.user_id, text=MSG_SQUAD_REQUEST_NEW)
@@ -499,7 +504,6 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
             if data['g']:
                 admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
                 markup = generate_order_groups_markup(
-                    session,
                     admin_user,
                     chat_data['pin'] if 'pin' in chat_data else True,
                     chat_data['btn'] if 'btn' in chat_data else True)
@@ -508,7 +512,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                                     update.callback_query.message.message_id,
                                     reply_markup=markup)
             else:
-                markup = generate_order_chats_markup(session, chat_data['pin'] if 'pin' in chat_data else True,
+                markup = generate_order_chats_markup(chat_data['pin'] if 'pin' in chat_data else True,
                                                      chat_data['btn'] if 'btn' in chat_data else True)
                 bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
                                     update.callback_query.message.chat.id,
@@ -522,7 +526,6 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
             if data['g']:
                 admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
                 markup = generate_order_groups_markup(
-                    session,
                     admin_user,
                     chat_data['pin'] if 'pin' in chat_data else True,
                     chat_data['btn'] if 'btn' in chat_data else True)
@@ -531,7 +534,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                                     update.callback_query.message.message_id,
                                     reply_markup=markup)
             else:
-                markup = generate_order_chats_markup(session, chat_data['pin'] if 'pin' in chat_data else True,
+                markup = generate_order_chats_markup(chat_data['pin'] if 'pin' in chat_data else True,
                                                      chat_data['btn'] if 'btn' in chat_data else True)
                 bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
                                     update.callback_query.message.chat.id,
@@ -551,7 +554,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                 for adm in admin:
                     group_ids.append(adm.admin_group)
                 squads = Session.query(Squad).filter(Squad.chat_id in group_ids).all()
-            markup = generate_squad_list(squads, session)
+            markup = generate_squad_list(squads)
             bot.editMessageText(MSG_SQUAD_LIST,
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id,

@@ -343,8 +343,8 @@ MSG_SQUAD_REQUEST = 'Here are the requests you have received:'
 MSG_SQUAD_LEAVED = '{} left the squad {} 😰'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
-MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. \
-Be patient, the process is manual and there is a small queue. Plese join the waiting room, Captains will talk to you from there: https://t.me/joinchat/Hm7VckdKMgfB0PpLWJLJtQ '
+MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. ' \
+                      'Be patient, the process is manual and there is a small queue. Please join our waiting room, captains will talk to you from there: {}'
 MSG_SQUAD_REQUEST_ACCEPTED = 'The request from {} is accepted.'
 MSG_SQUAD_REQUEST_DECLINED = '{} is useless, no one cares.'
 MSG_SQUAD_REQUEST_NEW = 'There are new applications for your squad'

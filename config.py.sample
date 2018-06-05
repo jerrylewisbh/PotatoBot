@@ -33,3 +33,5 @@ REDIS_TTL = 10
 
 # Botato has special treatment so API Access is allowed for all functions. Set this to False for testing.
 BOT_ONE_STEP_API = True
+
+WAITING_ROOM_LINK='this is just a testing bot!'

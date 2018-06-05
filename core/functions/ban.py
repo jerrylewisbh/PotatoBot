@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from core.texts import (MSG_ALREADY_BANNED, MSG_BAN_COMPLETE, MSG_NO_REASON,
@@ -47,14 +48,13 @@ def ban(bot: Bot, update: Update):
 def ban_traitor(bot: Bot, user_id):
     user = Session.query(User).filter_by(id=user_id).first()
     if user:
-        print(user)
+        logging.warning("Banning %s", user.id)
         banned = Ban()
         banned.user_id = user.id
         banned.from_date = datetime.now()
         banned.to_date = datetime.max
         banned.reason = MSG_REASON_TRAITOR
         member = Session.query(SquadMember).filter_by(user_id=user.id).first()
-        print(member)
         if member:
             Session.delete(member)
             try:

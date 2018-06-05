@@ -581,10 +581,7 @@ def send_settings(bot, update, user):
             text=msg,
             chat_id=user.id,
             message_id=update.callback_query.message.message_id,
-            reply_markup=[
-                generate_settings_buttons(user),
-                generate_user_markup(user.id),
-            ],
+            reply_markup=generate_settings_buttons(user) or [] + generate_user_markup(user.id) or [],
             parse_mode=ParseMode.HTML
         )
     else:

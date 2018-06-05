@@ -79,7 +79,7 @@ def del_admin(bot: Bot, update: Update):
                            text=MSG_USER_UNKNOWN)
 
             else:
-                del_adm(bot, update.message.chat.id, user, session)
+                del_adm(bot, update.message.chat.id, user)
     else:
         user = Session.query(User).filter_by(id=msg).first()
         if user is None:
@@ -88,7 +88,7 @@ def del_admin(bot: Bot, update: Update):
                        text=MSG_USER_UNKNOWN)
 
         else:
-            del_adm(bot, update.message.chat.id, user, session)
+            del_adm(bot, update.message.chat.id, user)
 
 
 @admin_allowed()

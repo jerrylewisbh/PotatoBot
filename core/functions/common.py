@@ -284,7 +284,7 @@ def trade_compare(bot: Bot, update: Update, chat_data: dict):
 
 @user_allowed
 def web_auth(bot: Bot, update: Update):
-    user = add_user(update.message.from_user, session)
+    user = add_user(update.message.from_user)
     auth = Session.query(Auth).filter_by(user_id=user.id).first()
     if auth is None:
         auth = Auth()

@@ -102,9 +102,6 @@ Session()
 def manage_all(bot: Bot, update: Update, chat_data, job_queue):
     add_user(update.message.from_user)
 
-    print(type(Session))
-    print(repr(Session))
-
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     registered = user and user.character and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
@@ -119,9 +116,6 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
             squad.squad_name if squad else 'NO SQUAD',
             admin,
         ))
-
-        print(type(Session))
-        print(repr(Session))
 
         if squad and squad.silence_enabled and not admin and GameState.BATTLE_SILENCE in get_game_state():
             bot.delete_message(update.message.chat.id,
