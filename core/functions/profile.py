@@ -13,6 +13,8 @@ from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION, PROFILE,
 from core.state import GameState, get_game_state
 from core.template import fill_char_template
 from core.texts import *
+from core.texts import MSG_START_KNOWN, MSG_START_MEMBER_SQUAD_REGISTERED, SNIPE_SUSPENDED_NOTICE, \
+    MSG_START_MEMBER_SQUAD
 from core.types import (BuildReport, Character, Equip, Profession, Report,
                         User, Session)
 from core.decorators import admin_allowed, user_allowed, command_handler
@@ -550,7 +552,6 @@ def handle_access_token(bot: Bot, update: Update):
             p.publish(grant_req)
 
 
-@command_handler
 def send_settings(bot, update, user):
     automated_report = MSG_NEEDS_API_ACCESS
     if user.setting_automated_report and user.api_token and user.is_api_profile_allowed:
@@ -664,3 +665,26 @@ def find_by_id(bot: Bot, update: Update):
             __send_user_with_settings(bot, update, user)
         else:
             send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+
+
+@command_handler
+def user_panel(bot: Bot, update: Update, user):
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
+
+    welcome_text = MSG_START_KNOWN
+    if user.is_squadmember:
+        if user.api_token:
+            welcome_text = MSG_START_MEMBER_SQUAD_REGISTERED.format(user.character.name)
+
+            if user.setting_automated_sniping and user.sniping_suspended:
+                welcome_text += "\n\n" + SNIPE_SUSPENDED_NOTICE
+        else:
+            welcome_text = MSG_START_MEMBER_SQUAD.format(user.character.name)
+
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=welcome_text,
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=generate_user_markup(user_id=update.message.from_user.id)
+    )

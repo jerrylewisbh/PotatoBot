@@ -33,7 +33,7 @@ from core.types import (Admin, AdminType, Location, MessageType, Order,
                         Squad, SquadMember, Stock, User, UserQuest,
                         Session)
 from core.decorators import admin_allowed, user_allowed
-from core.utils import add_user, send_async, update_group
+from core.utils import create_or_update_user, send_async, update_group
 from sqlalchemy import and_
 from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
                       InlineQueryResultArticle, InputTextMessageContent,
@@ -119,7 +119,7 @@ def update_confirmed(bot: Bot, job: Job):
 def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueue):
     try:
         update_group(update.callback_query.message.chat)
-        user = add_user(update.effective_user)
+        user = create_or_update_user(update.effective_user)
         data = json.loads(update.callback_query.data)
         if data['t'] == QueryType.GroupList.value:
             msg = MSG_GROUP_STATUS_CHOOSE_CHAT

@@ -1,22 +1,20 @@
 import logging
 import uuid
-
-from sqlalchemy import func
-
-from config import WEB_LINK
 from datetime import datetime
 from enum import Enum
 
-from core.functions.reply_markup import (generate_admin_markup,
-                                         generate_user_markup)
+from sqlalchemy import func
+from telegram import Bot, ParseMode, Update
+
+from config import WEB_LINK
+from core.decorators import admin_allowed, user_allowed
+from core.functions.reply_markup import (generate_admin_markup)
 from core.functions.triggers import trigger_decorator
 from core.state import GameState, get_game_state
 from core.texts import *
-from core.types import (Admin, AdminType, Auth, SquadMember, Stock, User,
+from core.types import (Admin, AdminType, Auth, Stock, User,
                         Session, Item)
-from core.decorators import admin_allowed, user_allowed
-from core.utils import add_user, send_async
-from telegram import Bot, ParseMode, Update
+from core.utils import create_or_update_user, send_async
 
 Session()
 
@@ -40,32 +38,6 @@ def admin_panel(bot: Bot, update: Update):
                 full_adm = True
         send_async(bot, chat_id=update.message.chat.id, text=MSG_ADMIN_WELCOME,
                    reply_markup=generate_admin_markup(full_adm))
-
-
-@user_allowed
-def user_panel(bot: Bot, update: Update):
-    if update.message.chat.type == 'private':
-        user = Session.query(User).filter_by(id=update.message.from_user.id).first()
-        if user and not user.is_squadmember:
-            welcome_text = MSG_START_KNOWN
-        elif user and user.is_squadmember:
-            if user.api_token:
-                welcome_text = MSG_START_MEMBER_SQUAD_REGISTERED.format(user.character.name)
-
-                if user.setting_automated_sniping and user.sniping_suspended:
-                    welcome_text += "\n\n" + SNIPE_SUSPENDED_NOTICE
-            else:
-                welcome_text = MSG_START_MEMBER_SQUAD.format(user.character.name)
-        else:
-            welcome_text = MSG_START_NEW
-
-        send_async(
-            bot,
-            chat_id=update.message.chat.id,
-            text=welcome_text,
-            parse_mode=ParseMode.MARKDOWN,
-            reply_markup=generate_user_markup(user_id=update.message.from_user.id)
-        )
 
 
 @admin_allowed()
@@ -293,7 +265,7 @@ def trade_compare(bot: Bot, update: Update, chat_data: dict):
 
 @user_allowed
 def web_auth(bot: Bot, update: Update):
-    user = add_user(update.message.from_user)
+    user = create_or_update_user(update.message.from_user)
     auth = Session.query(Auth).filter_by(user_id=user.id).first()
     if auth is None:
         auth = Auth()

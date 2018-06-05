@@ -1,5 +1,7 @@
 from html import escape
 
+import telegram
+
 from core.types import Group, Session, User
 from telegram import Bot
 from telegram.error import TelegramError
@@ -22,23 +24,31 @@ def send_async(bot: Bot, *args, **kwargs):
         return None
 
 
-def add_user(tg_user):
-    user = Session.query(User).filter_by(id=tg_user.id).first()
-    if user is None:
-        user = User(id=tg_user.id, username=tg_user.username or '',
-                    first_name=tg_user.first_name or '',
-                    last_name=tg_user.last_name or '')
+def create_or_update_user(telegram_user: telegram.User) -> User:
+    """
+
+    :type telegram_user: object
+    :rtype: User
+    """
+    user = Session.query(User).filter_by(id=telegram_user.id).first()
+    if not user:
+        user = User(
+            id=telegram_user.id,
+            username=telegram_user.username or '',
+            first_name=telegram_user.first_name or '',
+            last_name=telegram_user.last_name or ''
+        )
         Session.add(user)
     else:
         updated = False
-        if user.username != tg_user.username:
-            user.username = tg_user.username
+        if user.username != telegram_user.username:
+            user.username = telegram_user.username
             updated = True
-        if user.first_name != tg_user.first_name:
-            user.first_name = tg_user.first_name
+        if user.first_name != telegram_user.first_name:
+            user.first_name = telegram_user.first_name
             updated = True
-        if user.last_name != tg_user.last_name:
-            user.last_name = tg_user.last_name
+        if user.last_name != telegram_user.last_name:
+            user.last_name = telegram_user.last_name
             updated = True
         if updated:
             Session.add(user)

@@ -41,7 +41,7 @@ from core.functions.bosses import (boss_hydra, boss_leader, boss_monoeye,
                                    boss_zhalo)
 from core.functions.common import (admin_panel, delete_msg, delete_user, error,
                                    help_msg, ping, stock_compare_forwarded,
-                                   trade_compare, user_panel, web_auth)
+                                   trade_compare, web_auth)
 from core.functions.inline_keyboard_handling import (callback_query,
                                                      inlinequery, send_status)
 from core.functions.order_groups import add_group, group_list
@@ -51,7 +51,7 @@ from core.functions.profile import (build_report_received, char_show,
                                     char_update, grant_access,
                                     handle_access_token, profession_update,
                                     repair_report_received, report_received,
-                                    settings)
+                                    settings, user_panel)
 from core.functions.quest import parse_quest
 from core.functions.squad import (battle_attendance_show, battle_reports_show,
                                   call_squad, close_hiring,
@@ -78,7 +78,7 @@ from core.state import GameState, get_game_state
 from core.texts import MSG_IN_DEV
 from core.types import Admin, Squad, User, Session
 from core.decorators import user_allowed
-from core.utils import add_user, send_async
+from core.utils import create_or_update_user, send_async
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler
 from cwmq.handler.digest import digest_handler
@@ -101,7 +101,7 @@ Session()
 @run_async
 @user_allowed
 def manage_all(bot: Bot, update: Update, chat_data, job_queue):
-    add_user(update.message.from_user)
+    create_or_update_user(update.message.from_user)
 
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     registered = user and user.character and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID)
@@ -305,7 +305,7 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
 def main():
     # Logging!
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # Logging for console

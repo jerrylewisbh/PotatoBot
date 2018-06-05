@@ -5,9 +5,9 @@ from core.functions.admins import (del_admin, del_global_admin, list_admins,
                                    set_admin, set_global_admin,
                                    set_super_admin, get_log)
 from core.functions.ban import ban, unban
-from core.functions.common import admin_panel, help_msg, kick, ping, user_panel
+from core.functions.common import admin_panel, help_msg, kick, ping
 from core.functions.profile import (char_show, find_by_character, find_by_id,
-                                    find_by_username, grant_access, revoke)
+                                    find_by_username, grant_access, revoke, user_panel)
 from core.functions.squad import (add_squad, add_to_squad, del_squad,
                                   disable_reminders, disable_silence,
                                   disable_thorns, enable_reminders,

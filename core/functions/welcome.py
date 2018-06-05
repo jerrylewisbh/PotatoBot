@@ -7,7 +7,7 @@ from core.template import fill_template
 from core.texts import *
 from core.types import (Admin, AdminType, WelcomeMsg, Wellcomed, Session)
 from core.decorators import admin_allowed, user_allowed
-from core.utils import add_user, send_async, update_group
+from core.utils import create_or_update_user, send_async, update_group
 from telegram import Bot, Update
 
 last_welcome = 0
@@ -22,7 +22,7 @@ def welcome(bot: Bot, update: Update):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         for new_chat_member in update.message.new_chat_members:
-            user = add_user(new_chat_member)
+            user = create_or_update_user(new_chat_member)
             logging.debug("Welcome: user=%s", user)
             administrator = Session.query(Admin).filter_by(user_id=user.id).all()
             allow_anywhere = False
