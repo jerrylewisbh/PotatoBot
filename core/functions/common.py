@@ -32,13 +32,6 @@ def error(bot: Bot, update, error, **kwargs):
                  % (type(error), error.message))
 
 
-@user_allowed
-def start(bot: Bot, update: Update):
-    add_user(update.message.from_user)
-    if update.message.chat.type == 'private':
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME, parse_mode=ParseMode.HTML)
-
-
 @admin_allowed(adm_type=AdminType.GROUP)
 def admin_panel(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
