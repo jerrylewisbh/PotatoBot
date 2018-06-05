@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-from config import CASTLE, GOVERNMENT_CHAT
+from config import CASTLE, GOVERNMENT_CHAT, DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
 from datetime import datetime, timedelta
 
-from core.constants import DAYS_OLD_PROFILE_KICK, DAYS_PROFILE_REMIND
 from core.functions.common import (MSG_CHANGES_SINCE_LAST_UPDATE,
                                    MSG_LAST_UPDATE, MSG_USER_BATTLE_REPORT,
                                    MSG_USER_BATTLE_REPORT_PRELIM,

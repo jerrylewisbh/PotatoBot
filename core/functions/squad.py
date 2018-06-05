@@ -1,7 +1,10 @@
-from config import CASTLE
 from datetime import datetime, timedelta
 
-from core.constants import *
+from sqlalchemy import and_
+from sqlalchemy import func, tuple_
+from telegram import Bot, ParseMode, TelegramError, Update
+
+from config import MINIMUM_SQUAD_MEMBER_LEVEL
 from core.functions.inline_markup import (generate_fire_up,
                                           generate_leave_squad,
                                           generate_other_reports,
@@ -11,15 +14,11 @@ from core.functions.inline_markup import (generate_fire_up,
                                           generate_squad_request_answer,
                                           generate_yes_no)
 from core.functions.reply_markup import generate_squad_markup
-from core.functions.top import gen_top_msg, generate_battle_top
 from core.template import fill_char_template
 from core.texts import *
 from core.types import (Admin, AdminType, Character, Group, Report, Squad,
                         SquadMember, User, admin_allowed, user_allowed, Session)
 from core.utils import send_async
-from sqlalchemy import and_ as text_, and_
-from sqlalchemy import func, text, tuple_
-from telegram import Bot, ParseMode, TelegramError, Update
 
 TOP_START_DATE = datetime(2017, 12, 11)
 

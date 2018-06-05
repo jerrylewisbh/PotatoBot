@@ -39,3 +39,8 @@ WAITING_ROOM_LINK='this is just a testing bot!'
 # Set this to some Telegram Chat-ID (or SUPER_ADMIN_ID) if you want to be CCed about fulfilled Sniping orders...
 # None to disable it.
 CC_EXCHANGE_ORDERS = SUPER_ADMIN_ID
+
+# Settings for Squads + Profiles
+MINIMUM_SQUAD_MEMBER_LEVEL = 5
+DAYS_PROFILE_REMIND = 5
+DAYS_OLD_PROFILE_KICK = 7
