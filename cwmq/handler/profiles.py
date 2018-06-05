@@ -232,6 +232,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
             elif data['result'] == "Forbidden":
                 logging.warning("TradeTerminal is Forbidden for user=%s. Requesting access", user.id)
                 wrapper.request_trade_terminal_access(dispatcher.bot, user)
+            elif data['result'] in ["BattleIsNear", "ProhibitedItem", "UserIsBusy"]:
+                logging.warning("Buy action for did not go through. Reason: %s", data['result'])
             elif data['result'] == "InsufficientFunds":
                 user.sniping_suspended = True
 
