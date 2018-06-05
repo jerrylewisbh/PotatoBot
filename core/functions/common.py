@@ -17,8 +17,6 @@ from core.types import (Admin, AdminType, Auth, SquadMember, Stock, User,
 from core.utils import add_user, send_async
 from telegram import Bot, ParseMode, Update
 
-LOGGER = logging.getLogger(__name__)
-
 Session()
 
 class StockType(Enum):
@@ -28,8 +26,7 @@ class StockType(Enum):
 
 def error(bot: Bot, update, error, **kwargs):
     """ Error handling """
-    LOGGER.error("An error (%s) occurred: %s"
-                 % (type(error), error.message))
+    logging.error("An error (%s) occurred: %s", (type(error), error.message))
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
