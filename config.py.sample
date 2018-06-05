@@ -13,6 +13,9 @@ CASTLE = None
 EXT_ID = None
 WEB_LINK = 'Please change it. {}'
 
+CWBOT_ID = 408101137
+TRADEBOT_ID = 0
+
 # CW APMQ Settings
 CW_EXCHANGE = "<username>_<botname>_ex"
 CW_IN_Q = "<username>_<botname>_i"

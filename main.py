@@ -2,7 +2,7 @@
 
 import logging
 import re
-from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE
+from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE, CWBOT_ID
 from datetime import datetime, time, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
@@ -89,12 +89,6 @@ from telegram.error import TelegramError
 from telegram.ext import (CallbackQueryHandler, Filters, InlineQueryHandler,
                           MessageHandler, Updater, MessageQueue)
 from telegram.ext.dispatcher import run_async
-
-# -----constants----
-CWBOT_ID = 408101137
-TRADEBOT_ID = 0
-# 278525885
-# -------------------
 
 Session()
 
@@ -269,6 +263,7 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                 hide_gold_info(bot, update)
             elif text == USER_COMMAND_EXCHANGE.lower():
                 sniping_info(bot, update)
+            # TODO: FWD Checks are no longer needed here if command_handler decorator is used properly.
             elif update.message.forward_from:
                 from_id = update.message.forward_from.id
                 if from_id == CWBOT_ID:

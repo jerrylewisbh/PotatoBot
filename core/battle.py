@@ -12,7 +12,7 @@ from core.functions.common import (MSG_CHANGES_SINCE_LAST_UPDATE,
                                    stock_split)
 from core.functions.inline_keyboard_handling import send_order
 from core.functions.inline_markup import QueryType
-from core.functions.profile import get_latest_report
+from core.functions.profile.util import get_latest_report
 from core.texts import (MSG_MAIN_INLINE_BATTLE, MSG_REPORT_SUMMARY,
                         MSG_REPORT_SUMMARY_RATING, MSG_REPORT_TOTAL,
                         MSG_SQUAD_DELETE_OUTDATED,

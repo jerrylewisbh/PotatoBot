@@ -1,5 +1,5 @@
 import logging
-from functools import partial
+from functools import partial, wraps
 
 from sqlalchemy.exc import SQLAlchemyError
 from telegram import Bot, Update
@@ -43,7 +43,7 @@ def user_allowed(ban_enable=True):
     return wrap
 
 
-def command_handler(function=None, permissions_required=None, allow_banned=False, allow_private=True, allow_group=False, allow_channel=False, *args, **kwargs):
+def command_handler(permissions_required=None, allow_private=True, allow_group=False, allow_channel=False, allow_banned=False, forward_from=None, *args, **kwargs):
     """
     Use this decorator to mark CommandHandlers and other exposed chat commands. This decorator allows you to check
     for user permissions.
@@ -55,76 +55,71 @@ def command_handler(function=None, permissions_required=None, allow_banned=False
     Functions with this decorator get also the "User" object passed into or the decorator will fail. It should be safe
     to depend on the existence of a valid User object.
 
-    :param function:
+    :param f:
     :param permissions_required:
     :param allow_banned:
     :param allow_private:
     :param allow_group:
     :param allow_channel:
+    :param forward_from:
     :param args:
     :param kwargs:
     :return:
     """
 
-    print(function)
-    print(permissions_required)
-    print(allow_banned)
-    print(allow_channel)
-    print(allow_group)
-    print(allow_private)
-    print(args)
-    print(kwargs)
+    def real_decorator(func, *args, **kwargs):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Check if we have the required parameters in the right order...
+            if not isinstance(args[0], Bot):
+                error_msg = "Function is decorated as @command_handler. Expecting object of type {} as first argument. Got {}".format(
+                    Bot.__class__,
+                    type(args[0])
+                )
+                logging.error(error_msg)
+                raise TypeError(error_msg)
+            if not isinstance(args[1], Update):
+                error_msg = "Function is decorated as @command_handler. Expecting object of type {} as second argument. Got {}".format(
+                    Update.__class__,
+                    type(args[1])
+                )
+                logging.error(error_msg)
+                raise TypeError(error_msg)
 
-    def wrapper(*args, **kwargs):
-        print("-- inside --")
-        print(function)
-        print(permissions_required)
-        print(allow_banned)
-        print(allow_channel)
-        print(allow_group)
-        print(allow_private)
-        print("-- own --")
-        print('args - ', args)
-        print('kwargs - ', kwargs)
+            bot = args[0]
+            update = args[1]
 
-        # Check if we have the required parameters in the right order...
-        if not isinstance(args[0], Bot):
-            error_msg = "Function is decorated as @command_handler. Expecting object of type {} as first argument. Got {}".format(
-                Bot.__class__,
-                type(args[0])
-            )
-            logging.error(error_msg)
-            raise TypeError(error_msg)
-        if not isinstance(args[1], Update):
-            error_msg = "Function is decorated as @command_handler. Expecting object of type {} as second argument. Got {}".format(
-                Update.__class__,
-                type(args[1])
-            )
-            logging.error(error_msg)
-            raise TypeError(error_msg)
+            if update.message.chat.type == 'channel' and not allow_channel:
+                logging.debug("Message received in channel but allow_channel=False. Ignoring message.")
+                return
+            elif update.message.chat.type in ['group', 'supergroup'] and not allow_group:
+                logging.debug("Message received in group/supergroup but allow_group=False. Ignoring message.")
+                return
+            elif update.message.chat.type == 'private' and not allow_private:
+                logging.debug("Message received in private but allow_private=False. Ignoring message.")
+                return
 
-        bot = args[0]
-        update = args[1]
+            user = create_or_update_user(update.message.from_user)
+            if not user:
+                logging.error("create_or_update_user() did not return a User!")
+                raise ValueError("create_or_update_user() did not return a User!")
+            if user.is_banned and not allow_banned:
+                logging.info(
+                    "Message received from banned user '%s' but this is not an allowed function for a banned account.",
+                    user.id
+                )
+                return
 
-        if update.message.chat.type == 'channel' and not allow_channel:
-            logging.debug("Message received in channel but allow_channel=False. Ignoring message.")
-            return
-        elif update.message.chat.type in ['group', 'supergroup'] and not allow_group:
-            logging.debug("Message received in group/supergroup but allow_group=False. Ignoring message.")
-            return
-        elif update.message.chat.type == 'private' and not allow_private:
-            logging.debug("Message received in private but allow_private=False. Ignoring message.")
-            return
+            if forward_from and forward_from != update.message.forward_from.id:
+                logging.debug("Message is not a valid forward %s!=%s", update.message.forward_from.id, forward_from)
+                return
 
-        user = create_or_update_user(args[0])
-        if not user:
-            logging.error("create_or_update_user() did not return a User!")
-            raise ValueError("create_or_update_user() did not return a User!")
-        if user.is_banned and not allow_banned:
-            logging.debug("Message received from banned user allow_banned=False. Ignoring message.")
-            return
+            if permissions_required:
+                pass
 
-        return function(*args, user, **kwargs)
+            logging.info("User '%s' has called: '%s'", user.id, func.__name__)
 
-    return wrapper
+            return func(bot, update, user, **kwargs)
+        return wrapper
+    return real_decorator
 

@@ -25,6 +25,10 @@ from telegram.ext import CommandHandler, Dispatcher
 
 
 def add_commands(disp: Dispatcher):
+
+    # NOTE: Use the @command_handler decorator for the functions registered here! This will provide you with the User
+    # object and additionally filters by chat-type (private, group, etc.)
+
     logging.debug("Starting adding command handlers")
     # on different commands - answer in Telegram
     disp.add_handler(CommandHandler("start", user_panel))
