@@ -14,7 +14,8 @@ from core.state import GameState, get_game_state
 from core.template import fill_char_template
 from core.texts import *
 from core.types import (BuildReport, Character, Equip, Profession, Report,
-                        User, admin_allowed, user_allowed, Session)
+                        User, Session)
+from core.decorators import admin_allowed, user_allowed, command_handler
 from core.utils import send_async
 from cwmq import Publisher, wrapper
 from telegram import Bot, ParseMode, Update
@@ -549,8 +550,8 @@ def handle_access_token(bot: Bot, update: Update):
             p.publish(grant_req)
 
 
+@command_handler
 def send_settings(bot, update, user):
-
     automated_report = MSG_NEEDS_API_ACCESS
     if user.setting_automated_report and user.api_token and user.is_api_profile_allowed:
         automated_report = user.setting_automated_deal_report
@@ -580,7 +581,7 @@ def send_settings(bot, update, user):
             text=msg,
             chat_id=user.id,
             message_id=update.callback_query.message.message_id,
-            reply_markup=generate_settings_buttons(user) or [] + generate_user_markup(user.id) or [],
+            reply_markup=generate_settings_buttons(user),
             parse_mode=ParseMode.HTML
         )
     else:
@@ -598,6 +599,35 @@ def settings(bot: Bot, update: Update):
 
         send_settings(bot, update, user)
 
+def __send_user_with_settings(bot: Bot, update: Update, user: User):
+    if user and user.character:
+        char = user.character
+        profession = user.profession
+        text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
+        text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
+            bool(user.is_banned),
+            bool(user.api_token),
+            bool(user.api_user_id),
+            bool(user.is_api_profile_allowed),
+            bool(user.is_api_stock_allowed),
+            bool(user.is_api_trade_allowed),
+            bool(user.setting_automated_report),
+            bool(user.setting_automated_deal_report),
+            bool(user.setting_automated_hiding),
+            bool(user.setting_automated_sniping),
+            "Temp. Suspended" if user.sniping_suspended else ""
+        )
+        btns = generate_profile_buttons(user)
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            reply_markup=btns,
+            parse_mode=ParseMode.HTML
+        )
+    else:
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+
 
 @admin_allowed()
 def find_by_username(bot: Bot, update: Update):
@@ -606,26 +636,9 @@ def find_by_username(bot: Bot, update: Update):
         msg = msg.replace('@', '')
         if msg != '':
             user = Session.query(User).filter_by(username=msg).first()
-            if user is not None and user.character:
-                char = user.character
-                profession = user.profession
-                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
-                text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
-                    bool(user.is_banned),
-                    bool(user.api_token),
-                    bool(user.api_user_id),
-                    bool(user.is_api_profile_allowed),
-                    bool(user.is_api_stock_allowed),
-                    bool(user.is_api_trade_allowed),
-                    bool(user.setting_automated_report),
-                    bool(user.setting_automated_deal_report),
-                    bool(user.setting_automated_hiding),
-                    bool(user.setting_automated_sniping),
-                )
-                btns = generate_profile_buttons(user)
-                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
-            else:
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+            __send_user_with_settings(bot, update, user)
+        else:
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
 
 
 @admin_allowed()
@@ -633,26 +646,10 @@ def find_by_character(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
-        if msg != '':
+        if msg:
             char = Session.query(Character).filter_by(name=msg).order_by(Character.date.desc()).first()
-            if char is not None and char.user:
-                user = char.user
-                profession = user.profession
-                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
-                text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
-                    bool(user.is_banned),
-                    bool(user.api_token),
-                    bool(user.api_user_id),
-                    bool(user.is_api_profile_allowed),
-                    bool(user.is_api_stock_allowed),
-                    bool(user.is_api_trade_allowed),
-                    bool(user.setting_automated_report),
-                    bool(user.setting_automated_deal_report),
-                    bool(user.setting_automated_hiding),
-                    bool(user.setting_automated_sniping),
-                )
-                btns = generate_profile_buttons(user)
-                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
+            if char:
+                __send_user_with_settings(bot, update, char.user)
             else:
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
 
@@ -662,25 +659,8 @@ def find_by_id(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
-        if msg != '':
+        if msg:
             user = Session.query(User).filter_by(id=msg).first()
-            if user is not None and user.character:
-                char = user.character
-                profession = user.profession
-                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
-                text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
-                    bool(user.is_banned),
-                    bool(user.api_token),
-                    bool(user.api_user_id),
-                    bool(user.is_api_profile_allowed),
-                    bool(user.is_api_stock_allowed),
-                    bool(user.is_api_trade_allowed),
-                    bool(user.setting_automated_report),
-                    bool(user.setting_automated_deal_report),
-                    bool(user.setting_automated_hiding),
-                    bool(user.setting_automated_sniping),
-                )
-                btns = generate_profile_buttons(user)
-                send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
-            else:
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+            __send_user_with_settings(bot, update, user)
+        else:
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
