@@ -27,8 +27,23 @@ MSG_LIST_ADMINS_USER_FORMAT = '@{} {} {}\n'
 
 MSG_EMPTY = '[Empty]\n'
 
-MSG_START_WELCOME = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! \n\n' \
-                    'To get things started please send me your game profile from @chtwrsbot ("/hero" command) or select "🔑Register" to allow me direct access to your profile.'
+MSG_START_NEW = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! \n\n' \
+                'To get things started please send me your game profile from @chtwrsbot ("/hero" command).'
+
+MSG_START_KNOWN = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! \n\n' \
+                  'If you want to refresh your game profile send me your /"hero" from @chtwrsbot.\n\n' \
+                  'I also suggest you *join one of our squads* ("⚜Squad") to better coordinate in battle. After ' \
+                  'joining you can also get automated stock change information after war, get notified if you sell ' \
+                  'something or automatically buy cheap things in the Exchange (sniping).'
+
+MSG_START_MEMBER_SQUAD = 'Welcome back 🥔{}!\n\n' \
+                         'As a squad member you can choose "🔑Register" to allow me direct access to your profile ' \
+                         'and get automated stock change information after war, get notified if you sell something or ' \
+                         'automatically buy cheap things in the Exchange (sniping).'
+
+MSG_START_MEMBER_SQUAD_REGISTERED = 'Welcome back 🥔{}!\n\n' \
+                                    'How can I help you today?'
+
 MSG_ADMIN_WELCOME = 'Welcome, master!'
 
 MSG_HELP_GLOBAL_ADMIN = """Welcome commands:

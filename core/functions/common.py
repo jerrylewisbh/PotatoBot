@@ -54,9 +54,24 @@ def admin_panel(bot: Bot, update: Update):
 @user_allowed
 def user_panel(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
-        admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_START_WELCOME, parse_mode=ParseMode.HTML,
-                   reply_markup=generate_user_markup(user_id=update.message.from_user.id))
+        user = Session.query(User).filter_by(id=update.message.from_user.id).first()
+        if user and not user.is_squadmember:
+            welcome_text = MSG_START_KNOWN
+        elif user and user.is_squadmember:
+            if user.api_token:
+                welcome_text = MSG_START_MEMBER_SQUAD_REGISTERED.format(user.character.name)
+            else:
+                welcome_text = MSG_START_MEMBER_SQUAD.format(user.character.name)
+        else:
+            welcome_text = MSG_START_NEW
+
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=welcome_text,
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=generate_user_markup(user_id=update.message.from_user.id)
+        )
 
 
 @admin_allowed()
