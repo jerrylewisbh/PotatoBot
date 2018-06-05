@@ -576,7 +576,6 @@ def send_settings(bot, update, user):
     )
 
     if update.callback_query:
-        logging.warning("CALLBACK")
         bot.editMessageText(
             text=msg,
             chat_id=user.id,
@@ -585,7 +584,6 @@ def send_settings(bot, update, user):
             parse_mode=ParseMode.HTML
         )
     else:
-        logging.warning("NO CALLBACK")
         bot.send_message(
             text=msg,
             chat_id=user.id,
