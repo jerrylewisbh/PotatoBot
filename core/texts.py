@@ -82,6 +82,7 @@ Squad commands:
 User commands: 
 /items - List known items
 /hide - Manually trigger hide
+/resume - Resume suspended sniping
 
 
 Free text commands:
@@ -579,7 +580,7 @@ SNIPE_BUY_MULTIPLE = "- Buy {} {} (`{}`) for a price of {}💰 (Remaining: {})\n
 SNIPE_REMOVED = "{} was removed from your order list!"
 SNIPED_ITEM = "⚖️Got it! You bought <b>{}</b> for {}💰 ({} x {}💰)\nSeller: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"
 SNIPE_DISABLED = "You have to enable sniping in your settings first!"
-SNIPE_SUSPENDED = "I have tried to buy an item for you but you don't have the necessary funds. I suspended automated buying until. If you have enough gold again or after you adjusted your buying settings just send me /resume. "
+SNIPE_SUSPENDED = "I have tried to buy an item for you but you don't have the necessary funds. I suspended automated buying until. If you have enough gold again or after you adjusted your buying settings just send me /resume."
 SNIPE_CONTINUED = "Automated buying will now be continued."
 SNIPE_NOT_SUSPENDED = "Automated buying is not suspended."
 ITEM_LIST = "*Items I know:*\n"
