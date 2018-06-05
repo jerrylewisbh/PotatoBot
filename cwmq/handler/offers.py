@@ -57,12 +57,13 @@ def offers_handler(channel, method, properties, body, dispatcher):
                 # Done...
                 logging.info("Price '%s' for '%s' is greater than max_price '%s'", data['price'], order.item.name, order.max_price)
                 continue # Next order!
-            elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping:
+            elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping or order.user.sniping_suspended:
                 logging.info(
-                    "Trade disabled for %s ('%s'/'%s')",
+                    "Trade disabled for %s (API: '%s'/ Setting: '%s' / Suspended: '%s')",
                     order.user.id,
                     order.user.is_api_trade_allowed,
-                    order.user.setting_automated_sniping
+                    order.user.setting_automated_sniping,
+                    order.user.sniping_suspended,
                 )
                 continue # Next order!
 
