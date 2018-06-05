@@ -5,8 +5,8 @@ from time import time
 from core.functions.newbies import newbie
 from core.template import fill_template
 from core.texts import *
-from core.types import (Admin, AdminType, WelcomeMsg, Wellcomed, admin_allowed,
-                        user_allowed, Session)
+from core.types import (Admin, AdminType, WelcomeMsg, Wellcomed, Session)
+from core.decorators import admin_allowed, user_allowed
 from core.utils import add_user, send_async, update_group
 from telegram import Bot, Update
 

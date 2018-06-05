@@ -4,7 +4,8 @@ from json import loads
 import telegram
 from core.texts import *
 from core.types import (AdminType, LocalTrigger, MessageType, Trigger,
-                        admin_allowed, check_admin, user_allowed, Session)
+                        check_admin, Session)
+from core.decorators import admin_allowed, user_allowed
 from core.utils import send_async, update_group
 from telegram import Bot, Message, ParseMode, Update
 

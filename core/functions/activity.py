@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 from core.texts import MSG_ORDER_STATISTIC, MSG_ORDER_STATISTIC_OUT_FORMAT
-from core.types import AdminType, Squad, admin_allowed, Session
+from core.types import AdminType, Squad, Session
+from core.decorators import admin_allowed
 from core.utils import send_async
 from telegram import Bot, Update
 

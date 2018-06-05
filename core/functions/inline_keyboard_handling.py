@@ -31,7 +31,8 @@ from core.texts import *
 from core.types import (Admin, AdminType, Location, MessageType, Order,
                         OrderCleared, OrderGroup, OrderGroupItem, Report,
                         Squad, SquadMember, Stock, User, UserQuest,
-                        admin_allowed, user_allowed, Session)
+                        Session)
+from core.decorators import admin_allowed, user_allowed
 from core.utils import add_user, send_async, update_group
 from sqlalchemy import and_
 from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,

@@ -9,7 +9,8 @@ from core.texts import (MSG_SQUAD_TOP_FORMAT, MSG_TOP_ABOUT, MSG_TOP_ATTACK,
                         MSG_TOP_GLOBAL_BUILDERS, MSG_TOP_WEEK_BUILDERS,
                         MSG_TOP_WEEK_WARRIORS)
 from core.types import (BuildReport, Character, Report, Squad, SquadMember,
-                        user_allowed, Session)
+                        Session)
+from core.decorators import user_allowed
 from core.utils import send_async
 from sqlalchemy import text as text_
 from sqlalchemy import func, tuple_

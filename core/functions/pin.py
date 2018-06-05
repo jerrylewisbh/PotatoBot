@@ -1,5 +1,6 @@
 from core.texts import MSG_PIN_ALL_DISABLED, MSG_PIN_ALL_ENABLED
-from core.types import AdminType, admin_allowed, check_admin, user_allowed, Session
+from core.types import AdminType, check_admin, Session
+from core.decorators import admin_allowed, user_allowed
 from core.utils import send_async, update_group
 from telegram import Bot, Update
 

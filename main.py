@@ -76,7 +76,8 @@ from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
                          REPAIR_REPORT, REPORT, STOCK, TRADE_BOT)
 from core.state import GameState, get_game_state
 from core.texts import MSG_IN_DEV
-from core.types import Admin, Squad, User, user_allowed, Session
+from core.types import Admin, Squad, User, Session
+from core.decorators import user_allowed
 from core.utils import add_user, send_async
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler

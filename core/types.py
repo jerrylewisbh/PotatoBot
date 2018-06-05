@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 import logging
-
-from sqlalchemy.ext.hybrid import hybrid_property
-
-from config import DB
 from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import (BigInteger, Boolean, Column, DateTime, ForeignKey,
-                        Integer, Table, Text, UnicodeText, UniqueConstraint,
+                        Integer, Text, UnicodeText, UniqueConstraint,
                         create_engine)
 from sqlalchemy.dialects.mysql import DATETIME
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import backref, relationship, scoped_session, sessionmaker
-from telegram import Bot
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship, scoped_session, sessionmaker
+
+from config import DB
 
 
 class AdminType(Enum):
@@ -560,37 +557,6 @@ def log(user_id, chat_id, func_name, args):
         Session.add(log_item)
         Session.commit()
         #Session.remove()
-
-
-def admin_allowed(adm_type=AdminType.FULL, ban_enable=True, allowed_types=()):
-    def decorate(func):
-        def wrapper(bot: Bot, update, *args, **kwargs):
-            try:
-                allowed = check_admin(update, adm_type, allowed_types)
-                if ban_enable:
-                    allowed &= check_ban(update)
-                if allowed:
-                    if func.__name__ not in ['manage_all', 'trigger_show', 'user_panel', 'wrapper', 'welcome']:
-                        log(update.effective_user.id, update.effective_chat.id, func.__name__,
-                            update.message.text if update.message else None or
-                            update.callback_query.data if update.callback_query else None)
-                    # Fixme: Issues a message-update even if message did not change. This
-                    # raises a telegram.error.BadRequest exception!
-                    func(bot, update, *args, **kwargs)
-            except SQLAlchemyError as err:
-                bot.logger.error(str(err))
-                Session.rollback()
-        return wrapper
-    return decorate
-
-
-def user_allowed(ban_enable=True):
-    if callable(ban_enable):
-        return admin_allowed(AdminType.NOT_ADMIN)(ban_enable)
-    else:
-        def wrap(func):
-            return admin_allowed(AdminType.NOT_ADMIN, ban_enable)(func)
-    return wrap
 
 
 Base.metadata.create_all(ENGINE)

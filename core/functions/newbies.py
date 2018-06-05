@@ -2,7 +2,8 @@ from config import ACADEM_CHAT_ID, CASTLE_CHAT_ID
 
 from core.template import fill_template
 from core.texts import *
-from core.types import Group, User, user_allowed, Session
+from core.types import Group, User, Session
+from core.decorators import user_allowed
 from core.utils import send_async
 from telegram import Bot, Update
 

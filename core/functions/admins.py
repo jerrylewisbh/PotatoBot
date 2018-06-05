@@ -11,7 +11,8 @@ from core.texts import (MSG_DEL_GLOBAL_ADMIN, MSG_DEL_GLOBAL_ADMIN_NOT_EXIST,
                         MSG_NEW_GROUP_ADMIN, MSG_NEW_GROUP_ADMIN_EXISTS,
                         MSG_NEW_SUPER_ADMIN, MSG_NEW_SUPER_ADMIN_EXISTS,
                         MSG_USER_UNKNOWN)
-from core.types import Admin, AdminType, User, admin_allowed, user_allowed, Session
+from core.types import Admin, AdminType, User, Session
+from core.decorators import admin_allowed, user_allowed
 from core.utils import send_async
 from telegram import Bot, Update
 

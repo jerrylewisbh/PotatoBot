@@ -17,7 +17,8 @@ from core.functions.reply_markup import generate_squad_markup
 from core.template import fill_char_template
 from core.texts import *
 from core.types import (Admin, AdminType, Character, Group, Report, Squad,
-                        SquadMember, User, admin_allowed, user_allowed, Session)
+                        SquadMember, User, Session)
+from core.decorators import admin_allowed, user_allowed
 from core.utils import send_async
 
 TOP_START_DATE = datetime(2017, 12, 11)

@@ -3,7 +3,8 @@ import logging
 from core.functions.inline_keyboard_handling import (generate_group_manage,
                                                      generate_groups_manage)
 from core.texts import *
-from core.types import user_allowed, Session, Item, UserStockHideSetting, User, UserExchangeOrder
+from core.types import Session, Item, UserStockHideSetting, User, UserExchangeOrder
+from core.decorators import user_allowed
 from core.utils import send_async, pad_string
 from telegram import Bot, Update, ParseMode
 

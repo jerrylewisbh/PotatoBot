@@ -1,7 +1,8 @@
 from core.functions.inline_keyboard_handling import (generate_group_manage,
                                                      generate_groups_manage)
 from core.texts import *
-from core.types import AdminType, OrderGroup, admin_allowed, Session
+from core.types import AdminType, OrderGroup, Session
+from core.decorators import admin_allowed
 from core.utils import send_async
 from telegram import Bot, Update
 
