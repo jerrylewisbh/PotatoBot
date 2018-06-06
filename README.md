@@ -1,5 +1,4 @@
-# MasterBot
-CW Master Castle Bot
+This is the Potato castle Bot. 
 
 # Trello taskboard:
 https://trello.com/b/gFo4UASZ/botato-20
@@ -22,7 +21,7 @@ source .env/bin/activate
 python3 -m pip install -r requirements.txt
 ```
 
-## MySQL/MariaDB database setup (only mysql is supported):
+## MySQL/MariaDB database setup
 1) Install MySQL or MariaDB on your machine or in a container
 2) Create a database, user and grant that account access to the database
 3) Enter credentials into your `config.py` file.
@@ -33,13 +32,12 @@ You'll also need Redis for more volatile Data (for example CW Exchange).
 1) Install Redis
 2) Enter config into your `config.py` file.
 
-
 ## Additional dependencies
 You might need to install `python3-tk` as an additional dependency
 
 # Utilities
 When the bot was stopped for a longer period it might be wise to clear the stored messages in the Queue. 
-You can use utils/empty_queues.py for this purpose.
+You can use `utils/empty_queues.py` for this purpose.
 
 # Starting the bot
 Start the bot with `python3 main.py`. 
