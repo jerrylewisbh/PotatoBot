@@ -526,6 +526,8 @@ MSG_USER_BATTLE_REPORT_PRELIM = "{}{} ⚔:{} 🛡:{} "\
 MSG_USER_BATTLE_REPORT_PRELIM = "{}{} - Lvl: {}\n\n"\
                                 "<b>Please forward me your /report as soon as possible!\n</b>"
 
+TRIBUTE_NOTE = "\n\n<i>Note: Stock change also may contain tributes.</i>"
+
 MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n\n <i>{}: {}</i>"
 
 MSG_SETTINGS_INFO = "<b>Your settings:</b>\n" \

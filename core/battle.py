@@ -9,7 +9,7 @@ from core.functions.common import (MSG_CHANGES_SINCE_LAST_UPDATE,
                                    MSG_USER_BATTLE_REPORT_PRELIM,
                                    MSG_USER_BATTLE_REPORT_STOCK, StockType,
                                    get_weighted_diff, stock_compare_text,
-                                   stock_split)
+                                   stock_split, TRIBUTE_NOTE)
 from core.functions.inline_keyboard_handling import send_order
 from core.functions.inline_markup import QueryType
 from core.functions.profile.util import get_latest_report
@@ -229,13 +229,10 @@ def report_after_battle(bot: Bot, job_queue: Job):
         for user in api_users:
             logging.info("Updating data for %s", user.id)
 
-            text = MSG_USER_BATTLE_REPORT
-            # We must have the actual access rights and user has to be in a testing squad to allow onboarding of this
-            # feature!
-
             if not user.is_squadmember:
                 return
 
+            text = MSG_USER_BATTLE_REPORT
             if user.is_api_profile_allowed and user.is_api_stock_allowed and \
                     user.setting_automated_report and user.api_token:
 
@@ -289,11 +286,6 @@ def report_after_battle(bot: Bot, job_queue: Job):
                     Session.commit()
 
                 # Text with prelim. battle report
-                """text += MSG_USER_BATTLE_REPORT_PRELIM.format(
-                    user.character.castle, user.character.name, user.character.attack, user.character.defence,
-                    user.character.level, earned_exp, earned_gold, diff_stock
-                )"""
-
                 text += MSG_USER_BATTLE_REPORT_PRELIM.format(
                     user.character.castle, user.character.name, user.character.level
                 )
@@ -305,6 +297,9 @@ def report_after_battle(bot: Bot, job_queue: Job):
                     user.stock.date.strftime("%Y-%m-%d %H:%M:%S")
                 )
                 text += stock_text
+
+                if user.character and user.character.characterClass == "Knight":
+                    text += TRIBUTE_NOTE
 
                 send_async(bot,
                            chat_id=user.id,
