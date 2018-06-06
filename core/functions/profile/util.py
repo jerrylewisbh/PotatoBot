@@ -306,7 +306,8 @@ def send_settings(bot, update, user):
         automated_deal_report,
         automated_sniping,
         automated_hiding,
-        user.stock.date, user.character.date
+        user.stock.date if user.stock else "Unknown",
+        user.character.date if user.character else "Unknown",
     )
 
     if update.callback_query:
