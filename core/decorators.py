@@ -43,7 +43,11 @@ def user_allowed(ban_enable=True):
     return wrap
 
 
-def command_handler(permissions_required=None, allow_private=True, allow_group=False, allow_channel=False, allow_banned=False, forward_from=None, *args, **kwargs):
+def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow_private: bool = True,
+                    allow_group: bool = False, allow_channel: bool = False,
+                    allow_banned: bool = False, forward_from: int = None,
+                    *args: object,
+                    **kwargs : object) -> object:
     """
     Use this decorator to mark CommandHandlers and other exposed chat commands. This decorator allows you to check
     for user permissions.
@@ -53,10 +57,21 @@ def command_handler(permissions_required=None, allow_private=True, allow_group=F
     allow_[group|channel|private].
 
     Functions with this decorator get also the "User" object passed into or the decorator will fail. It should be safe
-    to depend on the existence of a valid User object.
+    to depend on the existence of a valid User object. permission_required:
 
-    :param f:
-    :param permissions_required:
+
+
+    :type permissions_required: AdminType
+    :type allow_private: bool
+    :type allow_banned: bool
+    :type allow_private: bool
+    :type allow_group: bool
+    :type allow_channel: bool
+    :type forward_from: int
+    :type args: object
+    :type kwargs: object
+
+    :param permissions_required: AdminType
     :param allow_banned:
     :param allow_private:
     :param allow_group:
@@ -99,7 +114,8 @@ def command_handler(permissions_required=None, allow_private=True, allow_group=F
                 logging.debug("Message received in private but allow_private=False. Ignoring message.")
                 return
 
-            user = create_or_update_user(update.message.from_user)
+            #user = create_or_update_user(update.message.from_user)
+            user = create_or_update_user(update.effective_user)
             if not user:
                 logging.error("create_or_update_user() did not return a User!")
                 raise ValueError("create_or_update_user() did not return a User!")
@@ -115,7 +131,16 @@ def command_handler(permissions_required=None, allow_private=True, allow_group=F
                 return
 
             if permissions_required:
-                pass
+                if permissions_required not in AdminType:
+                    raise ValueError("Given permission does not match an existing AdminType")
+                #print(user.permission)
+
+                # The lower the number, the higher the permission is...
+                #if permissions_required in [AdminType.SUPER, AdminType.FULL]:
+                #    # Highest permission levels. Just pass
+                #    logging.debug("%s is admin-type %s!", user.id, user.permission)
+
+
 
             logging.info("User '%s' has called: '%s'", user.id, func.__name__)
 

@@ -103,6 +103,8 @@ class User(Base):
 
     quests = relationship('UserQuest', back_populates='user')
 
+    permission = relationship('Admin', back_populates='user')
+
     hide_settings = relationship('UserStockHideSetting', back_populates='user', lazy='dynamic')
     sniping_settings = relationship('UserExchangeOrder', back_populates='user', lazy='dynamic')
 
@@ -258,8 +260,12 @@ class Admin(Base):
     __tablename__ = 'admins'
 
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
+    user = relationship(User, back_populates='permission')
+
     admin_type = Column(Integer)
     admin_group = Column(BigInteger, primary_key=True, default=0)
+
+
 
 
 class OrderGroup(Base):
