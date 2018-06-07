@@ -107,7 +107,8 @@ def deals_handler(channel, method, properties, body, dispatcher):
                                            data['price'],
                                            data['sellerCastle'],
                                            data['sellerName']),
-                        reply_markup=generate_user_markup(user.id),
+                        #reply_markup=generate_user_markup(user.id),
+                        reply_markup=None,
                         parse_mode=ParseMode.HTML,
                     )
 
