@@ -470,14 +470,14 @@ BTN_ACCEPT = '✅Accept'
 BTN_DECLINE = '❌Decline'
 
 BTN_SETTING_API_DISABLE = '❌Disable API'
-BTN_SETTING_DISABLE_REPORT = '❌Disable automated report'
-BTN_SETTING_ENABLE_REPORT = '✅Enable automated report'
-BTN_SETTING_DISABLE_DEAL_REPORT = '❌Disable exchange report'
-BTN_SETTING_ENABLE_DEAL_REPORT = '✅Enable exchange report'
-BTN_SETTING_DISABLE_SNIPING = '❌Disable sniping'
-BTN_SETTING_ENABLE_SNIPING = '✅Enable sniping'
-BTN_SETTING_DISABLE_HIDE_GOLD = '❌Disable gold hiding'
-BTN_SETTING_ENABLE_HIDE_GOLD = '✅Enable gold hiding'
+BTN_SETTING_DISABLE_REPORT = '✅Disable automated report'
+BTN_SETTING_ENABLE_REPORT = '❌Enable automated report'
+BTN_SETTING_DISABLE_DEAL_REPORT = '✅Disable exchange report'
+BTN_SETTING_ENABLE_DEAL_REPORT = '❌Enable exchange report'
+BTN_SETTING_DISABLE_SNIPING = '✅Disable sniping'
+BTN_SETTING_ENABLE_SNIPING = '❌Enable sniping'
+BTN_SETTING_DISABLE_HIDE_GOLD = '✅Disable gold hiding'
+BTN_SETTING_ENABLE_HIDE_GOLD = '❌Enable gold hiding'
 
 BTN_WEEK = "Week"
 BTN_ALL_TIME = "All Time"
