@@ -200,7 +200,7 @@ def fresh_profiles(bot: Bot, job_queue: Job):
 
 @run_async
 def refresh_api_users(bot: Bot, job_queue: Job):
-    logging.info("API REFRESH type %s")
+    logging.info("Running refresh_api_users")
     try:
         p = Publisher()
         api_users = Session.query(User).filter(User.api_token is not None)
@@ -223,18 +223,20 @@ def refresh_api_users(bot: Bot, job_queue: Job):
 
 @run_async
 def report_after_battle(bot: Bot, job_queue: Job):
-    logging.info("API REFRESH type %s")
+    logging.info("report_after_battle - Running")
     try:
-        api_users = Session.query(User).filter(User.api_token is not None)
+        api_users = Session.query(User).join(SquadMember).join(Squad).filter(
+            User.api_token is not None,
+            SquadMember.approved == True,
+        ).all()
         for user in api_users:
-            logging.info("Updating data for %s", user.id)
-
-            if not user.is_squadmember:
-                return
+            logging.info("report_after_battle for user_id='%s'", user.id)
 
             text = MSG_USER_BATTLE_REPORT
             if user.is_api_profile_allowed and user.is_api_stock_allowed and \
                     user.setting_automated_report and user.api_token:
+
+                logging.info("Processing report_after_battle for user_id='%s'", user.id)
 
                 prev_character = Session.query(Character).filter_by(
                     user_id=user.id,
@@ -301,12 +303,15 @@ def report_after_battle(bot: Bot, job_queue: Job):
                 if user.character and user.character.characterClass == "Knight":
                     text += TRIBUTE_NOTE
 
-                send_async(bot,
-                           chat_id=user.id,
-                           text=text,
-                           parse_mode=ParseMode.HTML,
-                           reply_markup=None
-                           )
+                send_async(
+                    bot,
+                    chat_id=user.id,
+                    text=text,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=None
+                )
+            logging.info("END report_after_battle for user_id='%s'", user.id)
+        logging.info("END report_after_battle")
 
     except SQLAlchemyError as err:
         bot.logger.error(str(err))

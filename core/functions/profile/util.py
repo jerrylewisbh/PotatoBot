@@ -329,6 +329,7 @@ def send_settings(bot, update, user):
 
 # TODO: Review. Can't this be moved directly into User class and a getter?
 def get_latest_report(user_id):
+    logging.debug("get_latest_report for '%s'", user_id)
     now = datetime.now()
     if (now.hour < 7):
         now = now - timedelta(days=1)
