@@ -226,92 +226,102 @@ def refresh_api_users(bot: Bot, job_queue: Job):
 def report_after_battle(bot: Bot, job_queue: Job):
     logging.info("report_after_battle - Running")
     try:
-        api_users = Session.query(User).join(SquadMember).join(Squad).filter(
+        api_users = Session.query(User).join(SquadMember).join(Squad).join(Character).filter(
             User.api_token is not None,
             SquadMember.approved == True,
         ).all()
         for user in api_users:
-            logging.info("report_after_battle for user_id='%s'", user.id)
+            try:
+                logging.info("report_after_battle for user_id='%s'", user.id)
 
-            if user.is_api_profile_allowed and user.is_api_stock_allowed and \
-                    user.setting_automated_report and user.api_token:
+                if user.is_api_profile_allowed and user.is_api_stock_allowed and \
+                        user.setting_automated_report and user.api_token:
 
-                logging.info("Processing report_after_battle for user_id='%s'", user.id)
+                    logging.info("Processing report_after_battle for user_id='%s'", user.id)
 
-                # Get the oldest stock-report from after war for this comparison...
-                before_war_stock, after_war_stock = get_stock_before_after_war(user)
-                logging.debug("after_war_stock: %s", after_war_stock)
-                logging.debug("Second before_war_stock stock: %s", before_war_stock)
+                    # Get the oldest stock-report from after war for this comparison...
+                    before_war_stock, after_war_stock = get_stock_before_after_war(user)
+                    logging.debug("after_war_stock: %s", after_war_stock)
+                    logging.debug("Second before_war_stock stock: %s", before_war_stock)
 
-                # Get previous character and calculate difference in exp + gold
-                prev_character = Session.query(Character).filter(
-                    Character.user_id == user.id,
-                    Character.date < get_last_battle(),
-                ).order_by(Character.date.desc()).first()
+                    # Get previous character and calculate difference in exp + gold
+                    prev_character = Session.query(Character).filter(
+                        Character.user_id == user.id,
+                        Character.date < get_last_battle(),
+                    ).order_by(Character.date.desc()).first()
 
-                if not prev_character:
-                    logging.warning("Couldn't find previous Character! This should only happen for a user with only ONE character.")
-                    return
-                logging.debug("Previous character: %s", prev_character)
+                    if not prev_character:
+                        logging.warning("Couldn't find previous Character! This should only happen for a user with only ONE character.")
+                        return
+                    logging.debug("Previous character: %s", prev_character)
 
-                earned_exp = user.character.exp - prev_character.exp
-                earned_gold = user.character.gold - prev_character.gold
+                    earned_exp = user.character.exp - prev_character.exp
+                    earned_gold = user.character.gold - prev_character.gold
 
-                stock_diff = "<i>Missing before/after war data to generate comparison. Sorry.</i>"
-                gained_sum = 0
-                lost_sum = 0
-                diff_stock = 0
-                if before_war_stock and after_war_stock:
-                    resources_new, resources_old = stock_split(before_war_stock.stock, after_war_stock.stock)
-                    resource_diff_add, resource_diff_del = get_weighted_diff(resources_old, resources_new)
-                    stock_diff = stock_compare_text(before_war_stock.stock, after_war_stock.stock)
+                    stock_diff = "<i>Missing before/after war data to generate comparison. Sorry.</i>"
+                    gained_sum = 0
+                    lost_sum = 0
+                    diff_stock = 0
+                    if before_war_stock and after_war_stock:
+                        resources_new, resources_old = stock_split(before_war_stock.stock, after_war_stock.stock)
+                        resource_diff_add, resource_diff_del = get_weighted_diff(resources_old, resources_new)
+                        stock_diff = stock_compare_text(before_war_stock.stock, after_war_stock.stock)
 
-                    gained_sum = sum([x[1] for x in resource_diff_add])
-                    lost_sum = sum([x[1] for x in resource_diff_del])
-                    diff_stock = gained_sum + lost_sum
+                        gained_sum = sum([x[1] for x in resource_diff_add])
+                        lost_sum = sum([x[1] for x in resource_diff_del])
+                        diff_stock = gained_sum + lost_sum
 
-                # Only create a preliminary report if user hasn't already sent in a complete one.
-                existing_report = get_latest_report(user.id)
-                if not existing_report:
-                    r = Report()
-                    r.user = user
-                    r.name = user.character.name
-                    r.date = datetime.now()
-                    r.level = user.character.level
-                    r.attack = user.character.attack
-                    r.defence = user.character.defence
-                    r.castle = user.character.castle
-                    r.earned_exp = earned_exp
-                    r.earned_gold = earned_gold
-                    r.earned_stock = diff_stock
-                    r.preliminary_report = True
-                    Session.add(r)
-                    Session.commit()
+                    # Only create a preliminary report if user hasn't already sent in a complete one.
+                    existing_report = get_latest_report(user.id)
+                    if not existing_report:
+                        logging.debug("Report does not exist yet. Creating preliminary Report.")
+                        r = Report()
+                        r.user = user
+                        r.name = user.character.name
+                        r.date = datetime.now()
+                        r.level = user.character.level
+                        r.attack = user.character.attack
+                        r.defence = user.character.defence
+                        r.castle = user.character.castle
+                        r.earned_exp = earned_exp
+                        r.earned_gold = earned_gold
+                        r.earned_stock = diff_stock
+                        r.preliminary_report = True
+                        Session.add(r)
+                        Session.commit()
 
-                    text = format_report(r)
-                else:
-                    text = format_report(existing_report)
+                        text = format_report(r)
+                    else:
+                        text = format_report(existing_report)
 
-                stock_text = MSG_USER_BATTLE_REPORT_STOCK.format(
-                    MSG_CHANGES_SINCE_LAST_UPDATE,
-                    stock_diff,
-                    before_war_stock.date.strftime("%Y-%m-%d %H:%M:%S") if before_war_stock else "Missing",
-                    after_war_stock.date.strftime("%Y-%m-%d %H:%M:%S") if after_war_stock else "Missing",
-                )
-                text += stock_text
-                if user.character and user.character.characterClass == "Knight":
-                    text += TRIBUTE_NOTE
+                    stock_text = MSG_USER_BATTLE_REPORT_STOCK.format(
+                        MSG_CHANGES_SINCE_LAST_UPDATE,
+                        stock_diff,
+                        before_war_stock.date.strftime("%Y-%m-%d %H:%M:%S") if before_war_stock else "Missing",
+                        after_war_stock.date.strftime("%Y-%m-%d %H:%M:%S") if after_war_stock else "Missing",
+                    )
+                    text += stock_text
+                    if user.character and user.character.characterClass == "Knight":
+                        text += TRIBUTE_NOTE
 
-                send_async(
-                    bot,
-                    chat_id=user.id,
-                    text=text,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=None
-                )
-            logging.info("END report_after_battle for user_id='%s'", user.id)
+                    send_async(
+                        bot,
+                        chat_id=user.id,
+                        text=text,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=None
+                    )
+                logging.info("END report_after_battle for user_id='%s'", user.id)
+            except Exception:
+                try:
+                    Session.rollback()
+                except BaseException:
+                    logging.exception("Can't do rollback")
+
+                logging.exception("Exception in report_after_battle for user_id='%s'", user.id)
+
         logging.info("END report_after_battle")
 
     except SQLAlchemyError as err:
-        bot.logger.error(str(err))
+        logging.error(str(err))
         Session.rollback()
