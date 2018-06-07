@@ -375,7 +375,7 @@ def user_panel(bot: Bot, update: Update, user: User):
             if user.setting_automated_sniping and user.sniping_suspended:
                 welcome_text += "\n\n" + SNIPE_SUSPENDED_NOTICE
         else:
-            welcome_text = MSG_START_MEMBER_SQUAD.format(user.character.name)
+            welcome_text = MSG_START_MEMBER_SQUAD.format(user.character.name if user.character else "Soldier!")
 
     send_async(
         bot,
