@@ -173,11 +173,16 @@ def sniping_info(bot: Bot, update: Update):
         wrapper.request_trade_terminal_access(bot, user)
         return
 
-    text = get_snipe_settings(user)
+    current_settings = get_snipe_settings(user)
+    text = SNIPE_WELCOME.format(current_settings)
+
+    if user.setting_automated_sniping and user.sniping_suspended:
+        text += "\n\n" + SNIPE_SUSPENDED_NOTICE
+
     send_async(
         bot,
         chat_id=update.message.chat.id,
-        text=SNIPE_WELCOME.format(text),
+        text=text,
         parse_mode=ParseMode.MARKDOWN,
     )
 
@@ -369,9 +374,15 @@ def sniping(bot: Bot, update: Update, args=None):
 def list_items(bot: Bot, update: Update):
     logging.warning("list_items called by %s", update.message.chat.id)
 
-    items = Session.query(Item).order_by(Item.cw_id).all()
-
     text = ITEM_LIST
+
+    items = Session.query(Item).filter(Item.tradable == True).order_by(Item.cw_id).all()
+    text += "Tradable items:\n"
+    for item in items:
+        text += "`{} {}\n`".format(pad_string(item.cw_id, 5), pad_string(item.name, 5))
+
+    items = Session.query(Item).filter(Item.tradable == False).order_by(Item.cw_id).all()
+    text += "Not tradable via Exchange or new items:\n"
     for item in items:
         text += "`{} {}\n`".format(pad_string(item.cw_id, 5), pad_string(item.name, 5))
 
