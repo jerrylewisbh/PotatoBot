@@ -298,6 +298,7 @@ def revoke(bot: Bot, update: Update, user: User):
     user.api_token = None
     user.is_api_profile_allowed = False
     user.is_api_stock_allowed = False
+    user.is_api_trade_allowed = False
     Session.add(user)
     Session.commit()
 
