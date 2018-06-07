@@ -2,7 +2,7 @@
 
 import logging
 import re
-from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE, CWBOT_ID
+from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE, CWBOT_ID, TRADEBOT_ID
 from datetime import datetime, time, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
