@@ -6,12 +6,15 @@ from enum import Enum
 from telegram import Bot, Update, ParseMode
 
 from config import CASTLE
+from core.functions.common import StockType
 from core.functions.inline_markup import generate_profile_buttons, generate_settings_buttons
 from core.regexp import PROFILE, HERO, REPORT, PROFESSION, BUILD_REPORT, REPAIR_REPORT
+from core.state import get_last_battle
 from core.template import fill_char_template
 from core.texts import MSG_PROFILE_SHOW_FORMAT, MSG_PROFILE_ADMIN_INFO_ADDON, MSG_PROFILE_NOT_FOUND, \
-    MSG_NEEDS_API_ACCESS, MSG_NEEDS_TRADE_ACCESS, MSG_SETTINGS_INFO
-from core.types import Session, Character, Equip, Report, Profession, BuildReport, User
+    MSG_NEEDS_API_ACCESS, MSG_NEEDS_TRADE_ACCESS, MSG_SETTINGS_INFO, MSG_USER_BATTLE_REPORT_PRELIM, \
+    MSG_USER_BATTLE_REPORT_HEADER, MSG_USER_BATTLE_REPORT, MSG_USER_BATTLE_REPORT_FULL
+from core.types import Session, Character, Equip, Report, Profession, BuildReport, User, Stock
 from core.utils import send_async
 
 class BuildType(Enum):
@@ -326,9 +329,38 @@ def send_settings(bot, update, user):
             parse_mode=ParseMode.HTML
         )
 
+def format_report(report: Report) -> str:
+    """ Return a formatted battle report. """
+
+    print(report)
+    print(dir(report))
+    if report.preliminary_report:
+        print(report.castle,
+            report.name,
+            report.level,)
+        text = MSG_USER_BATTLE_REPORT_HEADER
+        text += MSG_USER_BATTLE_REPORT_PRELIM.format(
+            report.castle,
+            report.name,
+            report.level,
+        )
+    else:
+        text = MSG_USER_BATTLE_REPORT_FULL
+        text += MSG_USER_BATTLE_REPORT.format(
+            report.castle,
+            report.name,
+            report.attack,
+            report.defence,
+            report.level,
+            report.earned_exp,
+            report.earned_gold,
+            report.earned_stock
+        )
+
+    return text
 
 # TODO: Review. Can't this be moved directly into User class and a getter?
-def get_latest_report(user_id):
+def get_latest_report(user_id) -> Report:
     logging.debug("get_latest_report for '%s'", user_id)
     now = datetime.now()
     if (now.hour < 7):
@@ -337,3 +369,22 @@ def get_latest_report(user_id):
     existing_report = Session.query(Report).filter(Report.user_id == user_id, Report.date > time_from).first()
 
     return existing_report
+
+def get_stock_before_after_war(user: User) -> tuple:
+    """ Return the latest stock from before battle and the oldest after battle for comparison """
+
+    last_battle = get_last_battle()
+
+    before_battle = Session.query(Stock).filter(
+        Stock.user_id == user.id,
+        Stock.stock_type == StockType.Stock.value,
+        Stock.date < last_battle
+    ).order_by(Stock.date.desc()).first()
+
+    after_battle = Session.query(Stock).filter(
+        Stock.user_id == user.id,
+        Stock.stock_type == StockType.Stock.value,
+        Stock.date > last_battle
+    ).order_by(Stock.date.asc()).first()
+
+    return (before_battle, after_battle)

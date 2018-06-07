@@ -7,7 +7,7 @@ from core.functions.admins import (del_admin, del_global_admin, list_admins,
 from core.functions.ban import ban, unban
 from core.functions.common import admin_panel, help_msg, kick, ping
 from core.functions.profile import (char_show, find_by_character, find_by_id,
-                                    find_by_username, grant_access, revoke, user_panel)
+                                    find_by_username, grant_access, revoke, user_panel, show_report)
 from core.functions.squad import (add_squad, add_to_squad, del_squad,
                                   disable_reminders, disable_silence,
                                   disable_thorns, enable_reminders,
@@ -55,7 +55,6 @@ def add_commands(disp: Dispatcher):
     disp.add_handler(CommandHandler("kick", kick))
     disp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     disp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
-    disp.add_handler(CommandHandler("me", char_show))
     disp.add_handler(CommandHandler("grant_access", grant_access))
     disp.add_handler(CommandHandler("add_squad", add_squad))
     disp.add_handler(CommandHandler("del_squad", del_squad))
@@ -77,6 +76,9 @@ def add_commands(disp: Dispatcher):
     disp.add_handler(CommandHandler("revoke", revoke))
     disp.add_handler(CommandHandler("get_log", get_log))
 
+    # User/Profile specific
+    disp.add_handler(CommandHandler("me", char_show))
+    disp.add_handler(CommandHandler("report", show_report))
 
     # Exchange Stuff...
     disp.add_handler(CommandHandler('ah', auto_hide, pass_args=True))

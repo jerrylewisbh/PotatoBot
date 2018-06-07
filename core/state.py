@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import IntFlag, auto
 
 """ Helper for getting current game state(s)... """
@@ -74,3 +74,16 @@ def get_game_state(custom_time=None):
         state |= state_item
 
     return state
+
+def get_last_battle() -> datetime:
+    # Get last battletime
+    now = datetime.now()
+    if (now.hour < 7):
+        now = now - timedelta(days=1)
+
+    return now.replace(
+        hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24,
+        minute=0,
+        second=0,
+        microsecond=0
+    )

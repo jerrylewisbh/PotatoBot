@@ -98,6 +98,9 @@ User commands:
 /items - List known items
 /hide - Manually trigger hide
 /resume - Resume suspended sniping
+/s <itemID> <maxPrice> [<limit>] - Create snipe order
+/sr <itemID> - Remove sniping order
+/report - Show your last report (including stock change if API is enabled)
 
 
 Free text commands:
@@ -511,24 +514,25 @@ MSG_API_INCOMPLETE_SETUP = "It seems that you did not completely register. Pleas
 MSG_DISABLED_TRADING = "\nDisabling trading until then."
 
 MSG_API_SETUP_STEP_2_COMPLETE = "👌 Thanks for granting additional permissions!"
-MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock update:</b>"
+MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock updates:</b>\n"
 
-MSG_USER_BATTLE_REPORT = "<b>Your after action report:\n</b>"
-"""
-MSG_USER_BATTLE_REPORT_PRELIM = "{}{} ⚔:{} 🛡:{} "\
-                                "Lvl: {}\n"\
-                                "Your result on the battlefield:\n" \
-                                "🔥Exp: {}\n" \
-                                "💰Gold: {}\n" \
-                                "📦Stock: {}\n\n" \
-                                "<i>Note: Please send your /report after every battle!\n</i>"
-"""
-MSG_USER_BATTLE_REPORT_PRELIM = "{}{} - Lvl: {}\n\n"\
+MSG_USER_BATTLE_REPORT_HEADER = "<b>Your after action report:\n\n</b>"
+MSG_USER_BATTLE_REPORT_FULL = "<b>Your complete report:\n\n</b>"
+
+MSG_USER_BATTLE_REPORT= "{}{} ⚔:{} 🛡:{} "\
+                        "Lvl: {}\n"\
+                        "Your result on the battlefield:\n" \
+                        "🔥Exp: {}\n" \
+                        "💰Gold: {}\n" \
+                        "📦Stock: {}\n\n" \
+                        "<i>Note: Thanks for sending in your /report. Please do this after every battle!\n</i>"
+
+MSG_USER_BATTLE_REPORT_PRELIM = "{}{} Lvl: {}\n\n"\
                                 "<b>Please forward me your /report as soon as possible!\n</b>"
 
 TRIBUTE_NOTE = "\n\n<i>Note: Stock change also may contain tributes.</i>"
 
-MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n\n <i>{}: {}</i>"
+MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n\n <i>🕑 Last Updates: {} / {}</i>"
 
 MSG_SETTINGS_INFO = "<b>Your settings:</b>\n" \
                     "- Automatic stock report after war: {}\n" \
@@ -551,9 +555,8 @@ MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"
 
-
 # Exchange stuff
-HIDE_WELCOME = "*Note: This is highly experimental! Use at your own risk! Please report any issues into your squad!*\n\n" \
+HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
                "*With this feature enabled I will try to spend all your gold 15 Minutes before battle. I will remind " \
                "you 15 Minutes before battle so that you can abort it if needed*. \n\n" \
                "You can set your buy-preferences via `/ah <itemId> <prio> <maxPrice>`.\n" \
@@ -574,15 +577,15 @@ HIDE_BUY_UNLIMITED = "- P{}: Buy {} (`{}`)\n"
 HIDE_BUY_LIMITED = "- P{}: Buy {} (`{}`) for a maximum price of {} 💰\n"
 HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
 
-SNIPE_WELCOME = "*Note: This is highly experimental! Use at your own risk! Please report any issues into your squad!*\n\n" \
+SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
                "*Automated buying of items at a given price*\n" \
                "You can set your order via `/s <itemId> <price> [<numberOfItems>]`.\n\n" \
                "Examples: \n" \
                "- `/s 01 10  ` - Buy one Thread for 10💰 or less\n" \
                "- `/s 20 2 10` - Buy Leather for 2💰 or less until 10 are bought\n\n" \
-               "_How does it work?_: If your given item is sold for the price you specified I will try to buy it. " \
+               "_How does it work?_: If your given item is sold for or below the price you specified I will try to buy it. " \
                "It can take some time until this item is available for that price. It is also possible that other " \
-               "players are searching for the same item. In this case you need a little bit of luck although we try " \
+               "players are searching for the same item. In this case you need a little bit of luck, although we try " \
                "\"first came, first served\". You can issue `/items` to get a list of items. \n\n" \
                "To remove a buy order `/sr <itemId>`.\n\n" \
                "*Your current orders are:*\n" \

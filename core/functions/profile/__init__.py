@@ -8,9 +8,11 @@ from telegram import Bot, ParseMode, Update
 from config import CASTLE, EXT_ID, CWBOT_ID
 from core.decorators import admin_allowed, user_allowed, command_handler
 from core.functions.ban import ban_traitor
+from core.functions.common import stock_split, get_weighted_diff, stock_compare_text, StockType
 from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.functions.profile.util import parse_profile, parse_hero, parse_reports, parse_profession, parse_build_reports, \
-    parse_repair_reports, __send_user_with_settings, send_settings
+    parse_repair_reports, __send_user_with_settings, send_settings, get_latest_report, format_report, \
+    get_stock_before_after_war
 from core.functions.reply_markup import generate_user_markup
 from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION, PROFILE,
                          REPAIR_REPORT, REPORT)
@@ -20,7 +22,7 @@ from core.texts import *
 from core.texts import MSG_START_KNOWN, MSG_START_MEMBER_SQUAD_REGISTERED, SNIPE_SUSPENDED_NOTICE, \
     MSG_START_MEMBER_SQUAD
 from core.types import (BuildReport, Character, Report,
-                        User, Session)
+                        User, Session, Stock)
 from core.utils import send_async
 from cwmq import Publisher, wrapper
 
@@ -77,6 +79,9 @@ def repair_report_received(bot: Bot, update: Update, user: User):
 
 @command_handler(
     forward_from=CWBOT_ID,
+    allow_channel=True,
+    allow_group=True,
+    allow_private=True
 )
 def report_received(bot: Bot, update: Update, user: User):
     logging.info("Handling report for %s", user.id)
@@ -237,6 +242,59 @@ def char_show(bot: Bot, update: Update, user: User):
             reply_markup=btns,
             parse_mode=ParseMode.HTML
         )
+
+@command_handler()
+def show_report(bot: Bot, update: Update, user: User):
+    existing_report = get_latest_report(user.id)
+
+    # Nothing to show
+    if not existing_report:
+        text = "No report for this period!"
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            reply_markup=generate_user_markup(user_id=user.id),
+            parse_mode=ParseMode.HTML,
+        )
+    else:
+        text = format_report(existing_report)
+
+        # Treat every report up to 30 min after battle as one relevant for report-diff / Get the first one after battle
+        filter_from = existing_report.date.replace(minute=0, second=0, microsecond=0)
+
+        # Get the oldest stock-report from after war for this comparison...
+        before_war_stock, after_war_stock = get_stock_before_after_war(user)
+        logging.debug("after_war_stock: %s", after_war_stock)
+        logging.debug("Second before_war_stock stock: %s", before_war_stock)
+
+        stock_diff = "<i>Missing before/after war data to generate comparison. Sorry.</i>"
+
+        if before_war_stock and after_war_stock:
+            resources_new, resources_old = stock_split(before_war_stock.stock, after_war_stock.stock)
+            stock_diff = stock_compare_text(before_war_stock.stock, after_war_stock.stock)
+
+        print(before_war_stock.date)
+        print(after_war_stock.date)
+
+        stock_text = MSG_USER_BATTLE_REPORT_STOCK.format(
+            MSG_CHANGES_SINCE_LAST_UPDATE,
+            stock_diff,
+            before_war_stock.date.strftime("%Y-%m-%d %H:%M:%S"),
+            after_war_stock.date.strftime("%Y-%m-%d %H:%M:%S"),
+        )
+        text += stock_text
+        if user.character and user.character.characterClass == "Knight":
+            text += TRIBUTE_NOTE
+
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            reply_markup=generate_user_markup(user_id=user.id),
+            parse_mode=ParseMode.HTML,
+        )
+
 
 @command_handler()
 def revoke(bot: Bot, update: Update, user: User):

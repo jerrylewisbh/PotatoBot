@@ -358,7 +358,7 @@ def main():
 
     # THIS IS FOR DEBUGGING AND TESTING!
     if DEBUG:
-        updater.job_queue.run_once(report_after_battle, datetime.now() + timedelta(seconds=15))
+        updater.job_queue.run_once(report_after_battle, datetime.now() + timedelta(seconds=5))
 
     # Start the Bot
     updater.start_polling()

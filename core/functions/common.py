@@ -145,20 +145,25 @@ def stock_compare_text(old_stock, new_stock):
         resources_old, resources_new = stock_split(old_stock, new_stock)
         resource_diff_add, resource_diff_del = get_diff(resources_new, resources_old)
         msg = MSG_STOCK_COMPARE_HARVESTED
+        hits = 0
         if len(resource_diff_add):
             for key, val in resource_diff_add:
                 item = __get_item(key)
                 if item and item.pillagable:
+                    hits += 1
                     msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
-        else:
+        if hits == 0:
             msg += MSG_EMPTY
+
         msg += MSG_STOCK_COMPARE_LOST
+        hits = 0
         if len(resource_diff_del):
             for key, val in resource_diff_del:
                 item = __get_item(key)
                 if item and item.pillagable:
+                    hits += 1
                     msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
-        else:
+        if hits == 0:
             msg += MSG_EMPTY
         return msg
 

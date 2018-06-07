@@ -382,7 +382,7 @@ def list_items(bot: Bot, update: Update):
         text += "`{} {}\n`".format(pad_string(item.cw_id, 5), pad_string(item.name, 5))
 
     items = Session.query(Item).filter(Item.tradable == False).order_by(Item.cw_id).all()
-    text += "Not tradable via Exchange or new items:\n"
+    text += "\nNot tradable via Exchange or new items:\n"
     for item in items:
         text += "`{} {}\n`".format(pad_string(item.cw_id, 5), pad_string(item.name, 5))
 

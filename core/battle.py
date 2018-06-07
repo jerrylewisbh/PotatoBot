@@ -12,11 +12,12 @@ from core.functions.common import (MSG_CHANGES_SINCE_LAST_UPDATE,
                                    stock_split, TRIBUTE_NOTE)
 from core.functions.inline_keyboard_handling import send_order
 from core.functions.inline_markup import QueryType
-from core.functions.profile.util import get_latest_report
+from core.functions.profile.util import get_latest_report, format_report, get_stock_before_after_war
+from core.state import get_last_battle
 from core.texts import (MSG_MAIN_INLINE_BATTLE, MSG_REPORT_SUMMARY,
                         MSG_REPORT_SUMMARY_RATING, MSG_REPORT_TOTAL,
                         MSG_SQUAD_DELETE_OUTDATED,
-                        MSG_SQUAD_DELETE_OUTDATED_EXT, MSG_UPDATE_PROFILE)
+                        MSG_SQUAD_DELETE_OUTDATED_EXT, MSG_UPDATE_PROFILE, MSG_USER_BATTLE_REPORT_HEADER)
 from core.types import (Admin, Character, Order, Report, Session, Squad,
                         SquadMember, Stock, User)
 from core.utils import send_async
@@ -232,38 +233,38 @@ def report_after_battle(bot: Bot, job_queue: Job):
         for user in api_users:
             logging.info("report_after_battle for user_id='%s'", user.id)
 
-            text = MSG_USER_BATTLE_REPORT
             if user.is_api_profile_allowed and user.is_api_stock_allowed and \
                     user.setting_automated_report and user.api_token:
 
                 logging.info("Processing report_after_battle for user_id='%s'", user.id)
 
-                prev_character = Session.query(Character).filter_by(
-                    user_id=user.id,
-                ).order_by(Character.date.desc()).limit(1).offset(1).first()
+                # Get the oldest stock-report from after war for this comparison...
+                before_war_stock, after_war_stock = get_stock_before_after_war(user)
+                logging.debug("after_war_stock: %s", after_war_stock)
+                logging.debug("Second before_war_stock stock: %s", before_war_stock)
+
+                # Get previous character and calculate difference in exp + gold
+                prev_character = Session.query(Character).filter(
+                    Character.user_id == user.id,
+                    Character.date < get_last_battle(),
+                ).order_by(Character.date.desc()).first()
+
+                if not prev_character:
+                    logging.warning("Couldn't find previous Character! This should only happen for a user with only ONE character.")
+                    return
+                logging.debug("Previous character: %s", prev_character)
 
                 earned_exp = user.character.exp - prev_character.exp
                 earned_gold = user.character.gold - prev_character.gold
-
-                # Get the newest stock-report from before war for this comparison...
-                filter_latest = datetime.now().replace(minute=0, second=0, microsecond=0)
-                filter_cutoff = filter_latest - timedelta(minutes=30)
-
-                second_newest = Session.query(Stock).filter(
-                    Stock.user_id == user.id,
-                    Stock.stock_type == StockType.Stock.value,
-                    Stock.date < filter_latest,
-                    Stock.date > filter_cutoff
-                ).order_by(Stock.date.desc()).first()
 
                 stock_diff = "<i>Missing before/after war data to generate comparison. Sorry.</i>"
                 gained_sum = 0
                 lost_sum = 0
                 diff_stock = 0
-                if second_newest and user.stock.date >= filter_latest:
-                    resources_new, resources_old = stock_split(second_newest.stock, user.stock.stock)
+                if before_war_stock and after_war_stock:
+                    resources_new, resources_old = stock_split(before_war_stock.stock, after_war_stock.stock)
                     resource_diff_add, resource_diff_del = get_weighted_diff(resources_old, resources_new)
-                    stock_diff = stock_compare_text(second_newest.stock, user.stock.stock)
+                    stock_diff = stock_compare_text(before_war_stock.stock, after_war_stock.stock)
 
                     gained_sum = sum([x[1] for x in resource_diff_add])
                     lost_sum = sum([x[1] for x in resource_diff_del])
@@ -287,19 +288,17 @@ def report_after_battle(bot: Bot, job_queue: Job):
                     Session.add(r)
                     Session.commit()
 
-                # Text with prelim. battle report
-                text += MSG_USER_BATTLE_REPORT_PRELIM.format(
-                    user.character.castle, user.character.name, user.character.level
-                )
+                    text = format_report(r)
+                else:
+                    text = format_report(existing_report)
 
                 stock_text = MSG_USER_BATTLE_REPORT_STOCK.format(
                     MSG_CHANGES_SINCE_LAST_UPDATE,
                     stock_diff,
-                    MSG_LAST_UPDATE,
-                    user.stock.date.strftime("%Y-%m-%d %H:%M:%S")
+                    before_war_stock.date.strftime("%Y-%m-%d %H:%M:%S") if before_war_stock else "Missing",
+                    after_war_stock.date.strftime("%Y-%m-%d %H:%M:%S") if after_war_stock else "Missing",
                 )
                 text += stock_text
-
                 if user.character and user.character.characterClass == "Knight":
                     text += TRIBUTE_NOTE
 
