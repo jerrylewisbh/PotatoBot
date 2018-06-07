@@ -274,9 +274,6 @@ def show_report(bot: Bot, update: Update, user: User):
             resources_new, resources_old = stock_split(before_war_stock.stock, after_war_stock.stock)
             stock_diff = stock_compare_text(before_war_stock.stock, after_war_stock.stock)
 
-        print(before_war_stock.date)
-        print(after_war_stock.date)
-
         stock_text = MSG_USER_BATTLE_REPORT_STOCK.format(
             MSG_CHANGES_SINCE_LAST_UPDATE,
             stock_diff,

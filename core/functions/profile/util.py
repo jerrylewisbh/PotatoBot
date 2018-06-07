@@ -332,12 +332,7 @@ def send_settings(bot, update, user):
 def format_report(report: Report) -> str:
     """ Return a formatted battle report. """
 
-    print(report)
-    print(dir(report))
     if report.preliminary_report:
-        print(report.castle,
-            report.name,
-            report.level,)
         text = MSG_USER_BATTLE_REPORT_HEADER
         text += MSG_USER_BATTLE_REPORT_PRELIM.format(
             report.castle,
