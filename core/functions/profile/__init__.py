@@ -343,6 +343,7 @@ def handle_access_token(bot: Bot, update: Update, user: User):
 
     # For what is this code. Send the right response
     if user.api_request_id and user.api_grant_operation:
+        logging.debug("This is an ADDITIONAL operation")
         add_grant_req = {
             "action": "grantAdditionalOperation",
             "token": user.api_token,

@@ -43,7 +43,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
             Session.rollback()
             user = Session.query(User).filter_by(id=data['payload']['userId']).first()
 
-        if "action" not in data:
+        if data['action'] == "authAdditionalOperation" and data['result'] == "Ok":
             if data['payload']['operation'] in ("GetUserProfile", "GetStock", "TradeTerminal"):
                 logger.info("authAdditionalOperation - Response")
                 if data['result'] == "Ok" and user:
