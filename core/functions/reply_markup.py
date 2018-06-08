@@ -13,7 +13,8 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
                            USER_COMMAND_SETTINGS, USER_COMMAND_SQUAD,
                            USER_COMMAND_SQUAD_LEAVE,
                            USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
-                           USER_COMMAND_TOP, USER_COMMAND_EXCHANGE, USER_COMMAND_HIDE)
+                           USER_COMMAND_TOP, USER_COMMAND_EXCHANGE, USER_COMMAND_HIDE, STATISTICS_COMMAND_QUESTS)
+
 from core.types import Session, User
 
 Session()
@@ -77,7 +78,7 @@ def generate_top_markup():
 
 
 def generate_statistics_markup():
-    buttons = [[KeyboardButton(STATISTICS_COMMAND_EXP), KeyboardButton(STATISTICS_COMMAND_SKILLS)],
+    buttons = [[KeyboardButton(STATISTICS_COMMAND_EXP), KeyboardButton(STATISTICS_COMMAND_SKILLS), KeyboardButton(STATISTICS_COMMAND_QUESTS)],
                [KeyboardButton(USER_COMMAND_BACK)]]
     return ReplyKeyboardMarkup(buttons, True)
 

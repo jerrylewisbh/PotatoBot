@@ -37,7 +37,7 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
                            USER_COMMAND_REGISTER, USER_COMMAND_SETTINGS,
                            USER_COMMAND_SQUAD, USER_COMMAND_SQUAD_LEAVE,
                            USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
-                           USER_COMMAND_TOP, USER_COMMAND_HIDE, USER_COMMAND_EXCHANGE)
+                           USER_COMMAND_TOP, USER_COMMAND_HIDE, USER_COMMAND_EXCHANGE, STATISTICS_COMMAND_QUESTS)
 from core.decorators import user_allowed
 from core.exchange import sniping_info, hide_gold_info
 from core.functions.activity import (battle_activity, day_activity,
@@ -65,7 +65,7 @@ from core.functions.squad import (battle_attendance_show, battle_reports_show,
                                   open_hiring, remove_from_squad, squad_about,
                                   squad_list, squad_request)
 from core.functions.statistics import (exp_statistic, skill_statistic,
-                                       statistic_about)
+                                       statistic_about, quest_statistic)
 from core.functions.top import (attack_top, def_top, exp_top, top_about,
                                 week_battle_top, week_build_top)
 from core.functions.triggers import (del_trigger, disable_trigger_all,
@@ -249,6 +249,8 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                 exp_statistic(bot, update)
             elif text == STATISTICS_COMMAND_SKILLS.lower():
                 skill_statistic(bot, update)
+            elif text == STATISTICS_COMMAND_QUESTS.lower():
+                quest_statistic(bot, update)
             elif text == USER_COMMAND_SQUAD.lower():
                 squad_about(bot, update)
             elif text == USER_COMMAND_SQUAD_LEAVE.lower():
