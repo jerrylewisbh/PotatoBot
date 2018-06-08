@@ -1,7 +1,9 @@
 import logging
 
+import redis
 from sqlalchemy import func
 
+from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
 from core.texts import *
 from core.types import Session, Item, UserStockHideSetting, User, UserExchangeOrder
 from core.decorators import command_handler
@@ -488,20 +490,21 @@ def list_items(bot: Bot, update: Update, user: User, **kwargs):
 
 @command_handler()
 def hide_items(bot: Bot, update: Update, user: User, **kwargs):
+    return
+
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
 
     # Manually triggered hide....
     logging.info("hide_items called by %s", user.id)
-    if not user.is_tester:
-        logging.info("No hide_items allowed for %s", user.id)
-        return
-
-    user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user or not user.is_tester and not user.is_api_trade_allowed:
         logging.info("No user, not a tester or no trade API")
         return
+
+    #r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+    #hide_key = "{}_HIDE".format(user.id)
+    #r.set(hide_key, quests, ex=REDIS_TTL)
 
     # Request a profile update to get information about how much gold a user has.
     # This should complete in a few seconds. And we just schedule a the rest in a few seconds
