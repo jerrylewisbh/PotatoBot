@@ -4,13 +4,10 @@ import logging
 import redis
 from sqlalchemy import func
 
-from config import SUPER_ADMIN_ID, REDIS_SERVER, REDIS_PORT, REDIS_TTL
-from core.functions.common import MSG_DEAL_SOLD, MSG_API_INCOMPLETE_SETUP, MSG_DISABLED_TRADING
-from core.functions.reply_markup import generate_user_markup
-from core.texts import SNIPED_ITEM
-from core.types import Session, User, UserExchangeOrder, Item
+from config import REDIS_SERVER, REDIS_PORT, REDIS_TTL
+from core.functions.common import MSG_API_INCOMPLETE_SETUP, MSG_DISABLED_TRADING
+from core.types import Session, UserExchangeOrder, Item
 from cwmq import Publisher, wrapper
-from telegram import ParseMode
 
 Session()
 

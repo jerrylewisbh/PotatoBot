@@ -1,13 +1,13 @@
 from html import escape
 from json import loads
 
-import telegram
+from telegram import Bot, Message, ParseMode, Update
+
+from core.decorators import admin_allowed, user_allowed
 from core.texts import *
 from core.types import (AdminType, LocalTrigger, MessageType, Trigger,
                         check_admin, Session)
-from core.decorators import admin_allowed, user_allowed
 from core.utils import send_async, update_group
-from telegram import Bot, Message, ParseMode, Update
 
 Session()
 

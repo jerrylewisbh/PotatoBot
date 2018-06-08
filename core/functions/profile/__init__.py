@@ -1,15 +1,7 @@
-import logging
-import re
-from datetime import datetime, timedelta
-from enum import Enum
-
-from telegram import Bot, ParseMode, Update
-
-from config import CASTLE, EXT_ID, CWBOT_ID
-from core.decorators import admin_allowed, user_allowed, command_handler
+from config import EXT_ID, CWBOT_ID
+from core.decorators import admin_allowed, command_handler
 from core.functions.ban import ban_traitor
-from core.functions.common import stock_split, get_weighted_diff, stock_compare_text, StockType
-from core.functions.inline_keyboard_handling import generate_profile_buttons
+from core.functions.common import stock_split, stock_compare_text
 from core.functions.profile.util import *
 from core.functions.profile.util import __send_user_with_settings
 from core.functions.reply_markup import generate_user_markup
@@ -21,7 +13,7 @@ from core.texts import *
 from core.texts import MSG_START_KNOWN, MSG_START_MEMBER_SQUAD_REGISTERED, SNIPE_SUSPENDED_NOTICE, \
     MSG_START_MEMBER_SQUAD
 from core.types import (BuildReport, Character, Report,
-                        User, Session, Stock)
+                        User, Session)
 from core.utils import send_async
 from cwmq import Publisher, wrapper
 

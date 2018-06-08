@@ -2,20 +2,19 @@ import datetime
 import json
 import logging
 
+from sqlalchemy.exc import InterfaceError, InvalidRequestError
+from telegram import ParseMode, Bot
+
 from config import BOT_ONE_STEP_API
 from core.enums import CASTLE_MAP, CLASS_MAP
-from core.functions.common import (MSG_API_REQUIRE_ACCESS_PROFILE,
-                                   MSG_API_REQUIRE_ACCESS_STOCK,
-                                   MSG_API_REVOKED_PERMISSIONS,
+from core.functions.common import (MSG_API_REVOKED_PERMISSIONS,
                                    MSG_API_SETUP_STEP_1_COMPLETE,
                                    MSG_API_SETUP_STEP_2_COMPLETE,
-                                   stock_compare, MSG_API_REQUIRE_ACCESS_TRADE, SNIPE_SUSPENDED)
+                                   stock_compare, SNIPE_SUSPENDED)
 from core.functions.profile.util import get_required_xp
 from core.functions.reply_markup import generate_user_markup
 from core.types import Character, Session, User
 from cwmq import Publisher, wrapper
-from sqlalchemy.exc import InterfaceError, InvalidRequestError
-from telegram import ParseMode, Bot
 
 Session()
 p = Publisher()

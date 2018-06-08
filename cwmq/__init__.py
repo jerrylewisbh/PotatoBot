@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-import datetime
+import functools
+import json
+import logging
+import queue
 import uuid
 from threading import Thread
 
-import functools
+import pika
 
 from config import CW_OUT_Q, CW_IN_Q, CW_EXCHANGE, CW_URL, CW_DEALS_Q, CW_OFFERS_Q, CW_DIGEST_Q
-
-import json
-import pika
-import queue
-import logging
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)

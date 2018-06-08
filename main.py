@@ -2,10 +2,15 @@
 
 import logging
 import re
-from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE, CWBOT_ID, TRADEBOT_ID
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
+from telegram import Bot, ParseMode, Update
+from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
+                          Updater, MessageQueue)
+from telegram.ext.dispatcher import run_async
+
+from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE, CWBOT_ID, TRADEBOT_ID
 from core.battle import report_after_battle
 from core.bot import MQBot
 from core.chat_commands import (CC_ADMIN_LIST, CC_ADMINS, CC_ALLOW_PIN_ALL,
@@ -33,6 +38,7 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
                            USER_COMMAND_SQUAD, USER_COMMAND_SQUAD_LEAVE,
                            USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
                            USER_COMMAND_TOP, USER_COMMAND_HIDE, USER_COMMAND_EXCHANGE)
+from core.decorators import user_allowed
 from core.exchange import sniping_info, hide_gold_info
 from core.functions.activity import (battle_activity, day_activity,
                                      week_activity)
@@ -77,18 +83,12 @@ from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
 from core.state import GameState, get_game_state
 from core.texts import MSG_IN_DEV
 from core.types import Admin, Squad, User, Session
-from core.decorators import user_allowed
 from core.utils import create_or_update_user, send_async
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler
 from cwmq.handler.digest import digest_handler
 from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
-from telegram import Bot, ParseMode, Update
-from telegram.error import TelegramError
-from telegram.ext import (CallbackQueryHandler, Filters, InlineQueryHandler,
-                          MessageHandler, Updater, MessageQueue)
-from telegram.ext.dispatcher import run_async
 
 Session()
 

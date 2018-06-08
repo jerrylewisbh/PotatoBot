@@ -3,7 +3,15 @@ import logging
 from datetime import datetime, timedelta
 from json import loads
 
+from sqlalchemy import and_
+from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
+                      InlineQueryResultArticle, InputTextMessageContent,
+                      ParseMode, TelegramError, Update)
+from telegram.ext import Job, JobQueue
+from telegram.ext.dispatcher import run_async
+
 from config import WAITING_ROOM_LINK
+from core.decorators import admin_allowed, user_allowed
 from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Castle, Icons
 from core.functions.admins import del_adm
 from core.functions.common import StockType, stock_compare_text
@@ -17,9 +25,9 @@ from core.functions.inline_markup import (QueryType, generate_forward_markup,
                                           generate_order_groups_markup,
                                           generate_other_reports,
                                           generate_profile_buttons,
-                                          generate_settings_buttons,
                                           generate_squad_list,
                                           generate_squad_members)
+from core.functions.profile.util import send_settings
 from core.functions.reply_markup import generate_user_markup
 from core.functions.squad import leave_squad
 from core.functions.top import (global_battle_top, global_build_top,
@@ -31,15 +39,7 @@ from core.types import (Admin, AdminType, Location, MessageType, Order,
                         OrderCleared, OrderGroup, OrderGroupItem, Report,
                         Squad, SquadMember, Stock, User, UserQuest,
                         Session)
-from core.decorators import admin_allowed, user_allowed
 from core.utils import create_or_update_user, send_async, update_group
-from sqlalchemy import and_
-from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
-                      InlineQueryResultArticle, InputTextMessageContent,
-                      ParseMode, TelegramError, Update)
-from telegram.ext import Job, JobQueue
-from telegram.ext.dispatcher import run_async
-from core.functions.profile.util import send_settings
 
 LOGGER = logging.getLogger('MyApp')
 

@@ -45,7 +45,6 @@ ENGINE = create_engine(DB,
                        max_overflow=50,
                        isolation_level="READ UNCOMMITTED")
 
-# FIX: имена констант?
 LOGGER = logging.getLogger('sqlalchemy.engine')
 Base = declarative_base()
 Session = scoped_session(sessionmaker(bind=ENGINE))
@@ -530,6 +529,7 @@ def check_admin(update, adm_type, allowed_types=()):
     if adm_type == AdminType.NOT_ADMIN:
         allowed = True
     else:
+        Session()
         admins = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         for adm in admins:
             if (AdminType(adm.admin_type) in allowed_types or adm.admin_type <= adm_type.value) and \

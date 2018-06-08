@@ -1,11 +1,9 @@
-from html import escape
-
 import telegram
-
-from core.types import Group, Session, User
 from telegram import Bot
 from telegram.error import TelegramError
 from telegram.ext.dispatcher import run_async
+
+from core.types import Group, Session, User
 
 Session()
 

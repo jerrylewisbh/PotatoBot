@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-from config import CASTLE, GOVERNMENT_CHAT, DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
 from datetime import datetime, timedelta
 
+from sqlalchemy import and_, func, tuple_
+from sqlalchemy.exc import SQLAlchemyError
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram.error import TelegramError
+from telegram.ext import Job
+from telegram.ext.dispatcher import run_async
+
+from config import CASTLE, GOVERNMENT_CHAT, DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
 from core.functions.common import (MSG_CHANGES_SINCE_LAST_UPDATE,
-                                   MSG_LAST_UPDATE, MSG_USER_BATTLE_REPORT,
-                                   MSG_USER_BATTLE_REPORT_PRELIM,
-                                   MSG_USER_BATTLE_REPORT_STOCK, StockType,
-                                   get_weighted_diff, stock_compare_text,
+                                   MSG_USER_BATTLE_REPORT_STOCK, get_weighted_diff, stock_compare_text,
                                    stock_split, TRIBUTE_NOTE)
 from core.functions.inline_keyboard_handling import send_order
 from core.functions.inline_markup import QueryType
@@ -17,17 +21,11 @@ from core.state import get_last_battle
 from core.texts import (MSG_MAIN_INLINE_BATTLE, MSG_REPORT_SUMMARY,
                         MSG_REPORT_SUMMARY_RATING, MSG_REPORT_TOTAL,
                         MSG_SQUAD_DELETE_OUTDATED,
-                        MSG_SQUAD_DELETE_OUTDATED_EXT, MSG_UPDATE_PROFILE, MSG_USER_BATTLE_REPORT_HEADER)
+                        MSG_SQUAD_DELETE_OUTDATED_EXT, MSG_UPDATE_PROFILE)
 from core.types import (Admin, Character, Order, Report, Session, Squad,
-                        SquadMember, Stock, User)
+                        SquadMember, User)
 from core.utils import send_async
 from cwmq import Publisher
-from sqlalchemy import and_, func, tuple_
-from sqlalchemy.exc import SQLAlchemyError
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
-from telegram.error import TelegramError
-from telegram.ext import Job
-from telegram.ext.dispatcher import run_async
 
 Session()
 

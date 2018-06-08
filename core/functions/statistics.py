@@ -1,20 +1,20 @@
 import os
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 from math import pi
 
 import matplotlib.pyplot as plot
 import pandas as pd
+from sqlalchemy import func, tuple_
+from telegram import Bot, Update
+
+from core.decorators import user_allowed
 from core.functions.reply_markup import generate_statistics_markup
 from core.texts import (MSG_DATE_FORMAT, MSG_DAY_PLURAL1, MSG_DAY_PLURAL2,
                         MSG_DAY_SINGLE, MSG_NO_CLASS, MSG_PLOT_DESCRIPTION,
                         MSG_PLOT_DESCRIPTION_SKILL, MSG_STATISTICS_ABOUT,
                         PLOT_X_LABEL, PLOT_Y_LABEL)
 from core.types import Character, Profession, Session
-from core.decorators import user_allowed
 from core.utils import send_async
-from sqlalchemy import text as text_
-from sqlalchemy import func, tuple_
-from telegram import Bot, Update
 
 Session()
 

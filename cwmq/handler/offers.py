@@ -5,14 +5,10 @@ import redis
 from sqlalchemy import func
 
 from config import SUPER_ADMIN_ID, REDIS_SERVER, REDIS_PORT, REDIS_TTL
-from core.functions.common import MSG_DEAL_SOLD, MSG_API_REVOKED_PERMISSIONS, MSG_API_INCOMPLETE_SETUP, \
+from core.functions.common import MSG_API_INCOMPLETE_SETUP, \
     MSG_DISABLED_TRADING
-from core.functions.reply_markup import generate_user_markup
-from core.types import Session, User, Item, UserExchangeOrder
+from core.types import Session, Item, UserExchangeOrder
 from cwmq import Publisher, wrapper
-from telegram import ParseMode
-
-from cwmq.handler.profiles import api_access_revoked
 
 Session()
 p = Publisher()

@@ -1,14 +1,14 @@
 import logging
-from config import ACADEM_CHAT_ID, CASTLE, CASTLE_CHAT_ID
 from time import time
 
-from core.functions.newbies import newbie
+from telegram import Bot, Update
+
+from config import ACADEM_CHAT_ID, CASTLE, CASTLE_CHAT_ID
+from core.decorators import admin_allowed, user_allowed
 from core.template import fill_template
 from core.texts import *
 from core.types import (Admin, AdminType, WelcomeMsg, Wellcomed, Session)
-from core.decorators import admin_allowed, user_allowed
 from core.utils import create_or_update_user, send_async, update_group
-from telegram import Bot, Update
 
 last_welcome = 0
 
