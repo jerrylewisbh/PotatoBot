@@ -18,7 +18,7 @@ from telegram import Bot, Update
 
 TOP_START_DATE = datetime(2017, 12, 11)
 
-Session();
+Session()
 
 @user_allowed
 def top_about(bot: Bot, update: Update):

@@ -1,5 +1,5 @@
 import logging
-from functools import partial, wraps
+from functools import wraps
 
 from sqlalchemy.exc import SQLAlchemyError
 from telegram import Bot, Update

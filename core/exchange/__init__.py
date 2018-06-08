@@ -1,7 +1,5 @@
 import logging
 
-from core.functions.inline_keyboard_handling import (generate_group_manage,
-                                                     generate_groups_manage)
 from core.texts import *
 from core.types import Session, Item, UserStockHideSetting, User, UserExchangeOrder
 from core.decorators import user_allowed

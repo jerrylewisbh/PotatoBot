@@ -218,12 +218,12 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 # FIXME: DO NOT SEND STOCK CHANGE FOR THE TIME BEEING
                 return
 
-                dispatcher.bot.send_message(
-                    user.id,
-                    stock_info,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=generate_user_markup(user.id)
-                )
+                #dispatcher.bot.send_message(
+                #    user.id,
+                #    stock_info,
+                #    parse_mode=ParseMode.HTML,
+                #    reply_markup=generate_user_markup(user.id)
+                #)
         elif data['action'] == "wantToBuy":
             if data['result'] == "InvalidToken":
                 # Revoked token?

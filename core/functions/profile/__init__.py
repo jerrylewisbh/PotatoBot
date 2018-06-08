@@ -211,9 +211,9 @@ def char_show(bot: Bot, update: Update, user: User):
         except wrapper.APIMissingAccessRightsException as ex:
             logging.warning("Missing permissions for User '%s': %s", user.id, ex)
             if str(ex) == "User has not given permission for stock":
-                wrapper.request_stock_access()
+                wrapper.request_stock_access(bot, user)
             elif str(ex) == "User has not given permission for profile":
-                wrapper.request_profile_access()
+                wrapper.request_profile_access(bot, user)
         except wrapper.APIMissingUserException:
             logging.error("No/Invalid user for create_want_to_uy specified")
 
