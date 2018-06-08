@@ -555,6 +555,15 @@ MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"
 
+MSG_QUEST_7_DAYS = "*In the last seven days you told me about the following adventures:*\n\n"
+MSG_QUEST_STAT_LOCATION = "*{} ({})*: \n" \
+                          "Avg: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n" \
+                          "Ttl: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n"
+
+MSG_QUEST_OVERALL = "\n\n*Overall:*\n\n"
+
+MSG_QUEST_STAT = "\n\nJust continue sending me your quest reports.\n\n_Hint: Overall statistics, item details, etc. coming soonish..._"
+
 # Exchange stuff
 HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
                "*With this feature enabled I will try to spend all your gold 15 Minutes before battle. I will remind " \
