@@ -13,7 +13,7 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
                            USER_COMMAND_SETTINGS, USER_COMMAND_SQUAD,
                            USER_COMMAND_SQUAD_LEAVE,
                            USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
-                           USER_COMMAND_TOP, USER_COMMAND_EXCHANGE)
+                           USER_COMMAND_TOP, USER_COMMAND_EXCHANGE, USER_COMMAND_HIDE)
 from core.types import Session, User
 
 Session()
@@ -46,7 +46,7 @@ def generate_user_markup(user_id=None):
         # Exchange stuff...
         # STILL IN TESTING
         if user.api_token and user.is_api_profile_allowed and user.is_tester:
-            #user_menu.append(KeyboardButton(USER_COMMAND_HIDE))
+            user_menu.append(KeyboardButton(USER_COMMAND_HIDE))
             user_menu.append(KeyboardButton(USER_COMMAND_EXCHANGE))
 
         # Normal squad stuff...
