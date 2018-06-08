@@ -252,7 +252,7 @@ def report_after_battle(bot: Bot, job_queue: Job):
 
                     if not prev_character:
                         logging.warning("Couldn't find previous Character! This should only happen for a user with only ONE character.")
-                        return
+                        continue
                     logging.debug("Previous character: %s", prev_character)
 
                     earned_exp = user.character.exp - prev_character.exp
