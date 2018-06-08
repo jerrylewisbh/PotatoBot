@@ -361,6 +361,9 @@ class Character(Base):
 
     user = relationship('User', back_populates='characters')
 
+    def __str__(self):
+        return "<Character: '{}', level='{}', date='{}'>".format(self.name, self.level, self.date)
+
 
 class BuildReport(Base):
     __tablename__ = 'build_reports'

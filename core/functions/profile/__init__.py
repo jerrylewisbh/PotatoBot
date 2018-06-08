@@ -10,9 +10,7 @@ from core.decorators import admin_allowed, user_allowed, command_handler
 from core.functions.ban import ban_traitor
 from core.functions.common import stock_split, get_weighted_diff, stock_compare_text, StockType
 from core.functions.inline_keyboard_handling import generate_profile_buttons
-from core.functions.profile.util import parse_profile, parse_hero, parse_reports, parse_profession, parse_build_reports, \
-    parse_repair_reports, __send_user_with_settings, send_settings, get_latest_report, format_report, \
-    get_stock_before_after_war
+from core.functions.profile.util import *
 from core.functions.reply_markup import generate_user_markup
 from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION, PROFILE,
                          REPAIR_REPORT, REPORT)

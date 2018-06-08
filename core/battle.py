@@ -276,7 +276,7 @@ def report_after_battle(bot: Bot, job_queue: Job):
                     if not existing_report:
                         logging.debug("Report does not exist yet. Creating preliminary Report.")
                         r = Report()
-                        r.user = user
+                        r.user_id = user.id
                         r.name = user.character.name
                         r.date = datetime.now()
                         r.level = user.character.level
