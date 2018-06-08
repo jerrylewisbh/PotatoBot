@@ -530,14 +530,13 @@ def check_admin(update, adm_type, allowed_types=()):
     if adm_type == AdminType.NOT_ADMIN:
         allowed = True
     else:
-        Session()
-        admins = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        admins = Session().query(Admin).filter_by(user_id=update.message.from_user.id).all()
         for adm in admins:
             if (AdminType(adm.admin_type) in allowed_types or adm.admin_type <= adm_type.value) and \
                     (adm.admin_group in [0, update.message.chat.id] or
                      update.message.chat.id == update.message.from_user.id):
                 if adm.admin_group != 0:
-                    group = Session.query(Group).filter_by(id=adm.admin_group).first()
+                    group = Session().query(Group).filter_by(id=adm.admin_group).first()
                     if group and group.bot_in_group:
                         allowed = True
                         break
@@ -548,7 +547,7 @@ def check_admin(update, adm_type, allowed_types=()):
 
 
 def check_ban(update):
-    ban = Session.query(Ban).filter_by(user_id=update.message.from_user.id
+    ban = Session().query(Ban).filter_by(user_id=update.message.from_user.id
                                        if update.message else update.callback_query.from_user.id).first()
     if ban is None or ban.to_date < datetime.now():
         return True
@@ -564,8 +563,9 @@ def log(user_id, chat_id, func_name, args):
         log_item.chat_id = chat_id
         log_item.func_name = func_name
         log_item.args = args
-        Session.add(log_item)
-        Session.commit()
+        s = Session()
+        s.add(log_item)
+        s.commit()
         #Session.remove()
 
 
