@@ -8,16 +8,17 @@ from math import pi
 import matplotlib.pyplot as plot
 import pandas as pd
 from sqlalchemy import func, tuple_
-from telegram import Bot, Update
+from telegram import Bot, Update, ParseMode
 
-from core.decorators import user_allowed
+from core.decorators import user_allowed, command_handler
 from core.functions.reply_markup import generate_statistics_markup
 from core.texts import (MSG_DATE_FORMAT, MSG_DAY_PLURAL1, MSG_DAY_PLURAL2,
                         MSG_DAY_SINGLE, MSG_NO_CLASS, MSG_PLOT_DESCRIPTION,
                         MSG_PLOT_DESCRIPTION_SKILL, MSG_STATISTICS_ABOUT,
-                        PLOT_X_LABEL, PLOT_Y_LABEL)
+                        PLOT_X_LABEL, PLOT_Y_LABEL, MSG_QUEST_7_DAYS, MSG_QUEST_OVERALL, MSG_QUEST_STAT,
+                        MSG_QUEST_STAT_LOCATION)
 
-from core.types import Character, Profession, UserQuest, Location, Session
+from core.types import Character, Profession, UserQuest, Location, Session, User, UserQuestItem, Item
 from core.utils import send_async
 
 Session()
@@ -30,12 +31,71 @@ def statistic_about(bot: Bot, update: Update):
                text=MSG_STATISTICS_ABOUT,
                reply_markup=markup)
 
+def relative_details(user: User, from_date: datetime):
+    locations = Session.query(Location).all()
+    text = ""
+    for location in locations:
+        base_stats = Session.query(
+            func.count(UserQuest.id).label('count'),
+            func.sum(UserQuest.exp).label("exp_sum"),
+            func.avg(UserQuest.exp).label("exp_avg"),
+            func.sum(UserQuest.gold).label("gold_sum"),
+            func.avg(UserQuest.gold).label("gold_avg")
+        ).filter(
+            UserQuest.user_id == user.id,
+            UserQuest.location_id == location.id,
+            UserQuest.from_date > from_date
+        ).first()
+
+        item_stats = Session.query(
+            func.sum(UserQuestItem.count).label('item_sum'),
+            func.avg(UserQuestItem.count).label('item_avg')
+        ).join(UserQuest).filter(
+            UserQuest.user_id == user.id,
+            UserQuest.location == location,
+            UserQuest.from_date > from_date
+        ).first()
+
+        print(item_stats)
+        print(base_stats)
+
+        text += MSG_QUEST_STAT_LOCATION.format(
+            location.name,
+            base_stats.count if base_stats.count else 0,
+            base_stats.exp_avg if base_stats.exp_avg else 0,
+            base_stats.gold_avg if base_stats.gold_avg else 0,
+            item_stats.item_avg if item_stats.item_avg else 0,
+            base_stats.exp_sum if base_stats.exp_sum else 0,
+            base_stats.gold_sum if base_stats.gold_sum else 0,
+            item_stats.item_sum if item_stats.item_sum else 0,
+        )
+    return text
+
+@command_handler()
+def quest_statistic(bot: Bot, update: Update, user: User):
+    logging.info("User '%s' called quest_statistic", user.id)
+
+    text = MSG_QUEST_7_DAYS
+    text += relative_details(user, datetime.utcnow() - timedelta(days=30))
+    text += MSG_QUEST_OVERALL
+    text += relative_details(user, datetime.utcnow() - timedelta(days=365 * 30))
+    text += MSG_QUEST_STAT
+
+    print(text)
+
+    bot.sendMessage(
+        chat_id=user.id,
+        text=text,
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=generate_statistics_markup(),
+    )
+
 @user_allowed
-def quest_statistic(bot: Bot, update: Update, session):
+def quest_statistic_old(bot: Bot, update: Update):
     logging.debug("Quest statistics")
 
     # Render for every level we know...
-    max_level = session.query(func.max(UserQuest.level)).first()
+    max_level = Session.query(func.max(UserQuest.level)).first()
     if not max_level:
         return
 
@@ -46,7 +106,7 @@ def quest_statistic(bot: Bot, update: Update, session):
 
     bars = []
     logging.warning("Getting stats for")
-    stats = session.query(
+    stats = Session.query(
         UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
     ).join(Location).filter(UserQuest.location_id == 13).order_by(UserQuest.level).group_by(UserQuest.level).all()
 
@@ -106,7 +166,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
     logging.debug("Quest statistics")
 
     # Render for every level we know...
-    max_level = session.query(func.max(UserQuest.level)).first()
+    max_level = Session.query(func.max(UserQuest.level)).first()
     if not max_level:
         return
 
@@ -124,7 +184,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
     bars = []
     for counter, daytime in enumerate(times, start=1):
         logging.warning("Getting stats for %s", daytime)
-        stats = session.query(
+        stats = Session.query(
             UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
         ).join(Location).filter(UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(UserQuest.level).group_by(UserQuest.level).all()
 
@@ -183,11 +243,11 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
 
 
 @user_allowed
-def quest_statistic_split(bot: Bot, update: Update, session):
+def quest_statistic_split(bot: Bot, update: Update):
     logging.debug("Quest statistics")
 
     # Render for every level we know...
-    max_level = session.query(func.max(UserQuest.level)).first()
+    max_level = Session.query(func.max(UserQuest.level)).first()
     if not max_level:
         return
 
@@ -205,7 +265,7 @@ def quest_statistic_split(bot: Bot, update: Update, session):
     bars = []
     for counter, daytime in enumerate(times, start=1):
         logging.warning("Getting stats for %s", daytime)
-        stats = session.query(
+        stats = Session.query(
             UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
         ).join(Location).filter(UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(UserQuest.level).group_by(UserQuest.level).all()
 
@@ -259,11 +319,11 @@ def quest_statistic_split(bot: Bot, update: Update, session):
     os.remove(filename)
 
 @user_allowed
-def quest_statistic_one(bot: Bot, update: Update, session):
+def quest_statistic_one(bot: Bot, update: Update):
     logging.debug("Quest statistics")
 
     # Render for every level we know...
-    max_level = session.query(func.max(UserQuest.level)).first()
+    max_level = Session.query(func.max(UserQuest.level)).first()
     if not max_level:
         return
 
@@ -272,7 +332,7 @@ def quest_statistic_one(bot: Bot, update: Update, session):
     width = 0.5
 
     logging.warning("Getting stats")
-    stats = session.query(
+    stats = Session.query(
         UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
     ).join(Location).filter(UserQuest.location_id == 13).order_by(UserQuest.level).group_by(UserQuest.level).all()
 

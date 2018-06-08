@@ -4,7 +4,7 @@ from sqlalchemy import func
 
 from core.texts import *
 from core.types import Session, Item, UserStockHideSetting, User, UserExchangeOrder
-from core.decorators import user_allowed
+from core.decorators import command_handler
 from core.utils import send_async, pad_string
 from telegram import Bot, Update, ParseMode
 
@@ -15,53 +15,56 @@ Session()
 LIMIT_SNIPES = 3
 LIMIT_ORDER_AMOUNT = 50
 
-def get_snipe_settings(user):
-    logging.warning("Getting UserExchangeOrder for %s", user.id)
-    if not user:
-        # TODO: Message?
-        return
 
-    text = ""
-    if not user.sniping_settings:
-        text = "_Nothing configured yet._"
-        return text
+def get_snipe_settings(user: User):
+    logging.warning("Getting UserExchangeOrder for %s", user.id)
+
+    settings = user.sniping_settings.all()
+    if not settings:
+        return "_Nothing configured yet._"
     else:
-        for order in user.sniping_settings.all():
+        text = ""
+        for order in settings:
             if order.outstanding_order:
-                text += SNIPE_BUY_MULTIPLE.format(order.initial_order, order.item.name, order.item.cw_id, order.max_price, order.outstanding_order)
+                text += SNIPE_BUY_MULTIPLE.format(
+                    order.initial_order,
+                    order.item.name,
+                    order.item.cw_id,
+                    order.max_price,
+                    order.outstanding_order
+                )
             else:
                 text += SNIPE_BUY_ONE.format(order.item.name, order.item.cw_id, order.max_price)
+        return text
 
-    return text
 
 def get_autohide_settings(user):
     logging.warning("Getting UserStockHideSetting for %s", user.id)
-    if not user:
-        # TODO: Message?
-        return
 
-    text = ""
-    if not user.hide_settings:
-        text = "_Nothing configured yet._"
-        return text
+    settings = user.hide_settings.order_by("priority").all()
+    if not settings:
+        return "_Nothing configured yet._"
     else:
-        for order in user.hide_settings.order_by("priority").all():
+        text = ""
+        for order in settings:
             if not order.max_price:
                 text += HIDE_BUY_UNLIMITED.format(order.priority, order.item.name, order.item.cw_id)
             else:
                 text += HIDE_BUY_LIMITED.format(order.priority, order.item.name, order.item.cw_id, order.max_price)
+        return text
 
-    return text
 
-
-@user_allowed
-def hide_gold_info(bot: Bot, update: Update):
+@command_handler()
+def hide_gold_info(bot: Bot, update: Update, user: User):
     logging.warning("hide_gold_info called by %s", update.message.chat.id)
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
 
     if not user.is_api_trade_allowed:
-        logging.info("TradeTerminal is not allowed for user_id=%s. Gold hiding not possible. Requesting access", user.id)
+        logging.info(
+            "TradeTerminal is not allowed for user_id=%s. Gold hiding not possible. Requesting access",
+            user.id
+        )
         wrapper.request_trade_terminal_access(bot, user)
         return
 
@@ -73,11 +76,13 @@ def hide_gold_info(bot: Bot, update: Update):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-@user_allowed
-def auto_hide(bot: Bot, update: Update, args=None):
+
+@command_handler()
+def auto_hide(bot: Bot, update: Update, user: User, **kwargs):
+    args = None
+    if "args" in kwargs:
+        args = kwargs["args"]
     logging.warning("auto_hide called by %s - args='%s'", update.message.chat.id, args)
-    if update.message.chat.type != 'private':
-        return
 
     if len(args) < 1 or len(args) > 3:
         send_async(
@@ -88,12 +93,40 @@ def auto_hide(bot: Bot, update: Update, args=None):
         )
         return
 
+    item = get_item_by_cw_id(args[0])
+    if not item:
+        logging.debug("[Hide] Wrong cw_id='%s' was given by user_id='%s'", args[0], user.id)
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=HIDE_WRONG_ITEM.format(args[0]),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        return
+
+    if len(args) == 1:
+        logging.debug("[Hide] One argument, assuming delete")
+        orders = Session.query(UserStockHideSetting).filter(
+            UserStockHideSetting.user == user,
+            UserStockHideSetting.item == item
+        ).delete()
+        Session.commit()
+
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=HIDE_REMOVED.format(item.name),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+
+        return
+
     max_price = None
     if len(args) == 3:
-        logging.warning("Three arguments, assuming UPPER max_price")
+        logging.debug("[Hide] Three arguments, assuming UPPER max_price")
         try:
             max_price = int(args[2])
-        except:
+        except Exception:
             send_async(
                 bot,
                 chat_id=update.message.chat.id,
@@ -105,7 +138,8 @@ def auto_hide(bot: Bot, update: Update, args=None):
     priority = None
     try:
         priority = int(args[1])
-    except:
+    except Exception:
+        logging.debug("[Hide] Invalid cw_id was given by user_id='%s'", user.id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -114,8 +148,9 @@ def auto_hide(bot: Bot, update: Update, args=None):
         )
         return
 
-    item = Session.query(Item).filter(Item.cw_id == args[0]).first()
+    item = get_item_by_cw_id(args[0])
     if not item:
+        logging.debug("[Hide] Wrong cw_id='%s' was given by user_id='%s'", args[0], user.id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -124,6 +159,7 @@ def auto_hide(bot: Bot, update: Update, args=None):
         )
         return
     elif not item.tradable:
+        logging.debug("[Hide] CW item is with cw_id='%s' given by user_id='%s' is not tradable", user.id, args[0])
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -134,6 +170,7 @@ def auto_hide(bot: Bot, update: Update, args=None):
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user or not item or not priority:
+        logging.debug("[Hide] Wrong arguments user_id='%s', args='%s'", user.id, args)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -148,7 +185,13 @@ def auto_hide(bot: Bot, update: Update, args=None):
     ).first()
 
     if not ushs:
-        logging.warning("New StockHideSetting")
+        logging.info(
+            "New stock-hiding option by user_id='%s', priority='%s', cw_id='%s', max_price='%s'",
+            user.id,
+            priority,
+            item.cw_id,
+            max_price
+        )
         ushs = UserStockHideSetting()
 
     ushs.user = user
@@ -158,7 +201,6 @@ def auto_hide(bot: Bot, update: Update, args=None):
     Session.add(ushs)
     Session.commit()
 
-
     send_async(
         bot,
         chat_id=update.message.chat.id,
@@ -166,8 +208,18 @@ def auto_hide(bot: Bot, update: Update, args=None):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-@user_allowed
-def sniping_info(bot: Bot, update: Update):
+
+def get_item_by_cw_id(cw_id):
+    item = Session.query(Item).filter(Item.cw_id == cw_id).first()
+    return item
+
+
+@command_handler()
+def sniping_info(bot: Bot, update: Update, user: User, **kwargs):
+    args = None
+    if "args" in kwargs:
+        args = kwargs["args"]
+
     logging.warning("sniping_info called by %s", update.message.chat.id)
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
@@ -189,8 +241,13 @@ def sniping_info(bot: Bot, update: Update):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-@user_allowed
-def sniping_remove(bot: Bot, update: Update, args=None):
+
+@command_handler()
+def sniping_remove(bot: Bot, update: Update, user: User, **kwargs):
+    args = None
+    if "args" in kwargs:
+        args = kwargs["args"]
+
     logging.warning("sniping_remove called by %s - args='%s'", update.message.chat.id, args)
     if len(args) != 1:
         send_async(
@@ -201,7 +258,7 @@ def sniping_remove(bot: Bot, update: Update, args=None):
         )
         return
 
-    item = Session.query(Item).filter(Item.cw_id == args[0]).first()
+    item = get_item_by_cw_id(args[0])
     if not item:
         send_async(
             bot,
@@ -238,8 +295,9 @@ def sniping_remove(bot: Bot, update: Update, args=None):
             parse_mode=ParseMode.MARKDOWN,
         )
 
-@user_allowed
-def sniping_resume(bot: Bot, update: Update):
+
+@command_handler()
+def sniping_resume(bot: Bot, update: Update, user: User):
     logging.warning("sniping_resume called by %s", update.message.chat.id)
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
 
@@ -271,11 +329,13 @@ def sniping_resume(bot: Bot, update: Update):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-@user_allowed
-def sniping(bot: Bot, update: Update, args=None):
+
+@command_handler()
+def sniping(bot: Bot, update: Update, user: User, **kwargs):
+    args = None
+    if "args" in kwargs:
+        args = kwargs["args"]
     logging.warning("snipe called by %s - args='%s'", update.message.chat.id, args)
-    if update.message.chat.type != 'private':
-        return
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user:
@@ -284,7 +344,10 @@ def sniping(bot: Bot, update: Update, args=None):
 
     # A user can directly enter snipe-commands. Check permissions and stop with processing.
     if not user.is_api_trade_allowed:
-        logging.info("TradeTerminal is not allowed for user_id=%s. Sniping and setting sniping-options is not possible. Requesting access", user.id)
+        logging.info(
+            "TradeTerminal is not allowed user_id=%s. Sniping/Options are not possible. Requesting access",
+            user.id
+        )
         wrapper.request_trade_terminal_access(bot, user)
         return
     elif not user.setting_automated_sniping:
@@ -309,7 +372,7 @@ def sniping(bot: Bot, update: Update, args=None):
     if len(args) == 3:
         try:
             initial_order = int(args[2])
-        except:
+        except Exception:
             send_async(
                 bot,
                 chat_id=update.message.chat.id,
@@ -321,7 +384,7 @@ def sniping(bot: Bot, update: Update, args=None):
     max_price = None
     try:
         max_price = int(args[1])
-    except:
+    except Exception:
         logging.warning("Invalid max_price=%s from user_id=%s", args[1], user.id)
         send_async(
             bot,
@@ -331,7 +394,7 @@ def sniping(bot: Bot, update: Update, args=None):
         )
         return
 
-    item = Session.query(Item).filter(Item.cw_id == args[0]).first()
+    item = get_item_by_cw_id(args[1])
     if not item:
         send_async(
             bot,
@@ -377,10 +440,10 @@ def sniping(bot: Bot, update: Update, args=None):
 
     if not ueo:
         logging.warning("New UserExchangeOrder")
-        ueo  = UserExchangeOrder()
+        ueo = UserExchangeOrder()
 
     ueo.user = user
-    ueo.initial_order  = initial_order
+    ueo.initial_order = initial_order
     ueo.outstanding_order = initial_order
     ueo.max_price = max_price
     ueo.item = item
@@ -394,8 +457,13 @@ def sniping(bot: Bot, update: Update, args=None):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-@user_allowed
-def list_items(bot: Bot, update: Update):
+
+@command_handler()
+def list_items(bot: Bot, update: Update, user: User, **kwargs):
+    args = None
+    if "args" in kwargs:
+        args = kwargs["args"]
+
     logging.warning("list_items called by %s", update.message.chat.id)
 
     text = ITEM_LIST
@@ -417,12 +485,20 @@ def list_items(bot: Bot, update: Update):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-@user_allowed
-def hide_items(bot: Bot, update: Update):
-    # Manually triggered hide....
-    logging.warning("hide_items called by %s", update.message.chat.id)
-    user = Session.query(User).filter_by(id=update.message.chat.id).first()
 
+@command_handler()
+def hide_items(bot: Bot, update: Update, user: User, **kwargs):
+    args = None
+    if "args" in kwargs:
+        args = kwargs["args"]
+
+    # Manually triggered hide....
+    logging.info("hide_items called by %s", user.id)
+    if not user.is_tester:
+        logging.info("No hide_items allowed for %s", user.id)
+        return
+
+    user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user or not user.is_tester and not user.is_api_trade_allowed:
         logging.info("No user, not a tester or no trade API")
         return
@@ -430,4 +506,3 @@ def hide_items(bot: Bot, update: Update):
     # Request a profile update to get information about how much gold a user has.
     # This should complete in a few seconds. And we just schedule a the rest in a few seconds
     wrapper.update_profile(user)
-

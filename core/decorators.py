@@ -103,6 +103,7 @@ def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow
 
             bot = args[0]
             update = args[1]
+            #args = kwargs['args'] if kwargs and 'args' in kwargs else None
 
             if update.message.chat.type == 'channel' and not allow_channel:
                 logging.debug("Message received in channel but allow_channel=False. Ignoring message.")

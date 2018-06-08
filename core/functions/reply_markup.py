@@ -78,8 +78,13 @@ def generate_top_markup():
 
 
 def generate_statistics_markup():
-    buttons = [[KeyboardButton(STATISTICS_COMMAND_EXP), KeyboardButton(STATISTICS_COMMAND_SKILLS), KeyboardButton(STATISTICS_COMMAND_QUESTS)],
-               [KeyboardButton(USER_COMMAND_BACK)]]
+    buttons = [
+        [
+            KeyboardButton(STATISTICS_COMMAND_EXP),
+            KeyboardButton(STATISTICS_COMMAND_SKILLS),
+            KeyboardButton(STATISTICS_COMMAND_QUESTS)
+        ],
+        [KeyboardButton(USER_COMMAND_BACK)]]
     return ReplyKeyboardMarkup(buttons, True)
 
 

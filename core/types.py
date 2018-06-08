@@ -206,7 +206,8 @@ class UserQuest(Base):
     forward_date = Column(DATETIME(fsp=6), nullable=False)
 
     exp = Column(BigInteger, default=0)
-    level = Column(BigInteger)
+    level = Column(BigInteger, default=0)
+    gold = Column(BigInteger, default=0)
 
     quest_id = Column(BigInteger, ForeignKey("quest.id"))
     quest = relationship('Quest', back_populates='user_quests')
@@ -217,7 +218,7 @@ class UserQuest(Base):
     user = relationship('User', back_populates='quests')
     daytime = Column(BigInteger, nullable=False, default=0)
 
-    items = relationship(UserQuestItem)
+    items = relationship(UserQuestItem, lazy='dynamic')
 
     __table_args__ = (
         UniqueConstraint('user_id', 'forward_date', name='uc_usr_fwd_date'),
