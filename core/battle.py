@@ -313,8 +313,7 @@ def report_after_battle(bot: Bot, job_queue: Job):
                         bot,
                         chat_id=user.id,
                         text=text,
-                        parse_mode=ParseMode.HTML,
-                        reply_markup=None
+                        parse_mode=ParseMode.HTML
                     )
                 logging.info("END report_after_battle for user_id='%s'", user.id)
             except Exception:
