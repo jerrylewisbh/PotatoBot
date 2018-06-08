@@ -1,11 +1,10 @@
 import logging
 import os
-import numpy
-
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 from math import pi
 
 import matplotlib.pyplot as plot
+import numpy
 import pandas as pd
 from sqlalchemy import func, tuple_
 from telegram import Bot, Update, ParseMode
@@ -17,8 +16,7 @@ from core.texts import (MSG_DATE_FORMAT, MSG_DAY_PLURAL1, MSG_DAY_PLURAL2,
                         MSG_PLOT_DESCRIPTION_SKILL, MSG_STATISTICS_ABOUT,
                         PLOT_X_LABEL, PLOT_Y_LABEL, MSG_QUEST_7_DAYS, MSG_QUEST_OVERALL, MSG_QUEST_STAT,
                         MSG_QUEST_STAT_LOCATION)
-
-from core.types import Character, Profession, UserQuest, Location, Session, User, UserQuestItem, Item
+from core.types import Character, Profession, UserQuest, Location, Session, User, UserQuestItem
 from core.utils import send_async
 
 Session()

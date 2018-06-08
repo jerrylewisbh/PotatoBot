@@ -2,6 +2,7 @@
 import json
 import logging
 from datetime import datetime, timedelta
+from typing import Optional
 
 from sqlalchemy import and_, func, tuple_
 from sqlalchemy.exc import SQLAlchemyError
@@ -219,7 +220,7 @@ def refresh_api_users(bot: Bot, job_queue: Job):
         bot.logger.error(str(err))
         Session.rollback()
 
-def create_user_report(user: User) -> str:
+def create_user_report(user: User) -> Optional[str]:
     if user.is_api_profile_allowed and user.is_api_stock_allowed and \
         user.setting_automated_report and user.api_token:
 

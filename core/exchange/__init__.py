@@ -1,15 +1,12 @@
 import logging
 
-import redis
 from sqlalchemy import func
-
-from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
-from core.texts import *
-from core.types import Session, Item, UserStockHideSetting, User, UserExchangeOrder
-from core.decorators import command_handler
-from core.utils import send_async, pad_string
 from telegram import Bot, Update, ParseMode
 
+from core.decorators import command_handler
+from core.texts import *
+from core.types import Session, Item, UserStockHideSetting, User, UserExchangeOrder
+from core.utils import send_async, pad_string
 from cwmq import wrapper
 
 Session()
