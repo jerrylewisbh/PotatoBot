@@ -64,7 +64,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
             if BOT_ONE_STEP_API:
                 user.is_api_profile_allowed = True
                 user.is_api_stock_allowed = True
-                user.is_api_trade_allowed = True
+                user.is_api_trade_allowed = False
 
             Session.add(user)
             Session.commit()
