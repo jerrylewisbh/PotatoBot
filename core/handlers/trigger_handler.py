@@ -73,7 +73,6 @@ def add_commands(disp: Dispatcher):
     disp.add_handler(CommandHandler("forceadd", force_add_to_squad))
     disp.add_handler(CommandHandler("ban", ban))
     disp.add_handler(CommandHandler("unban", unban))
-    disp.add_handler(CommandHandler("revoke", revoke))
     disp.add_handler(CommandHandler("get_log", get_log))
 
     # User/Profile specific
@@ -87,5 +86,6 @@ def add_commands(disp: Dispatcher):
     disp.add_handler(CommandHandler('resume', sniping_resume))
     disp.add_handler(CommandHandler('items', list_items))
     disp.add_handler(CommandHandler('hide', hide_items))
+    disp.add_handler(CommandHandler('revoke', revoke))
 
     logging.info("Finished adding command handlers")

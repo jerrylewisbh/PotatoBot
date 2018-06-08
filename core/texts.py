@@ -516,8 +516,8 @@ MSG_DISABLED_TRADING = "\nDisabling trading until then."
 MSG_API_SETUP_STEP_2_COMPLETE = "👌 Thanks for granting additional permissions!"
 MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock updates:</b>\n"
 
-MSG_USER_BATTLE_REPORT_HEADER = "<b>Your after action report:\n\n</b>"
-MSG_USER_BATTLE_REPORT_FULL = "<b>Your complete report:\n\n</b>"
+MSG_USER_BATTLE_REPORT_HEADER = "<b>Your after action report:</b>\n\n"
+MSG_USER_BATTLE_REPORT_FULL = "<b>Your complete report:</b>\n\n"
 
 MSG_USER_BATTLE_REPORT= "{}{} ⚔:{} 🛡:{} "\
                         "Lvl: {}\n"\
@@ -528,7 +528,7 @@ MSG_USER_BATTLE_REPORT= "{}{} ⚔:{} 🛡:{} "\
                         "<i>Note: Thanks for sending in your /report. Please do this after every battle!\n</i>"
 
 MSG_USER_BATTLE_REPORT_PRELIM = "{}{} Lvl: {}\n\n"\
-                                "<b>Please forward me your /report as soon as possible!\n</b>"
+                                "<b>Please forward me your /report as soon as possible!</b>\n"
 
 TRIBUTE_NOTE = "\n\n<i>Note: Stock change also may contain tributes.</i>"
 
