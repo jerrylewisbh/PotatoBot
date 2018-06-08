@@ -73,8 +73,9 @@ def relative_details(user: User, from_date: datetime):
 def quest_statistic(bot: Bot, update: Update, user: User):
     logging.info("User '%s' called quest_statistic", user.id)
 
+    # FixMe/TODO: We don't have gold data until June 9th because the field was missing. Filter from this date onwards in a later release.
     text = MSG_QUEST_7_DAYS
-    text += relative_details(user, datetime.utcnow() - timedelta(days=30))
+    text += relative_details(user, datetime.utcnow() - timedelta(days=7))
     text += MSG_QUEST_OVERALL
     text += relative_details(user, datetime.utcnow() - timedelta(days=365 * 30))
     text += MSG_QUEST_STAT
