@@ -1,5 +1,7 @@
 import logging
 
+from sqlalchemy import func
+
 from core.texts import *
 from core.types import Session, Item, UserStockHideSetting, User, UserExchangeOrder
 from core.decorators import user_allowed
@@ -9,6 +11,9 @@ from telegram import Bot, Update, ParseMode
 from cwmq import wrapper
 
 Session()
+
+LIMIT_SNIPES = 3
+LIMIT_ORDER_AMOUNT = 50
 
 def get_snipe_settings(user):
     logging.warning("Getting UserExchangeOrder for %s", user.id)
@@ -340,6 +345,27 @@ def sniping(bot: Bot, update: Update, args=None):
             bot,
             chat_id=update.message.chat.id,
             text=SNIPE_ITEM_NOT_TRADABLE.format(args[0]),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        return
+
+    num_ueo = Session.query(func.count(UserExchangeOrder.id)).filter(
+        UserExchangeOrder.user == user
+    ).scalar()
+
+    if num_ueo >= LIMIT_SNIPES:
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=SNIPE_LIMIT_EXCEEDED.format(LIMIT_SNIPES),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        return
+    if initial_order > LIMIT_ORDER_AMOUNT:
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=SNIPE_INITIAL_ORDER_EXCEEDED.format(LIMIT_ORDER_AMOUNT),
             parse_mode=ParseMode.MARKDOWN,
         )
         return

@@ -590,6 +590,9 @@ SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFe
                "To remove a buy order `/sr <itemId>`.\n\n" \
                "*Your current orders are:*\n" \
                "{}"
+
+SNIPE_LIMIT_EXCEEDED = "Sorry but you may only have {} orders active at any given time. Please remove another order first."
+SNIPE_INITIAL_ORDER_EXCEEDED = "Sorry but you may only order {} pieces at a time. Please reduce your amount."
 SNIPE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
 SNIPE_WRONG_ARGS = "Sorry, the /s command you issued is not valid. Try again."
 SNIPE_WRONG_ARGS_SR = "Sorry, the /sr command you issued is not valid. Try again."
