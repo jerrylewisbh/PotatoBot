@@ -11,6 +11,7 @@ from core.functions.ban import ban_traitor
 from core.functions.common import stock_split, get_weighted_diff, stock_compare_text, StockType
 from core.functions.inline_keyboard_handling import generate_profile_buttons
 from core.functions.profile.util import *
+from core.functions.profile.util import __send_user_with_settings
 from core.functions.reply_markup import generate_user_markup
 from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION, PROFILE,
                          REPAIR_REPORT, REPORT)
