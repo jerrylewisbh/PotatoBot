@@ -581,10 +581,11 @@ HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFee
 HIDE_WRONG_ARGS = "Sorry, the /ah command you issued is not valid. Try again."
 HIDE_WRONG_LIMIT = "Sorry, the limit you specified is not valid. Try again."
 HIDE_WRONG_ITEM = "Sorry, the item `{}` you specified is not valid. Try again."
-HIDE_WRONG_PRIORITY = "Sorry, the item you specified is not valid. Try again."
+HIDE_WRONG_PRIORITY = "Sorry, the priority you specified is not valid. Try again."
 HIDE_BUY_UNLIMITED = "- P{}: Buy {} (`{}`)\n"
 HIDE_BUY_LIMITED = "- P{}: Buy {} (`{}`) for a maximum price of {} 💰\n"
 HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
+HIDE_REMOVED = "{} was removed from your hiding list!"
 
 SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
                "*Automated buying of items at a given price*\n" \
