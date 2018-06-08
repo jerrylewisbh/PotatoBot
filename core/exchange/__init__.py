@@ -20,7 +20,7 @@ def get_snipe_settings(user: User):
 
     settings = user.sniping_settings.all()
     if not settings:
-        return "_Nothing configured yet._"
+        return "_Nothing configured yet / All orders completed._"
     else:
         text = ""
         for order in settings:
@@ -42,7 +42,7 @@ def get_autohide_settings(user):
 
     settings = user.hide_settings.order_by("priority").all()
     if not settings:
-        return "_Nothing configured yet._"
+        return "_Nothing configured yet / All orders completed._"
     else:
         text = ""
         for order in settings:
@@ -81,7 +81,7 @@ def auto_hide(bot: Bot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
-    logging.warning("auto_hide called by %s - args='%s'", update.message.chat.id, args)
+    logging.warning("[Hide] auto_hide called by %s - args='%s'", update.message.chat.id, args)
 
     if len(args) < 1 or len(args) > 3:
         send_async(
@@ -334,7 +334,7 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
-    logging.warning("snipe called by %s - args='%s'", update.message.chat.id, args)
+    logging.warning("[Sniping] called by %s - args='%s'", update.message.chat.id, args)
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user:
@@ -344,12 +344,13 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
     # A user can directly enter snipe-commands. Check permissions and stop with processing.
     if not user.is_api_trade_allowed:
         logging.info(
-            "TradeTerminal is not allowed user_id=%s. Sniping/Options are not possible. Requesting access",
+            "[Sniping] TradeTerminal is not allowed user_id=%s. Sniping/Options are not possible. Requesting access",
             user.id
         )
         wrapper.request_trade_terminal_access(bot, user)
         return
     elif not user.setting_automated_sniping:
+        logging.debug("[Sniping] user_id='%s' has not enabled sniping", user.id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -359,6 +360,7 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
         return
 
     if len(args) < 1 or len(args) > 3:
+        logging.debug("[Sniping] user_id='%s' has sent wrong arguments for sniping", user.id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -372,6 +374,7 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
         try:
             initial_order = int(args[2])
         except Exception:
+            logging.debug("[Sniping] user_id='%s' has specified an invalid initial order", user.id)
             send_async(
                 bot,
                 chat_id=update.message.chat.id,
@@ -384,7 +387,7 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
     try:
         max_price = int(args[1])
     except Exception:
-        logging.warning("Invalid max_price=%s from user_id=%s", args[1], user.id)
+        logging.warning("[Sniping] Invalid max_price=%s from user_id=%s", args[1], user.id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -393,8 +396,9 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
         )
         return
 
-    item = get_item_by_cw_id(args[1])
+    item = get_item_by_cw_id(args[0])
     if not item:
+        logging.debug("[Sniping] user_id='%s' requested sniping for item id='%s'", user.id, args[0])
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -403,10 +407,11 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
         )
         return
     elif not item.tradable:
+        logging.debug("[Sniping] user_id='%s' tried to trade untradable item cw_id='%s'", user.id, item.cw_id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
-            text=SNIPE_ITEM_NOT_TRADABLE.format(args[0]),
+            text=SNIPE_ITEM_NOT_TRADABLE.format(item.cw_id),
             parse_mode=ParseMode.MARKDOWN,
         )
         return
@@ -416,6 +421,7 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
     ).scalar()
 
     if num_ueo >= LIMIT_SNIPES:
+        logging.debug("[Sniping] user_id='%s' has too many active snipes!", user.id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -424,6 +430,7 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
         )
         return
     if initial_order > LIMIT_ORDER_AMOUNT:
+        logging.debug("[Sniping] user_id='%s' wants to buy too many things!", user.id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -438,8 +445,22 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
     ).first()
 
     if not ueo:
-        logging.warning("New UserExchangeOrder")
+        logging.info(
+            "[Sniping] user_id='%s' created new order intial_order='%s', max_price='%s', item='%s'",
+            user.id,
+            initial_order,
+            max_price,
+            item.cw_id,
+        )
         ueo = UserExchangeOrder()
+    else:
+        logging.info(
+            "[Sniping] user_id='%s' updated order to intial_order='%s', max_price='%s', item='%s'",
+            user.id,
+            initial_order,
+            max_price,
+            item.cw_id,
+        )
 
     ueo.user = user
     ueo.initial_order = initial_order
