@@ -45,7 +45,8 @@ def user_allowed(ban_enable=True):
 
 def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow_private: bool = True,
                     allow_group: bool = False, allow_channel: bool = False,
-                    allow_banned: bool = False, forward_from: int = None,
+                    allow_banned: bool = False, squad_only: bool = True, testing_only: bool = True,
+                    forward_from: int = None,
                     *args: object,
                     **kwargs : object) -> object:
     """
@@ -67,6 +68,8 @@ def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow
     :type allow_private: bool
     :type allow_group: bool
     :type allow_channel: bool
+    :type squad_only: bool
+    :type testing_only: bool
     :type forward_from: int
     :type args: object
     :type kwargs: object
@@ -76,6 +79,8 @@ def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow
     :param allow_private:
     :param allow_group:
     :param allow_channel:
+    :param squad_only:
+    :param testing_only:
     :param forward_from:
     :param args:
     :param kwargs:
@@ -130,6 +135,18 @@ def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow
             if forward_from and forward_from != update.message.forward_from.id:
                 logging.debug("Message is not a valid forward %s!=%s", update.message.forward_from.id, forward_from)
                 return
+
+            if squad_only and user.is_squadmember:
+                logging.debug("This is a squad only feature and user '%s' is no squad member", user.id)
+                return
+
+            if testing_only and user.is_tester:
+                logging.debug(
+                    "This is a testing-squad only feature and user '%s' is no testing-squad member",
+                    user.id
+                )
+                return
+
 
             if permissions_required:
                 if permissions_required not in AdminType:

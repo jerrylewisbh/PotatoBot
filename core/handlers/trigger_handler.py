@@ -1,6 +1,8 @@
 import logging
 
-from core.exchange import auto_hide, sniping, sniping_remove, list_items, hide_items, sniping_resume
+from core.exchange import list_items
+from core.exchange.hide import auto_hide, hide_items
+from core.exchange.snipe import sniping_remove, sniping_resume, sniping
 from core.functions.admins import (del_admin, del_global_admin, list_admins,
                                    set_admin, set_global_admin,
                                    set_super_admin, get_log)

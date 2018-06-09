@@ -39,7 +39,8 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
                            USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
                            USER_COMMAND_TOP, USER_COMMAND_HIDE, USER_COMMAND_EXCHANGE, STATISTICS_COMMAND_QUESTS)
 from core.decorators import user_allowed
-from core.exchange import sniping_info, hide_gold_info
+from core.exchange.hide import hide_gold_info
+from core.exchange.snipe import sniping_info
 from core.functions.activity import (battle_activity, day_activity,
                                      week_activity)
 from core.functions.admins import admins_for_users, list_admins
