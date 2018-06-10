@@ -554,7 +554,8 @@ MSG_DEAL_SOLD = "⚖️You sold <b>{}</b> for {}💰 ({} x {}💰)\nBuyer: {}{}\
 MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"
-
+MSG_QUEST_ACCEPTED = "Thank you for sending in this quest."
+MSG_FORAY_ACCEPTED = "Thank you for sending in your successful Foray."
 MSG_QUEST_7_DAYS = "*In the last seven days you told me about the following adventures:*\n\n"
 MSG_QUEST_STAT_LOCATION = "*{} ({})*: \n" \
                           "Avg: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n" \
@@ -562,7 +563,7 @@ MSG_QUEST_STAT_LOCATION = "*{} ({})*: \n" \
 
 MSG_QUEST_OVERALL = "\n\n*Overall:*\n\n"
 
-MSG_QUEST_STAT = "\n\nJust continue sending me your quest reports.\n\n_Hint: Overall statistics, item details, etc. coming soonish..._"
+MSG_QUEST_STAT = "\n\nJust continue sending me your quest reports.\n\n_Hint: Overall statistics.py, item details, etc. coming soonish..._"
 
 # Exchange stuff
 HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
@@ -578,6 +579,7 @@ HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFee
                "*Your current settings are:*\n" \
                "{}"
 
+HIDE_STARTED = "Started hiding. This can take a fe. I'll notify you when I'm done."
 HIDE_WRONG_ARGS = "Sorry, the /ah command you issued is not valid. Try again."
 HIDE_WRONG_LIMIT = "Sorry, the limit you specified is not valid. Try again."
 HIDE_WRONG_ITEM = "Sorry, the item `{}` you specified is not valid. Try again."

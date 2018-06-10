@@ -218,6 +218,8 @@ class UserQuest(Base):
     user = relationship('User', back_populates='quests')
     daytime = Column(BigInteger, nullable=False, default=0)
 
+    pledge = Column(Boolean(), default=0)
+
     items = relationship(UserQuestItem, lazy='dynamic')
 
     __table_args__ = (
@@ -489,6 +491,8 @@ class Item(Base):
 
     user_quests = relationship(UserQuestItem)
     user_orders = relationship('UserExchangeOrder', back_populates='item', lazy='dynamic')
+    user_hide_settings = relationship('UserStockHideSetting', back_populates='item',
+                                      lazy='dynamic', order_by='UserStockHideSetting.priority.desc()')
 
 class UserExchangeOrder(Base):
     __tablename__ = 'user_exchange'
@@ -503,7 +507,6 @@ class UserExchangeOrder(Base):
 
     outstanding_order = Column(Integer, nullable=False)
     initial_order = Column(Integer, nullable=False)
-
 
     max_price = Column(Integer, nullable=False)
 

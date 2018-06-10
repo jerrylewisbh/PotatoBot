@@ -45,7 +45,7 @@ def user_allowed(ban_enable=True):
 
 def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow_private: bool = True,
                     allow_group: bool = False, allow_channel: bool = False,
-                    allow_banned: bool = False, squad_only: bool = True, testing_only: bool = True,
+                    allow_banned: bool = False, squad_only: bool = False, testing_only: bool = False,
                     forward_from: int = None,
                     *args: object,
                     **kwargs : object) -> object:
@@ -136,11 +136,16 @@ def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow
                 logging.debug("Message is not a valid forward %s!=%s", update.message.forward_from.id, forward_from)
                 return
 
-            if squad_only and user.is_squadmember:
+            logging.debug(squad_only)
+            logging.debug(user.is_squadmember)
+            logging.debug(testing_only)
+            logging.debug(user.is_squadmember)
+
+            if squad_only and not user.is_squadmember:
                 logging.debug("This is a squad only feature and user '%s' is no squad member", user.id)
                 return
 
-            if testing_only and user.is_tester:
+            if testing_only and not user.is_tester:
                 logging.debug(
                     "This is a testing-squad only feature and user '%s' is no testing-squad member",
                     user.id

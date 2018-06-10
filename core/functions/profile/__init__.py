@@ -5,7 +5,7 @@ from core.functions.common import stock_split, stock_compare_text
 from core.functions.profile.util import *
 from core.functions.profile.util import __send_user_with_settings
 from core.functions.reply_markup import generate_user_markup
-from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION, PROFILE,
+from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
                          REPAIR_REPORT, REPORT)
 from core.state import GameState, get_game_state
 from core.template import fill_char_template
@@ -90,8 +90,8 @@ def report_received(bot: Bot, update: Update, user: User):
             parse_mode=ParseMode.HTML)
         return
 
-    report = re.search(REPORT, update.message.text)
-    if report and user.character and str(report.group(2)) == user.character.name:
+    parsed_report = parse_report_text(update.message.text)
+    if parsed_report and user.character and parsed_report['name'] == user.character.name:
         date = update.message.forward_date
         if (update.message.forward_date.hour < 7):
             date = update.message.forward_date - timedelta(days=1)
@@ -117,7 +117,7 @@ def report_received(bot: Bot, update: Update, user: User):
             return
 
         if not report or (report and report.preliminary_report):
-            parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date)
+            save_report(update.message.text, update.message.from_user.id, update.message.forward_date)
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
             if report and report.castle != CASTLE:
                 ban_traitor(bot, update.message.from_user.id)
@@ -146,15 +146,13 @@ def char_update(bot: Bot, update: Update, user: User):
 
     char = None
     if re.search(HERO, update.message.text):
-        char = parse_hero(update.message.text,
-                          update.message.from_user.id,
-                          update.message.forward_date,
-                          )
-    elif re.search(PROFILE, update.message.text):
-        char = parse_profile(update.message.text,
-                             update.message.from_user.id,
-                             update.message.forward_date,
-                             )
+        char = parse_hero(
+            bot,
+            update.message.text,
+            update.message.from_user.id,
+            update.message.forward_date,
+        )
+
     if CASTLE:
         if char and (char.castle == CASTLE or update.message.from_user.id == EXT_ID):
             char.castle = CASTLE

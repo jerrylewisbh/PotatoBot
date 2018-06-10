@@ -1,11 +1,13 @@
 import logging
 
+import redis
 from telegram import Bot, Update, ParseMode
 
+from config import REDIS_TTL, REDIS_SERVER, REDIS_PORT
 from core.decorators import command_handler
 from core.exchange import get_item_by_cw_id
 from core.texts import HIDE_BUY_UNLIMITED, HIDE_BUY_LIMITED, HIDE_WELCOME, HIDE_WRONG_ARGS, HIDE_WRONG_ITEM, \
-    HIDE_REMOVED, HIDE_WRONG_LIMIT, HIDE_WRONG_PRIORITY, HIDE_ITEM_NOT_TRADABLE
+    HIDE_REMOVED, HIDE_WRONG_LIMIT, HIDE_WRONG_PRIORITY, HIDE_ITEM_NOT_TRADABLE, HIDE_STARTED
 from core.types import User, Session, UserStockHideSetting
 from core.utils import send_async
 from cwmq import wrapper
@@ -26,6 +28,44 @@ def __get_autohide_settings(user):
                 text += HIDE_BUY_LIMITED.format(order.priority, order.item.name, order.item.cw_id, order.max_price)
         return text
 
+def __initial_autohide_order(user: User, r, digest_item):
+    logging.info("[Hide] user_id='%s' is currently in HIDE MODE", user.id)
+
+    for setting in user.hide_settings.all():
+        # Note: It might be wiser to handle sniping overall first and then handle hiding. But digest for sniping
+        # is only used as a fallback so we are probably fine and time is not that much of the essence...
+        # __handle_hide_orders(digest_item, item, order, r, dispatcher)
+        logging.debug("[Hide] user_id='%s' - P%s: cw_id='%s'", user.id, setting.priority, setting.item.cw_id)
+
+        offers = r.lrange(setting.item.name, 0, -1)
+
+        if not setting.max_price or setting.max_price <= min(digest_item['prices']):
+            logging.info(
+                "[Hide] Found cw_id='%s' for with P%s '%s' user-specified limit is '%s'",
+                user.id,
+                setting.priority,
+                setting.item.cw_id,
+                setting.max_price,
+            )
+            logging.info("WTB 1g for cw_id='%s'")
+
+"""
+Hide.py: 
+- Setze User in HIDE mode
+- Hole neues Profil mit Gold
+
+digest.py
+- Errechne die zu kaufenden Items wenn user in hide mode für erste erfüllbare order... 
+
+deals.py
+- summiere ausgeführte orders für hide-user auf und speichere im redis...
+
+profile.py
+- wenn insufficient funds kommt: Ignorieren wenn user im hide-mode ist
+    -> Triggere erneute prüfung der prios und führe nächste erfüllbare order aus
+    -> wenn nix mehr ansteht beende hiding
+
+"""
 
 @command_handler(
     testing_only=True
@@ -56,8 +96,6 @@ def hide_gold_info(bot: Bot, update: Update, user: User):
     testing_only=True
 )
 def hide_items(bot: Bot, update: Update, user: User, **kwargs):
-    return
-
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
@@ -68,12 +106,25 @@ def hide_items(bot: Bot, update: Update, user: User, **kwargs):
         logging.info("No user, not a tester or no trade API")
         return
 
-    #r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
-    #hide_key = "{}_HIDE".format(user.id)
-    #r.set(hide_key, quests, ex=REDIS_TTL)
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=HIDE_STARTED,
+        parse_mode=ParseMode.MARKDOWN,
+    )
+
+    #wrapper.want_to_buy(user, "02", 1, 1, exact_price=False)
+
+    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+
+    # Mark user for 360 seconds as "in Hiding Mode". This way we can detect buy-actions, etc.
+    # and one message about his actions, etc. We also use this information to trigger the actual hiding when new
+    # digest list comes in.
+    hide_key = "HIDE_{}".format(user.id)
+    r.set(hide_key, user.id, ex=360)
 
     # Request a profile update to get information about how much gold a user has.
-    # This should complete in a few seconds. And we just schedule a the rest in a few seconds
+    # This should complete in a few seconds.
     wrapper.update_profile(user)
 
 

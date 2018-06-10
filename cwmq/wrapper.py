@@ -54,7 +54,7 @@ def update_profile(user):
     })
 
 
-def want_to_buy(user, item_code, quantity, price, exact_price=True):
+def want_to_buy(user: User, item_code, quantity, price, exact_price=True):
     if not user:
         raise APIMissingUserException("User is 'None'")
     elif not user.api_token:

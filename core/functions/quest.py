@@ -2,11 +2,12 @@ import json
 import re
 from enum import IntFlag, auto
 
+from core.decorators import command_handler
 from core.functions.inline_markup import QueryType
-from core.texts import MSG_QUEST, MSG_QUEST_DUPLICATE
+from core.texts import MSG_QUEST, MSG_QUEST_DUPLICATE, MSG_QUEST_ACCEPTED, MSG_FORAY_ACCEPTED
 from core.types import (Item, Location, Quest, Session, User, UserQuest,
                         UserQuestItem)
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update, Bot
 
 Session()
 
@@ -15,6 +16,7 @@ class QuestType(IntFlag):
     NORMAL_FAILED = auto()
     FORAY = auto()
     FORAY_STOP = auto()
+    FORAY_PLEDGE = auto()
     ARENA = auto()
 
 
@@ -22,6 +24,7 @@ REGEX_GOLD_EXP = r"((?:You received: )(?:([0-9]+) exp and )([0-9]+) gold)"
 REGEX_EARNED = r"(Earned: (?:(.+) (?:\(([0-9]+)\))))"
 REGEX_FORAY_SUCCESS = r"((?:Received )(?:([0-9]+) gold and )([0-9]+) exp.)"
 REGEX_FORAY_TRIED = r"((?:Received: )([0-9]+) exp.)"
+REGEX_FORAY_PLEDGE = r"To accept their offer, you shall /pledge to protect. You have 3 minutes to decide."
 REGEX_ARENA = r"((?:You received: )([0-9]+) exp.)"
 
 
@@ -30,6 +33,7 @@ def analyze_text(text):
     find_quest_earned = re.findall(REGEX_EARNED, text)
     find_foray_success = re.findall(REGEX_FORAY_SUCCESS, text)
     find_foray_tried_to_stop = re.findall(REGEX_FORAY_TRIED, text)
+    find_foray_pledge = re.findall(REGEX_FORAY_PLEDGE, text)
     find_arena = re.findall(REGEX_ARENA, text)
 
     text_stripped = re.sub(REGEX_GOLD_EXP, '', text)
@@ -66,6 +70,14 @@ def analyze_text(text):
             'exp': 0,
             'text': text_stripped,
         }
+    elif find_foray_pledge:
+        return {
+            'type': QuestType.FORAY_PLEDGE,
+            'items': {},
+            'gold': 0,
+            'exp': 0,
+            'text': text_stripped,
+        }
     elif find_arena:
         return {
             'type': QuestType.ARENA,
@@ -83,8 +95,8 @@ def analyze_text(text):
             'text': text_stripped,
         }
 
-
-def parse_quest(bot, update):
+@command_handler()
+def parse_quest(bot: Bot, update: Update, user: User):
     quest_data = analyze_text(update.message.text)
 
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
@@ -107,6 +119,8 @@ def parse_quest(bot, update):
     uq.forward_date = update.message.forward_date
     uq.exp = quest_data['exp']
     uq.gold = quest_data['gold']
+    if quest_data['type'] == QuestType.FORAY_PLEDGE:
+        uq.pledge = True
     uq.level = user.character.level if user.character else 0  # If we don't have a profile yet just assume "0" level
 
     quest = Session.query(Quest).filter_by(text=quest_data['text']).first()
@@ -153,7 +167,15 @@ def parse_quest(bot, update):
 
         bot.sendMessage(
             chat_id=user.id,
-            text=MSG_QUEST.format(quest_data['text']),
+            text=MSG_QUEST,
             parse_mode=ParseMode.HTML,
             reply_markup=inline_keyboard
+        )
+    elif quest_data['type'] in [QuestType.FORAY, QuestType.FORAY_STOP, QuestType.FORAY_PLEDGE]:
+
+
+        bot.sendMessage(
+            chat_id=user.id,
+            text=MSG_FORAY_ACCEPTED,
+            parse_mode=ParseMode.HTML,
         )

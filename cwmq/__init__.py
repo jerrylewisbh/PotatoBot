@@ -174,7 +174,7 @@ class Publisher(Thread, metaclass=Singleton):
         self.QUEUE = CW_OUT_Q
         self._url = CW_URL
 
-        self._queue = queue.Queue()
+        #self._queue = queue.PriorityQueue()
         self._connection = None
         self._channel = None
 

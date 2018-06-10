@@ -91,7 +91,7 @@ def quest_statistic(bot: Bot, update: Update, user: User):
 
 @user_allowed
 def quest_statistic_old(bot: Bot, update: Update):
-    logging.debug("Quest statistics")
+    logging.debug("Quest statistics.py")
 
     # Render for every level we know...
     max_level = Session.query(func.max(UserQuest.level)).first()
@@ -162,7 +162,7 @@ def quest_statistic_old(bot: Bot, update: Update):
 
 @user_allowed
 def quest_statistic_line_one(bot: Bot, update: Update, session):
-    logging.debug("Quest statistics")
+    logging.debug("Quest statistics.py")
 
     # Render for every level we know...
     max_level = Session.query(func.max(UserQuest.level)).first()
@@ -243,7 +243,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
 
 @user_allowed
 def quest_statistic_split(bot: Bot, update: Update):
-    logging.debug("Quest statistics")
+    logging.debug("Quest statistics.py")
 
     # Render for every level we know...
     max_level = Session.query(func.max(UserQuest.level)).first()
@@ -319,7 +319,7 @@ def quest_statistic_split(bot: Bot, update: Update):
 
 @user_allowed
 def quest_statistic_one(bot: Bot, update: Update):
-    logging.debug("Quest statistics")
+    logging.debug("Quest statistics.py")
 
     # Render for every level we know...
     max_level = Session.query(func.max(UserQuest.level)).first()
