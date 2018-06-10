@@ -2,11 +2,11 @@ import os
 import sys
 import unittest
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from tests.fixtures import *
 
 from core.functions.quest import *
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 class TestTime(unittest.TestCase):
@@ -27,6 +27,10 @@ class TestTime(unittest.TestCase):
 
         self.assertEqual(analyze_text(FORAY_CLUELESS)["type"], QuestType.FORAY)
 
+        a = analyze_text(FORAY_CLUELESS_LOOT)
+        self.assertIsNotNone(a['items'])
+        self.assertEqual(a["type"], QuestType.FORAY)
+
     def test_foray_stop_success_identification(self):
         """ Try to identify quests """
 
@@ -37,6 +41,9 @@ class TestTime(unittest.TestCase):
 
         self.assertEqual(analyze_text(FORAY_TRIED_STOPPING)["type"], QuestType.FORAY_STOP)
         self.assertEqual(analyze_text(FORAY_TRIED_STOPPING_YOU)["type"], QuestType.FORAY_STOP)
+
+    def test_foray_pledge(self):
+        self.assertEqual(analyze_text(FORAY_PLEDGE)["type"], QuestType.FORAY_PLEDGE)
 
 
 if __name__ == '__main__':
