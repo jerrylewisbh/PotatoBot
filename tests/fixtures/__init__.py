@@ -76,14 +76,17 @@ QUEST_FAIL_2 = """It was a really nice and sunny day, so you sat under a tree an
 
 QUESTS_FAILED = [QUEST_FAIL_1, QUEST_FAIL_2]
 
-FORAY_GO_SUCCESS = """You successfully defeated Caio Raio. As he was crawling away, you picked up some of the gold he left behind. Received 10 gold and 39 exp."""
-FORAY_NOTICED = """You were strolling around on your horse when you noticed Caio Raio of 🦅Highnest Castle trying to pillage a local village. To stop him click /go"""
-FORAY_TRIED_STOPPING = """Lagoon tried stopping you, but you were stronger. You have satisfied your lust for violence and left back home. Received: 73 exp."""
-FORAY_TRIED_STOPPING_YOU = "You tried stopping Kamelot. Sadly, he was too strong. Your body hurts, but for some reason you feel enlightened. Received: 2 exp."
+
+# Stopping forays...
+GO = """You successfully defeated Caio Raio. As he was crawling away, you picked up some of the gold he left behind. Received 10 gold and 39 exp."""
+GO_FAILED = "You tried stopping Kamelot. Sadly, he was too strong. Your body hurts, but for some reason you feel enlightened. Received: 2 exp."
+
+# Doing Foray
 FORAY_WONT_NOTICE = """Next to the village you spotted a knight of the 🦅Highnest Castle - Lagoon. Let's hope he won't notice you."""
+FORAY_TRIED_STOPPING = """Lagoon tried stopping you, but you were stronger. You have satisfied your lust for violence and left back home. Received: 73 exp."""
 FORAY_CLUELESS = """PaganAngel was completely clueless. Village was successfully pillaged. You feel pleased about yourself.
 Received 33 gold and 12 exp."""
-
+FORAY_NEARLY_BEAT = 'Dragonsaur noticed you and nearly beat you to death. You crawled back home to a nice warm bath. On your way there you dropped a couple of coins. Lost: -6 gold'
 FORAY_CLUELESS_LOOT = """Knox was completely clueless. Village was successfully pillaged. You feel pleased about yourself.
 Received 31 gold and 92 exp.
 Earned: 📗Scroll of Peace (1)"""

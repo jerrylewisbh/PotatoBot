@@ -728,24 +728,42 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                                 update.callback_query.message.chat.id,
                                 update.callback_query.message.message_id)
         elif data['t'] == QueryType.QuestFeedbackRequired:
-            user_quest = Session.query(UserQuest).filter_by(id=data['uq']).first()
-            if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
-                location = Session.query(Location).filter_by(id=data['l']).first()
-                user_quest.location = location
-                Session.add(user_quest)
-                Session.commit()
-
-                bot.editMessageText(
-                    MSG_QUEST_OK.format(location.name),
-                    update.callback_query.message.chat.id,
-                    update.callback_query.message.message_id
-                )
+            set_user_quest_location(bot, data, update)
+        elif data['t'] == QueryType.ForayFeedbackRequired:
+            set_user_foray_pledge(bot, data, update)
 
     except TelegramError as e:
         # Ignore Message is not modified errors
         if str(e) != "Message is not modified":
             raise e
 
+
+def set_user_quest_location(bot, data, update):
+    user_quest = Session.query(UserQuest).filter_by(id=data['uq']).first()
+    if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
+        location = Session.query(Location).filter_by(id=data['l']).first()
+        user_quest.location = location
+        Session.add(user_quest)
+        Session.commit()
+
+        bot.editMessageText(
+            MSG_QUEST_OK.format(location.name),
+            update.callback_query.message.chat.id,
+            update.callback_query.message.message_id
+        )
+
+def set_user_foray_pledge(bot, data, update):
+    user_quest = Session.query(UserQuest).filter_by(id=data['uq']).first()
+    if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
+        user_quest.pledge = data['s']
+        Session.add(user_quest)
+        Session.commit()
+
+        bot.editMessageText(
+            MSG_FORAY_ACCEPTED_SAVED_PLEDGE if data['s'] else MSG_FORAY_ACCEPTED_SAVED,
+            update.callback_query.message.chat.id,
+            update.callback_query.message.message_id
+        )
 
 def inlinequery(bot, update):
     """Handle the inline query."""

@@ -487,6 +487,9 @@ BTN_ALL_TIME = "All Time"
 BTN_SQUAD_WEEK = "Squads per Week"
 BTN_SQUAD_ALL_TIME = "Squads of all time"
 
+BTN_PLEDGE_YES = "I got a pledge!"
+BTN_PLEDGE_NO = "No"
+
 MSG_LAST_UPDATE = '🕑 Last Update'
 MSG_GO_AWAY = 'Go Away!'
 MSG_TOP_GENERATING = 'Generating Top'
@@ -555,8 +558,11 @@ MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"
 MSG_QUEST_ACCEPTED = "Thank you for sending in this quest."
-MSG_FORAY_ACCEPTED = "Thank you for sending in your successful Foray."
-MSG_FORAY_ACCEPTED_KNIGHT = "Thank you for sending in your successful Foray. Where you offered to /pledge your allegiance to a village?"
+MSG_FORAY_ACCEPTED = "Thank you for sending in your successful 🗡Foray."
+MSG_FORAY_ACCEPTED_KNIGHT = "Thank you for sending in your successful 🗡Foray. Where you offered to /pledge your allegiance to a village?"
+MSG_FORAY_ACCEPTED_SAVED_PLEDGE = "Congratulations! You were offered a new pledge. Thank you for this information!"
+MSG_FORAY_ACCEPTED_SAVED = "You unfortunately did not get a new /plege. Thank you for this information!"
+
 MSG_FORAY_PLEDGE = "Please send in your Foray result and choose there if your pledge was successful."
 MSG_QUEST_7_DAYS = "*In the last seven days you told me about the following adventures:*\n\n"
 MSG_QUEST_STAT_LOCATION = "*{} ({})*: \n" \

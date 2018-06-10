@@ -45,13 +45,11 @@ def digest_handler(channel, method, properties, body, dispatcher):
             __initial_autohide_order(user, r, digest_item)
 
         # We're done...
-        #channel.basic_ack(method.delivery_tag)
-        logging.warning("ENABLE ACK ON FINISH")
+        channel.basic_ack(method.delivery_tag)
     except Exception:
         try:
             # Acknowledge if possible...
-            #channel.basic_ack(method.delivery_tag)
-            logging.warning("ENABLE ACK ON FAIL")
+            channel.basic_ack(method.delivery_tag)
         except Exception:
             logging.exception("Can't acknowledge message")
 

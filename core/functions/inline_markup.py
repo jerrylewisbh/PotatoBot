@@ -75,6 +75,7 @@ class QueryType(IntFlag):
     EnableDealReport = auto()
 
     QuestFeedbackRequired = auto()
+    ForayFeedbackRequired = auto()
 
     DisableSniping = auto()
     EnableSniping = auto()

@@ -219,7 +219,6 @@ class UserQuest(Base):
     daytime = Column(BigInteger, nullable=False, default=0)
 
     pledge = Column(Boolean(), default=0)
-
     successful = Column(Boolean(), default=0)
 
     items = relationship(UserQuestItem, lazy='dynamic')
