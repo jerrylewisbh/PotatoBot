@@ -303,7 +303,9 @@ def revoke(bot: Bot, update: Update, user: User):
     )
 
 
-@command_handler()
+@command_handler(
+    squad_only=True
+)
 def grant_access(bot: Bot, update: Update, user: User):
     reg_req = {
         "action": "createAuthCode",
