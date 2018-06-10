@@ -46,7 +46,7 @@ def generate_user_markup(user_id=None):
         # Exchange stuff...
         # STILL IN TESTING
         if user.api_token and user.is_api_profile_allowed and user.is_tester:
-            user_menu.append(KeyboardButton(USER_COMMAND_HIDE))
+            #user_menu.append(KeyboardButton(USER_COMMAND_HIDE))
             user_menu.append(KeyboardButton(USER_COMMAND_EXCHANGE))
 
         # Normal squad stuff...

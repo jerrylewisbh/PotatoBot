@@ -96,6 +96,10 @@ def hide_gold_info(bot: Bot, update: Update, user: User):
     testing_only=True
 )
 def hide_items(bot: Bot, update: Update, user: User, **kwargs):
+    return
+
+    # DISABLED FOR NOW!!!
+
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
