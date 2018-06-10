@@ -84,6 +84,10 @@ FORAY_WONT_NOTICE = """Next to the village you spotted a knight of the 🦅Highn
 FORAY_CLUELESS = """PaganAngel was completely clueless. Village was successfully pillaged. You feel pleased about yourself.
 Received 33 gold and 12 exp."""
 
+FORAY_CLUELESS_LOOT = """Knox was completely clueless. Village was successfully pillaged. You feel pleased about yourself.
+Received 31 gold and 92 exp.
+Earned: 📗Scroll of Peace (1)"""
+
 FORAY_PLEDGE = """After a successful act of violence, as a brave knight you are, you felt some guilt and decided to talk with your victims. 
 Your speech was so pure and enlightening that the villagers decided to make you an offer. 
 Tired of constant pillages, in exchange for guarantee of their safety from future forays they have promised to supply you 

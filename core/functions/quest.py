@@ -4,7 +4,7 @@ from enum import IntFlag, auto
 
 from core.decorators import command_handler
 from core.functions.inline_markup import QueryType
-from core.texts import MSG_QUEST, MSG_QUEST_DUPLICATE, MSG_QUEST_ACCEPTED, MSG_FORAY_ACCEPTED
+from core.texts import MSG_QUEST, MSG_QUEST_DUPLICATE, MSG_QUEST_ACCEPTED, MSG_FORAY_ACCEPTED, MSG_FORAY_PLEDGE
 from core.types import (Item, Location, Quest, Session, User, UserQuest,
                         UserQuestItem)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update, Bot
@@ -30,7 +30,7 @@ REGEX_ARENA = r"((?:You received: )([0-9]+) exp.)"
 
 def analyze_text(text):
     find_quest_gold_exp = re.findall(REGEX_GOLD_EXP, text)
-    find_quest_earned = re.findall(REGEX_EARNED, text)
+    find_earned = re.findall(REGEX_EARNED, text)
     find_foray_success = re.findall(REGEX_FORAY_SUCCESS, text)
     find_foray_tried_to_stop = re.findall(REGEX_FORAY_TRIED, text)
     find_foray_pledge = re.findall(REGEX_FORAY_PLEDGE, text)
@@ -43,23 +43,26 @@ def analyze_text(text):
     text_stripped = re.sub(REGEX_ARENA, '', text_stripped)
     text_stripped = text_stripped.strip()
 
-    if find_quest_gold_exp or find_quest_earned:
+    if find_foray_success:
         items = {}
-        for item in find_quest_earned:
+        for item in find_earned:
+            items[item[1]] = item[2]
+        return {
+            'type': QuestType.FORAY,
+            'items': items,
+            'gold': find_quest_gold_exp[0][2] if find_quest_gold_exp else 0,
+            'exp': find_quest_gold_exp[0][1] if find_quest_gold_exp else 0,
+            'text': text_stripped,
+        }
+    if find_quest_gold_exp or find_earned:
+        items = {}
+        for item in find_earned:
             items[item[1]] = item[2]
         return {
             'type': QuestType.NORMAL,
             'items': items,
-            'gold': find_quest_gold_exp[0][2],
-            'exp': find_quest_gold_exp[0][1],
-            'text': text_stripped,
-        }
-    elif find_foray_success:
-        return {
-            'type': QuestType.FORAY,
-            'items': {},
-            'gold': 0,
-            'exp': 0,
+            'gold': find_quest_gold_exp[0][2] if find_quest_gold_exp else  0,
+            'exp': find_quest_gold_exp[0][1] if find_quest_gold_exp else 0,
             'text': text_stripped,
         }
     elif find_foray_tried_to_stop:
@@ -95,6 +98,7 @@ def analyze_text(text):
             'text': text_stripped,
         }
 
+
 @command_handler()
 def parse_quest(bot: Bot, update: Update, user: User):
     quest_data = analyze_text(update.message.text)
@@ -121,6 +125,7 @@ def parse_quest(bot: Bot, update: Update, user: User):
     uq.gold = quest_data['gold']
     if quest_data['type'] == QuestType.FORAY_PLEDGE:
         uq.pledge = True
+        uq.location = Session.query(Location).filter(Location.name == "🗡Foray").first()
     uq.level = user.character.level if user.character else 0  # If we don't have a profile yet just assume "0" level
 
     quest = Session.query(Quest).filter_by(text=quest_data['text']).first()
@@ -151,7 +156,7 @@ def parse_quest(bot: Bot, update: Update, user: User):
     # callback handler via sql...
     if quest_data['type'] == QuestType.NORMAL:
         inline_keys = []
-        for location in Session.query(Location).all():
+        for location in Session.query(Location).filter(Location.selectable == True).all():
             inline_keys.append(
                 [
                     InlineKeyboardButton(location.name, callback_data=json.dumps(
@@ -171,9 +176,19 @@ def parse_quest(bot: Bot, update: Update, user: User):
             parse_mode=ParseMode.HTML,
             reply_markup=inline_keyboard
         )
-    elif quest_data['type'] in [QuestType.FORAY, QuestType.FORAY_STOP, QuestType.FORAY_PLEDGE]:
-
-
+    elif quest_data['type'] == QuestType.FORAY_PLEDGE:
+        bot.sendMessage(
+            chat_id=user.id,
+            text=MSG_FORAY_PLEDGE,
+            parse_mode=ParseMode.HTML,
+        )
+    elif quest_data['type'] == QuestType.FORAY:
+        bot.sendMessage(
+            chat_id=user.id,
+            text=MSG_FORAY_ACCEPTED,
+            parse_mode=ParseMode.HTML,
+        )
+    elif quest_data['type'] == QuestType.FORAY_STOP:
         bot.sendMessage(
             chat_id=user.id,
             text=MSG_FORAY_ACCEPTED,

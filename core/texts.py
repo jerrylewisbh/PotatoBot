@@ -556,6 +556,8 @@ MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"
 MSG_QUEST_ACCEPTED = "Thank you for sending in this quest."
 MSG_FORAY_ACCEPTED = "Thank you for sending in your successful Foray."
+MSG_FORAY_ACCEPTED_KNIGHT = "Thank you for sending in your successful Foray. Where you offered to /pledge your allegiance to a village?"
+MSG_FORAY_PLEDGE = "Please send in your Foray result and choose there if your pledge was successful."
 MSG_QUEST_7_DAYS = "*In the last seven days you told me about the following adventures:*\n\n"
 MSG_QUEST_STAT_LOCATION = "*{} ({})*: \n" \
                           "Avg: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n" \

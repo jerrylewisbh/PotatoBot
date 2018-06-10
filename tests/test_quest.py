@@ -27,6 +27,10 @@ class TestTime(unittest.TestCase):
 
         self.assertEqual(analyze_text(FORAY_CLUELESS)["type"], QuestType.FORAY)
 
+        a = analyze_text(FORAY_CLUELESS_LOOT)
+        self.assertIsNotNone(a['items'])
+        self.assertEqual(a["type"], QuestType.FORAY)
+
     def test_foray_stop_success_identification(self):
         """ Try to identify quests """
 

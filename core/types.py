@@ -220,6 +220,8 @@ class UserQuest(Base):
 
     pledge = Column(Boolean(), default=0)
 
+    successful = Column(Boolean(), default=0)
+
     items = relationship(UserQuestItem, lazy='dynamic')
 
     __table_args__ = (
@@ -234,6 +236,8 @@ class Location(Base):
     name = Column(UnicodeText(250))
 
     user_locations = relationship('UserQuest', back_populates='location')
+
+    selectable = Column(Boolean(), default=False)
 
 
 class WelcomeMsg(Base):
@@ -267,8 +271,6 @@ class Admin(Base):
 
     admin_type = Column(Integer)
     admin_group = Column(BigInteger, primary_key=True, default=0)
-
-
 
 
 class OrderGroup(Base):
