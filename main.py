@@ -15,7 +15,6 @@ from core.battle import report_after_battle
 from core.bot import MQBot
 from core.chat_commands import (CC_ADMIN_LIST, CC_ADMINS, CC_ALLOW_PIN_ALL,
                                 CC_ALLOW_TRIGGER_ALL, CC_BATTLE_STATISTICS,
-                                CC_BOSS_1, CC_BOSS_2, CC_BOSS_3, CC_BOSS_4,
                                 CC_CLOSE_HIRING, CC_DAY_STATISTICS, CC_DELETE,
                                 CC_DISALLOW_PIN_ALL, CC_DISALLOW_TRIGGER_ALL,
                                 CC_HELP, CC_KICK, CC_OPEN_HIRING, CC_PIN,
@@ -44,8 +43,6 @@ from core.exchange.snipe import sniping_info
 from core.functions.activity import (battle_activity, day_activity,
                                      week_activity)
 from core.functions.admins import admins_for_users, list_admins
-from core.functions.bosses import (boss_hydra, boss_leader, boss_monoeye,
-                                   boss_zhalo)
 from core.functions.common import (admin_panel, delete_msg, delete_user, error,
                                    help_msg, ping, stock_compare_forwarded,
                                    trade_compare, web_auth)
@@ -159,14 +156,6 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
             pin_all(bot, update)
         elif text == CC_DISALLOW_PIN_ALL:
             not_pin_all(bot, update)
-        elif text in CC_BOSS_1:
-            boss_leader(bot, update)
-        elif text in CC_BOSS_2:
-            boss_zhalo(bot, update)
-        elif text in CC_BOSS_3:
-            boss_monoeye(bot, update)
-        elif text in CC_BOSS_4:
-            boss_hydra(bot, update)
         elif text == CC_OPEN_HIRING:
             open_hiring(bot, update)
         elif text == CC_CLOSE_HIRING:
