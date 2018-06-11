@@ -79,6 +79,7 @@ def analyze_text(text):
     if find_go:
         return {
             'type': QuestType.STOP,
+            'success': True,
             'items': {},
             'gold': int(find_foray_success[0][1]) if find_foray_success else 0,
             'exp': int(find_foray_success[0][2]) if find_foray_success else 0,
@@ -87,6 +88,7 @@ def analyze_text(text):
     elif find_go_failed:
         return {
             'type': QuestType.STOP_FAIL,
+            'success': False,
             'items': {},
             'gold': 0,
             'exp': int(find_foray_go_failed_reward[0][1]) if find_foray_go_failed_reward else 0,
@@ -98,6 +100,7 @@ def analyze_text(text):
             items[item[1]] = item[2]
         return {
             'type': QuestType.FORAY,
+            'success': True,
             'items': items,
             'gold': int(find_foray_success[0][1]) if find_foray_success else 0,
             'exp': int(find_foray_success[0][2]) if find_foray_success else 0,
@@ -109,6 +112,7 @@ def analyze_text(text):
             items[item[1]] = item[2]
         return {
             'type': QuestType.NORMAL,
+            'success': True,
             'items': items,
             'gold': find_quest_gold_exp[0][2] if find_quest_gold_exp else 0,
             'exp': find_quest_gold_exp[0][1] if find_quest_gold_exp else 0,
@@ -117,6 +121,7 @@ def analyze_text(text):
     elif find_foray_tried_stopping:
         return {
             'type': QuestType.FORAY_FAILED,
+            'success': False,
             'items': {},
             'gold': 0,
             'exp': int(find_foray_go_failed_reward[0][1]) if find_foray_go_failed_reward else 0,
@@ -125,6 +130,7 @@ def analyze_text(text):
     elif find_foray_stopped:
         return {
             'type': QuestType.FORAY_FAILED,
+            'success': False,
             'items': {},
             'gold': int(find_foray_lost[0][1]) if find_foray_lost else 0,
             'exp': 0,
@@ -133,6 +139,7 @@ def analyze_text(text):
     elif find_foray_pledge:
         return {
             'type': QuestType.FORAY_PLEDGE,
+            'success': True,
             'items': {},
             'gold': 0,
             'exp': 0,
@@ -141,6 +148,7 @@ def analyze_text(text):
     elif find_arena:
         return {
             'type': QuestType.ARENA,
+            # TODO!!!
             'items': {},
             'gold': 0,
             'exp': 0,

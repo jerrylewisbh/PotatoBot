@@ -19,12 +19,11 @@ def save_user_quest(user: User, update: Update, quest_data):
     uq.forward_date = update.message.forward_date
     uq.exp = quest_data['exp']
     uq.gold = quest_data['gold']
-    if quest_data['type'] == QuestType.FORAY:
+    uq.successful = quest_data['success']
+    if quest_data['type'] == [QuestType.FORAY, QuestType.FORAY_FAILED]:
         uq.location = Session.query(Location).filter(Location.name == "🗡Foray").first()
-    if quest_data['type'] in [QuestType.FORAY_FAILED, QuestType.STOP_FAIL]:
-        uq.successful = False
-    else:
-        uq.successful = True
+    if quest_data['type'] == [QuestType.STOP, QuestType.STOP_FAIL]:
+        uq.location = Session.query(Location).filter(Location.name == "Defend").first()
     uq.level = user.character.level if user.character else 0  # If we don't have a profile yet just assume "0" level
 
     quest = Session.query(Quest).filter_by(text=quest_data['text']).first()
@@ -99,6 +98,14 @@ def parse_quest(bot: Bot, update: Update, user: User):
             parse_mode=ParseMode.HTML,
             reply_markup=inline_keyboard
         )
+    elif quest_data['type'] == QuestType.FORAY_FAILED:
+        uq = save_user_quest(user, update, quest_data)
+
+        bot.sendMessage(
+            chat_id=user.id,
+            text=MSG_FORAY_FAILED,
+            parse_mode=ParseMode.HTML,
+        )
     elif quest_data['type'] == QuestType.FORAY_PLEDGE:
         bot.sendMessage(
             chat_id=user.id,
@@ -142,7 +149,7 @@ def parse_quest(bot: Bot, update: Update, user: User):
             text=MSG_FORAY_ACCEPTED,
             parse_mode=ParseMode.HTML,
         )
-    elif quest_data['type'] == QuestType.STOP:
+    elif quest_data['type'] == QuestType.STOP_FAIL:
         uq = save_user_quest(user, update, quest_data)
 
         bot.sendMessage(

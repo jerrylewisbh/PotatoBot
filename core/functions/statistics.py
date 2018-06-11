@@ -4,11 +4,14 @@ from datetime import datetime, timedelta
 from math import pi
 
 import pandas as pd
+from pycparser.ply.yacc import yacc
 from sqlalchemy import func, tuple_
 from telegram import Bot, ParseMode, Update
 
 import matplotlib.pyplot as plot
 import numpy
+
+from config import QUEST_LOCATION_FORAY_ID
 from core.decorators import command_handler, user_allowed
 from core.functions.reply_markup import generate_statistics_markup
 from core.texts import *
@@ -28,7 +31,7 @@ def statistic_about(bot: Bot, update: Update):
                reply_markup=markup)
 
 
-def relative_details(user: User, from_date: datetime):
+def relative_details(user: User, from_date: datetime, FORAY_QUEST_LOCATION_ID=None):
     locations = Session.query(Location).all()
     text = ""
     for location in locations:
@@ -53,9 +56,6 @@ def relative_details(user: User, from_date: datetime):
             UserQuest.from_date > from_date
         ).first()
 
-        print(item_stats)
-        print(base_stats)
-
         text += MSG_QUEST_STAT_LOCATION.format(
             location.name,
             base_stats.count if base_stats.count else 0,
@@ -66,6 +66,56 @@ def relative_details(user: User, from_date: datetime):
             base_stats.gold_sum if base_stats.gold_sum else 0,
             item_stats.item_sum if item_stats.item_sum else 0,
         )
+
+        # Additional stats for foray...
+        if location.id == QUEST_LOCATION_FORAY_ID:
+            foray_stats_success = Session.query(
+                UserQuest.successful,
+                func.count(UserQuest.id).label("count"),
+                func.count(UserQuest.pledge).label("pledges")
+            ).filter(
+                UserQuest.successful == True,
+                UserQuest.user_id == user.id,
+                UserQuest.location_id == location.id,
+                UserQuest.from_date > from_date
+            ).first()
+
+            foray_stats_failed = Session.query(
+                UserQuest.successful,
+                func.count(UserQuest.id).label("count"),
+            ).filter(
+                UserQuest.successful == False,
+                UserQuest.user_id == user.id,
+                UserQuest.location_id == location.id,
+                UserQuest.from_date > from_date
+            ).first()
+
+            stat_count_failed = 0
+            if foray_stats_failed:
+                stat_count_failed = foray_stats_failed.count
+
+            stat_count = 0
+            stat_pledges = 0
+            if foray_stats_success:
+                no_success = True
+                stat_count = foray_stats_success.count
+                stat_pledges = foray_stats_success.pledges
+
+            overall_count = (stat_count_failed + stat_count)
+            if not overall_count:
+                success_rate = 100
+            else:
+                success_rate = stat_count / overall_count * 100
+
+            if not stat_count:
+                pledge_rate = 0
+            else:
+                pledge_rate = stat_pledges / stat_count * 100
+
+            text += MSG_QUEST_STAT_FORAY.format(success_rate, pledge_rate)
+
+
+
     return text
 
 
@@ -73,15 +123,11 @@ def relative_details(user: User, from_date: datetime):
 def quest_statistic(bot: Bot, update: Update, user: User):
     logging.info("User '%s' called quest_statistic", user.id)
 
-    # FixMe/TODO: We don't have gold data until June 9th because the field was
-    # missing. Filter from this date onwards in a later release.
     text = MSG_QUEST_7_DAYS
     text += relative_details(user, datetime.utcnow() - timedelta(days=7))
     text += MSG_QUEST_OVERALL
-    text += relative_details(user, datetime.utcnow() - timedelta(days=365 * 30))
+    text += relative_details(user, datetime.utcnow() - timedelta(weeks=300))
     text += MSG_QUEST_STAT
-
-    print(text)
 
     bot.sendMessage(
         chat_id=user.id,
