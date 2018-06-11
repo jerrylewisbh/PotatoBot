@@ -441,7 +441,7 @@ def annotate_stock_with_price(bot: Bot, stock: str):
                     count = int(find.group("count"))
                     item_overall = (count * min_price)
                     overall_worth += item_overall
-                    stock_text += "{} <i>({} x {} = {}🐣)</i>\n".format(
+                    stock_text += MSG_STOCK_PRICE.format(
                         find.group("item"),
                         count,
                         min_price,
@@ -452,6 +452,6 @@ def annotate_stock_with_price(bot: Bot, stock: str):
         else:
             stock_text += "{}\n".format(line)
 
-    stock_text += "\nEstimated overall worth: {}🐣\n".format(overall_worth)
+    stock_text += MSG_STOCK_OVERALL_PRICE.format(overall_worth)
 
     return stock_text

@@ -165,6 +165,9 @@ MSG_STOCK_COMPARE_HARVESTED = '📦<b>You got:</b>\n'
 MSG_STOCK_COMPARE_LOST = '\n📦<b>You lost:</b>\n'
 MSG_STOCK_COMPARE_FORMAT = '{} ({})\n'
 MSG_STOCK_COMPARE_WAIT = 'Waiting for data to compare...'
+MSG_STOCK_PRICE = "{} <i>({} x {} = {}💰)</i>\n"
+MSG_STOCK_OVERALL_PRICE = "\nEstimated overall worth: {}💰\n"
+
 
 MSG_PERSONAL_SITE_LINK = 'Your personal link: {}'
 
