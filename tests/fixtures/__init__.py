@@ -91,9 +91,9 @@ FORAY_CLUELESS_LOOT = """Knox was completely clueless. Village was successfully 
 Received 31 gold and 92 exp.
 Earned: 📗Scroll of Peace (1)"""
 
-FORAY_PLEDGE = """After a successful act of violence, as a brave knight you are, you felt some guilt and decided to talk with your victims. 
-Your speech was so pure and enlightening that the villagers decided to make you an offer. 
-Tired of constant pillages, in exchange for guarantee of their safety from future forays they have promised to supply you 
+FORAY_PLEDGE = """After a successful act of violence, as a brave knight you are, you felt some guilt and decided to talk with your victims.
+Your speech was so pure and enlightening that the villagers decided to make you an offer.
+Tired of constant pillages, in exchange for guarantee of their safety from future forays they have promised to supply you
 with some intelligence and resources on a regular basis.
 
 To accept their offer, you shall /pledge to protect. You have 3 minutes to decide."""

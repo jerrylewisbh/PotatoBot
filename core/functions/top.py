@@ -1,21 +1,23 @@
 from config import CASTLE
 from datetime import datetime, timedelta
 
-from core.functions.inline_markup import (generate_battle_top,
-                                          generate_build_top)
-from core.functions.reply_markup import generate_top_markup
-from core.texts import *
-from core.types import (BuildReport, Character, Report, Squad, SquadMember,
-                        Session)
-from core.decorators import user_allowed
-from core.utils import send_async
 from sqlalchemy import text as text_
 from sqlalchemy import func, tuple_
 from telegram import Bot, Update
 
+from core.decorators import user_allowed
+from core.functions.inline_markup import (generate_battle_top,
+                                          generate_build_top)
+from core.functions.reply_markup import generate_top_markup
+from core.texts import *
+from core.types import (BuildReport, Character, Report, Session, Squad,
+                        SquadMember)
+from core.utils import send_async
+
 TOP_START_DATE = datetime(2017, 12, 11)
 
 Session()
+
 
 @user_allowed
 def top_about(bot: Bot, update: Update):

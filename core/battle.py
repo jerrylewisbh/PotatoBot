@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+from config import (CASTLE, DAYS_OLD_PROFILE_KICK, DAYS_PROFILE_REMIND,
+                    GOVERNMENT_CHAT)
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -11,20 +13,21 @@ from telegram.error import TelegramError
 from telegram.ext import Job
 from telegram.ext.dispatcher import run_async
 
-from core.texts import *
-
-from config import CASTLE, GOVERNMENT_CHAT, DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
-from core.functions.common import (get_weighted_diff, stock_compare_text, stock_split)
+from core.functions.common import (get_weighted_diff, stock_compare_text,
+                                   stock_split)
 from core.functions.inline_keyboard_handling import send_order
 from core.functions.inline_markup import QueryType
-from core.functions.profile.util import get_latest_report, format_report, get_stock_before_after_war
+from core.functions.profile.util import (format_report, get_latest_report,
+                                         get_stock_before_after_war)
 from core.state import get_last_battle
+from core.texts import *
 from core.types import (Admin, Character, Order, Report, Session, Squad,
                         SquadMember, User)
 from core.utils import send_async
 from cwmq import Publisher
 
 Session()
+
 
 @run_async
 def ready_to_battle(bot: Bot, job_queue: Job):
@@ -127,10 +130,22 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
             global_members += total_members
             global_reports += total_reports
             if total_members > 0:
-                text += MSG_REPORT_SUMMARY_RATING.format(squad.squad_name, total_reports, total_members, full_atk, full_def,
-                                                  full_exp, full_gold, full_stock)
-        text += MSG_REPORT_SUMMARY_RATING.format('TOTAL', global_reports, global_members, global_atk, global_def, global_exp,
-                                          global_gold, global_stock)
+                text += MSG_REPORT_SUMMARY_RATING.format(squad.squad_name,
+                                                         total_reports,
+                                                         total_members,
+                                                         full_atk,
+                                                         full_def,
+                                                         full_exp,
+                                                         full_gold,
+                                                         full_stock)
+        text += MSG_REPORT_SUMMARY_RATING.format('TOTAL',
+                                                 global_reports,
+                                                 global_members,
+                                                 global_atk,
+                                                 global_def,
+                                                 global_exp,
+                                                 global_gold,
+                                                 global_stock)
         text += MSG_REPORT_TOTAL.format(players_atk, players_def, real_atk, real_def)
         send_async(bot, chat_id=GOVERNMENT_CHAT, text=text, parse_mode=ParseMode.HTML, reply_markup=None)
 
@@ -216,9 +231,10 @@ def refresh_api_users(bot: Bot, job_queue: Job):
         bot.logger.error(str(err))
         Session.rollback()
 
+
 def create_user_report(user: User) -> Optional[str]:
     if user.is_api_profile_allowed and user.is_api_stock_allowed and \
-        user.setting_automated_report and user.api_token:
+            user.setting_automated_report and user.api_token:
 
         logging.info("Processing report_after_battle for user_id='%s'", user.id)
 

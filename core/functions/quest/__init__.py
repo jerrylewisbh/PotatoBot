@@ -12,6 +12,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Upda
 
 Session()
 
+
 def save_user_quest(user: User, update: Update, quest_data):
     uq = UserQuest()
     uq.user = user
@@ -50,6 +51,7 @@ def save_user_quest(user: User, update: Update, quest_data):
     Session.commit()
 
     return uq
+
 
 @command_handler()
 def parse_quest(bot: Bot, update: Update, user: User):

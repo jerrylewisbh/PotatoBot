@@ -1,18 +1,19 @@
 import json
 import logging
+from config import CASTLE
 from datetime import datetime, timedelta
 from enum import IntFlag, auto
 
 from sqlalchemy import func, tuple_
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from config import CASTLE
 from core.enums import Castle
 from core.texts import *
-from core.types import (Admin, AdminType, Character, Group, OrderGroup, Squad,
-                        User, Session)
+from core.types import (Admin, AdminType, Character, Group, OrderGroup,
+                        Session, Squad, User)
 
 Session()
+
 
 class QueryType(IntFlag):
     GroupList = auto()

@@ -2,15 +2,15 @@
 
 import logging
 import re
+from config import CASTLE, CWBOT_ID, DEBUG, EXT_ID, LOGFILE, TOKEN
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
 from telegram import Bot, Update
 from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
-                          Updater, MessageQueue)
+                          MessageQueue, Updater)
 from telegram.ext.dispatcher import run_async
 
-from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE, CWBOT_ID
 from core.battle import report_after_battle
 from core.bot import MQBot
 from core.chat_commands import (CC_ADMIN_LIST, CC_ADMINS, CC_ALLOW_PIN_ALL,
@@ -28,14 +28,16 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
                            ADMIN_COMMAND_ORDER, ADMIN_COMMAND_RECRUIT,
                            ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_SQUAD_LIST,
                            ADMIN_COMMAND_STATUS, STATISTICS_COMMAND_EXP,
+                           STATISTICS_COMMAND_QUESTS,
                            STATISTICS_COMMAND_SKILLS, TOP_COMMAND_ATTACK,
                            TOP_COMMAND_BATTLES, TOP_COMMAND_BUILD,
                            TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP,
-                           USER_COMMAND_BACK, USER_COMMAND_ME,
+                           USER_COMMAND_BACK, USER_COMMAND_EXCHANGE,
+                           USER_COMMAND_HIDE, USER_COMMAND_ME,
                            USER_COMMAND_REGISTER, USER_COMMAND_SETTINGS,
                            USER_COMMAND_SQUAD, USER_COMMAND_SQUAD_LEAVE,
                            USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
-                           USER_COMMAND_TOP, USER_COMMAND_HIDE, USER_COMMAND_EXCHANGE, STATISTICS_COMMAND_QUESTS)
+                           USER_COMMAND_TOP)
 from core.decorators import user_allowed
 from core.exchange.hide import hide_gold_info
 from core.exchange.snipe import sniping_info
@@ -49,19 +51,19 @@ from core.functions.inline_keyboard_handling import (callback_query,
                                                      inlinequery, send_status)
 from core.functions.order_groups import add_group, group_list
 from core.functions.orders import order, orders
-from core.functions.profile import (build_report_received, show_char,
-                                    char_update, grant_access,
-                                    handle_access_token, profession_update,
-                                    repair_report_received, report_received,
-                                    settings, user_panel)
+from core.functions.profile import (build_report_received, char_update,
+                                    grant_access, handle_access_token,
+                                    profession_update, repair_report_received,
+                                    report_received, settings, show_char,
+                                    user_panel)
 from core.functions.quest import parse_quest
 from core.functions.squad import (battle_attendance_show, battle_reports_show,
                                   call_squad, close_hiring,
                                   leave_squad_request, list_squad_requests,
                                   open_hiring, remove_from_squad, squad_about,
                                   squad_list, squad_request)
-from core.functions.statistics import (exp_statistic, skill_statistic,
-                                       statistic_about, quest_statistic)
+from core.functions.statistics import (exp_statistic, quest_statistic,
+                                       skill_statistic, statistic_about)
 from core.functions.top import (attack_top, def_top, exp_top, top_about,
                                 week_battle_top, week_build_top)
 from core.functions.triggers import (del_trigger, disable_trigger_all,
@@ -77,7 +79,7 @@ from core.jobs.job_queue import (add_after_war_messages,
 from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
                          REPAIR_REPORT, REPORT, STOCK)
 from core.state import GameState, get_game_state
-from core.types import Admin, Squad, User, Session
+from core.types import Admin, Session, Squad, User
 from core.utils import create_or_update_user
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler
@@ -86,6 +88,7 @@ from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
 
 Session()
+
 
 @run_async
 @user_allowed

@@ -94,7 +94,7 @@ Squad commands:
 /unban <user> - Unban an user from the squad
 
 
-User commands: 
+User commands:
 /items - List known items
 /hide - Manually trigger hide
 /resume - Resume suspended sniping
@@ -520,13 +520,13 @@ MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock updates:</b>\n
 MSG_USER_BATTLE_REPORT_HEADER = "<b>Your after action report:</b>\n\n"
 MSG_USER_BATTLE_REPORT_FULL = "<b>Your complete report:</b>\n\n"
 
-MSG_USER_BATTLE_REPORT= "{}{} ⚔:{} 🛡:{} "\
-                        "Lvl: {}\n"\
-                        "Your result on the battlefield:\n" \
-                        "🔥Exp: {}\n" \
-                        "💰Gold: {}\n" \
-                        "📦Stock: {}\n\n" \
-                        "<i>Note: Thanks for sending in your /report. Please do this after every battle!\n</i>"
+MSG_USER_BATTLE_REPORT = "{}{} ⚔:{} 🛡:{} "\
+    "Lvl: {}\n"\
+    "Your result on the battlefield:\n" \
+    "🔥Exp: {}\n" \
+    "💰Gold: {}\n" \
+    "📦Stock: {}\n\n" \
+    "<i>Note: Thanks for sending in your /report. Please do this after every battle!\n</i>"
 
 MSG_USER_BATTLE_REPORT_PRELIM = "{}{} Lvl: {}\n\n"\
                                 "<b>Please forward me your /report as soon as possible!</b>\n"
@@ -543,7 +543,9 @@ MSG_SETTINGS_INFO = "<b>Your settings:</b>\n" \
                     "<i>Last profile update: {}</i>\n" \
                     "<i>Last stock update: {}</i>"
 MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"
-MSG_NEEDS_TRADE_ACCESS = 'This requires trade permissions. I will request them once you select "{}" or "{}".'.format(USER_COMMAND_EXCHANGE, USER_COMMAND_HIDE)
+MSG_NEEDS_TRADE_ACCESS = 'This requires trade permissions. I will request them once you select "{}" or "{}".'.format(
+    USER_COMMAND_EXCHANGE,
+    USER_COMMAND_HIDE)
 
 MSG_NO_REPORT_PHASE_BEFORE_BATTLE = "War is coming! Your Stock and Profile is getting updated automatically. No need to forward your data just yet!"
 MSG_NO_REPORT_PHASE_AFTER_BATTLE = "War is over but I don't accept reports just yet! I will remind you when it is time."
@@ -598,18 +600,18 @@ HIDE_RESULT_INTRO = "<b>Hiding finshed! Your results:\n</b>"
 HIDE_BOUGHT = "You bought <b>{}</b> for {}💰\n"
 
 SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
-               "*Automated buying of items at a given price*\n" \
-               "You can set your order via `/s <itemId> <price> [<numberOfItems>]`.\n\n" \
-               "Examples: \n" \
-               "- `/s 01 10  ` - Buy one Thread for 10💰 or less\n" \
-               "- `/s 20 2 10` - Buy Leather for 2💰 or less until 10 are bought\n\n" \
-               "_How does it work?_: If your given item is sold for or below the price you specified I will try to buy it. " \
-               "It can take some time until this item is available for that price. It is also possible that other " \
-               "players are searching for the same item. In this case you need a little bit of luck, although we try " \
-               "\"first came, first served\". You can issue `/items` to get a list of items. \n\n" \
-               "To remove a buy order `/sr <itemId>`.\n\n" \
-               "*Your current orders are:*\n" \
-               "{}"
+    "*Automated buying of items at a given price*\n" \
+    "You can set your order via `/s <itemId> <price> [<numberOfItems>]`.\n\n" \
+    "Examples: \n" \
+    "- `/s 01 10  ` - Buy one Thread for 10💰 or less\n" \
+    "- `/s 20 2 10` - Buy Leather for 2💰 or less until 10 are bought\n\n" \
+    "_How does it work?_: If your given item is sold for or below the price you specified I will try to buy it. " \
+    "It can take some time until this item is available for that price. It is also possible that other " \
+    "players are searching for the same item. In this case you need a little bit of luck, although we try " \
+    "\"first came, first served\". You can issue `/items` to get a list of items. \n\n" \
+    "To remove a buy order `/sr <itemId>`.\n\n" \
+    "*Your current orders are:*\n" \
+    "{}"
 
 SNIPE_LIMIT_EXCEEDED = "Sorry but you may only have {} orders active at any given time. Please remove another order first."
 SNIPE_INITIAL_ORDER_EXCEEDED = "Sorry but you may only order {} pieces at a time. Please reduce your amount."

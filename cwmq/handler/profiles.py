@@ -1,13 +1,15 @@
 import datetime
 import json
 import logging
+from config import BOT_ONE_STEP_API
 
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
-from telegram import ParseMode, Bot
+from telegram import Bot, ParseMode
 
-from config import BOT_ONE_STEP_API
 from core.enums import CASTLE_MAP, CLASS_MAP
-from core.exchange.hide import get_hide_mode, get_hide_result, exit_hide_mode, get_best_fulfillable_order, autohide
+from core.exchange.hide import (autohide, exit_hide_mode,
+                                get_best_fulfillable_order, get_hide_mode,
+                                get_hide_result)
 from core.functions.common import stock_compare
 from core.functions.profile.util import get_required_xp
 from core.functions.reply_markup import generate_user_markup
@@ -216,7 +218,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 # FIXME: DO NOT SEND STOCK CHANGE FOR THE TIME BEEING
                 return
 
-                #dispatcher.bot.send_message(
+                # dispatcher.bot.send_message(
                 #    user.id,
                 #    stock_info,
                 #    parse_mode=ParseMode.HTML,
@@ -300,5 +302,3 @@ def api_access_revoked(bot: Bot, user):
             MSG_API_REVOKED_PERMISSIONS,
             reply_markup=generate_user_markup(user.id)
         )
-
-

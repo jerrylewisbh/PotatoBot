@@ -18,6 +18,7 @@ from core.utils import send_async
 
 Session()
 
+
 class StockType(Enum):
     Stock = 0
     TradeBot = 1
@@ -136,8 +137,10 @@ def stock_split(old_stock, new_stock):
 
     return (resources_old, resources_new)
 
+
 def __get_item(item_name):
     return Session.query(Item).filter(func.lower(Item.name) == item_name.lower()).first()
+
 
 def stock_compare_text(old_stock, new_stock):
     """ Compare stock... """
@@ -280,7 +283,7 @@ def ban_traitor(bot: Bot, user_id):
         Session.add(banned)
         Session.commit()
         squads = Session.query(Squad).all()
-        #for squad in squads:
+        # for squad in squads:
         #    send_async(bot, chat_id=squad.chat_id, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
 
 

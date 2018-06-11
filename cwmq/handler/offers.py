@@ -1,13 +1,13 @@
 import json
 import logging
+from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
 
 import redis
 from sqlalchemy import func
 
-from config import SUPER_ADMIN_ID, REDIS_SERVER, REDIS_PORT, REDIS_TTL
-from core.functions.common import MSG_API_INCOMPLETE_SETUP, \
-    MSG_DISABLED_TRADING
-from core.types import Session, Item, UserExchangeOrder, new_item
+from core.functions.common import (MSG_API_INCOMPLETE_SETUP,
+                                   MSG_DISABLED_TRADING)
+from core.types import Item, Session, UserExchangeOrder, new_item
 from cwmq import Publisher, wrapper
 
 Session()
@@ -18,8 +18,9 @@ logger.setLevel(logging.INFO)
 
 r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
 
+
 def offers_handler(channel, method, properties, body, dispatcher):
-    p = Publisher()
+    Publisher()
 
     logger.debug('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
@@ -37,12 +38,20 @@ def offers_handler(channel, method, properties, body, dispatcher):
             return
 
         for order in orders:
-            logging.info("Order #%s - item='%s' - user_id='%s', is_api_trade_allowed='%s', setting_automated_sniping='%s', sniping_suspended='%s'", order.id, order.item.name, order.user.id, order.user.is_api_trade_allowed, order.user.setting_automated_sniping, order.user.sniping_suspended)
+            logging.info(
+                "Order #%s - item='%s' - user_id='%s', is_api_trade_allowed='%s', setting_automated_sniping='%s', sniping_suspended='%s'",
+                order.id,
+                order.item.name,
+                order.user.id,
+                order.user.is_api_trade_allowed,
+                order.user.setting_automated_sniping,
+                order.user.sniping_suspended)
 
             if data['price'] > order.max_price:
                 # Done...
-                logging.info("Price '%s' for '%s' is greater than max_price '%s'", data['price'], order.item.name, order.max_price)
-                continue # Next order!
+                logging.info("Price '%s' for '%s' is greater than max_price '%s'",
+                             data['price'], order.item.name, order.max_price)
+                continue  # Next order!
             elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping or order.user.sniping_suspended:
                 logging.info(
                     "Trade disabled for %s (API: '%s'/ Setting: '%s' / Suspended: '%s')",
@@ -51,7 +60,7 @@ def offers_handler(channel, method, properties, body, dispatcher):
                     order.user.setting_automated_sniping,
                     order.user.sniping_suspended,
                 )
-                continue # Next order!
+                continue  # Next order!
 
             # TODO: On bot startup try to fullfil orders...
 
@@ -64,7 +73,7 @@ def offers_handler(channel, method, properties, body, dispatcher):
                 recently_ordered = int(recently_ordered)
                 if recently_ordered and order.outstanding_order > recently_ordered:
                     order_limit = recently_ordered - order_limit.outstanding_order
-            except:
+            except BaseException:
                 pass
 
             if data['qty'] >= order_limit:

@@ -5,14 +5,15 @@
 import os
 import sys
 
+from core.state import GameState, get_game_state
+from core.types import *
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from core.types import *
-from core.state import get_game_state, GameState
 
 session = Session()
 
-a = session.query(UserQuest).filter(UserQuest.daytime==0).all()
+a = session.query(UserQuest).filter(UserQuest.daytime == 0).all()
 
 for item in a:
     daytime = get_game_state(item.from_date)
@@ -28,5 +29,3 @@ for item in a:
 
     session.add(item)
     session.commit()
-
-

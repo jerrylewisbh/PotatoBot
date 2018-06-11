@@ -1,25 +1,29 @@
 import logging
 import re
+from config import CASTLE, REDIS_PORT, REDIS_SERVER
 from datetime import datetime, timedelta
 from enum import Enum
 
 import redis
-from telegram import Bot, Update, ParseMode
+from telegram import Bot, ParseMode, Update
 
-from config import CASTLE, REDIS_SERVER, REDIS_PORT
 from core.enums import CASTLE_MAP
 from core.functions.common import StockType, ban_traitor
-from core.functions.inline_markup import generate_profile_buttons, generate_settings_buttons
-from core.regexp import REPORT, PROFESSION, BUILD_REPORT, REPAIR_REPORT, HERO
+from core.functions.inline_markup import (generate_profile_buttons,
+                                          generate_settings_buttons)
+from core.regexp import BUILD_REPORT, HERO, PROFESSION, REPAIR_REPORT, REPORT
 from core.state import get_last_battle
 from core.template import fill_char_template
 from core.texts import *
-from core.types import Session, Character, Equip, Report, Profession, BuildReport, User, Stock, Item, new_item
+from core.types import (BuildReport, Character, Equip, Item, Profession,
+                        Report, Session, Stock, User, new_item)
 from core.utils import send_async
+
 
 class BuildType(Enum):
     Build = 1
     Repair = 0
+
 
 def parse_hero_text(report_text):
     if not report_text:
@@ -77,7 +81,7 @@ def parse_hero(bot: Bot, profile, user_id, date):
         char.gold = parsed_data['gold']
         char.donateGold = parsed_data['pouches']
 
-        #if parsed_data.group(21):
+        # if parsed_data.group(21):
         #    char.pet = str(parsed_data.group(21))
         #    char.petLevel = int(parsed_data.group(23))
         if parsed_data['equipment']:
@@ -95,6 +99,7 @@ def parse_hero(bot: Bot, profile, user_id, date):
             ban_traitor(bot, user_id)
             logging.warning('%s is a traitor!', user_id)
     return char
+
 
 def parse_report_text(report_text):
     if not report_text:
@@ -121,6 +126,7 @@ def parse_report_text(report_text):
         'gold': int(parsed.group("gold")) if parsed.group("gold") else 0,
         'stock': int(parsed.group("stock")) if parsed.group("stock") else 0,
     }
+
 
 def save_report(report_text, user_id, date):
 
@@ -354,6 +360,7 @@ def send_settings(bot, update, user):
             parse_mode=ParseMode.HTML
         )
 
+
 def format_report(report: Report) -> str:
     """ Return a formatted battle report. """
 
@@ -380,6 +387,8 @@ def format_report(report: Report) -> str:
     return text
 
 # TODO: Review. Can't this be moved directly into User class and a getter?
+
+
 def get_latest_report(user_id) -> Report:
     logging.debug("get_latest_report for '%s'", user_id)
     now = datetime.now()
@@ -389,6 +398,7 @@ def get_latest_report(user_id) -> Report:
     existing_report = Session.query(Report).filter(Report.user_id == user_id, Report.date > time_from).first()
 
     return existing_report
+
 
 def get_stock_before_after_war(user: User) -> tuple:
     """ Return the latest stock from before battle and the oldest after battle for comparison """
@@ -408,6 +418,7 @@ def get_stock_before_after_war(user: User) -> tuple:
     ).order_by(Stock.date.asc()).first()
 
     return (before_battle, after_battle)
+
 
 def annotate_stock_with_price(bot: Bot, stock: str):
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
@@ -444,8 +455,3 @@ def annotate_stock_with_price(bot: Bot, stock: str):
     stock_text += "\nEstimated overall worth: {}🐣\n".format(overall_worth)
 
     return stock_text
-
-
-
-
-

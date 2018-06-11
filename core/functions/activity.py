@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
 
-from core.texts import MSG_ORDER_STATISTIC, MSG_ORDER_STATISTIC_OUT_FORMAT
-from core.types import AdminType, Squad, Session
-from core.decorators import admin_allowed
-from core.utils import send_async
 from telegram import Bot, Update
 
+from core.decorators import admin_allowed
+from core.texts import MSG_ORDER_STATISTIC, MSG_ORDER_STATISTIC_OUT_FORMAT
+from core.types import AdminType, Session, Squad
+from core.utils import send_async
+
 Session()
+
 
 def activity(squad, days=0, hours=0):
     orders = sorted(squad.chat.orders, key=lambda x: x.date, reverse=True)

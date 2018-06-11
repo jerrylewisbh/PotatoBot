@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from config import DB, SUPER_ADMIN_ID
 from datetime import datetime
 from enum import Enum
 
@@ -11,8 +12,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 from telegram import Bot
-
-from config import DB, SUPER_ADMIN_ID
 
 
 class AdminType(Enum):
@@ -37,7 +36,6 @@ class MessageType(Enum):
     LOCATION = 7
     AUDIO = 8
     PHOTO = 9
-
 
 
 ENGINE = create_engine(DB,
@@ -496,10 +494,11 @@ class Item(Base):
     user_hide_settings = relationship('UserStockHideSetting', back_populates='item',
                                       lazy='dynamic', order_by='UserStockHideSetting.priority.desc()')
 
+
 class UserExchangeOrder(Base):
     __tablename__ = 'user_exchange'
 
-    id = Column(BigInteger, autoincrement=True, primary_key=True )
+    id = Column(BigInteger, autoincrement=True, primary_key=True)
 
     user_id = Column(BigInteger, ForeignKey(User.id))
     user = relationship(User, back_populates="sniping_settings")
@@ -511,6 +510,7 @@ class UserExchangeOrder(Base):
     initial_order = Column(Integer, nullable=False)
 
     max_price = Column(Integer, nullable=False)
+
 
 class UserStockHideSetting(Base):
     __tablename__ = 'user_autohide'
@@ -554,7 +554,7 @@ def check_admin(update, adm_type, allowed_types=()):
 
 def check_ban(update):
     ban = Session().query(Ban).filter_by(user_id=update.message.from_user.id
-                                       if update.message else update.callback_query.from_user.id).first()
+                                         if update.message else update.callback_query.from_user.id).first()
     if ban is None or ban.to_date < datetime.now():
         return True
     else:
@@ -572,7 +572,7 @@ def log(user_id, chat_id, func_name, args):
         s = Session()
         s.add(log_item)
         s.commit()
-        #Session.remove()
+        # Session.remove()
 
 
 def new_item(bot: Bot, name: str, tradable: bool):
@@ -588,5 +588,6 @@ def new_item(bot: Bot, name: str, tradable: bool):
             SUPER_ADMIN_ID,
             "New item '{}' discovered on exchange!".format(name),
         )
+
 
 Base.metadata.create_all(ENGINE)

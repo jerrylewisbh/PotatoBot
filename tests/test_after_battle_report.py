@@ -1,12 +1,13 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from core.battle import create_user_report
+from core.functions.quest import *
 from core.types import *
 
-from core.functions.quest import *
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -29,4 +30,3 @@ for user in api_users:
     logging.info(create_user_report(user))
 
     logging.info("END report_after_battle for user_id='%s'", user.id)
-

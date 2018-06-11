@@ -3,19 +3,21 @@ import os
 from datetime import datetime, timedelta
 from math import pi
 
-import matplotlib.pyplot as plot
-import numpy
 import pandas as pd
 from sqlalchemy import func, tuple_
-from telegram import Bot, Update, ParseMode
+from telegram import Bot, ParseMode, Update
 
-from core.decorators import user_allowed, command_handler
+import matplotlib.pyplot as plot
+import numpy
+from core.decorators import command_handler, user_allowed
 from core.functions.reply_markup import generate_statistics_markup
 from core.texts import *
-from core.types import Character, Profession, UserQuest, Location, Session, User, UserQuestItem
+from core.types import (Character, Location, Profession, Session, User,
+                        UserQuest, UserQuestItem)
 from core.utils import send_async
 
 Session()
+
 
 @user_allowed
 def statistic_about(bot: Bot, update: Update):
@@ -24,6 +26,7 @@ def statistic_about(bot: Bot, update: Update):
                chat_id=update.message.chat.id,
                text=MSG_STATISTICS_ABOUT,
                reply_markup=markup)
+
 
 def relative_details(user: User, from_date: datetime):
     locations = Session.query(Location).all()
@@ -65,11 +68,13 @@ def relative_details(user: User, from_date: datetime):
         )
     return text
 
+
 @command_handler()
 def quest_statistic(bot: Bot, update: Update, user: User):
     logging.info("User '%s' called quest_statistic", user.id)
 
-    # FixMe/TODO: We don't have gold data until June 9th because the field was missing. Filter from this date onwards in a later release.
+    # FixMe/TODO: We don't have gold data until June 9th because the field was
+    # missing. Filter from this date onwards in a later release.
     text = MSG_QUEST_7_DAYS
     text += relative_details(user, datetime.utcnow() - timedelta(days=7))
     text += MSG_QUEST_OVERALL
@@ -85,6 +90,7 @@ def quest_statistic(bot: Bot, update: Update, user: User):
         reply_markup=generate_statistics_markup(),
     )
 
+
 @user_allowed
 def quest_statistic_old(bot: Bot, update: Update):
     logging.debug("Quest statistics.py")
@@ -93,7 +99,6 @@ def quest_statistic_old(bot: Bot, update: Update):
     max_level = Session.query(func.max(UserQuest.level)).first()
     if not max_level:
         return
-
 
     fig, ax = plot.subplots(figsize=(20, 15))
     ind = numpy.arange(max_level[0] + 1)
@@ -132,7 +137,7 @@ def quest_statistic_old(bot: Bot, update: Update):
         width,
         color='gold',
         linestyle='-', marker='o'
-        #yerr=tuple(stddev)
+        # yerr=tuple(stddev)
     )
     bars.append(b)
 
@@ -140,8 +145,7 @@ def quest_statistic_old(bot: Bot, update: Update):
     ax.set_ylabel('XP')
     ax.set_title('Experience in Forest')
     ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0]+1))
-
+    ax.set_xticklabels(range(1, max_level[0] + 1))
 
     #[autolabel(ax, bar) for bar in bars]
 
@@ -180,8 +184,11 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
     for counter, daytime in enumerate(times, start=1):
         logging.warning("Getting stats for %s", daytime)
         stats = Session.query(
-            UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
-        ).join(Location).filter(UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(UserQuest.level).group_by(UserQuest.level).all()
+            UserQuest.level, func.avg(UserQuest.exp),
+            func.stddev(UserQuest.exp)).join(Location).filter(
+            UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(
+            UserQuest.level).group_by(
+            UserQuest.level).all()
 
         values = []
         stddev = []
@@ -210,7 +217,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
             width,
             color=daytime[2],
             linestyle='-', marker='o'
-            #yerr=tuple(stddev)
+            # yerr=tuple(stddev)
         )
         bars.append(b)
 
@@ -218,7 +225,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
     ax.set_ylabel('XP')
     ax.set_title('Experience in Forest')
     ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0]+1))
+    ax.set_xticklabels(range(1, max_level[0] + 1))
 
     ax.legend(
         [rect for rect in bars],
@@ -261,8 +268,11 @@ def quest_statistic_split(bot: Bot, update: Update):
     for counter, daytime in enumerate(times, start=1):
         logging.warning("Getting stats for %s", daytime)
         stats = Session.query(
-            UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
-        ).join(Location).filter(UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(UserQuest.level).group_by(UserQuest.level).all()
+            UserQuest.level, func.avg(UserQuest.exp),
+            func.stddev(UserQuest.exp)).join(Location).filter(
+            UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(
+            UserQuest.level).group_by(
+            UserQuest.level).all()
 
         values = []
         stddev = []
@@ -283,7 +293,7 @@ def quest_statistic_split(bot: Bot, update: Update):
         logging.warning(len(stddev))
 
         b = ax.bar(
-            ind + (width*counter),
+            ind + (width * counter),
             tuple(values),
             width,
             color=daytime[2],
@@ -295,7 +305,7 @@ def quest_statistic_split(bot: Bot, update: Update):
     ax.set_ylabel('XP')
     ax.set_title('Experience in Forest')
     ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0]+1))
+    ax.set_xticklabels(range(1, max_level[0] + 1))
 
     ax.legend(
         [rect for rect in bars],
@@ -312,6 +322,7 @@ def quest_statistic_split(bot: Bot, update: Update):
 
     plot.clf()
     os.remove(filename)
+
 
 @user_allowed
 def quest_statistic_one(bot: Bot, update: Update):
@@ -361,7 +372,7 @@ def quest_statistic_one(bot: Bot, update: Update):
     ax.set_ylabel('XP')
     ax.set_title('Experience in Forest')
     ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0]+1))
+    ax.set_xticklabels(range(1, max_level[0] + 1))
 
     """ax.legend(
         [rect for rect in bars],
@@ -379,6 +390,7 @@ def quest_statistic_one(bot: Bot, update: Update):
     plot.clf()
     os.remove(filename)
 
+
 def autolabel(ax, rects):
     """
     Attach a text label above each bar displaying its height
@@ -386,9 +398,9 @@ def autolabel(ax, rects):
     for rect in rects:
         height = rect.get_height()
         if int(height) > 0:
-            ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                '%d' % int(height),
-                ha='center', va='bottom')
+            ax.text(rect.get_x() + rect.get_width() / 2., 1.05 * height,
+                    '%d' % int(height),
+                    ha='center', va='bottom')
 
 
 @user_allowed

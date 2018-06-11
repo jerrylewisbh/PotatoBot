@@ -1,13 +1,15 @@
 import json
 import logging
+from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
 
 import redis
 from sqlalchemy import func
 
-from config import REDIS_SERVER, REDIS_PORT, REDIS_TTL
 from core.exchange.hide import autohide
-from core.functions.common import MSG_API_INCOMPLETE_SETUP, MSG_DISABLED_TRADING
-from core.types import Session, UserExchangeOrder, Item, UserStockHideSetting, User
+from core.functions.common import (MSG_API_INCOMPLETE_SETUP,
+                                   MSG_DISABLED_TRADING)
+from core.types import (Item, Session, User, UserExchangeOrder,
+                        UserStockHideSetting)
 from cwmq import Publisher, wrapper
 
 Session()
@@ -32,7 +34,7 @@ def digest_handler(channel, method, properties, body, dispatcher):
             # Look for sniping orders in case we missed a new or old deal that matches...
             item = Session.query(Item).filter(func.lower(Item.name) == digest_item['name'].lower()).first()
             if not item:
-                continue # Don't know that item...
+                continue  # Don't know that item...
 
             orders = item.user_orders.order_by(UserExchangeOrder.id).all()
             for order in orders:
@@ -86,7 +88,7 @@ def __handle_snipe_orders(digest_item, item: Item, order: UserExchangeOrder, red
         recently_ordered = int(recently_ordered)
         if recently_ordered and order.outstanding_order > recently_ordered:
             order_limit = recently_ordered - order_limit.outstanding_order
-    except:
+    except BaseException:
         pass
 
     avail_qty = 0
@@ -126,4 +128,3 @@ def __handle_snipe_orders(digest_item, item: Item, order: UserExchangeOrder, red
         logging.error("Wrong item code was given: %s", ex)
     except wrapper.APIWrongSettings:
         logging.error("User has disabled all trade settings but you tried to create a Buy-Order")
-

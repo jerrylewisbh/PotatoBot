@@ -1,13 +1,13 @@
 import logging
+from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
 
 import redis
-from telegram import Bot, Update, ParseMode
+from telegram import Bot, ParseMode, Update
 
-from config import REDIS_TTL, REDIS_SERVER, REDIS_PORT
 from core.decorators import command_handler
 from core.exchange import get_item_by_cw_id
 from core.texts import *
-from core.types import User, Session, UserStockHideSetting
+from core.types import Session, User, UserStockHideSetting
 from core.utils import send_async
 from cwmq import wrapper
 
@@ -30,7 +30,7 @@ def __get_autohide_settings(user):
 
 def get_best_fulfillable_order(user):
     if user.character.gold == 0:
-        return # We're already done!
+        return  # We're already done!
 
     for setting in user.hide_settings.all():
         # Note: It might be wiser to handle sniping overall first and then handle hiding. But digest for sniping
@@ -77,7 +77,7 @@ def get_best_fulfillable_order(user):
 def autohide(user: User):
     logging.info("[Hide] user_id='%s' is currently in HIDE MODE", user.id)
 
-    wrapper.update_profile(user) # Refresh profile!
+    wrapper.update_profile(user)  # Refresh profile!
     cw_id = get_best_fulfillable_order(user)
     if cw_id:
         # Calculate order based on users latest gold Information...
@@ -85,22 +85,21 @@ def autohide(user: User):
         wrapper.want_to_buy(
             user,
             cw_id,
-            1, # Only 1 piece
-            1, # 1g buy cheapest option avail.,
-            False, # Do not match exact and fail
+            1,  # Only 1 piece
+            1,  # 1g buy cheapest option avail.,
+            False,  # Do not match exact and fail
         )
     else:
         logging.info("[Hide] No more fulfillable orders found for user_id='%s'!", user.id)
 
 
-
 """
-Hide.py: 
+Hide.py:
 - DONE: Setze User in HIDE mode
 - DONE: Hole neues Profil mit Gold
 
 digest.py
-- Errechne die zu kaufenden Items wenn user in hide mode für erste erfüllbare order... 
+- Errechne die zu kaufenden Items wenn user in hide mode für erste erfüllbare order...
 
 deals.py
 - summiere ausgeführte orders für hide-user auf und speichere im redis...
@@ -111,6 +110,7 @@ profile.py
     -> wenn nix mehr ansteht beende hiding
 
 """
+
 
 @command_handler(
     testing_only=True
@@ -168,6 +168,7 @@ def exit_hide_mode(user):
     hide_key = "HIDE_{}".format(user.id)
     r.delete(hide_key)
 
+
 def set_hide_mode(user):
     logging.debug("[Hide] user_id='%s' entering hide_mode", user.id)
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
@@ -177,6 +178,7 @@ def set_hide_mode(user):
     hide_key = "HIDE_{}".format(user.id)
     r.set(hide_key, user.id, ex=360)
 
+
 def get_hide_mode(user):
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
     hide_key = "HIDE_{}".format(user.id)
@@ -184,6 +186,7 @@ def get_hide_mode(user):
 
     logging.debug("[Hide] user_id='%s' hide_mode='%s'", user.id, state)
     return state
+
 
 def append_hide_result(user, text):
     logging.debug("[Hide] user_id='%s' appending text='%s'", user.id, text)
@@ -194,6 +197,7 @@ def append_hide_result(user, text):
     r.expire(hide_key, 360)
 
     return r.get(hide_key)
+
 
 def get_hide_result(user):
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)

@@ -75,6 +75,7 @@ def get_game_state(custom_time=None):
 
     return state
 
+
 def get_last_battle() -> datetime:
     # Get last battletime
     now = datetime.now()

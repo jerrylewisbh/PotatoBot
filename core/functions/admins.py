@@ -1,15 +1,15 @@
 import logging
+from config import LOGFILE, SUPER_ADMIN_ID
 
-from config import SUPER_ADMIN_ID, LOGFILE
-
-# from core.texts import *
-from core.texts import *
-from core.types import Admin, AdminType, User, Session
-from core.decorators import admin_allowed, user_allowed
-from core.utils import send_async
 from telegram import Bot, Update
 
+from core.decorators import admin_allowed, user_allowed
+from core.texts import *
+from core.types import Admin, AdminType, Session, User
+from core.utils import send_async
+
 Session()
+
 
 @admin_allowed()
 def set_admin(bot: Bot, update: Update):
@@ -250,6 +250,6 @@ def get_log(bot: Bot, update: Update):
     if update.message.chat.type == 'private':
         with open(LOGFILE, 'rb') as file:
             bot.send_document(
-                chat_id = update.message.chat.id,
-                document = file
+                chat_id=update.message.chat.id,
+                document=file
             )

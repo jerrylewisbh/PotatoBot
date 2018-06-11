@@ -1,9 +1,10 @@
 
 from math import pi
 
+import pandas as pd
+
 # Libraries
 import matplotlib.pyplot as plt
-import pandas as pd
 
 
 my_class = """11: Aiming

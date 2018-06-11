@@ -1,12 +1,14 @@
+from telegram import Bot, Update
+
+from core.decorators import admin_allowed
 from core.functions.inline_markup import (generate_flag_orders,
                                           generate_order_groups_markup)
 from core.texts import *
 from core.types import Admin, AdminType, MessageType, Session
-from core.decorators import admin_allowed
 from core.utils import send_async
-from telegram import Bot, Update
 
 Session()
+
 
 @admin_allowed(adm_type=AdminType.GROUP)
 def order(bot: Bot, update: Update, chat_data):

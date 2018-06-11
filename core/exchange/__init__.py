@@ -44,5 +44,3 @@ def list_items(bot: Bot, update: Update, user: User, **kwargs):
         text=text,
         parse_mode=ParseMode.MARKDOWN,
     )
-
-

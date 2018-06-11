@@ -7,6 +7,7 @@ from core.types import Group, Session, User
 
 Session()
 
+
 @run_async
 def send_async(bot: Bot, *args, **kwargs):
     try:
@@ -96,4 +97,3 @@ def pad_string(text, padding):
         text += " "
 
     return text
-

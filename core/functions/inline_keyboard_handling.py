@@ -1,5 +1,6 @@
 import json
 import logging
+from config import WAITING_ROOM_LINK
 from datetime import datetime, timedelta
 from json import loads
 
@@ -10,7 +11,6 @@ from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
 from telegram.ext import Job, JobQueue
 from telegram.ext.dispatcher import run_async
 
-from config import WAITING_ROOM_LINK
 from core.decorators import admin_allowed, user_allowed
 from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Castle, Icons
 from core.functions.admins import del_adm
@@ -27,7 +27,8 @@ from core.functions.inline_markup import (QueryType, generate_forward_markup,
                                           generate_profile_buttons,
                                           generate_squad_list,
                                           generate_squad_members)
-from core.functions.profile.util import send_settings, annotate_stock_with_price
+from core.functions.profile.util import (annotate_stock_with_price,
+                                         send_settings)
 from core.functions.reply_markup import generate_user_markup
 from core.functions.squad import leave_squad
 from core.functions.top import (global_battle_top, global_build_top,
@@ -37,8 +38,7 @@ from core.template import fill_char_template
 from core.texts import *
 from core.types import (Admin, AdminType, Location, MessageType, Order,
                         OrderCleared, OrderGroup, OrderGroupItem, Report,
-                        Squad, SquadMember, Stock, User, UserQuest,
-                        Session)
+                        Session, Squad, SquadMember, Stock, User, UserQuest)
 from core.utils import create_or_update_user, send_async, update_group
 
 LOGGER = logging.getLogger('MyApp')
@@ -47,6 +47,7 @@ LOGGER = logging.getLogger('MyApp')
 order_updated = {}
 
 Session()
+
 
 @admin_allowed()
 def send_status(bot: Bot, update: Update):
@@ -221,6 +222,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
         if str(e) != "Message is not modified":
             raise e
 
+
 def squad_invite_decline(bot, update, user, data):
     if update.callback_query.from_user.id != data['id']:
         update.callback_query.answer(text=MSG_GO_AWAY)
@@ -229,6 +231,7 @@ def squad_invite_decline(bot, update, user, data):
     bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + user.username),
                         update.callback_query.message.chat.id,
                         update.callback_query.message.message_id)
+
 
 def squad_invite_accept(bot, update, user, data):
     if update.callback_query.from_user.id != data['id']:
@@ -245,6 +248,7 @@ def squad_invite_accept(bot, update, user, data):
         bot.editMessageText(MSG_SQUAD_ADD_ACCEPTED.format('@' + user.username),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id)
+
 
 def show_hero(bot, update, user, data):
     user = Session.query(User).filter_by(id=data['id']).first()
@@ -325,7 +329,7 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                     bot,
                     chat_id=order.chat_id,
                     text=MSG_ORDER_CLEARED_BY_HEADER +
-                         MSG_EMPTY).result()
+                    MSG_EMPTY).result()
                 if msg:
                     order.confirmed_msg = msg.message_id
                 else:
@@ -716,6 +720,7 @@ def order_group_delete(bot, update, user, data):
                         update.callback_query.message.message_id,
                         reply_markup=generate_groups_manage())
 
+
 def order_group_add(bot: Bot, update: Update, user: User, data: dict, chat_data: dict):
     chat_data['wait_group_name'] = True
     send_async(bot, chat_id=update.callback_query.message.chat.id,
@@ -811,7 +816,7 @@ def order_confirmed(bot: Bot, update: Update, user: User, data: dict, job_queue:
                     Session.commit()
                     if order.confirmed_msg != 0:
                         if order.id not in order_updated or \
-                                    datetime.now() - order_updated[order.id] > timedelta(seconds=4):
+                                datetime.now() - order_updated[order.id] > timedelta(seconds=4):
                             order_updated[order.id] = datetime.now()
                             job_queue.run_once(update_confirmed, 5, order)
                     update.callback_query.answer(text=MSG_ORDER_CLEARED)
@@ -830,7 +835,7 @@ def order_confirmed(bot: Bot, update: Update, user: User, data: dict, job_queue:
                 Session.commit()
                 if order.confirmed_msg != 0:
                     if order.id not in order_updated or \
-                                datetime.now() - order_updated[order.id] > timedelta(seconds=4):
+                            datetime.now() - order_updated[order.id] > timedelta(seconds=4):
                         order_updated[order.id] = datetime.now()
                         job_queue.run_once(update_confirmed, 5, order)
                 update.callback_query.answer(text=MSG_ORDER_CLEARED)
@@ -881,6 +886,7 @@ def set_user_quest_location(bot, update, user, data):
             update.callback_query.message.message_id
         )
 
+
 def set_user_foray_pledge(bot, update, user, data):
     user_quest = Session.query(UserQuest).filter_by(id=data['uq']).first()
     if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
@@ -893,6 +899,7 @@ def set_user_foray_pledge(bot, update, user, data):
             update.callback_query.message.chat.id,
             update.callback_query.message.message_id
         )
+
 
 def inlinequery(bot, update):
     """Handle the inline query."""

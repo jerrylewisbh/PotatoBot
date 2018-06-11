@@ -1,6 +1,5 @@
-from enum import IntFlag, auto
-
 import re
+from enum import IntFlag, auto
 
 # Gold / Exp
 REGEX_GOLD_EXP = r"((?:You received: )(?:([0-9]+) exp and )([0-9]+) gold)"
@@ -38,6 +37,7 @@ class QuestType(IntFlag):
 
     UNKNOWN = auto()
 
+
 def analyze_text(text):
     # Normal quests
     find_quest_gold_exp = re.findall(REGEX_GOLD_EXP, text)
@@ -63,7 +63,6 @@ def analyze_text(text):
     text_stripped = re.sub(REGEX_LOST, '', text_stripped)
 
     find_foray_pledge = re.findall(REGEX_FORAY_PLEDGE, text)
-
 
     # Stopping forays
     find_go = re.findall(REGEX_GO, text)
@@ -111,7 +110,7 @@ def analyze_text(text):
         return {
             'type': QuestType.NORMAL,
             'items': items,
-            'gold': find_quest_gold_exp[0][2] if find_quest_gold_exp else  0,
+            'gold': find_quest_gold_exp[0][2] if find_quest_gold_exp else 0,
             'exp': find_quest_gold_exp[0][1] if find_quest_gold_exp else 0,
             'text': text_stripped,
         }

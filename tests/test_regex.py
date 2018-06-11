@@ -1,11 +1,11 @@
-import datetime
 import os
 import sys
 import unittest
 
+from core.functions.profile.util import parse_hero_text, parse_report_text
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from core.functions.profile.util import parse_report_text, parse_hero_text
 
 
 class TestRegex(unittest.TestCase):
@@ -30,7 +30,6 @@ Your result on the battlefield:
         self.assertEqual(parsed_data['exp'], 123)
         self.assertEqual(parsed_data['gold'], 456)
         self.assertEqual(parsed_data['stock'], 0)
-
 
     def test_report_parsing_ribbon(self):
         """ Test if Report can be parsed """
@@ -75,25 +74,25 @@ Your result on the battlefield:
         self.assertEqual(parsed_data['stock'], 0)
 
     def test_report_parsing_guildless(self):
-            """ Test if Report can be parsed """
-            test = """🥔Kroket van Potet ⚔:12 🛡:34 Lvl: 56
+        """ Test if Report can be parsed """
+        test = """🥔Kroket van Potet ⚔:12 🛡:34 Lvl: 56
 Your result on the battlefield:
 🔥Exp: 123
 💰Gold: 456"""
 
-            parsed_data = parse_report_text(test)
-            self.assertNotEquals(parsed_data, None)
+        parsed_data = parse_report_text(test)
+        self.assertNotEquals(parsed_data, None)
 
-            self.assertEqual(parsed_data['castle'], "🥔")
-            self.assertEqual(parsed_data['name'], "Kroket van Potet")
-            self.assertEqual(parsed_data['attack'], 12)
-            self.assertEqual(parsed_data['guild'], "")
-            self.assertEqual(parsed_data['ribbon'], None)
-            self.assertEqual(parsed_data['defence'], 34)
-            self.assertEqual(parsed_data['level'], 56)
-            self.assertEqual(parsed_data['exp'], 123)
-            self.assertEqual(parsed_data['gold'], 456)
-            self.assertEqual(parsed_data['stock'], 0)
+        self.assertEqual(parsed_data['castle'], "🥔")
+        self.assertEqual(parsed_data['name'], "Kroket van Potet")
+        self.assertEqual(parsed_data['attack'], 12)
+        self.assertEqual(parsed_data['guild'], "")
+        self.assertEqual(parsed_data['ribbon'], None)
+        self.assertEqual(parsed_data['defence'], 34)
+        self.assertEqual(parsed_data['level'], 56)
+        self.assertEqual(parsed_data['exp'], 123)
+        self.assertEqual(parsed_data['gold'], 456)
+        self.assertEqual(parsed_data['stock'], 0)
 
     def test_hero_parsing_ribbon(self):
         test = """🥔🎗Fozzie of Potato Castle

@@ -229,6 +229,7 @@ def show_char(bot: Bot, update: Update, user: User):
             parse_mode=ParseMode.HTML
         )
 
+
 @command_handler()
 def show_report(bot: Bot, update: Update, user: User):
     existing_report = get_latest_report(user.id)
@@ -351,6 +352,7 @@ def handle_access_token(bot: Bot, update: Update, user: User):
         }
         p.publish(grant_req)
 
+
 @command_handler()
 def user_panel(bot: Bot, update: Update, user: User):
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
@@ -374,6 +376,7 @@ def user_panel(bot: Bot, update: Update, user: User):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=generate_user_markup(user_id=update.message.from_user.id)
     )
+
 
 @command_handler()
 def settings(bot: Bot, update: Update, user: User):
