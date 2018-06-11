@@ -5,7 +5,7 @@ import redis
 from sqlalchemy import func
 
 from config import REDIS_SERVER, REDIS_PORT, REDIS_TTL
-from core.exchange.hide import __initial_autohide_order
+from core.exchange.hide import autohide
 from core.functions.common import MSG_API_INCOMPLETE_SETUP, MSG_DISABLED_TRADING
 from core.types import Session, UserExchangeOrder, Item, UserStockHideSetting, User
 from cwmq import Publisher, wrapper
@@ -37,12 +37,6 @@ def digest_handler(channel, method, properties, body, dispatcher):
             orders = item.user_orders.order_by(UserExchangeOrder.id).all()
             for order in orders:
                 __handle_snipe_orders(digest_item, item, order, r, dispatcher)
-
-        # Now handle the same digest data for hiding...
-        for currently_hiding_user in r.keys("HIDE_*"):
-            user_id = r.get(currently_hiding_user)
-            user = Session.query(User).filter(User.id == user_id).first()
-            __initial_autohide_order(user, r, digest_item)
 
         # We're done...
         channel.basic_ack(method.delivery_tag)

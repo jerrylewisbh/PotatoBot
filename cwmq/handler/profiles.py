@@ -7,12 +7,14 @@ from telegram import ParseMode, Bot
 
 from config import BOT_ONE_STEP_API
 from core.enums import CASTLE_MAP, CLASS_MAP
+from core.exchange.hide import get_hide_mode, get_hide_result, exit_hide_mode, get_best_fulfillable_order, autohide
 from core.functions.common import (MSG_API_REVOKED_PERMISSIONS,
                                    MSG_API_SETUP_STEP_1_COMPLETE,
                                    MSG_API_SETUP_STEP_2_COMPLETE,
                                    stock_compare, SNIPE_SUSPENDED)
 from core.functions.profile.util import get_required_xp
 from core.functions.reply_markup import generate_user_markup
+from core.texts import HIDE_RESULT_INTRO
 from core.types import Character, Session, User
 from cwmq import Publisher, wrapper
 
@@ -234,17 +236,34 @@ def profile_handler(channel, method, properties, body, dispatcher):
             elif data['result'] in ["BattleIsNear", "ProhibitedItem", "UserIsBusy"]:
                 logging.warning("Buy action for did not go through. Reason: %s", data['result'])
             elif data['result'] == "InsufficientFunds":
-                user.sniping_suspended = True
+                # Don't suspend sniping if user is in "hide mode"
+                if get_hide_mode(user):
+                    if not get_best_fulfillable_order(user):
+                        logging.info("[Hide] No more fulfillable orders for user_id='%s' - I think....", user.id)
 
-                Session.add(user)
-                Session.commit()
+                        dispatcher.bot.send_message(
+                            user.id,
+                            HIDE_RESULT_INTRO + str(get_hide_result(user), 'utf-8'),
+                            parse_mode=ParseMode.HTML,
+                            reply_markup=generate_user_markup(user.id)
+                        )
 
-                dispatcher.bot.send_message(
-                    user.id,
-                    SNIPE_SUSPENDED,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=generate_user_markup(user.id)
-                )
+                        exit_hide_mode(user)
+                    else:
+                        logging.info("[Hide] Continuing hide for user_id='%s'", user.id)
+                        autohide(user)
+                else:
+                    user.sniping_suspended = True
+
+                    Session.add(user)
+                    Session.commit()
+
+                    dispatcher.bot.send_message(
+                        user.id,
+                        SNIPE_SUSPENDED,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=generate_user_markup(user.id)
+                    )
             elif data['result'] == "Ok":
                 # Do we need to track OK results for buy orders?
                 pass

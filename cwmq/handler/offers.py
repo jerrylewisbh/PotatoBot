@@ -74,9 +74,12 @@ def offers_handler(channel, method, properties, body, dispatcher):
 
             # Let's try to fullfil this order
             try:
-                wrapper.want_to_buy(order.user, item.cw_id, quantity, data['price'])
                 # Store the ordered item + qty in REDIS
                 r.set(user_item_key, quantity, ex=REDIS_TTL)
+
+                # Issue them as single buy-orders not as one big one to optimize results...
+                for x in range(0, quantity):
+                    wrapper.want_to_buy(order.user, item.cw_id, 1, data['price'])
             except wrapper.APIInvalidTokenException:
                 # This really shouldn't happen unless the DB is messed up :-/
                 logging.warning("No API ID, incomplete setup. Informing user and disabling trade.")

@@ -28,8 +28,10 @@ def __get_autohide_settings(user):
                 text += HIDE_BUY_LIMITED.format(order.priority, order.item.name, order.item.cw_id, order.max_price)
         return text
 
-def __initial_autohide_order(user: User, r, digest_item):
-    logging.info("[Hide] user_id='%s' is currently in HIDE MODE", user.id)
+
+def get_best_fulfillable_order(user):
+    if user.character.gold == 0:
+        return # We're already done!
 
     for setting in user.hide_settings.all():
         # Note: It might be wiser to handle sniping overall first and then handle hiding. But digest for sniping
@@ -37,22 +39,66 @@ def __initial_autohide_order(user: User, r, digest_item):
         # __handle_hide_orders(digest_item, item, order, r, dispatcher)
         logging.debug("[Hide] user_id='%s' - P%s: cw_id='%s'", user.id, setting.priority, setting.item.cw_id)
 
-        offers = r.lrange(setting.item.name, 0, -1)
+        r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+        # Get latest known prices for items...
+        latest_known_prices = r.lrange(setting.item.name, 0, -1)
 
-        if not setting.max_price or setting.max_price <= min(digest_item['prices']):
+        logging.debug("[Hide] Checking latest prices for cw_id='%s', name='%s", setting.item.cw_id, setting.item.name)
+        if not latest_known_prices:
+            # We don't know the prices so we will continue...
+            logging.debug(
+                "[Hide] No known last prices for cw_id='%s', name='%s",
+                setting.item.cw_id,
+                setting.item.name
+            )
+            continue
+
+        min_price = int(min(latest_known_prices))
+
+        logging.debug("[Hide] Setting: max_price='%s' latest_known_min_price='%s'", setting.max_price, min_price)
+        if not setting.max_price or (setting.max_price and (int(min(latest_known_prices)) <= setting.max_price)):
             logging.info(
-                "[Hide] Found cw_id='%s' for with P%s '%s' user-specified limit is '%s'",
+                "[Hide] Found matching order for cw_id='%s' for with P%s '%s' user-specified limit is '%s'",
                 user.id,
                 setting.priority,
                 setting.item.cw_id,
                 setting.max_price,
             )
-            logging.info("WTB 1g for cw_id='%s'")
+            if user.character.gold >= min_price:
+                logging.info(
+                    "[Hide] user_id='%s' can afford cw_id='%s' for price='%s'",
+                    user.id,
+                    setting.item.cw_id,
+                    min_price
+                )
+                return setting.item.cw_id
+    return None
+
+
+def autohide(user: User):
+    logging.info("[Hide] user_id='%s' is currently in HIDE MODE", user.id)
+
+    wrapper.update_profile(user) # Refresh profile!
+    cw_id = get_best_fulfillable_order(user)
+    if cw_id:
+        # Calculate order based on users latest gold Information...
+        logging.info("[Hide] issuing wtb for user_id='%s' and cw_id='%s'", user.id, cw_id)
+        wrapper.want_to_buy(
+            user,
+            cw_id,
+            1, # Only 1 piece
+            1, # 1g buy cheapest option avail.,
+            False, # Do not match exact and fail
+        )
+    else:
+        logging.info("[Hide] No more fulfillable orders found for user_id='%s'!", user.id)
+
+
 
 """
 Hide.py: 
-- Setze User in HIDE mode
-- Hole neues Profil mit Gold
+- DONE: Setze User in HIDE mode
+- DONE: Hole neues Profil mit Gold
 
 digest.py
 - Errechne die zu kaufenden Items wenn user in hide mode für erste erfüllbare order... 
@@ -96,10 +142,6 @@ def hide_gold_info(bot: Bot, update: Update, user: User):
     testing_only=True
 )
 def hide_items(bot: Bot, update: Update, user: User, **kwargs):
-    return
-
-    # DISABLED FOR NOW!!!
-
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
@@ -110,6 +152,7 @@ def hide_items(bot: Bot, update: Update, user: User, **kwargs):
         logging.info("No user, not a tester or no trade API")
         return
 
+    set_hide_mode(user)
     send_async(
         bot,
         chat_id=update.message.chat.id,
@@ -117,19 +160,50 @@ def hide_items(bot: Bot, update: Update, user: User, **kwargs):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-    #wrapper.want_to_buy(user, "02", 1, 1, exact_price=False)
+    autohide(user)
 
+
+def exit_hide_mode(user):
+    logging.debug("[Hide] user_id='%s' exiting hide_mode", user.id)
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+    hide_key = "HIDE_{}".format(user.id)
+    r.delete(hide_key)
 
+def set_hide_mode(user):
+    logging.debug("[Hide] user_id='%s' entering hide_mode", user.id)
+    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
     # Mark user for 360 seconds as "in Hiding Mode". This way we can detect buy-actions, etc.
     # and one message about his actions, etc. We also use this information to trigger the actual hiding when new
     # digest list comes in.
     hide_key = "HIDE_{}".format(user.id)
     r.set(hide_key, user.id, ex=360)
 
-    # Request a profile update to get information about how much gold a user has.
-    # This should complete in a few seconds.
-    wrapper.update_profile(user)
+def get_hide_mode(user):
+    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+    hide_key = "HIDE_{}".format(user.id)
+    state = True if r.get(hide_key) else False
+
+    logging.debug("[Hide] user_id='%s' hide_mode='%s'", user.id, state)
+    return state
+
+def append_hide_result(user, text):
+    logging.debug("[Hide] user_id='%s' appending text='%s'", user.id, text)
+    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+    hide_key = "RESULT_HIDE_{}".format(user.id)
+
+    r.append(hide_key, text)
+    r.expire(hide_key, 360)
+
+    return r.get(hide_key)
+
+def get_hide_result(user):
+    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+    hide_key = "RESULT_HIDE_{}".format(user.id)
+    hide_result_text = r.get(hide_key)
+    logging.debug("[Hide] user_id='%s' getting text='%s'", user.id, hide_result_text)
+    if not hide_result_text:
+        return ""
+    return hide_result_text
 
 
 @command_handler(

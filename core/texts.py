@@ -587,7 +587,7 @@ HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFee
                "*Your current settings are:*\n" \
                "{}"
 
-HIDE_STARTED = "Started hiding. This can take a fe. I'll notify you when I'm done."
+HIDE_STARTED = "Started hiding. This can take a few minutes. I'll notify you when I'm done. _Note: If you are currently busy questing this will not work and you have to start over!_"
 HIDE_WRONG_ARGS = "Sorry, the /ah command you issued is not valid. Try again."
 HIDE_WRONG_LIMIT = "Sorry, the limit you specified is not valid. Try again."
 HIDE_WRONG_ITEM = "Sorry, the item `{}` you specified is not valid. Try again."
@@ -596,6 +596,8 @@ HIDE_BUY_UNLIMITED = "- P{}: Buy {} (`{}`)\n"
 HIDE_BUY_LIMITED = "- P{}: Buy {} (`{}`) for a maximum price of {} 💰\n"
 HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
 HIDE_REMOVED = "{} was removed from your hiding list!"
+HIDE_RESULT_INTRO = "<b>Hiding finshed! Your results:\n</b>"
+HIDE_BOUGHT = "You bought <b>{}</b> for {}💰\n"
 
 SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
                "*Automated buying of items at a given price*\n" \
