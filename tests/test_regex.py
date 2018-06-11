@@ -7,7 +7,6 @@ from core.functions.profile.util import parse_hero_text, parse_report_text
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-
 class TestRegex(unittest.TestCase):
     def test_report_parsing(self):
         """ Test if Report can be parsed """

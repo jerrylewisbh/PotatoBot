@@ -9,7 +9,6 @@ from core.functions.quest.parse import QuestType, analyze_text
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-
 class TestTime(unittest.TestCase):
     def test_quest_identification(self):
         for successful in QUESTS_SUCCESSFUL:
