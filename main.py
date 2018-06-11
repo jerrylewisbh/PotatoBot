@@ -5,12 +5,12 @@ import re
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
-from telegram import Bot, ParseMode, Update
+from telegram import Bot, Update
 from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
                           Updater, MessageQueue)
 from telegram.ext.dispatcher import run_async
 
-from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE, CWBOT_ID, TRADEBOT_ID
+from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE, CWBOT_ID
 from core.battle import report_after_battle
 from core.bot import MQBot
 from core.chat_commands import (CC_ADMIN_LIST, CC_ADMINS, CC_ALLOW_PIN_ALL,
@@ -31,8 +31,7 @@ from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
                            STATISTICS_COMMAND_SKILLS, TOP_COMMAND_ATTACK,
                            TOP_COMMAND_BATTLES, TOP_COMMAND_BUILD,
                            TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP,
-                           USER_COMMAND_BACK, USER_COMMAND_BUILD,
-                           USER_COMMAND_CONTACTS, USER_COMMAND_ME,
+                           USER_COMMAND_BACK, USER_COMMAND_ME,
                            USER_COMMAND_REGISTER, USER_COMMAND_SETTINGS,
                            USER_COMMAND_SQUAD, USER_COMMAND_SQUAD_LEAVE,
                            USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
@@ -44,8 +43,7 @@ from core.functions.activity import (battle_activity, day_activity,
                                      week_activity)
 from core.functions.admins import admins_for_users, list_admins
 from core.functions.common import (admin_panel, delete_msg, delete_user, error,
-                                   help_msg, ping, stock_compare_forwarded,
-                                   trade_compare, web_auth)
+                                   help_msg, ping, stock_compare_forwarded)
 from core.functions.inline_keyboard_handling import (callback_query,
                                                      inlinequery, send_status)
 from core.functions.order_groups import add_group, group_list
@@ -77,9 +75,8 @@ from core.jobs.job_queue import (add_after_war_messages,
                                  add_pre_war_messages,
                                  add_war_warning_messages)
 from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
-                         REPAIR_REPORT, REPORT, STOCK, TRADE_BOT)
+                         REPAIR_REPORT, REPORT, STOCK)
 from core.state import GameState, get_game_state
-from core.texts import MSG_IN_DEV
 from core.types import Admin, Squad, User, Session
 from core.utils import create_or_update_user, send_async
 from cwmq import Consumer, Publisher
@@ -228,11 +225,6 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                 week_build_top(bot, update)
             elif text == TOP_COMMAND_BATTLES.lower():
                 week_battle_top(bot, update)
-            elif text == USER_COMMAND_BUILD.lower():
-                send_async(bot,
-                           chat_id=update.message.chat.id,
-                           text=MSG_IN_DEV,
-                           parse_mode=ParseMode.HTML)
             elif text == USER_COMMAND_STATISTICS.lower():
                 statistic_about(bot, update)
             elif text == STATISTICS_COMMAND_EXP.lower():
@@ -245,8 +237,6 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                 squad_about(bot, update)
             elif text == USER_COMMAND_SQUAD_LEAVE.lower():
                 leave_squad_request(bot, update)
-            elif text == USER_COMMAND_CONTACTS.lower():
-                web_auth(bot, update)
             elif text == ADMIN_COMMAND_ADMINPANEL.lower():
                 admin_panel(bot, update)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
@@ -276,9 +266,6 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                     else:
                         # Handle everying else as Quest-Text.. At least for now...
                         parse_quest(bot, update)
-                elif from_id == TRADEBOT_ID:
-                    if TRADE_BOT in text:
-                        trade_compare(bot, update, chat_data)
             elif not is_admin:
                 user_panel(bot, update)
             else:

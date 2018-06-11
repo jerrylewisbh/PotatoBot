@@ -44,7 +44,4 @@ PROFESSION = '(.*) skills levels:'
 
 ACCESS_CODE = "(Code )([0-9a-zA-Z]+)( to authorize).*"
 
-TRADE_BOT = '📦твой склад с материалами:'
-
-
 

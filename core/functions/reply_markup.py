@@ -70,7 +70,6 @@ def generate_user_markup(user_id=None):
 def generate_top_markup():
     buttons = [[KeyboardButton(TOP_COMMAND_ATTACK), KeyboardButton(TOP_COMMAND_DEFENCE),
                 KeyboardButton(TOP_COMMAND_EXP),
-                # KeyboardButton(TOP_COMMAND_BUILD),
                 KeyboardButton(TOP_COMMAND_BATTLES)],
                [KeyboardButton(USER_COMMAND_BACK)]]
     return ReplyKeyboardMarkup(buttons, True)

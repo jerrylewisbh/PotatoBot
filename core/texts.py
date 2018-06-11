@@ -382,8 +382,6 @@ MSG_SQUAD_READY = '{} warriors of <b>{}</b> are ready to battle!\n{}⚔ {}🛡'
 MSG_FULL_TEXT_LINE = '<b>{}</b>: {}👥 {}⚔ {}🛡\n'
 MSG_FULL_TEXT_TOTAL = '\n<b>Total</b>: {}👥 {}⚔ {}🛡'
 
-MSG_IN_DEV = 'Under construction=('
-
 MSG_TOP_ABOUT = '🏆 Tops 🏆'
 MSG_STATISTICS_ABOUT = '📈Statistics📈'
 MSG_SQUAD_ABOUT = 'You are a member of the Squad "{}"'
