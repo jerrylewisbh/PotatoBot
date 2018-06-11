@@ -191,7 +191,7 @@ def profession_update(bot: Bot, update: Update, user: User):
 
 
 @command_handler()
-def char_show(bot: Bot, update: Update, user: User):
+def show_char(bot: Bot, update: Update, user: User):
     if user.is_api_profile_allowed and user.is_api_stock_allowed:
         try:
             wrapper.update_stock(user)

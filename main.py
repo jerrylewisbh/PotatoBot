@@ -54,7 +54,7 @@ from core.functions.inline_keyboard_handling import (callback_query,
 from core.functions.order_groups import add_group, group_list
 from core.functions.orders import order, orders
 from core.functions.pin import not_pin_all, pin, pin_all, silent_pin
-from core.functions.profile import (build_report_received, char_show,
+from core.functions.profile import (build_report_received, show_char,
                                     char_update, grant_access,
                                     handle_access_token, profession_update,
                                     repair_report_received, report_received,
@@ -222,7 +222,7 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
             elif text == ADMIN_COMMAND_FIRE_UP.lower():
                 remove_from_squad(bot, update)
             elif text == USER_COMMAND_ME.lower():
-                char_show(bot, update)
+                show_char(bot, update)
             elif text == USER_COMMAND_REGISTER.lower():
                 grant_access(bot, update)
             elif text == USER_COMMAND_SETTINGS.lower():

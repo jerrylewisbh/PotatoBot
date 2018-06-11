@@ -8,7 +8,7 @@ from core.functions.admins import (del_admin, del_global_admin, list_admins,
                                    set_super_admin, get_log)
 from core.functions.ban import ban, unban
 from core.functions.common import admin_panel, help_msg, kick, ping
-from core.functions.profile import (char_show, find_by_character, find_by_id,
+from core.functions.profile import (show_char, find_by_character, find_by_id,
                                     find_by_username, grant_access, revoke, user_panel, show_report)
 from core.functions.squad import (add_squad, add_to_squad, del_squad,
                                   disable_reminders, disable_silence,
@@ -78,7 +78,7 @@ def add_commands(disp: Dispatcher):
     disp.add_handler(CommandHandler("get_log", get_log))
 
     # User/Profile specific
-    disp.add_handler(CommandHandler("me", char_show))
+    disp.add_handler(CommandHandler("me", show_char))
     disp.add_handler(CommandHandler("report", show_report))
 
     # Exchange Stuff...

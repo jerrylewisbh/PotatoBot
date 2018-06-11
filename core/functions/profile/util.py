@@ -3,9 +3,10 @@ import re
 from datetime import datetime, timedelta
 from enum import Enum
 
+import redis
 from telegram import Bot, Update, ParseMode
 
-from config import CASTLE
+from config import CASTLE, REDIS_SERVER, REDIS_PORT
 from core.enums import CASTLE_MAP
 from core.functions.ban import ban_traitor
 from core.functions.common import StockType
@@ -16,7 +17,7 @@ from core.template import fill_char_template
 from core.texts import MSG_PROFILE_SHOW_FORMAT, MSG_PROFILE_ADMIN_INFO_ADDON, MSG_PROFILE_NOT_FOUND, \
     MSG_NEEDS_API_ACCESS, MSG_NEEDS_TRADE_ACCESS, MSG_SETTINGS_INFO, MSG_USER_BATTLE_REPORT_PRELIM, \
     MSG_USER_BATTLE_REPORT_HEADER, MSG_USER_BATTLE_REPORT, MSG_USER_BATTLE_REPORT_FULL
-from core.types import Session, Character, Equip, Report, Profession, BuildReport, User, Stock
+from core.types import Session, Character, Equip, Report, Profession, BuildReport, User, Stock, Item, new_item
 from core.utils import send_async
 
 class BuildType(Enum):
@@ -410,3 +411,44 @@ def get_stock_before_after_war(user: User) -> tuple:
     ).order_by(Stock.date.asc()).first()
 
     return (before_battle, after_battle)
+
+def annotate_stock_with_price(bot: Bot, stock: str):
+    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+
+    stock_text = ""
+    overall_worth = 0
+    for line in stock.splitlines():
+        find = re.search(r"(?P<item>.+)(?: \((?P<count>[0-9]+)\))", line)
+        if find:
+            db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
+            if not db_item:
+                new_item(bot, find.group("item"), False)
+                stock_text += "{}\n".format(line)
+            elif db_item and not db_item.tradable:
+                stock_text += "{}\n".format(line)
+            else:
+                item_prices = r.lrange(find.group("item"), 0, -1)
+                if item_prices:
+                    min_price = int(min(item_prices))
+                    count = int(find.group("count"))
+                    item_overall = (count * min_price)
+                    overall_worth += item_overall
+                    stock_text += "{} <i>({} x {} = {}🐣)</i>\n".format(
+                        find.group("item"),
+                        count,
+                        min_price,
+                        item_overall,
+                    )
+                else:
+                    stock_text += "{} ({})\n".format(find.group("item"), find.group("count"))
+        else:
+            stock_text += "{}\n".format(line)
+
+    stock_text += "\nEstimated overall worth: {}🐣\n".format(overall_worth)
+
+    return stock_text
+
+
+
+
+

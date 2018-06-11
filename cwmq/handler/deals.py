@@ -7,7 +7,7 @@ from config import CC_EXCHANGE_ORDERS
 from core.functions.common import MSG_DEAL_SOLD
 from core.functions.reply_markup import generate_user_markup
 from core.texts import SNIPED_ITEM
-from core.types import Session, User, UserExchangeOrder, Item
+from core.types import Session, User, UserExchangeOrder, Item, new_item
 from cwmq import Publisher
 from telegram import ParseMode
 
@@ -48,6 +48,7 @@ def deals_handler(channel, method, properties, body, dispatcher):
                 item = Session.query(Item).filter(func.lower(Item.name) == data['item'].lower()).first()
                 if not item:
                     logging.warning("[Snipe] Unknown item %s", data['item'])
+                    new_item(dispatcher.bot, data["item"], True)
                     channel.basic_ack(method.delivery_tag)
                     return
 
