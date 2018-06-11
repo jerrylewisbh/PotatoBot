@@ -229,7 +229,7 @@ def create_user_report(user: User) -> Optional[str]:
         # Get the oldest stock-report from after war for this comparison...
         before_war_stock, after_war_stock = get_stock_before_after_war(user)
         logging.debug("after_war_stock: %s", after_war_stock)
-        logging.debug("Second before_war_stock stock: %s", before_war_stock)
+        logging.debug("before_war_stock stock: %s", before_war_stock)
 
         # Get previous character and calculate difference in exp + gold
         prev_character = Session.query(Character).filter(
