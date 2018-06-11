@@ -44,11 +44,11 @@ from core.functions.activity import (battle_activity, day_activity,
 from core.functions.admins import admins_for_users, list_admins
 from core.functions.common import (admin_panel, delete_msg, delete_user, error,
                                    help_msg, ping, stock_compare_forwarded)
+from core.functions.common.pin import not_pin_all, pin, pin_all, silent_pin
 from core.functions.inline_keyboard_handling import (callback_query,
                                                      inlinequery, send_status)
 from core.functions.order_groups import add_group, group_list
 from core.functions.orders import order, orders
-from core.functions.pin import not_pin_all, pin, pin_all, silent_pin
 from core.functions.profile import (build_report_received, show_char,
                                     char_update, grant_access,
                                     handle_access_token, profession_update,
@@ -78,7 +78,7 @@ from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
                          REPAIR_REPORT, REPORT, STOCK)
 from core.state import GameState, get_game_state
 from core.types import Admin, Squad, User, Session
-from core.utils import create_or_update_user, send_async
+from core.utils import create_or_update_user
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler
 from cwmq.handler.digest import digest_handler

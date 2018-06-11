@@ -1,6 +1,5 @@
 from config import EXT_ID, CWBOT_ID
 from core.decorators import admin_allowed, command_handler
-from core.functions.ban import ban_traitor
 from core.functions.common import stock_split, stock_compare_text
 from core.functions.profile.util import *
 from core.functions.profile.util import __send_user_with_settings

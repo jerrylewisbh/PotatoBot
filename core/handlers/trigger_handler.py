@@ -6,8 +6,7 @@ from core.exchange.snipe import sniping_remove, sniping_resume, sniping
 from core.functions.admins import (del_admin, del_global_admin, list_admins,
                                    set_admin, set_global_admin,
                                    set_super_admin, get_log)
-from core.functions.ban import ban, unban
-from core.functions.common import admin_panel, help_msg, kick, ping
+from core.functions.common import admin_panel, help_msg, kick, ping, ban, unban
 from core.functions.profile import (show_char, find_by_character, find_by_id,
                                     find_by_username, grant_access, revoke, user_panel, show_report)
 from core.functions.squad import (add_squad, add_to_squad, del_squad,

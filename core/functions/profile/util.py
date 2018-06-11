@@ -8,8 +8,7 @@ from telegram import Bot, Update, ParseMode
 
 from config import CASTLE, REDIS_SERVER, REDIS_PORT
 from core.enums import CASTLE_MAP
-from core.functions.ban import ban_traitor
-from core.functions.common import StockType
+from core.functions.common import StockType, ban_traitor
 from core.functions.inline_markup import generate_profile_buttons, generate_settings_buttons
 from core.regexp import REPORT, PROFESSION, BUILD_REPORT, REPAIR_REPORT, HERO
 from core.state import get_last_battle
