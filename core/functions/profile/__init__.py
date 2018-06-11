@@ -6,12 +6,10 @@ from core.functions.profile.util import *
 from core.functions.profile.util import __send_user_with_settings
 from core.functions.reply_markup import generate_user_markup
 from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
-                         REPAIR_REPORT, REPORT)
+                         REPAIR_REPORT)
 from core.state import GameState, get_game_state
 from core.template import fill_char_template
 from core.texts import *
-from core.texts import MSG_START_KNOWN, MSG_START_MEMBER_SQUAD_REGISTERED, SNIPE_SUSPENDED_NOTICE, \
-    MSG_START_MEMBER_SQUAD
 from core.types import (BuildReport, Character, Report,
                         User, Session)
 from core.utils import send_async

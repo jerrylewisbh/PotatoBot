@@ -5,8 +5,7 @@ from enum import IntFlag, auto
 from core.decorators import command_handler
 from core.functions.inline_markup import QueryType
 from core.functions.quest.parse import QuestType, analyze_text
-from core.texts import MSG_QUEST, MSG_QUEST_DUPLICATE, MSG_QUEST_ACCEPTED, MSG_FORAY_ACCEPTED, MSG_FORAY_PLEDGE, \
-    BTN_PLEDGE_YES, BTN_PLEDGE_NO
+from core.texts import *
 from core.types import (Item, Location, Quest, Session, User, UserQuest,
                         UserQuestItem)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update, Bot

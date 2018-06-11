@@ -6,8 +6,7 @@ from telegram import Bot, Update, ParseMode
 from config import REDIS_TTL, REDIS_SERVER, REDIS_PORT
 from core.decorators import command_handler
 from core.exchange import get_item_by_cw_id
-from core.texts import HIDE_BUY_UNLIMITED, HIDE_BUY_LIMITED, HIDE_WELCOME, HIDE_WRONG_ARGS, HIDE_WRONG_ITEM, \
-    HIDE_REMOVED, HIDE_WRONG_LIMIT, HIDE_WRONG_PRIORITY, HIDE_ITEM_NOT_TRADABLE, HIDE_STARTED
+from core.texts import *
 from core.types import User, Session, UserStockHideSetting
 from core.utils import send_async
 from cwmq import wrapper

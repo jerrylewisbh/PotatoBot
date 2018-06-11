@@ -8,23 +8,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import CASTLE
 from core.enums import Castle
-from core.texts import (BTN_ACCEPT, BTN_ALL_TIME, BTN_DECLINE, BTN_EQUIPMENT,
-                        BTN_HERO, BTN_LEAVE, BTN_NO, BTN_PROFESSIONS,
-                        BTN_SETTING_API_DISABLE,
-                        BTN_SETTING_DISABLE_DEAL_REPORT,
-                        BTN_SETTING_DISABLE_REPORT,
-                        BTN_SETTING_ENABLE_DEAL_REPORT,
-                        BTN_SETTING_ENABLE_REPORT, BTN_SQUAD_ALL_TIME,
-                        BTN_SQUAD_WEEK, BTN_STOCK, BTN_WEEK, BTN_YES, MSG_BACK,
-                        MSG_GROUP_STATUS, MSG_GROUP_STATUS_ADMIN_FORMAT,
-                        MSG_GROUP_STATUS_DEL_ADMIN, MSG_OFF, MSG_ON,
-                        MSG_ORDER_ACCEPT, MSG_ORDER_BUTTON, MSG_ORDER_FORWARD,
-                        MSG_ORDER_GROUP_ADD, MSG_ORDER_GROUP_DEL,
-                        MSG_ORDER_NO_BUTTON, MSG_ORDER_NO_PIN, MSG_ORDER_PIN,
-                        MSG_ORDER_TO_SQUADS, MSG_SQUAD_GREEN_INLINE_BUTTON,
-                        MSG_SQUAD_RED_INLINE_BUTTON, MSG_SYMBOL_OFF,
-                        MSG_SYMBOL_ON, BTN_SETTING_ENABLE_SNIPING, BTN_SETTING_DISABLE_SNIPING,
-                        BTN_SETTING_DISABLE_HIDE_GOLD, BTN_SETTING_ENABLE_HIDE_GOLD)
+from core.texts import *
 from core.types import (Admin, AdminType, Character, Group, OrderGroup, Squad,
                         User, Session)
 

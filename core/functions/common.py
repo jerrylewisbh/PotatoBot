@@ -6,15 +6,13 @@ from enum import Enum
 from sqlalchemy import func
 from telegram import Bot, ParseMode, Update
 
-from config import WEB_LINK
 from core.decorators import admin_allowed, user_allowed
 from core.functions.reply_markup import (generate_admin_markup)
 from core.functions.triggers import trigger_decorator
 from core.state import GameState, get_game_state
 from core.texts import *
-from core.types import (Admin, AdminType, Auth, Stock, User,
-                        Session, Item)
-from core.utils import create_or_update_user, send_async
+from core.types import Admin, AdminType, Stock, User, Session, Item
+from core.utils import send_async
 
 Session()
 

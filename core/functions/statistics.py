@@ -11,11 +11,7 @@ from telegram import Bot, Update, ParseMode
 
 from core.decorators import user_allowed, command_handler
 from core.functions.reply_markup import generate_statistics_markup
-from core.texts import (MSG_DATE_FORMAT, MSG_DAY_PLURAL1, MSG_DAY_PLURAL2,
-                        MSG_DAY_SINGLE, MSG_NO_CLASS, MSG_PLOT_DESCRIPTION,
-                        MSG_PLOT_DESCRIPTION_SKILL, MSG_STATISTICS_ABOUT,
-                        PLOT_X_LABEL, PLOT_Y_LABEL, MSG_QUEST_7_DAYS, MSG_QUEST_OVERALL, MSG_QUEST_STAT,
-                        MSG_QUEST_STAT_LOCATION)
+from core.texts import *
 from core.types import Character, Profession, UserQuest, Location, Session, User, UserQuestItem
 from core.utils import send_async
 

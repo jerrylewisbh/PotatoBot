@@ -11,18 +11,14 @@ from telegram.error import TelegramError
 from telegram.ext import Job
 from telegram.ext.dispatcher import run_async
 
+from core.texts import *
+
 from config import CASTLE, GOVERNMENT_CHAT, DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
-from core.functions.common import (MSG_CHANGES_SINCE_LAST_UPDATE,
-                                   MSG_USER_BATTLE_REPORT_STOCK, get_weighted_diff, stock_compare_text,
-                                   stock_split, TRIBUTE_NOTE)
+from core.functions.common import (get_weighted_diff, stock_compare_text, stock_split)
 from core.functions.inline_keyboard_handling import send_order
 from core.functions.inline_markup import QueryType
 from core.functions.profile.util import get_latest_report, format_report, get_stock_before_after_war
 from core.state import get_last_battle
-from core.texts import (MSG_MAIN_INLINE_BATTLE, MSG_REPORT_SUMMARY,
-                        MSG_REPORT_SUMMARY_RATING, MSG_REPORT_TOTAL,
-                        MSG_SQUAD_DELETE_OUTDATED,
-                        MSG_SQUAD_DELETE_OUTDATED_EXT, MSG_UPDATE_PROFILE)
 from core.types import (Admin, Character, Order, Report, Session, Squad,
                         SquadMember, User)
 from core.utils import send_async
@@ -131,9 +127,9 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
             global_members += total_members
             global_reports += total_reports
             if total_members > 0:
-                text += MSG_REPORT_SUMMARY.format(squad.squad_name, total_reports, total_members, full_atk, full_def,
+                text += MSG_REPORT_SUMMARY_RATING.format(squad.squad_name, total_reports, total_members, full_atk, full_def,
                                                   full_exp, full_gold, full_stock)
-        text += MSG_REPORT_SUMMARY.format('TOTAL', global_reports, global_members, global_atk, global_def, global_exp,
+        text += MSG_REPORT_SUMMARY_RATING.format('TOTAL', global_reports, global_members, global_atk, global_def, global_exp,
                                           global_gold, global_stock)
         text += MSG_REPORT_TOTAL.format(players_atk, players_def, real_atk, real_def)
         send_async(bot, chat_id=GOVERNMENT_CHAT, text=text, parse_mode=ParseMode.HTML, reply_markup=None)
@@ -190,7 +186,7 @@ def fresh_profiles(bot: Bot, job_queue: Job):
                        parse_mode=ParseMode.HTML)
             send_async(bot,
                        chat_id=member.user_id,
-                       text=MSG_SQUAD_DELETE_OUTDATED,
+                       text=MSG_SQUAD_DELETE_OUTDATED_EXT,
                        parse_mode=ParseMode.HTML)
         Session.commit()
     except SQLAlchemyError as err:

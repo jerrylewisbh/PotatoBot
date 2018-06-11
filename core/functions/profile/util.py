@@ -14,9 +14,7 @@ from core.functions.inline_markup import generate_profile_buttons, generate_sett
 from core.regexp import REPORT, PROFESSION, BUILD_REPORT, REPAIR_REPORT, HERO
 from core.state import get_last_battle
 from core.template import fill_char_template
-from core.texts import MSG_PROFILE_SHOW_FORMAT, MSG_PROFILE_ADMIN_INFO_ADDON, MSG_PROFILE_NOT_FOUND, \
-    MSG_NEEDS_API_ACCESS, MSG_NEEDS_TRADE_ACCESS, MSG_SETTINGS_INFO, MSG_USER_BATTLE_REPORT_PRELIM, \
-    MSG_USER_BATTLE_REPORT_HEADER, MSG_USER_BATTLE_REPORT, MSG_USER_BATTLE_REPORT_FULL
+from core.texts import *
 from core.types import Session, Character, Equip, Report, Profession, BuildReport, User, Stock, Item, new_item
 from core.utils import send_async
 

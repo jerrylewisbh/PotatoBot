@@ -1,11 +1,7 @@
 import logging
 from datetime import datetime
 
-from core.texts import (MSG_ALREADY_BANNED, MSG_BAN_COMPLETE, MSG_NO_REASON,
-                        MSG_REASON_TRAITOR, MSG_USER_BANNED,
-                        MSG_USER_BANNED_TRAITOR, MSG_USER_NOT_BANNED,
-                        MSG_USER_UNBANNED, MSG_USER_UNKNOWN, MSG_YOU_BANNED,
-                        MSG_YOU_UNBANNED)
+from core.texts import *
 from core.types import Admin, Ban, Squad, SquadMember, User, Session
 from core.decorators import admin_allowed
 from core.utils import send_async

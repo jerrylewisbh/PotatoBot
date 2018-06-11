@@ -5,9 +5,7 @@ from telegram import Bot, Update, ParseMode
 
 from core.decorators import command_handler
 from core.exchange import get_item_by_cw_id, LIMIT_SNIPES, LIMIT_ORDER_AMOUNT
-from core.texts import SNIPE_BUY_MULTIPLE, SNIPE_BUY_ONE, SNIPE_WELCOME, SNIPE_SUSPENDED_NOTICE, SNIPE_WRONG_ARGS_SR, \
-    SNIPE_WRONG_ITEM, SNIPE_REMOVED, SNIPE_NOT_SUSPENDED, SNIPE_CONTINUED, SNIPE_DISABLED, SNIPE_WRONG_ARGS, \
-    SNIPE_WRONG_LIMIT, SNIPE_ITEM_NOT_TRADABLE, SNIPE_LIMIT_EXCEEDED, SNIPE_INITIAL_ORDER_EXCEEDED
+from core.texts import *
 from core.types import User, Session, UserExchangeOrder
 from core.utils import send_async
 from cwmq import wrapper

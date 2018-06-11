@@ -8,7 +8,7 @@ from config import CC_EXCHANGE_ORDERS, REDIS_PORT, REDIS_SERVER
 from core.exchange.hide import get_hide_mode, append_hide_result, autohide
 from core.functions.common import MSG_DEAL_SOLD
 from core.functions.reply_markup import generate_user_markup
-from core.texts import SNIPED_ITEM, HIDE_BOUGHT
+from core.texts import *
 from core.types import Session, User, UserExchangeOrder, Item, new_item
 from cwmq import Publisher
 from telegram import ParseMode

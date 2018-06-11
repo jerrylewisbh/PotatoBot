@@ -3,7 +3,7 @@ import logging
 from telegram import Bot
 
 from core.functions.reply_markup import generate_user_markup
-from core.texts import MSG_API_REQUIRE_ACCESS_TRADE, MSG_API_REQUIRE_ACCESS_PROFILE, MSG_API_REQUIRE_ACCESS_STOCK
+from core.texts import *
 from core.types import Session, Item, User
 from cwmq import Publisher
 
