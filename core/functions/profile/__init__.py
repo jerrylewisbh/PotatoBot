@@ -266,8 +266,8 @@ def show_report(bot: Bot, update: Update, user: User):
         stock_text = MSG_USER_BATTLE_REPORT_STOCK.format(
             MSG_CHANGES_SINCE_LAST_UPDATE,
             stock_diff,
-            before_war_stock.date.strftime("%Y-%m-%d %H:%M:%S"),
-            after_war_stock.date.strftime("%Y-%m-%d %H:%M:%S"),
+            before_war_stock.date.strftime("%Y-%m-%d %H:%M:%S") if before_war_stock else "Missing",
+            after_war_stock.date.strftime("%Y-%m-%d %H:%M:%S") if after_war_stock else "Missing",
         )
         text += stock_text
         if user.character and user.character.characterClass == "Knight":
