@@ -259,7 +259,7 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
 def main():
     # Logging!
     logger = logging.getLogger()
-    logger.setLevel(logging.WARNING)
+    logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # Logging for console
@@ -269,7 +269,7 @@ def main():
     logger.addHandler(ch)
 
     rh = TimedRotatingFileHandler(LOGFILE, when='midnight', backupCount=10)
-    rh.setLevel(logging.WARNING)
+    rh.setLevel(logging.DEBUG)
     rh.setFormatter(formatter)
     logger.addHandler(rh)
 
