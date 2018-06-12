@@ -11,7 +11,7 @@ from telegram import Bot, ParseMode, Update
 import matplotlib.pyplot as plot
 import numpy
 
-from config import QUEST_LOCATION_FORAY_ID
+from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID
 from core.decorators import command_handler, user_allowed
 from core.functions.reply_markup import generate_statistics_markup
 from core.texts import *
@@ -97,7 +97,6 @@ def relative_details(user: User, from_date: datetime, FORAY_QUEST_LOCATION_ID=No
             stat_count = 0
             stat_pledges = 0
             if foray_stats_success:
-                no_success = True
                 stat_count = foray_stats_success.count
                 stat_pledges = foray_stats_success.pledges
 
@@ -113,6 +112,42 @@ def relative_details(user: User, from_date: datetime, FORAY_QUEST_LOCATION_ID=No
                 pledge_rate = stat_pledges / stat_count * 100
 
             text += MSG_QUEST_STAT_FORAY.format(success_rate, pledge_rate)
+        elif location.id == QUEST_LOCATION_DEFEND_ID:
+            stop_stats_success = Session.query(
+                UserQuest.successful,
+                func.count(UserQuest.id).label("count"),
+            ).filter(
+                UserQuest.successful == True,
+                UserQuest.user_id == user.id,
+                UserQuest.location_id == location.id,
+                UserQuest.from_date > from_date
+            ).first()
+
+            stop_stats_failed = Session.query(
+                UserQuest.successful,
+                func.count(UserQuest.id).label("count"),
+            ).filter(
+                UserQuest.successful == False,
+                UserQuest.user_id == user.id,
+                UserQuest.location_id == location.id,
+                UserQuest.from_date > from_date
+            ).first()
+
+            stat_count_failed = 0
+            if stop_stats_failed:
+                stat_count_failed = stop_stats_failed.count
+
+            stat_count = 0
+            if stop_stats_success:
+                stat_count = stop_stats_success.count
+
+            overall_count = (stat_count_failed + stat_count)
+            if not overall_count:
+                success_rate = 100
+            else:
+                success_rate = stat_count / overall_count * 100
+
+            text += MSG_QUEST_STAT_STOP.format(success_rate)
 
 
 

@@ -574,6 +574,7 @@ MSG_QUEST_STAT_LOCATION = "*{} ({})*: \n" \
                           "Ttl: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n"
 
 MSG_QUEST_STAT_FORAY = "Success rate: {: .2f}% / Pledge rate: {: .2f}%\n"
+MSG_QUEST_STAT_STOP = "Success rate: {: .2f}%\n"
 
 MSG_QUEST_OVERALL = "\n\n*Overall:*\n\n"
 
