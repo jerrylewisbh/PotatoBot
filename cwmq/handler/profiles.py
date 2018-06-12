@@ -251,7 +251,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                     else:
                         logging.info("[Hide] Continuing hide for user_id='%s'", user.id)
                         autohide(user)
-                else:
+                elif not user.sniping_suspended:
                     user.sniping_suspended = True
 
                     Session.add(user)
