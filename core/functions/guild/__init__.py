@@ -21,10 +21,7 @@ def generate_gstock_requests(query):
     if requested_item:
         item = Session.query(Item).filter(
             Item.cw_id is not None,
-            or_(
-                Item.cw_id == requested_item,
-                func.lower(Item.name) == func.lower(requested_item),
-            )
+            func.lower(Item.name) == func.lower(requested_item)
         ).first()
 
         if item:
