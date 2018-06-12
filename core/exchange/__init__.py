@@ -24,19 +24,19 @@ def list_items(bot: Bot, update: Update, user: User, **kwargs):
     if "args" in kwargs:
         args = kwargs["args"]
 
-    logging.warning("list_items called by %s", update.message.chat.id)
+    logging.info("list_items called by %s", update.message.chat.id)
 
     text = ITEM_LIST
 
     items = Session.query(Item).filter(Item.tradable == True).order_by(Item.cw_id).all()
     text += "Tradable items:\n"
     for item in items:
-        text += "`{} {}\n`".format(pad_string(item.cw_id, 5), pad_string(item.name, 5))
+        text += "`{}` {}\n".format(pad_string(item.cw_id, 4), item.name)
 
     items = Session.query(Item).filter(Item.tradable == False).order_by(Item.cw_id).all()
     text += "\nNot tradable via Exchange or new items:\n"
     for item in items:
-        text += "`{} {}\n`".format(pad_string(item.cw_id, 5), pad_string(item.name, 5))
+        text += "`{}` {}\n".format(pad_string(item.cw_id, 4), item.name)
 
     send_async(
         bot,
