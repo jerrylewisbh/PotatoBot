@@ -2,7 +2,7 @@ import json
 import re
 from enum import IntFlag, auto
 
-from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID
+from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
 
 from core.decorators import command_handler
 from core.functions.inline_markup import QueryType
@@ -22,22 +22,25 @@ def save_user_quest(user: User, update: Update, quest_data):
     uq.exp = quest_data['exp']
     uq.gold = quest_data['gold']
     uq.successful = quest_data['success']
-    print(quest_data)
     if quest_data['type'] in [QuestType.FORAY, QuestType.FORAY_FAILED]:
-        uq.location = Session.query(Location).filter(Location.id == QUEST_LOCATION_FORAY_ID).first()
-        print(uq.location)
-    if quest_data['type'] in [QuestType.STOP, QuestType.STOP_FAIL]:
-        uq.location = Session.query(Location).filter(Location.id == QUEST_LOCATION_DEFEND_ID).first()
+        uq.location_id = QUEST_LOCATION_FORAY_ID
+    elif quest_data['type'] in [QuestType.STOP, QuestType.STOP_FAIL]:
+        uq.location_id = QUEST_LOCATION_DEFEND_ID
+    elif quest_data['type'] in [QuestType.ARENA, QuestType.ARENA_FAIL]:
+        uq.location_id = QUEST_LOCATION_ARENA_ID
+
     uq.level = user.character.level if user.character else 0  # If we don't have a profile yet just assume "0" level
 
-    quest = Session.query(Quest).filter_by(text=quest_data['text']).first()
-    if quest:
-        uq.quest = quest
-    else:
-        q = Quest()
-        q.text = quest_data['text']
-        Session.add(q)
-        uq.quest = q
+    if QuestType.NORMAL:
+        # Only store quest texts for normal ones...
+        quest = Session.query(Quest).filter_by(text=quest_data['text']).first()
+        if quest:
+            uq.quest = quest
+        else:
+            q = Quest()
+            q.text = quest_data['text']
+            Session.add(q)
+            uq.quest = q
 
     for name, count in quest_data['items'].items():
         item = Session.query(Item).filter_by(name=name).first()
@@ -145,6 +148,14 @@ def parse_quest(bot: Bot, update: Update, user: User):
                 text=MSG_FORAY_ACCEPTED,
                 parse_mode=ParseMode.HTML
             )
+    elif quest_data['type'] in [QuestType.ARENA, QuestType.ARENA_FAIL]:
+        uq = save_user_quest(user, update, quest_data)
+
+        bot.sendMessage(
+            chat_id=user.id,
+            text=MSG_ARENA_ACCEPTED if QuestType.ARENA else MSG_ARENA_FAILED,
+            parse_mode=ParseMode.HTML,
+        )
     elif quest_data['type'] == QuestType.STOP:
         uq = save_user_quest(user, update, quest_data)
 

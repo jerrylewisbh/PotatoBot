@@ -11,7 +11,7 @@ from telegram import Bot, ParseMode, Update
 import matplotlib.pyplot as plot
 import numpy
 
-from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID
+from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
 from core.decorators import command_handler, user_allowed
 from core.functions.reply_markup import generate_statistics_markup
 from core.texts import *
@@ -56,102 +56,111 @@ def relative_details(user: User, from_date: datetime, FORAY_QUEST_LOCATION_ID=No
             UserQuest.from_date > from_date
         ).first()
 
-        text += MSG_QUEST_STAT_LOCATION.format(
-            location.name,
-            base_stats.count if base_stats.count else 0,
-            base_stats.exp_avg if base_stats.exp_avg else 0,
-            base_stats.gold_avg if base_stats.gold_avg else 0,
-            item_stats.item_avg if item_stats.item_avg else 0,
-            base_stats.exp_sum if base_stats.exp_sum else 0,
-            base_stats.gold_sum if base_stats.gold_sum else 0,
-            item_stats.item_sum if item_stats.item_sum else 0,
-        )
+        if location.id != QUEST_LOCATION_ARENA_ID:
+            text += MSG_QUEST_STAT_LOCATION.format(
+                location.name,
+                base_stats.count if base_stats.count else 0,
+                base_stats.exp_avg if base_stats.exp_avg else 0,
+                base_stats.gold_avg if base_stats.gold_avg else 0,
+                item_stats.item_avg if item_stats.item_avg else 0,
+                base_stats.exp_sum if base_stats.exp_sum else 0,
+                base_stats.gold_sum if base_stats.gold_sum else 0,
+                item_stats.item_sum if item_stats.item_sum else 0,
+            )
+        else:
+            text += MSG_QUEST_STAT_NO_LOOT.format(
+                location.name,
+                base_stats.count if base_stats.count else 0,
+                base_stats.exp_avg if base_stats.exp_avg else 0,
+                base_stats.gold_avg if base_stats.gold_avg else 0,
+                base_stats.exp_sum if base_stats.exp_sum else 0,
+                base_stats.gold_sum if base_stats.gold_sum else 0,
+            )
 
         # Additional stats for foray...
         if location.id == QUEST_LOCATION_FORAY_ID:
-            foray_stats_success = Session.query(
-                UserQuest.successful,
-                func.count(UserQuest.id).label("count"),
-                func.sum(UserQuest.pledge).label("pledges")
-            ).filter(
-                UserQuest.successful == True,
-                UserQuest.user_id == user.id,
-                UserQuest.location_id == location.id,
-                UserQuest.from_date > from_date
-            ).first()
-
-            foray_stats_failed = Session.query(
-                UserQuest.successful,
-                func.count(UserQuest.id).label("count"),
-            ).filter(
-                UserQuest.successful == False,
-                UserQuest.user_id == user.id,
-                UserQuest.location_id == location.id,
-                UserQuest.from_date > from_date
-            ).first()
-
-            stat_count_failed = 0
-            if foray_stats_failed:
-                stat_count_failed = foray_stats_failed.count
-
-            stat_count = 0
-            stat_pledges = 0
-            if foray_stats_success:
-                stat_count = foray_stats_success.count
-                stat_pledges = foray_stats_success.pledges
-
-            overall_count = (stat_count_failed + stat_count)
-            if not overall_count:
-                success_rate = 100
-            else:
-                success_rate = stat_count / overall_count * 100
-
-            if not stat_count:
-                pledge_rate = 0
-            else:
-                pledge_rate = stat_pledges / stat_count * 100
-
-            text += MSG_QUEST_STAT_FORAY.format(success_rate, pledge_rate)
-        elif location.id == QUEST_LOCATION_DEFEND_ID:
-            stop_stats_success = Session.query(
-                UserQuest.successful,
-                func.count(UserQuest.id).label("count"),
-            ).filter(
-                UserQuest.successful == True,
-                UserQuest.user_id == user.id,
-                UserQuest.location_id == location.id,
-                UserQuest.from_date > from_date
-            ).first()
-
-            stop_stats_failed = Session.query(
-                UserQuest.successful,
-                func.count(UserQuest.id).label("count"),
-            ).filter(
-                UserQuest.successful == False,
-                UserQuest.user_id == user.id,
-                UserQuest.location_id == location.id,
-                UserQuest.from_date > from_date
-            ).first()
-
-            stat_count_failed = 0
-            if stop_stats_failed:
-                stat_count_failed = stop_stats_failed.count
-
-            stat_count = 0
-            if stop_stats_success:
-                stat_count = stop_stats_success.count
-
-            overall_count = (stat_count_failed + stat_count)
-            if not overall_count:
-                success_rate = 100
-            else:
-                success_rate = stat_count / overall_count * 100
-
-            text += MSG_QUEST_STAT_STOP.format(success_rate)
-
-
+            text += __get_additional_stats_foray(from_date, location, text, user)
+        elif location.id in [QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID]:
+            text += __get_additional_stats_basic(from_date, location, user)
 
     return text
+
+
+def __get_additional_stats_foray(from_date, location, text, user):
+    foray_stats_success = Session.query(
+        UserQuest.successful,
+        func.count(UserQuest.id).label("count"),
+        func.sum(UserQuest.pledge).label("pledges")
+    ).filter(
+        UserQuest.successful == True,
+        UserQuest.user_id == user.id,
+        UserQuest.location_id == location.id,
+        UserQuest.from_date > from_date
+    ).first()
+    foray_stats_failed = Session.query(
+        UserQuest.successful,
+        func.count(UserQuest.id).label("count"),
+    ).filter(
+        UserQuest.successful == False,
+        UserQuest.user_id == user.id,
+        UserQuest.location_id == location.id,
+        UserQuest.from_date > from_date
+    ).first()
+    stat_count_failed = 0
+    if foray_stats_failed:
+        stat_count_failed = foray_stats_failed.count
+    stat_count = 0
+    stat_pledges = 0
+    if foray_stats_success:
+        stat_count = foray_stats_success.count
+        stat_pledges = foray_stats_success.pledges
+    overall_count = (stat_count_failed + stat_count)
+    if not overall_count:
+        success_rate = 100
+    else:
+        success_rate = stat_count / overall_count * 100
+    if not stat_count:
+        pledge_rate = 0
+    else:
+        pledge_rate = stat_pledges / stat_count * 100
+
+    return MSG_QUEST_STAT_FORAY.format(success_rate, pledge_rate)
+
+
+def __get_additional_stats_basic(from_date, location, user):
+    stop_stats_success = Session.query(
+        UserQuest.successful,
+        func.count(UserQuest.id).label("count"),
+    ).filter(
+        UserQuest.successful == True,
+        UserQuest.user_id == user.id,
+        UserQuest.location_id == location.id,
+        UserQuest.from_date > from_date
+    ).first()
+    stop_stats_failed = Session.query(
+        UserQuest.successful,
+        func.count(UserQuest.id).label("count"),
+    ).filter(
+        UserQuest.successful == False,
+        UserQuest.user_id == user.id,
+        UserQuest.location_id == location.id,
+        UserQuest.from_date > from_date
+    ).first()
+    stat_count_failed = 0
+    if stop_stats_failed:
+        stat_count_failed = stop_stats_failed.count
+    stat_count = 0
+    if stop_stats_success:
+        stat_count = stop_stats_success.count
+    overall_count = (stat_count_failed + stat_count)
+    if not overall_count:
+        success_rate = 100
+    else:
+        success_rate = stat_count / overall_count * 100
+
+    return MSG_QUEST_BASIC_STAT.format(success_rate)
+
+
 
 
 @command_handler()

@@ -147,11 +147,11 @@ def analyze_text(text):
         }
     elif find_arena:
         return {
-            'type': QuestType.ARENA,
-            # TODO!!!
+            'type': QuestType.ARENA if "Congratulations!" in text_stripped else QuestType.ARENA_FAIL,
             'items': {},
+            'success': True if "Congratulations!" in text_stripped else False,
             'gold': 0,
-            'exp': 0,
+            'exp': int(find_arena[0][1]) if find_arena else 0,
             'text': text_stripped,
         }
     else:
