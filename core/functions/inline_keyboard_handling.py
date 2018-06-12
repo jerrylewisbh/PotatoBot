@@ -913,10 +913,7 @@ def inlinequery(bot, update):
     query = update.inline_query.query
     results = []
 
-    print("A-INLINE")
-    print(query)
     if query in CASTLE_LIST or query.startswith(TACTICTS_COMMAND_PREFIX):
-        print("B-INLINE")
         results = [
             InlineQueryResultArticle(id=0,
                                      title=("DEFEND " if Castle.BLUE.value == query
@@ -924,7 +921,6 @@ def inlinequery(bot, update):
                                             else "ATTACK ") + query,
                                      input_message_content=InputTextMessageContent(query))]
     elif query.startswith("withdraw ") or query.startswith ("deposit "):
-        print("C-INLINE")
         withdraw_requests = generate_gstock_requests(query)
         if withdraw_requests:
             for entry in withdraw_requests:

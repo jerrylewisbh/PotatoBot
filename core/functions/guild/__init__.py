@@ -1,5 +1,7 @@
 from _operator import or_
 
+from sqlalchemy import func
+
 from core.types import Session, Item
 
 Session()
@@ -21,12 +23,11 @@ def generate_gstock_requests(query):
             Item.cw_id is not None,
             or_(
                 Item.cw_id == requested_item,
-                Item.name == requested_item,
+                func.lower(Item.name) == func.lower(requested_item),
             )
         ).first()
 
         if item:
-            print(item)
             results.append(
                 {
                     "label": query[0] + " " + str(quantity) + " " + item.name,
