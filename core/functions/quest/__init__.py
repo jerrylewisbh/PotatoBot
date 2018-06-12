@@ -98,7 +98,7 @@ def parse_quest(bot: Bot, update: Update, user: User):
 
         bot.sendMessage(
             chat_id=user.id,
-            text=MSG_QUEST,
+            text=MSG_QUEST.format(quest_data["text"] if quest_data and quest_data["text"] else ""),
             parse_mode=ParseMode.HTML,
             reply_markup=inline_keyboard
         )
