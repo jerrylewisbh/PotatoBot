@@ -1,4 +1,4 @@
-from sqlalchemy import func
+from _operator import or_
 
 from core.types import Session, Item
 
@@ -19,7 +19,10 @@ def generate_gstock_requests(query):
     if requested_item:
         item = Session.query(Item).filter(
             Item.cw_id is not None,
-            Item.cw_id == func.lower(requested_item)
+            or_(
+                Item.cw_id == requested_item,
+                Item.name == requested_item,
+            )
         ).first()
 
         if item:
