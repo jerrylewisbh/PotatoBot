@@ -88,7 +88,6 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
     players_def = 0
     try:
         squads = Session.query(Squad).all()
-        text = MSG_REPORT_SUMMARY_RATING
         now = datetime.now()
         if (now.hour < 7):
             now = now - timedelta(days=1)
@@ -130,24 +129,35 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
             global_members += total_members
             global_reports += total_reports
             if total_members > 0:
-                text += MSG_REPORT_SUMMARY_RATING.format(squad.squad_name,
-                                                         total_reports,
-                                                         total_members,
-                                                         full_atk,
-                                                         full_def,
-                                                         full_exp,
-                                                         full_gold,
-                                                         full_stock)
-        text += MSG_REPORT_SUMMARY_RATING.format('TOTAL',
-                                                 global_reports,
-                                                 global_members,
-                                                 global_atk,
-                                                 global_def,
-                                                 global_exp,
-                                                 global_gold,
-                                                 global_stock)
+                text += MSG_REPORT_SUMMARY.format(
+                    squad.squad_name,
+                    total_reports,
+                    total_members,
+                    full_atk,
+                    full_def,
+                    full_exp,
+                    full_gold,
+                    full_stock
+                )
+        text += MSG_REPORT_SUMMARY.format(
+            'TOTAL',
+            global_reports,
+            global_members,
+            global_atk,
+            global_def,
+            global_exp,
+            global_gold,
+            global_stock
+        )
         text += MSG_REPORT_TOTAL.format(players_atk, players_def, real_atk, real_def)
-        send_async(bot, chat_id=GOVERNMENT_CHAT, text=text, parse_mode=ParseMode.HTML, reply_markup=None)
+
+        send_async(
+            bot,
+            chat_id=GOVERNMENT_CHAT,
+            text=text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=None
+        )
 
     except SQLAlchemyError as err:
         bot.logger.error(str(err))

@@ -11,7 +11,7 @@ from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
                           MessageQueue, Updater)
 from telegram.ext.dispatcher import run_async
 
-from core.battle import report_after_battle
+from core.battle import report_after_battle, ready_to_battle_result
 from core.bot import MQBot
 from core.chat_commands import *
 from core.commands import *
