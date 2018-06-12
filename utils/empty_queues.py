@@ -5,10 +5,9 @@ import os
 import sys
 import time
 
-from cwmq import Consumer
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from cwmq import Consumer
 
 def clear_handler(channel, method, properties, body, dispatcher):
     print("Cleared {}".format(method.delivery_tag))

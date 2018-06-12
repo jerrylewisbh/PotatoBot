@@ -3,9 +3,9 @@ import os
 import sys
 import unittest
 
-from core.state import GameState, get_game_state
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from core.state import GameState, get_game_state
 
 
 class TestTime(unittest.TestCase):
