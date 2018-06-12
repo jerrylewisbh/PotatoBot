@@ -41,9 +41,7 @@ from core.types import (Admin, AdminType, Location, MessageType, Order,
                         OrderCleared, OrderGroup, OrderGroupItem, Report,
                         Session, Squad, SquadMember, Stock, User, UserQuest)
 from core.utils import create_or_update_user, send_async, update_group
-from core.functions.guild_stock import generate_gstock_requests
-
-LOGGER = logging.getLogger('MyApp')
+from core.functions.guild import generate_gstock_requests
 
 order_updated = {}
 
@@ -304,7 +302,11 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
             Session.add(order)
             Session.commit()
             markup = generate_ok_markup(
-                order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX), order_text)
+                order.id,
+                0,
+                order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
+                order_text
+            )
             msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
         else:
             markup = None
@@ -330,7 +332,8 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                     bot,
                     chat_id=order.chat_id,
                     text=MSG_ORDER_CLEARED_BY_HEADER +
-                    MSG_EMPTY).result()
+                    MSG_EMPTY
+                ).result()
                 if msg:
                     order.confirmed_msg = msg.message_id
                 else:
@@ -338,8 +341,11 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                 Session.add(order)
                 Session.commit()
                 markup = generate_ok_markup(
-                    order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
-                    order_text)
+                    order.id,
+                    0,
+                    order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
+                    order_text
+                )
                 msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
             else:
                 markup = None
@@ -817,7 +823,7 @@ def order_confirmed(bot: Bot, update: Update, user: User, data: dict, job_queue:
                     Session.commit()
                     if order.confirmed_msg != 0:
                         if order.id not in order_updated or \
-                                datetime.now() - order_updated[order.id] > timedelta(seconds=4):
+                                    datetime.now() - order_updated[order.id] > timedelta(seconds=4):
                             order_updated[order.id] = datetime.now()
                             job_queue.run_once(update_confirmed, 5, order)
                     update.callback_query.answer(text=MSG_ORDER_CLEARED)
@@ -907,7 +913,10 @@ def inlinequery(bot, update):
     query = update.inline_query.query
     results = []
 
+    print("A-INLINE")
+    print(query)
     if query in CASTLE_LIST or query.startswith(TACTICTS_COMMAND_PREFIX):
+        print("B-INLINE")
         results = [
             InlineQueryResultArticle(id=0,
                                      title=("DEFEND " if Castle.BLUE.value == query
@@ -915,10 +924,15 @@ def inlinequery(bot, update):
                                             else "ATTACK ") + query,
                                      input_message_content=InputTextMessageContent(query))]
     elif query.startswith("withdraw ") or query.startswith ("deposit "):
+        print("C-INLINE")
         withdraw_requests = generate_gstock_requests(query)
         if withdraw_requests:
             for entry in withdraw_requests:
-                results.append(InlineQueryResultArticle(id=uuid4(),
-                                                        title=entry["label"],
-                                                        input_message_content=InputTextMessageContent(entry["command"])))
+                results.append(
+                    InlineQueryResultArticle(
+                        id=uuid4(),
+                        title=entry["label"],
+                        input_message_content=InputTextMessageContent(entry["command"])
+                    )
+                )
     update.inline_query.answer(results)

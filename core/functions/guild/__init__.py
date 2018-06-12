@@ -1,5 +1,8 @@
-from core.item_codes import ITEMS
+from sqlalchemy import func
 
+from core.types import Session, Item
+
+Session()
 
 def generate_gstock_requests(query):
     query = query.split()
@@ -14,8 +17,18 @@ def generate_gstock_requests(query):
         requested_item = " ".join(query[1:]).title()
 
     if requested_item:
-        for item in [item for item in ITEMS.keys() if item.startswith(requested_item)]:
-            results.append({"label": query[0] + " " + str(quantity) + " " + item,
-                            "command": "/g_" + query[0] + " " + ITEMS[item] + " " + str(quantity)})
+        item = Session.query(Item).filter(
+            Item.cw_id is not None,
+            Item.cw_id == func.lower(requested_item)
+        ).first()
+
+        if item:
+            print(item)
+            results.append(
+                {
+                    "label": query[0] + " " + str(quantity) + " " + item.name,
+                    "command": "/g_" + query[0] + " " + item.cw_id + " " + str(quantity)
+                }
+            )
 
         return results
