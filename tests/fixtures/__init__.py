@@ -97,3 +97,27 @@ Tired of constant pillages, in exchange for guarantee of their safety from futur
 with some intelligence and resources on a regular basis.
 
 To accept their offer, you shall /pledge to protect. You have 3 minutes to decide."""
+
+ARENA_SUCCESS = """58❤️🥔Fozzie
+VS
+0❤️🐺[JIN]Sinkoz
+
+🗡Fozzie 🥔Potato Castle carried out strong attack and unexpectedly stabbed his opponent with a sharp dagger at the head! 26(+3)
+
+🛡[JIN]Sinkoz 🐺Wolfpack Castle hammered his opponent at the head, but Fozzie swiftly dodged that! 
+
+Fozzie from 🥔Potato Castle was stronger than [JIN]Sinkoz from 🐺Wolfpack Castle.
+You received: 30 exp.
+Leaderboard of fighters are updated: /top5 & /top6. Congratulations!"""
+
+ARENA_FAIL = """0❤️🥔Fozzie
+VS
+6❤️🐺[LIL]arrrsyy
+
+🗡Fozzie 🥔Potato Castle charged in a deadly attack and unexpectedly stabbed his opponent with a sharp dagger at the body! 22(+3)
+
+🗡[LIL]arrrsyy 🐺Wolfpack Castle rushed in a deadly attack at the head! 25
+
+[LIL]arrrsyy from 🐺Wolfpack Castle was stronger than Fozzie from 🥔Potato Castle.
+You received: 11 exp.
+Leaderboard of fighters are updated: /top5 & /top6. Cheer up!"""

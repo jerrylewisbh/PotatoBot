@@ -65,6 +65,22 @@ class TestTime(unittest.TestCase):
         self.assertEqual(a["exp"], 0)
         self.assertEqual(a["items"], {})
 
+    def test_arena_success(self):
+        a = analyze_text(ARENA_SUCCESS)
+        self.assertEqual(a["type"], QuestType.ARENA)
+        self.assertTrue(a["success"])
+        self.assertEqual(a["gold"], 0)
+        self.assertEqual(a["exp"], 30)
+        self.assertEqual(a["items"], {})
+
+    def test_arnea_fail(self):
+        a = analyze_text(ARENA_FAIL)
+        self.assertEqual(a["type"], QuestType.ARENA_FAIL)
+        self.assertFalse(a["success"])
+        self.assertEqual(a["gold"], 0)
+        self.assertEqual(a["exp"], 11)
+        self.assertEqual(a["items"], {})
+
     def test_foray_pledge(self):
         self.assertEqual(analyze_text(FORAY_PLEDGE)["type"], QuestType.FORAY_PLEDGE)
 
