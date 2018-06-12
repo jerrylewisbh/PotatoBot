@@ -2,6 +2,8 @@ import json
 import re
 from enum import IntFlag, auto
 
+from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID
+
 from core.decorators import command_handler
 from core.functions.inline_markup import QueryType
 from core.functions.quest.parse import QuestType, analyze_text
@@ -20,10 +22,12 @@ def save_user_quest(user: User, update: Update, quest_data):
     uq.exp = quest_data['exp']
     uq.gold = quest_data['gold']
     uq.successful = quest_data['success']
-    if quest_data['type'] == [QuestType.FORAY, QuestType.FORAY_FAILED]:
-        uq.location = Session.query(Location).filter(Location.name == "🗡Foray").first()
-    if quest_data['type'] == [QuestType.STOP, QuestType.STOP_FAIL]:
-        uq.location = Session.query(Location).filter(Location.name == "Defend").first()
+    print(quest_data)
+    if quest_data['type'] in [QuestType.FORAY, QuestType.FORAY_FAILED]:
+        uq.location = Session.query(Location).filter(Location.id == QUEST_LOCATION_FORAY_ID).first()
+        print(uq.location)
+    if quest_data['type'] in [QuestType.STOP, QuestType.STOP_FAIL]:
+        uq.location = Session.query(Location).filter(Location.id == QUEST_LOCATION_DEFEND_ID).first()
     uq.level = user.character.level if user.character else 0  # If we don't have a profile yet just assume "0" level
 
     quest = Session.query(Quest).filter_by(text=quest_data['text']).first()

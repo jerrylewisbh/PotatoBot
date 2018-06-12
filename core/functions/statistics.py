@@ -72,7 +72,7 @@ def relative_details(user: User, from_date: datetime, FORAY_QUEST_LOCATION_ID=No
             foray_stats_success = Session.query(
                 UserQuest.successful,
                 func.count(UserQuest.id).label("count"),
-                func.count(UserQuest.pledge).label("pledges")
+                func.sum(UserQuest.pledge).label("pledges")
             ).filter(
                 UserQuest.successful == True,
                 UserQuest.user_id == user.id,
