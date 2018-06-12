@@ -2,6 +2,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from json import loads
+from uuid import uuid4
 
 from sqlalchemy import and_
 from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
@@ -40,13 +41,14 @@ from core.types import (Admin, AdminType, Location, MessageType, Order,
                         Squad, SquadMember, Stock, User, UserQuest,
                         Session)
 from core.utils import create_or_update_user, send_async, update_group
+from core.functions.guild_stock import generate_gstock_requests
 
 LOGGER = logging.getLogger('MyApp')
-
 
 order_updated = {}
 
 Session()
+
 
 @admin_allowed()
 def send_status(bot: Bot, update: Update):
@@ -164,7 +166,8 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                     Session.add(order)
                     Session.commit()
                     markup = generate_ok_markup(
-                        order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX), order_text)
+                        order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
+                        order_text)
                     msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
                 else:
                     markup = None
@@ -190,7 +193,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                             bot,
                             chat_id=order.chat_id,
                             text=MSG_ORDER_CLEARED_BY_HEADER +
-                            MSG_EMPTY).result()
+                                 MSG_EMPTY).result()
                         if msg:
                             order.confirmed_msg = msg.message_id
                         else:
@@ -198,7 +201,8 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                         Session.add(order)
                         Session.commit()
                         markup = generate_ok_markup(
-                            order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX), order_text)
+                            order.id, 0, order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
+                            order_text)
                         msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
                     else:
                         markup = None
@@ -232,7 +236,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                             Session.commit()
                             if order.confirmed_msg != 0:
                                 if order.id not in order_updated or \
-                                        datetime.now() - order_updated[order.id] > timedelta(seconds=4):
+                                            datetime.now() - order_updated[order.id] > timedelta(seconds=4):
                                     order_updated[order.id] = datetime.now()
                                     job_queue.run_once(update_confirmed, 5, order)
                             update.callback_query.answer(text=MSG_ORDER_CLEARED)
@@ -251,7 +255,7 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
                         Session.commit()
                         if order.confirmed_msg != 0:
                             if order.id not in order_updated or \
-                                    datetime.now() - order_updated[order.id] > timedelta(seconds=4):
+                                        datetime.now() - order_updated[order.id] > timedelta(seconds=4):
                                 order_updated[order.id] = datetime.now()
                                 job_queue.run_once(update_confirmed, 5, order)
                         update.callback_query.answer(text=MSG_ORDER_CLEARED)
@@ -750,10 +754,20 @@ def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueu
 def inlinequery(bot, update):
     """Handle the inline query."""
     query = update.inline_query.query
-    if query not in CASTLE_LIST and not query.startswith(TACTICTS_COMMAND_PREFIX):
-        return
+    results = []
 
-    results = [InlineQueryResultArticle(id=0, title=("DEFEND " if Castle.BLUE.value == query or query.startswith(
-        TACTICTS_COMMAND_PREFIX) else "ATTACK ") + query, input_message_content=InputTextMessageContent(query))]
-
+    if query in CASTLE_LIST or query.startswith(TACTICTS_COMMAND_PREFIX):
+        results = [
+            InlineQueryResultArticle(id=0,
+                                     title=("DEFEND " if Castle.BLUE.value == query
+                                                         or query.startswith(TACTICTS_COMMAND_PREFIX)
+                                            else "ATTACK ") + query,
+                                     input_message_content=InputTextMessageContent(query))]
+    elif query.startswith("withdraw ") or query.startswith ("deposit "):
+        withdraw_requests = generate_gstock_requests(query)
+        if withdraw_requests:
+            for entry in withdraw_requests:
+                results.append(InlineQueryResultArticle(id=uuid4(),
+                                                        title=entry["label"],
+                                                        input_message_content=InputTextMessageContent(entry["command"])))
     update.inline_query.answer(results)
