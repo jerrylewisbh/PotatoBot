@@ -4,10 +4,11 @@ from functools import wraps
 from sqlalchemy.exc import SQLAlchemyError
 from telegram import Bot, Update
 
-from core.types import AdminType, check_admin, check_ban, log, Session
+from core.types import AdminType, Session, check_admin, check_ban, log
 from core.utils import create_or_update_user
 
 Session()
+
 
 def admin_allowed(adm_type=AdminType.FULL, ban_enable=True, allowed_types=()):
     def decorate(func):
@@ -18,12 +19,9 @@ def admin_allowed(adm_type=AdminType.FULL, ban_enable=True, allowed_types=()):
                     allowed &= check_ban(update)
                 if allowed:
                     if func.__name__ not in ['manage_all', 'trigger_show', 'user_panel', 'wrapper', 'welcome']:
-                        log(
-                            update.effective_user.id,
-                            update.effective_chat.id,
-                            func.__name__,
-                            update.message.text if update.message else None or update.callback_query.data if update.callback_query else None
-                        )
+                        log(update.effective_user.id, update.effective_chat.id, func.__name__, update.message.text
+                            if update.message else None or update.callback_query.data
+                            if update.callback_query else None)
                     # Fixme: Issues a message-update even if message did not change. This
                     # raises a telegram.error.BadRequest exception!
                     func(bot, update, *args, **kwargs)
@@ -45,9 +43,10 @@ def user_allowed(ban_enable=True):
 
 def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow_private: bool = True,
                     allow_group: bool = False, allow_channel: bool = False,
-                    allow_banned: bool = False, forward_from: int = None,
+                    allow_banned: bool = False, squad_only: bool = False, testing_only: bool = False,
+                    forward_from: int = None,
                     *args: object,
-                    **kwargs : object) -> object:
+                    **kwargs: object) -> object:
     """
     Use this decorator to mark CommandHandlers and other exposed chat commands. This decorator allows you to check
     for user permissions.
@@ -67,6 +66,8 @@ def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow
     :type allow_private: bool
     :type allow_group: bool
     :type allow_channel: bool
+    :type squad_only: bool
+    :type testing_only: bool
     :type forward_from: int
     :type args: object
     :type kwargs: object
@@ -76,6 +77,8 @@ def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow
     :param allow_private:
     :param allow_group:
     :param allow_channel:
+    :param squad_only:
+    :param testing_only:
     :param forward_from:
     :param args:
     :param kwargs:
@@ -88,16 +91,12 @@ def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow
             # Check if we have the required parameters in the right order...
             if not isinstance(args[0], Bot):
                 error_msg = "Function is decorated as @command_handler. Expecting object of type {} as first argument. Got {}".format(
-                    Bot.__class__,
-                    type(args[0])
-                )
+                    Bot.__class__, type(args[0]))
                 logging.error(error_msg)
                 raise TypeError(error_msg)
             if not isinstance(args[1], Update):
                 error_msg = "Function is decorated as @command_handler. Expecting object of type {} as second argument. Got {}".format(
-                    Update.__class__,
-                    type(args[1])
-                )
+                    Update.__class__, type(args[1]))
                 logging.error(error_msg)
                 raise TypeError(error_msg)
 
@@ -131,21 +130,34 @@ def command_handler(permissions_required: AdminType = AdminType.NOT_ADMIN, allow
                 logging.debug("Message is not a valid forward %s!=%s", update.message.forward_from.id, forward_from)
                 return
 
+            logging.debug(squad_only)
+            logging.debug(user.is_squadmember)
+            logging.debug(testing_only)
+            logging.debug(user.is_squadmember)
+
+            if squad_only and not user.is_squadmember:
+                logging.debug("This is a squad only feature and user '%s' is no squad member", user.id)
+                return
+
+            if testing_only and not user.is_tester:
+                logging.debug(
+                    "This is a testing-squad only feature and user '%s' is no testing-squad member",
+                    user.id
+                )
+                return
+
             if permissions_required:
                 if permissions_required not in AdminType:
                     raise ValueError("Given permission does not match an existing AdminType")
-                #print(user.permission)
+                # print(user.permission)
 
                 # The lower the number, the higher the permission is...
-                #if permissions_required in [AdminType.SUPER, AdminType.FULL]:
+                # if permissions_required in [AdminType.SUPER, AdminType.FULL]:
                 #    # Highest permission levels. Just pass
                 #    logging.debug("%s is admin-type %s!", user.id, user.permission)
-
-
 
             logging.info("User '%s' has called: '%s'", user.id, func.__name__)
 
             return func(bot, update, user, **kwargs)
         return wrapper
     return real_decorator
-

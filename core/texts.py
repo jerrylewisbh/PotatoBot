@@ -94,7 +94,7 @@ Squad commands:
 /unban <user> - Unban an user from the squad
 
 
-User commands: 
+User commands:
 /items - List known items
 /hide - Manually trigger hide
 /resume - Resume suspended sniping
@@ -165,6 +165,9 @@ MSG_STOCK_COMPARE_HARVESTED = '📦<b>You got:</b>\n'
 MSG_STOCK_COMPARE_LOST = '\n📦<b>You lost:</b>\n'
 MSG_STOCK_COMPARE_FORMAT = '{} ({})\n'
 MSG_STOCK_COMPARE_WAIT = 'Waiting for data to compare...'
+MSG_STOCK_PRICE = "{} <i>({} x {} = {}💰)</i>\n"
+MSG_STOCK_OVERALL_PRICE = "\nEstimated overall worth: {}💰\n"
+
 
 MSG_PERSONAL_SITE_LINK = 'Your personal link: {}'
 
@@ -382,8 +385,6 @@ MSG_SQUAD_READY = '{} warriors of <b>{}</b> are ready to battle!\n{}⚔ {}🛡'
 MSG_FULL_TEXT_LINE = '<b>{}</b>: {}👥 {}⚔ {}🛡\n'
 MSG_FULL_TEXT_TOTAL = '\n<b>Total</b>: {}👥 {}⚔ {}🛡'
 
-MSG_IN_DEV = 'Under construction=('
-
 MSG_TOP_ABOUT = '🏆 Tops 🏆'
 MSG_STATISTICS_ABOUT = '📈Statistics📈'
 MSG_SQUAD_ABOUT = 'You are a member of the Squad "{}"'
@@ -487,6 +488,9 @@ BTN_ALL_TIME = "All Time"
 BTN_SQUAD_WEEK = "Squads per Week"
 BTN_SQUAD_ALL_TIME = "Squads of all time"
 
+BTN_PLEDGE_YES = "I got a pledge!"
+BTN_PLEDGE_NO = "No"
+
 MSG_LAST_UPDATE = '🕑 Last Update'
 MSG_GO_AWAY = 'Go Away!'
 MSG_TOP_GENERATING = 'Generating Top'
@@ -519,13 +523,13 @@ MSG_CHANGES_SINCE_LAST_UPDATE = "<b>Changes since your last stock updates:</b>\n
 MSG_USER_BATTLE_REPORT_HEADER = "<b>Your after action report:</b>\n\n"
 MSG_USER_BATTLE_REPORT_FULL = "<b>Your complete report:</b>\n\n"
 
-MSG_USER_BATTLE_REPORT= "{}{} ⚔:{} 🛡:{} "\
-                        "Lvl: {}\n"\
-                        "Your result on the battlefield:\n" \
-                        "🔥Exp: {}\n" \
-                        "💰Gold: {}\n" \
-                        "📦Stock: {}\n\n" \
-                        "<i>Note: Thanks for sending in your /report. Please do this after every battle!\n</i>"
+MSG_USER_BATTLE_REPORT = "{}{} ⚔:{} 🛡:{} "\
+    "Lvl: {}\n"\
+    "Your result on the battlefield:\n" \
+    "🔥Exp: {}\n" \
+    "💰Gold: {}\n" \
+    "📦Stock: {}\n\n" \
+    "<i>Note: Thanks for sending in your /report. Please do this after every battle!\n</i>"
 
 MSG_USER_BATTLE_REPORT_PRELIM = "{}{} Lvl: {}\n\n"\
                                 "<b>Please forward me your /report as soon as possible!</b>\n"
@@ -542,7 +546,9 @@ MSG_SETTINGS_INFO = "<b>Your settings:</b>\n" \
                     "<i>Last profile update: {}</i>\n" \
                     "<i>Last stock update: {}</i>"
 MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"
-MSG_NEEDS_TRADE_ACCESS = 'This requires trade permissions. I will request them once you select "{}" or "{}".'.format(USER_COMMAND_EXCHANGE, USER_COMMAND_HIDE)
+MSG_NEEDS_TRADE_ACCESS = 'This requires trade permissions. I will request them once you select "{}" or "{}".'.format(
+    USER_COMMAND_EXCHANGE,
+    USER_COMMAND_HIDE)
 
 MSG_NO_REPORT_PHASE_BEFORE_BATTLE = "War is coming! Your Stock and Profile is getting updated automatically. No need to forward your data just yet!"
 MSG_NO_REPORT_PHASE_AFTER_BATTLE = "War is over but I don't accept reports just yet! I will remind you when it is time."
@@ -554,11 +560,21 @@ MSG_DEAL_SOLD = "⚖️You sold <b>{}</b> for {}💰 ({} x {}💰)\nBuyer: {}{}\
 MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"
+MSG_QUEST_ACCEPTED = "Thank you for sending in this quest."
+MSG_FORAY_ACCEPTED = "Thank you for sending in your successful 🗡Foray."
+MSG_FORAY_FAILED = "Thank you for sending in your failed 🗡Foray."
+MSG_FORAY_ACCEPTED_KNIGHT = "Thank you for sending in your successful 🗡Foray. Where you offered to /pledge your allegiance to a village?"
+MSG_FORAY_ACCEPTED_SAVED_PLEDGE = "Congratulations! You were offered a new pledge. Thank you for this information!"
+MSG_FORAY_ACCEPTED_SAVED = "You unfortunately did not get a new /pledge. Thank you for this information!"
 
+MSG_FORAY_PLEDGE = "Please send in your Foray result and choose there if your pledge was successful."
 MSG_QUEST_7_DAYS = "*In the last seven days you told me about the following adventures:*\n\n"
 MSG_QUEST_STAT_LOCATION = "*{} ({})*: \n" \
                           "Avg: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n" \
                           "Ttl: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n"
+
+MSG_QUEST_STAT_FORAY = "Success rate: {: .2f}% / Pledge rate: {: .2f}%\n"
+MSG_QUEST_STAT_STOP = "Success rate: {: .2f}%\n"
 
 MSG_QUEST_OVERALL = "\n\n*Overall:*\n\n"
 
@@ -578,6 +594,7 @@ HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFee
                "*Your current settings are:*\n" \
                "{}"
 
+HIDE_STARTED = "Started hiding. This can take a few minutes. I'll notify you when I'm done. _Note: If you are currently busy questing this will not work and you have to start over!_"
 HIDE_WRONG_ARGS = "Sorry, the /ah command you issued is not valid. Try again."
 HIDE_WRONG_LIMIT = "Sorry, the limit you specified is not valid. Try again."
 HIDE_WRONG_ITEM = "Sorry, the item `{}` you specified is not valid. Try again."
@@ -586,20 +603,22 @@ HIDE_BUY_UNLIMITED = "- P{}: Buy {} (`{}`)\n"
 HIDE_BUY_LIMITED = "- P{}: Buy {} (`{}`) for a maximum price of {} 💰\n"
 HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
 HIDE_REMOVED = "{} was removed from your hiding list!"
+HIDE_RESULT_INTRO = "<b>Hiding finshed! Your results:\n</b>"
+HIDE_BOUGHT = "You bought <b>{}</b> for {}💰\n"
 
 SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
-               "*Automated buying of items at a given price*\n" \
-               "You can set your order via `/s <itemId> <price> [<numberOfItems>]`.\n\n" \
-               "Examples: \n" \
-               "- `/s 01 10  ` - Buy one Thread for 10💰 or less\n" \
-               "- `/s 20 2 10` - Buy Leather for 2💰 or less until 10 are bought\n\n" \
-               "_How does it work?_: If your given item is sold for or below the price you specified I will try to buy it. " \
-               "It can take some time until this item is available for that price. It is also possible that other " \
-               "players are searching for the same item. In this case you need a little bit of luck, although we try " \
-               "\"first came, first served\". You can issue `/items` to get a list of items. \n\n" \
-               "To remove a buy order `/sr <itemId>`.\n\n" \
-               "*Your current orders are:*\n" \
-               "{}"
+    "*Automated buying of items at a given price*\n" \
+    "You can set your order via `/s <itemId> <price> [<numberOfItems>]`.\n\n" \
+    "Examples: \n" \
+    "- `/s 01 10  ` - Buy one Thread for 10💰 or less\n" \
+    "- `/s 20 2 10` - Buy Leather for 2💰 or less until 10 are bought\n\n" \
+    "_How does it work?_: If your given item is sold for or below the price you specified I will try to buy it. " \
+    "It can take some time until this item is available for that price. It is also possible that other " \
+    "players are searching for the same item. In this case you need a little bit of luck, although we try " \
+    "\"first came, first served\". You can issue `/items` to get a list of items. \n\n" \
+    "To remove a buy order `/sr <itemId>`.\n\n" \
+    "*Your current orders are:*\n" \
+    "{}"
 
 SNIPE_LIMIT_EXCEEDED = "Sorry but you may only have {} orders active at any given time. Please remove another order first."
 SNIPE_INITIAL_ORDER_EXCEEDED = "Sorry but you may only order {} pieces at a time. Please reduce your amount."

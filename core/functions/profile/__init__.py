@@ -1,17 +1,14 @@
 from config import EXT_ID, CWBOT_ID
 from core.decorators import admin_allowed, command_handler
-from core.functions.ban import ban_traitor
 from core.functions.common import stock_split, stock_compare_text
 from core.functions.profile.util import *
 from core.functions.profile.util import __send_user_with_settings
 from core.functions.reply_markup import generate_user_markup
-from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION, PROFILE,
-                         REPAIR_REPORT, REPORT)
+from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
+                         REPAIR_REPORT)
 from core.state import GameState, get_game_state
 from core.template import fill_char_template
 from core.texts import *
-from core.texts import MSG_START_KNOWN, MSG_START_MEMBER_SQUAD_REGISTERED, SNIPE_SUSPENDED_NOTICE, \
-    MSG_START_MEMBER_SQUAD
 from core.types import (BuildReport, Character, Report,
                         User, Session)
 from core.utils import send_async
@@ -90,8 +87,8 @@ def report_received(bot: Bot, update: Update, user: User):
             parse_mode=ParseMode.HTML)
         return
 
-    report = re.search(REPORT, update.message.text)
-    if report and user.character and str(report.group(2)) == user.character.name:
+    parsed_report = parse_report_text(update.message.text)
+    if parsed_report and user.character and parsed_report['name'] == user.character.name:
         date = update.message.forward_date
         if (update.message.forward_date.hour < 7):
             date = update.message.forward_date - timedelta(days=1)
@@ -117,7 +114,7 @@ def report_received(bot: Bot, update: Update, user: User):
             return
 
         if not report or (report and report.preliminary_report):
-            parse_reports(update.message.text, update.message.from_user.id, update.message.forward_date)
+            save_report(update.message.text, update.message.from_user.id, update.message.forward_date)
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
             if report and report.castle != CASTLE:
                 ban_traitor(bot, update.message.from_user.id)
@@ -146,15 +143,13 @@ def char_update(bot: Bot, update: Update, user: User):
 
     char = None
     if re.search(HERO, update.message.text):
-        char = parse_hero(update.message.text,
-                          update.message.from_user.id,
-                          update.message.forward_date,
-                          )
-    elif re.search(PROFILE, update.message.text):
-        char = parse_profile(update.message.text,
-                             update.message.from_user.id,
-                             update.message.forward_date,
-                             )
+        char = parse_hero(
+            bot,
+            update.message.text,
+            update.message.from_user.id,
+            update.message.forward_date,
+        )
+
     if CASTLE:
         if char and (char.castle == CASTLE or update.message.from_user.id == EXT_ID):
             char.castle = CASTLE
@@ -193,7 +188,7 @@ def profession_update(bot: Bot, update: Update, user: User):
 
 
 @command_handler()
-def char_show(bot: Bot, update: Update, user: User):
+def show_char(bot: Bot, update: Update, user: User):
     if user.is_api_profile_allowed and user.is_api_stock_allowed:
         try:
             wrapper.update_stock(user)
@@ -234,6 +229,7 @@ def char_show(bot: Bot, update: Update, user: User):
             parse_mode=ParseMode.HTML
         )
 
+
 @command_handler()
 def show_report(bot: Bot, update: Update, user: User):
     existing_report = get_latest_report(user.id)
@@ -268,8 +264,8 @@ def show_report(bot: Bot, update: Update, user: User):
         stock_text = MSG_USER_BATTLE_REPORT_STOCK.format(
             MSG_CHANGES_SINCE_LAST_UPDATE,
             stock_diff,
-            before_war_stock.date.strftime("%Y-%m-%d %H:%M:%S"),
-            after_war_stock.date.strftime("%Y-%m-%d %H:%M:%S"),
+            before_war_stock.date.strftime("%Y-%m-%d %H:%M:%S") if before_war_stock else "Missing",
+            after_war_stock.date.strftime("%Y-%m-%d %H:%M:%S") if after_war_stock else "Missing",
         )
         text += stock_text
         if user.character and user.character.characterClass == "Knight":
@@ -303,7 +299,9 @@ def revoke(bot: Bot, update: Update, user: User):
     )
 
 
-@command_handler()
+@command_handler(
+    squad_only=True
+)
 def grant_access(bot: Bot, update: Update, user: User):
     reg_req = {
         "action": "createAuthCode",
@@ -354,6 +352,7 @@ def handle_access_token(bot: Bot, update: Update, user: User):
         }
         p.publish(grant_req)
 
+
 @command_handler()
 def user_panel(bot: Bot, update: Update, user: User):
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
@@ -377,6 +376,7 @@ def user_panel(bot: Bot, update: Update, user: User):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=generate_user_markup(user_id=update.message.from_user.id)
     )
+
 
 @command_handler()
 def settings(bot: Bot, update: Update, user: User):

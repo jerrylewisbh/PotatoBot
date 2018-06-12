@@ -4,19 +4,20 @@ from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import func
-from telegram import Bot, ParseMode, Update
+from telegram import Bot, ParseMode, Update, TelegramError
 
-from config import WEB_LINK
 from core.decorators import admin_allowed, user_allowed
 from core.functions.reply_markup import (generate_admin_markup)
 from core.functions.triggers import trigger_decorator
 from core.state import GameState, get_game_state
 from core.texts import *
-from core.types import (Admin, AdminType, Auth, Stock, User,
-                        Session, Item)
-from core.utils import create_or_update_user, send_async
+from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_YOU_BANNED, MSG_BAN_COMPLETE, \
+    MSG_USER_UNKNOWN, MSG_REASON_TRAITOR, MSG_YOU_UNBANNED, MSG_USER_UNBANNED, MSG_USER_NOT_BANNED
+from core.types import Admin, AdminType, Stock, User, Session, Item, Ban, SquadMember, Squad
+from core.utils import send_async
 
 Session()
+
 
 class StockType(Enum):
     Stock = 0
@@ -136,8 +137,10 @@ def stock_split(old_stock, new_stock):
 
     return (resources_old, resources_new)
 
+
 def __get_item(item_name):
     return Session.query(Item).filter(func.lower(Item.name) == item_name.lower()).first()
+
 
 def stock_compare_text(old_stock, new_stock):
     """ Compare stock... """
@@ -224,60 +227,79 @@ def delete_user(bot: Bot, update: Update):
     bot.unbanChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
 
 
-@user_allowed(False)
-def trade_compare(bot: Bot, update: Update, chat_data: dict):
-    old_stock = Session.query(Stock).filter_by(user_id=update.message.from_user.id,
-                                               stock_type=StockType.TradeBot.value).order_by(Stock.date.desc()).first()
-    new_stock = Stock()
-    new_stock.stock = update.message.text
-    new_stock.stock_type = StockType.TradeBot.value
-    new_stock.user_id = update.message.from_user.id
-    new_stock.date = datetime.now()
-    Session.add(new_stock)
-    Session.commit()
-    if old_stock is not None:
-        items_old = {}
-        items_new = {}
-        strings = old_stock.stock.splitlines()
-        for string in strings:
-            if string.startswith('/add_'):
-                item = string.split('   ')[1]
-                item = item.split(' x ')
-                items_old[item[0]] = int(item[1])
-        strings = new_stock.stock.splitlines()
-        for string in strings:
-            if string.startswith('/add_'):
-                item = string.split('   ')[1]
-                item = item.split(' x ')
-                items_new[item[0]] = int(item[1])
-        resource_diff_add, resource_diff_del = get_diff(items_new, items_old)
-        msg = MSG_STOCK_COMPARE_HARVESTED
-        if len(resource_diff_add):
-            for key, val in resource_diff_add:
-                msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
+@admin_allowed()
+def ban(bot: Bot, update: Update):
+    username, reason = update.message.text.split(' ', 2)[1:]
+    username = username.replace('@', '')
+    user = Session.query(User).filter_by(username=username).first()
+    if user:
+        banned = Session.query(Ban).filter_by(user_id=user.id).first()
+        if banned:
+            send_async(bot, chat_id=update.message.chat.id,
+                       text=MSG_ALREADY_BANNED.format(banned.to_date, banned.reason))
         else:
-            msg += MSG_EMPTY
-        msg += MSG_STOCK_COMPARE_LOST
-        if len(resource_diff_del):
-            for key, val in resource_diff_del:
-                msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
-        else:
-            msg += MSG_EMPTY
-        send_async(bot, chat_id=update.message.chat.id, text=msg, parse_mode=ParseMode.HTML)
+            banned = Ban()
+            banned.user_id = user.id
+            banned.from_date = datetime.now()
+            banned.to_date = datetime.max
+            banned.reason = reason or MSG_NO_REASON
+            member = Session.query(SquadMember).filter_by(user_id=user.id).first()
+            if member:
+                Session.delete(member)
+            admins = Session.query(Admin).filter_by(user_id=user.id).all()
+            for admin in admins:
+                Session.delete(admin)
+            Session.add(banned)
+            Session.commit()
+            squads = Session.query(Squad).all()
+            for squad in squads:
+                send_async(bot, chat_id=squad.chat_id, text=MSG_USER_BANNED.format('@' + username))
+            send_async(bot, chat_id=user.id, text=MSG_YOU_BANNED.format(banned.reason))
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_BAN_COMPLETE)
     else:
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT, parse_mode=ParseMode.HTML)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
 
 
-@user_allowed
-def web_auth(bot: Bot, update: Update):
-    user = create_or_update_user(update.message.from_user)
-    auth = Session.query(Auth).filter_by(user_id=user.id).first()
-    if auth is None:
-        auth = Auth()
-        auth.id = uuid.uuid4().hex
-        auth.user_id = user.id
-        Session.add(auth)
+def ban_traitor(bot: Bot, user_id):
+    user = Session.query(User).filter_by(id=user_id).first()
+    if user:
+        logging.warning("Banning %s", user.id)
+        banned = Ban()
+        banned.user_id = user.id
+        banned.from_date = datetime.now()
+        banned.to_date = datetime.max
+        banned.reason = MSG_REASON_TRAITOR
+        member = Session.query(SquadMember).filter_by(user_id=user.id).first()
+        if member:
+            Session.delete(member)
+            try:
+                bot.restrictChatMember(member.squad_id, member.user_id)
+                bot.kickChatMember(member.squad_id, member.user_id)
+            except TelegramError as err:
+                bot.logger.error(err.message)
+        admins = Session.query(Admin).filter_by(user_id=user.id).all()
+        # for admin in admins:
+        # Session.delete(admin)
+        Session.add(banned)
         Session.commit()
-    link = WEB_LINK.format(auth.id)
-    send_async(bot, chat_id=update.message.chat.id, text=MSG_PERSONAL_SITE_LINK.format(link),
-               parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+        squads = Session.query(Squad).all()
+        # for squad in squads:
+        #    send_async(bot, chat_id=squad.chat_id, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
+
+
+@admin_allowed()
+def unban(bot: Bot, update: Update):
+    username = update.message.text.split(' ', 1)[1]
+    username = username.replace('@', '')
+    user = Session.query(User).filter_by(username=username).first()
+    if user:
+        banned = Session.query(Ban).filter_by(user_id=user.id).first()
+        if banned:
+            Session.delete(banned)
+            Session.commit()
+            send_async(bot, chat_id=user.id, text=MSG_YOU_UNBANNED)
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNBANNED.format('@' + user.username))
+        else:
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_NOT_BANNED)
+    else:
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)

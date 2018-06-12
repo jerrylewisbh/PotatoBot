@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import time
 
+from telegram.ext import Updater
+
 from core.battle import (fresh_profiles, ready_to_battle,
                          ready_to_battle_result, refresh_api_users,
                          report_after_battle)
-from core.texts import (MSG_MAIN_READY_TO_BATTLE_30,
-                        MSG_MAIN_READY_TO_BATTLE_45, MSG_MAIN_SEND_REPORTS)
-from telegram.ext import Updater
+from core.texts import *
 
 
 def add_war_warning_messages(updater: Updater):

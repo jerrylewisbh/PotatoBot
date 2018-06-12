@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from config import DB, SUPER_ADMIN_ID
 from datetime import datetime
 from enum import Enum
 
@@ -10,8 +11,7 @@ from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
-
-from config import DB
+from telegram import Bot
 
 
 class AdminType(Enum):
@@ -36,7 +36,6 @@ class MessageType(Enum):
     LOCATION = 7
     AUDIO = 8
     PHOTO = 9
-
 
 
 ENGINE = create_engine(DB,
@@ -218,6 +217,9 @@ class UserQuest(Base):
     user = relationship('User', back_populates='quests')
     daytime = Column(BigInteger, nullable=False, default=0)
 
+    pledge = Column(Boolean(), default=0)
+    successful = Column(Boolean(), default=0)
+
     items = relationship(UserQuestItem, lazy='dynamic')
 
     __table_args__ = (
@@ -232,6 +234,8 @@ class Location(Base):
     name = Column(UnicodeText(250))
 
     user_locations = relationship('UserQuest', back_populates='location')
+
+    selectable = Column(Boolean(), default=False)
 
 
 class WelcomeMsg(Base):
@@ -265,8 +269,6 @@ class Admin(Base):
 
     admin_type = Column(Integer)
     admin_group = Column(BigInteger, primary_key=True, default=0)
-
-
 
 
 class OrderGroup(Base):
@@ -489,11 +491,14 @@ class Item(Base):
 
     user_quests = relationship(UserQuestItem)
     user_orders = relationship('UserExchangeOrder', back_populates='item', lazy='dynamic')
+    user_hide_settings = relationship('UserStockHideSetting', back_populates='item',
+                                      lazy='dynamic', order_by='UserStockHideSetting.priority.desc()')
+
 
 class UserExchangeOrder(Base):
     __tablename__ = 'user_exchange'
 
-    id = Column(BigInteger, autoincrement=True, primary_key=True )
+    id = Column(BigInteger, autoincrement=True, primary_key=True)
 
     user_id = Column(BigInteger, ForeignKey(User.id))
     user = relationship(User, back_populates="sniping_settings")
@@ -504,8 +509,8 @@ class UserExchangeOrder(Base):
     outstanding_order = Column(Integer, nullable=False)
     initial_order = Column(Integer, nullable=False)
 
-
     max_price = Column(Integer, nullable=False)
+
 
 class UserStockHideSetting(Base):
     __tablename__ = 'user_autohide'
@@ -549,7 +554,7 @@ def check_admin(update, adm_type, allowed_types=()):
 
 def check_ban(update):
     ban = Session().query(Ban).filter_by(user_id=update.message.from_user.id
-                                       if update.message else update.callback_query.from_user.id).first()
+                                         if update.message else update.callback_query.from_user.id).first()
     if ban is None or ban.to_date < datetime.now():
         return True
     else:
@@ -567,7 +572,22 @@ def log(user_id, chat_id, func_name, args):
         s = Session()
         s.add(log_item)
         s.commit()
-        #Session.remove()
+        # Session.remove()
+
+
+def new_item(bot: Bot, name: str, tradable: bool):
+    if name:
+        # Create items we do not yet know in the database....
+        item = Item()
+        item.name = name
+        item.tradable = tradable
+        Session.add(item)
+        Session.commit()
+
+        bot.send_message(
+            SUPER_ADMIN_ID,
+            "New item '{}' discovered on exchange!".format(name),
+        )
 
 
 Base.metadata.create_all(ENGINE)

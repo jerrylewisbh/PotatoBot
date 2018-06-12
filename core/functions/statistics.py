@@ -3,23 +3,24 @@ import os
 from datetime import datetime, timedelta
 from math import pi
 
+import pandas as pd
+from pycparser.ply.yacc import yacc
+from sqlalchemy import func, tuple_
+from telegram import Bot, ParseMode, Update
+
 import matplotlib.pyplot as plot
 import numpy
-import pandas as pd
-from sqlalchemy import func, tuple_
-from telegram import Bot, Update, ParseMode
 
-from core.decorators import user_allowed, command_handler
+from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID
+from core.decorators import command_handler, user_allowed
 from core.functions.reply_markup import generate_statistics_markup
-from core.texts import (MSG_DATE_FORMAT, MSG_DAY_PLURAL1, MSG_DAY_PLURAL2,
-                        MSG_DAY_SINGLE, MSG_NO_CLASS, MSG_PLOT_DESCRIPTION,
-                        MSG_PLOT_DESCRIPTION_SKILL, MSG_STATISTICS_ABOUT,
-                        PLOT_X_LABEL, PLOT_Y_LABEL, MSG_QUEST_7_DAYS, MSG_QUEST_OVERALL, MSG_QUEST_STAT,
-                        MSG_QUEST_STAT_LOCATION)
-from core.types import Character, Profession, UserQuest, Location, Session, User, UserQuestItem
+from core.texts import *
+from core.types import (Character, Location, Profession, Session, User,
+                        UserQuest, UserQuestItem)
 from core.utils import send_async
 
 Session()
+
 
 @user_allowed
 def statistic_about(bot: Bot, update: Update):
@@ -29,7 +30,8 @@ def statistic_about(bot: Bot, update: Update):
                text=MSG_STATISTICS_ABOUT,
                reply_markup=markup)
 
-def relative_details(user: User, from_date: datetime):
+
+def relative_details(user: User, from_date: datetime, FORAY_QUEST_LOCATION_ID=None):
     locations = Session.query(Location).all()
     text = ""
     for location in locations:
@@ -54,9 +56,6 @@ def relative_details(user: User, from_date: datetime):
             UserQuest.from_date > from_date
         ).first()
 
-        print(item_stats)
-        print(base_stats)
-
         text += MSG_QUEST_STAT_LOCATION.format(
             location.name,
             base_stats.count if base_stats.count else 0,
@@ -67,20 +66,103 @@ def relative_details(user: User, from_date: datetime):
             base_stats.gold_sum if base_stats.gold_sum else 0,
             item_stats.item_sum if item_stats.item_sum else 0,
         )
+
+        # Additional stats for foray...
+        if location.id == QUEST_LOCATION_FORAY_ID:
+            foray_stats_success = Session.query(
+                UserQuest.successful,
+                func.count(UserQuest.id).label("count"),
+                func.sum(UserQuest.pledge).label("pledges")
+            ).filter(
+                UserQuest.successful == True,
+                UserQuest.user_id == user.id,
+                UserQuest.location_id == location.id,
+                UserQuest.from_date > from_date
+            ).first()
+
+            foray_stats_failed = Session.query(
+                UserQuest.successful,
+                func.count(UserQuest.id).label("count"),
+            ).filter(
+                UserQuest.successful == False,
+                UserQuest.user_id == user.id,
+                UserQuest.location_id == location.id,
+                UserQuest.from_date > from_date
+            ).first()
+
+            stat_count_failed = 0
+            if foray_stats_failed:
+                stat_count_failed = foray_stats_failed.count
+
+            stat_count = 0
+            stat_pledges = 0
+            if foray_stats_success:
+                stat_count = foray_stats_success.count
+                stat_pledges = foray_stats_success.pledges
+
+            overall_count = (stat_count_failed + stat_count)
+            if not overall_count:
+                success_rate = 100
+            else:
+                success_rate = stat_count / overall_count * 100
+
+            if not stat_count:
+                pledge_rate = 0
+            else:
+                pledge_rate = stat_pledges / stat_count * 100
+
+            text += MSG_QUEST_STAT_FORAY.format(success_rate, pledge_rate)
+        elif location.id == QUEST_LOCATION_DEFEND_ID:
+            stop_stats_success = Session.query(
+                UserQuest.successful,
+                func.count(UserQuest.id).label("count"),
+            ).filter(
+                UserQuest.successful == True,
+                UserQuest.user_id == user.id,
+                UserQuest.location_id == location.id,
+                UserQuest.from_date > from_date
+            ).first()
+
+            stop_stats_failed = Session.query(
+                UserQuest.successful,
+                func.count(UserQuest.id).label("count"),
+            ).filter(
+                UserQuest.successful == False,
+                UserQuest.user_id == user.id,
+                UserQuest.location_id == location.id,
+                UserQuest.from_date > from_date
+            ).first()
+
+            stat_count_failed = 0
+            if stop_stats_failed:
+                stat_count_failed = stop_stats_failed.count
+
+            stat_count = 0
+            if stop_stats_success:
+                stat_count = stop_stats_success.count
+
+            overall_count = (stat_count_failed + stat_count)
+            if not overall_count:
+                success_rate = 100
+            else:
+                success_rate = stat_count / overall_count * 100
+
+            text += MSG_QUEST_STAT_STOP.format(success_rate)
+
+
+
     return text
+
 
 @command_handler()
 def quest_statistic(bot: Bot, update: Update, user: User):
     logging.info("User '%s' called quest_statistic", user.id)
 
-    # FixMe/TODO: We don't have gold data until June 9th because the field was missing. Filter from this date onwards in a later release.
     text = MSG_QUEST_7_DAYS
     text += relative_details(user, datetime.utcnow() - timedelta(days=7))
     text += MSG_QUEST_OVERALL
-    text += relative_details(user, datetime.utcnow() - timedelta(days=365 * 30))
+    text += relative_details(user, datetime.utcnow() - timedelta(weeks=300))
     text += MSG_QUEST_STAT
-
-    print(text)
 
     bot.sendMessage(
         chat_id=user.id,
@@ -89,15 +171,15 @@ def quest_statistic(bot: Bot, update: Update, user: User):
         reply_markup=generate_statistics_markup(),
     )
 
+
 @user_allowed
 def quest_statistic_old(bot: Bot, update: Update):
-    logging.debug("Quest statistics")
+    logging.debug("Quest statistics.py")
 
     # Render for every level we know...
     max_level = Session.query(func.max(UserQuest.level)).first()
     if not max_level:
         return
-
 
     fig, ax = plot.subplots(figsize=(20, 15))
     ind = numpy.arange(max_level[0] + 1)
@@ -136,7 +218,7 @@ def quest_statistic_old(bot: Bot, update: Update):
         width,
         color='gold',
         linestyle='-', marker='o'
-        #yerr=tuple(stddev)
+        # yerr=tuple(stddev)
     )
     bars.append(b)
 
@@ -144,8 +226,7 @@ def quest_statistic_old(bot: Bot, update: Update):
     ax.set_ylabel('XP')
     ax.set_title('Experience in Forest')
     ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0]+1))
-
+    ax.set_xticklabels(range(1, max_level[0] + 1))
 
     #[autolabel(ax, bar) for bar in bars]
 
@@ -162,7 +243,7 @@ def quest_statistic_old(bot: Bot, update: Update):
 
 @user_allowed
 def quest_statistic_line_one(bot: Bot, update: Update, session):
-    logging.debug("Quest statistics")
+    logging.debug("Quest statistics.py")
 
     # Render for every level we know...
     max_level = Session.query(func.max(UserQuest.level)).first()
@@ -184,8 +265,11 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
     for counter, daytime in enumerate(times, start=1):
         logging.warning("Getting stats for %s", daytime)
         stats = Session.query(
-            UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
-        ).join(Location).filter(UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(UserQuest.level).group_by(UserQuest.level).all()
+            UserQuest.level, func.avg(UserQuest.exp),
+            func.stddev(UserQuest.exp)).join(Location).filter(
+            UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(
+            UserQuest.level).group_by(
+            UserQuest.level).all()
 
         values = []
         stddev = []
@@ -214,7 +298,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
             width,
             color=daytime[2],
             linestyle='-', marker='o'
-            #yerr=tuple(stddev)
+            # yerr=tuple(stddev)
         )
         bars.append(b)
 
@@ -222,7 +306,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
     ax.set_ylabel('XP')
     ax.set_title('Experience in Forest')
     ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0]+1))
+    ax.set_xticklabels(range(1, max_level[0] + 1))
 
     ax.legend(
         [rect for rect in bars],
@@ -243,7 +327,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
 
 @user_allowed
 def quest_statistic_split(bot: Bot, update: Update):
-    logging.debug("Quest statistics")
+    logging.debug("Quest statistics.py")
 
     # Render for every level we know...
     max_level = Session.query(func.max(UserQuest.level)).first()
@@ -265,8 +349,11 @@ def quest_statistic_split(bot: Bot, update: Update):
     for counter, daytime in enumerate(times, start=1):
         logging.warning("Getting stats for %s", daytime)
         stats = Session.query(
-            UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
-        ).join(Location).filter(UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(UserQuest.level).group_by(UserQuest.level).all()
+            UserQuest.level, func.avg(UserQuest.exp),
+            func.stddev(UserQuest.exp)).join(Location).filter(
+            UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(
+            UserQuest.level).group_by(
+            UserQuest.level).all()
 
         values = []
         stddev = []
@@ -287,7 +374,7 @@ def quest_statistic_split(bot: Bot, update: Update):
         logging.warning(len(stddev))
 
         b = ax.bar(
-            ind + (width*counter),
+            ind + (width * counter),
             tuple(values),
             width,
             color=daytime[2],
@@ -299,7 +386,7 @@ def quest_statistic_split(bot: Bot, update: Update):
     ax.set_ylabel('XP')
     ax.set_title('Experience in Forest')
     ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0]+1))
+    ax.set_xticklabels(range(1, max_level[0] + 1))
 
     ax.legend(
         [rect for rect in bars],
@@ -317,9 +404,10 @@ def quest_statistic_split(bot: Bot, update: Update):
     plot.clf()
     os.remove(filename)
 
+
 @user_allowed
 def quest_statistic_one(bot: Bot, update: Update):
-    logging.debug("Quest statistics")
+    logging.debug("Quest statistics.py")
 
     # Render for every level we know...
     max_level = Session.query(func.max(UserQuest.level)).first()
@@ -365,7 +453,7 @@ def quest_statistic_one(bot: Bot, update: Update):
     ax.set_ylabel('XP')
     ax.set_title('Experience in Forest')
     ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0]+1))
+    ax.set_xticklabels(range(1, max_level[0] + 1))
 
     """ax.legend(
         [rect for rect in bars],
@@ -383,6 +471,7 @@ def quest_statistic_one(bot: Bot, update: Update):
     plot.clf()
     os.remove(filename)
 
+
 def autolabel(ax, rects):
     """
     Attach a text label above each bar displaying its height
@@ -390,9 +479,9 @@ def autolabel(ax, rects):
     for rect in rects:
         height = rect.get_height()
         if int(height) > 0:
-            ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-                '%d' % int(height),
-                ha='center', va='bottom')
+            ax.text(rect.get_x() + rect.get_width() / 2., 1.05 * height,
+                    '%d' % int(height),
+                    ha='center', va='bottom')
 
 
 @user_allowed

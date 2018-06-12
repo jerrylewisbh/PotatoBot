@@ -1,98 +1,141 @@
 import logging
 import re
+from config import CASTLE, REDIS_PORT, REDIS_SERVER
 from datetime import datetime, timedelta
 from enum import Enum
 
-from telegram import Bot, Update, ParseMode
+import redis
+from telegram import Bot, ParseMode, Update
 
-from config import CASTLE
-from core.functions.common import StockType
-from core.functions.inline_markup import generate_profile_buttons, generate_settings_buttons
-from core.regexp import PROFILE, HERO, REPORT, PROFESSION, BUILD_REPORT, REPAIR_REPORT
+from core.enums import CASTLE_MAP
+from core.functions.common import StockType, ban_traitor
+from core.functions.inline_markup import (generate_profile_buttons,
+                                          generate_settings_buttons)
+from core.regexp import BUILD_REPORT, HERO, PROFESSION, REPAIR_REPORT, REPORT
 from core.state import get_last_battle
 from core.template import fill_char_template
-from core.texts import MSG_PROFILE_SHOW_FORMAT, MSG_PROFILE_ADMIN_INFO_ADDON, MSG_PROFILE_NOT_FOUND, \
-    MSG_NEEDS_API_ACCESS, MSG_NEEDS_TRADE_ACCESS, MSG_SETTINGS_INFO, MSG_USER_BATTLE_REPORT_PRELIM, \
-    MSG_USER_BATTLE_REPORT_HEADER, MSG_USER_BATTLE_REPORT, MSG_USER_BATTLE_REPORT_FULL
-from core.types import Session, Character, Equip, Report, Profession, BuildReport, User, Stock
+from core.texts import *
+from core.types import (BuildReport, Character, Equip, Item, Profession,
+                        Report, Session, Stock, User, new_item)
 from core.utils import send_async
+
 
 class BuildType(Enum):
     Build = 1
     Repair = 0
 
 
-def parse_profile(profile, user_id, date):
-    parsed_data = re.search(PROFILE, profile)
+def parse_hero_text(report_text):
+    if not report_text:
+        return None
+
+    parsed = re.search(HERO, report_text, flags=re.UNICODE)
+    if not parsed:
+        return None
+
+    return {
+        'castle': parsed.group("castle"),
+        'castle_name': CASTLE_MAP[parsed.group("castle")],
+        'name_standalone': parsed.group("name"),
+        'name': "{}{}".format(
+            parsed.group("guild") if parsed.group("guild") else "",
+            parsed.group("name"),
+        ),
+        'ribbon': parsed.group("ribbon") if parsed.group("ribbon") else None,
+        'guild': parsed.group("guild"),
+        'attack': int(parsed.group("attack")) if parsed.group("attack") else 0,
+        'defence': int(parsed.group("defence")) if parsed.group("defence") else 0,
+        'level': int(parsed.group("level")) if parsed.group("level") else 0,
+        'exp': int(parsed.group("exp")) if parsed.group("exp") else 0,
+        'gold': int(parsed.group("gold")) if parsed.group("gold") else 0,
+        'mana': int(parsed.group("mana")) if parsed.group("mana") else 0,
+        'stamina': int(parsed.group("stamina")) if parsed.group("stamina") else 0,
+        'max_stamina': int(parsed.group("max_stamina")) if parsed.group("max_stamina") else 0,
+        'pouches': int(parsed.group("pouches")) if parsed.group("pouches") else 0,
+        'exp_needed': int(parsed.group("exp_needed")) if parsed.group("exp_needed") else 0,
+        'expertise': parsed.group("expertise") if parsed.group("expertise") else None,
+        'pvp': parsed.group("pvp") if parsed.group("expertise") else None,
+        'diamonds': int(parsed.group("diamonds")) if parsed.group("diamonds") else 0,
+        'equipment': parsed.group("equipment")
+    }
+    # TODO: Should boosted def/atk be used?
+
+
+def parse_hero(bot: Bot, profile, user_id, date):
     char = Session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
+        parsed_data = parse_hero_text(profile)
+
         char = Character()
         char.user_id = user_id
         char.date = date
-        char.castle = str(parsed_data.group(1))
-        char.name = str(parsed_data.group(2))
-        char.prof = str(parsed_data.group(3))
-        char.level = int(parsed_data.group(4))
-        char.attack = int(parsed_data.group(5))
-        char.defence = int(parsed_data.group(6))
-        char.exp = int(parsed_data.group(7))
-        char.needExp = int(parsed_data.group(8))
-        char.maxStamina = int(parsed_data.group(10))
-        char.gold = int(parsed_data.group(11))
-        char.donateGold = int(parsed_data.group(12))
-        if parsed_data.group(16):
-            char.pet = str(parsed_data.group(16))
-            char.petLevel = int(parsed_data.group(18))
-        Session.add(char)
-        if char.castle == CASTLE:
-            Session.commit()
-        else:
-            logging.warning('%s is a traitor!', user_id)
-    return char
+        char.castle = parsed_data['castle']
+        char.name = parsed_data['name']
+        char.prof = parsed_data['castle_name']
+        char.level = parsed_data['level']
+        char.attack = parsed_data['attack']
+        char.defence = parsed_data['defence']
+        char.exp = parsed_data['exp']
+        char.needExp = parsed_data['exp_needed']
+        char.maxStamina = parsed_data['max_stamina']
+        char.gold = parsed_data['gold']
+        char.donateGold = parsed_data['pouches']
 
-
-def parse_hero(profile, user_id, date):
-    parsed_data = re.search(HERO, profile)
-    char = Session.query(Character).filter_by(user_id=user_id, date=date).first()
-    if char is None:
-        char = Character()
-        char.user_id = user_id
-        char.date = date
-        char.castle = str(parsed_data.group(1))
-        char.name = str(parsed_data.group(2))
-        char.prof = str(parsed_data.group(3))
-        char.level = int(parsed_data.group(4))
-        char.attack = int(parsed_data.group(5))
-        char.defence = int(parsed_data.group(6))
-        char.exp = int(parsed_data.group(7))
-        char.needExp = int(parsed_data.group(8))
-        char.maxStamina = int(parsed_data.group(10))
-        char.gold = int(parsed_data.group(11))  # + int(parsed_data.group(12)) if parsed_data.group(12) else 0
-        char.donateGold = int(parsed_data.group(12)) if parsed_data.group(12) else 0
-        if parsed_data.group(21):
-            char.pet = str(parsed_data.group(21))
-            char.petLevel = int(parsed_data.group(23))
-        if parsed_data.group(17):
+        # if parsed_data.group(21):
+        #    char.pet = str(parsed_data.group(21))
+        #    char.petLevel = int(parsed_data.group(23))
+        if parsed_data['equipment']:
             equip = Equip()
             equip.user_id = user_id
             equip.date = date
-            equip.equip = str(parsed_data.group(18))
+            equip.equip = parsed_data['equipment']
             Session.add(equip)
+
         Session.add(char)
         if char.castle == CASTLE:
             Session.commit()
         else:
+            Session.rollback()
+            ban_traitor(bot, user_id)
             logging.warning('%s is a traitor!', user_id)
     return char
 
 
-def parse_reports(report_text, user_id, date):
-    parsed_data = re.search(REPORT, report_text)
+def parse_report_text(report_text):
+    if not report_text:
+        return None
+
+    parsed = re.search(REPORT, report_text, flags=re.UNICODE)
+    if not parsed:
+        return None
+
+    # TODO: Should boosted def/atk be used?
+    return {
+        'castle': parsed.group("castle"),
+        'name_standalone': parsed.group("name"),
+        'name': "{}{}".format(
+            parsed.group("guild") if parsed.group("guild") else "",
+            parsed.group("name"),
+        ),
+        'ribbon': parsed.group("ribbon") if parsed.group("ribbon") else None,
+        'guild': parsed.group("guild"),
+        'attack': int(parsed.group("attack")) if parsed.group("attack") else 0,
+        'defence': int(parsed.group("defence")) if parsed.group("defence") else 0,
+        'level': int(parsed.group("level")) if parsed.group("level") else 0,
+        'exp': int(parsed.group("exp")) if parsed.group("exp") else 0,
+        'gold': int(parsed.group("gold")) if parsed.group("gold") else 0,
+        'stock': int(parsed.group("stock")) if parsed.group("stock") else 0,
+    }
+
+
+def save_report(report_text, user_id, date):
+
     logging.info("Report: report_text='%s', user_id='%s', date='%s'", report_text, user_id, date)
     existing_report = get_latest_report(user_id)
     # New one or update to preliminary
     report = None
     if not existing_report or (existing_report and existing_report.preliminary_report):
+        parsed_data = parse_report_text(report_text)
         if not existing_report:
             # New one
             report = Report()
@@ -101,27 +144,15 @@ def parse_reports(report_text, user_id, date):
 
         report.user_id = user_id
         report.date = date
-        report.castle = str(parsed_data.group(1))
-        report.name = str(parsed_data.group(2))
-        report.attack = int(parsed_data.group(3))  # + int(parsed_data.group(4) if parsed_data.group(4) else 0)
-        report.defence = int(parsed_data.group(6))  # + int(parsed_data.group(7) if parsed_data.group(7) else 0)
+        report.castle = parsed_data['castle']
+        report.name = parsed_data['name']
+        report.attack = parsed_data['attack']
+        report.defence = parsed_data['defence']
         report.preliminary_report = False
-        report.level = int(parsed_data.group(9))
-
-        if parsed_data.group(10):
-            report.earned_exp = int(parsed_data.group(10))
-        else:
-            report.earned_exp = 0
-
-        if parsed_data.group(11):
-            report.earned_gold = int(parsed_data.group(11))
-        else:
-            report.earned_gold = 0
-
-        if parsed_data.group(12):
-            report.earned_stock = int(parsed_data.group(12))
-        else:
-            report.earned_stock = 0
+        report.level = parsed_data['level']
+        report.earned_exp = parsed_data['exp']
+        report.earned_gold = parsed_data['gold']
+        report.earned_stock = parsed_data['stock']
 
         if report.castle == CASTLE:
             Session.add(report)
@@ -329,6 +360,7 @@ def send_settings(bot, update, user):
             parse_mode=ParseMode.HTML
         )
 
+
 def format_report(report: Report) -> str:
     """ Return a formatted battle report. """
 
@@ -355,6 +387,8 @@ def format_report(report: Report) -> str:
     return text
 
 # TODO: Review. Can't this be moved directly into User class and a getter?
+
+
 def get_latest_report(user_id) -> Report:
     logging.debug("get_latest_report for '%s'", user_id)
     now = datetime.now()
@@ -364,6 +398,7 @@ def get_latest_report(user_id) -> Report:
     existing_report = Session.query(Report).filter(Report.user_id == user_id, Report.date > time_from).first()
 
     return existing_report
+
 
 def get_stock_before_after_war(user: User) -> tuple:
     """ Return the latest stock from before battle and the oldest after battle for comparison """
@@ -383,3 +418,40 @@ def get_stock_before_after_war(user: User) -> tuple:
     ).order_by(Stock.date.asc()).first()
 
     return (before_battle, after_battle)
+
+
+def annotate_stock_with_price(bot: Bot, stock: str):
+    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+
+    stock_text = ""
+    overall_worth = 0
+    for line in stock.splitlines():
+        find = re.search(r"(?P<item>.+)(?: \((?P<count>[0-9]+)\))", line)
+        if find:
+            db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
+            if not db_item:
+                new_item(bot, find.group("item"), False)
+                stock_text += "{}\n".format(line)
+            elif db_item and not db_item.tradable:
+                stock_text += "{}\n".format(line)
+            else:
+                item_prices = r.lrange(find.group("item"), 0, -1)
+                if item_prices:
+                    min_price = int(min(item_prices))
+                    count = int(find.group("count"))
+                    item_overall = (count * min_price)
+                    overall_worth += item_overall
+                    stock_text += MSG_STOCK_PRICE.format(
+                        find.group("item"),
+                        count,
+                        min_price,
+                        item_overall,
+                    )
+                else:
+                    stock_text += "{} ({})\n".format(find.group("item"), find.group("count"))
+        else:
+            stock_text += "{}\n".format(line)
+
+    stock_text += MSG_STOCK_OVERALL_PRICE.format(overall_worth)
+
+    return stock_text

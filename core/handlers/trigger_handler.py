@@ -1,13 +1,17 @@
 import logging
 
-from core.exchange import auto_hide, sniping, sniping_remove, list_items, hide_items, sniping_resume
-from core.functions.admins import (del_admin, del_global_admin, list_admins,
-                                   set_admin, set_global_admin,
-                                   set_super_admin, get_log)
-from core.functions.ban import ban, unban
-from core.functions.common import admin_panel, help_msg, kick, ping
-from core.functions.profile import (char_show, find_by_character, find_by_id,
-                                    find_by_username, grant_access, revoke, user_panel, show_report)
+from telegram.ext import CommandHandler, Dispatcher
+
+from core.exchange import list_items
+from core.exchange.hide import auto_hide, hide_items
+from core.exchange.snipe import sniping, sniping_remove, sniping_resume
+from core.functions.admins import (del_admin, del_global_admin, get_log,
+                                   list_admins, set_admin, set_global_admin,
+                                   set_super_admin)
+from core.functions.common import admin_panel, ban, help_msg, kick, ping, unban
+from core.functions.profile import (find_by_character, find_by_id,
+                                    find_by_username, grant_access, revoke,
+                                    show_char, show_report, user_panel)
 from core.functions.squad import (add_squad, add_to_squad, del_squad,
                                   disable_reminders, disable_silence,
                                   disable_thorns, enable_reminders,
@@ -21,7 +25,6 @@ from core.functions.triggers import (add_global_trigger, add_trigger,
                                      set_trigger)
 from core.functions.welcome import (disable_welcome, enable_welcome,
                                     set_welcome, show_welcome)
-from telegram.ext import CommandHandler, Dispatcher
 
 
 def add_commands(disp: Dispatcher):
@@ -76,7 +79,7 @@ def add_commands(disp: Dispatcher):
     disp.add_handler(CommandHandler("get_log", get_log))
 
     # User/Profile specific
-    disp.add_handler(CommandHandler("me", char_show))
+    disp.add_handler(CommandHandler("me", show_char))
     disp.add_handler(CommandHandler("report", show_report))
 
     # Exchange Stuff...

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+from config import (CASTLE, DAYS_OLD_PROFILE_KICK, DAYS_PROFILE_REMIND,
+                    GOVERNMENT_CHAT)
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -11,24 +13,21 @@ from telegram.error import TelegramError
 from telegram.ext import Job
 from telegram.ext.dispatcher import run_async
 
-from config import CASTLE, GOVERNMENT_CHAT, DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
-from core.functions.common import (MSG_CHANGES_SINCE_LAST_UPDATE,
-                                   MSG_USER_BATTLE_REPORT_STOCK, get_weighted_diff, stock_compare_text,
-                                   stock_split, TRIBUTE_NOTE)
+from core.functions.common import (get_weighted_diff, stock_compare_text,
+                                   stock_split)
 from core.functions.inline_keyboard_handling import send_order
 from core.functions.inline_markup import QueryType
-from core.functions.profile.util import get_latest_report, format_report, get_stock_before_after_war
+from core.functions.profile.util import (format_report, get_latest_report,
+                                         get_stock_before_after_war)
 from core.state import get_last_battle
-from core.texts import (MSG_MAIN_INLINE_BATTLE, MSG_REPORT_SUMMARY,
-                        MSG_REPORT_SUMMARY_RATING, MSG_REPORT_TOTAL,
-                        MSG_SQUAD_DELETE_OUTDATED,
-                        MSG_SQUAD_DELETE_OUTDATED_EXT, MSG_UPDATE_PROFILE)
+from core.texts import *
 from core.types import (Admin, Character, Order, Report, Session, Squad,
                         SquadMember, User)
 from core.utils import send_async
 from cwmq import Publisher
 
 Session()
+
 
 @run_async
 def ready_to_battle(bot: Bot, job_queue: Job):
@@ -89,7 +88,6 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
     players_def = 0
     try:
         squads = Session.query(Squad).all()
-        text = MSG_REPORT_SUMMARY_RATING
         now = datetime.now()
         if (now.hour < 7):
             now = now - timedelta(days=1)
@@ -131,12 +129,35 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
             global_members += total_members
             global_reports += total_reports
             if total_members > 0:
-                text += MSG_REPORT_SUMMARY.format(squad.squad_name, total_reports, total_members, full_atk, full_def,
-                                                  full_exp, full_gold, full_stock)
-        text += MSG_REPORT_SUMMARY.format('TOTAL', global_reports, global_members, global_atk, global_def, global_exp,
-                                          global_gold, global_stock)
+                text += MSG_REPORT_SUMMARY.format(
+                    squad.squad_name,
+                    total_reports,
+                    total_members,
+                    full_atk,
+                    full_def,
+                    full_exp,
+                    full_gold,
+                    full_stock
+                )
+        text += MSG_REPORT_SUMMARY.format(
+            'TOTAL',
+            global_reports,
+            global_members,
+            global_atk,
+            global_def,
+            global_exp,
+            global_gold,
+            global_stock
+        )
         text += MSG_REPORT_TOTAL.format(players_atk, players_def, real_atk, real_def)
-        send_async(bot, chat_id=GOVERNMENT_CHAT, text=text, parse_mode=ParseMode.HTML, reply_markup=None)
+
+        send_async(
+            bot,
+            chat_id=GOVERNMENT_CHAT,
+            text=text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=None
+        )
 
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
@@ -190,7 +211,7 @@ def fresh_profiles(bot: Bot, job_queue: Job):
                        parse_mode=ParseMode.HTML)
             send_async(bot,
                        chat_id=member.user_id,
-                       text=MSG_SQUAD_DELETE_OUTDATED,
+                       text=MSG_SQUAD_DELETE_OUTDATED_EXT,
                        parse_mode=ParseMode.HTML)
         Session.commit()
     except SQLAlchemyError as err:
@@ -220,16 +241,17 @@ def refresh_api_users(bot: Bot, job_queue: Job):
         bot.logger.error(str(err))
         Session.rollback()
 
+
 def create_user_report(user: User) -> Optional[str]:
     if user.is_api_profile_allowed and user.is_api_stock_allowed and \
-        user.setting_automated_report and user.api_token:
+            user.setting_automated_report and user.api_token:
 
         logging.info("Processing report_after_battle for user_id='%s'", user.id)
 
         # Get the oldest stock-report from after war for this comparison...
         before_war_stock, after_war_stock = get_stock_before_after_war(user)
         logging.debug("after_war_stock: %s", after_war_stock)
-        logging.debug("Second before_war_stock stock: %s", before_war_stock)
+        logging.debug("before_war_stock stock: %s", before_war_stock)
 
         # Get previous character and calculate difference in exp + gold
         prev_character = Session.query(Character).filter(

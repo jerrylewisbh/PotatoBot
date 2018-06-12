@@ -3,24 +3,29 @@ import logging
 from telegram import Bot
 
 from core.functions.reply_markup import generate_user_markup
-from core.texts import MSG_API_REQUIRE_ACCESS_TRADE, MSG_API_REQUIRE_ACCESS_PROFILE, MSG_API_REQUIRE_ACCESS_STOCK
-from core.types import Session, Item, User
+from core.texts import *
+from core.types import Item, Session, User
 from cwmq import Publisher
 
 Session()
 p = Publisher()
 
+
 class APIInvalidTokenException(Exception):
     pass
+
 
 class APIMissingAccessRightsException(Exception):
     pass
 
+
 class APIMissingUserException(Exception):
     pass
 
+
 class APIWrongItemCode(Exception):
     pass
+
 
 class APIWrongSettings(Exception):
     pass
@@ -54,7 +59,7 @@ def update_profile(user):
     })
 
 
-def want_to_buy(user, item_code, quantity, price, exact_price=True):
+def want_to_buy(user: User, item_code, quantity, price, exact_price=True):
     if not user:
         raise APIMissingUserException("User is 'None'")
     elif not user.api_token:
@@ -83,6 +88,7 @@ def want_to_buy(user, item_code, quantity, price, exact_price=True):
     }
     p.publish(wtb_req)
 
+
 def request_trade_terminal_access(bot: Bot, user: User):
     if not user:
         return
@@ -102,6 +108,7 @@ def request_trade_terminal_access(bot: Bot, user: User):
     }
     p.publish(grant_req)
 
+
 def request_stock_access(bot: Bot, user: User):
     if not user:
         return
@@ -120,6 +127,7 @@ def request_stock_access(bot: Bot, user: User):
         }
     }
     p.publish(grant_req)
+
 
 def request_profile_access(bot: Bot, user: User):
     if not user:

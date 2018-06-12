@@ -1,10 +1,10 @@
+from config import MINIMUM_SQUAD_MEMBER_LEVEL
 from datetime import datetime, timedelta
 
-from sqlalchemy import and_
-from sqlalchemy import func, tuple_
+from sqlalchemy import and_, func, tuple_
 from telegram import Bot, ParseMode, TelegramError, Update
 
-from config import MINIMUM_SQUAD_MEMBER_LEVEL
+from core.decorators import admin_allowed, user_allowed
 from core.functions.inline_markup import (generate_fire_up,
                                           generate_leave_squad,
                                           generate_other_reports,
@@ -16,14 +16,14 @@ from core.functions.inline_markup import (generate_fire_up,
 from core.functions.reply_markup import generate_squad_markup
 from core.template import fill_char_template
 from core.texts import *
-from core.types import (Admin, AdminType, Character, Group, Report, Squad,
-                        SquadMember, User, Session)
-from core.decorators import admin_allowed, user_allowed
+from core.types import (Admin, AdminType, Character, Group, Report, Session,
+                        Squad, SquadMember, User)
 from core.utils import send_async
 
 TOP_START_DATE = datetime(2017, 12, 11)
 
 Session()
+
 
 @user_allowed
 def squad_about(bot: Bot, update: Update):

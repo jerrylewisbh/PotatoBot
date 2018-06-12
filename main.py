@@ -2,70 +2,45 @@
 
 import logging
 import re
+from config import CASTLE, CWBOT_ID, DEBUG, EXT_ID, LOGFILE, TOKEN
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
-from telegram import Bot, ParseMode, Update
+from telegram import Bot, Update
 from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
-                          Updater, MessageQueue)
+                          MessageQueue, Updater)
 from telegram.ext.dispatcher import run_async
 
-from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE, CWBOT_ID, TRADEBOT_ID
-from core.battle import report_after_battle
+from core.battle import report_after_battle, ready_to_battle_result
 from core.bot import MQBot
-from core.chat_commands import (CC_ADMIN_LIST, CC_ADMINS, CC_ALLOW_PIN_ALL,
-                                CC_ALLOW_TRIGGER_ALL, CC_BATTLE_STATISTICS,
-                                CC_BOSS_1, CC_BOSS_2, CC_BOSS_3, CC_BOSS_4,
-                                CC_CLOSE_HIRING, CC_DAY_STATISTICS, CC_DELETE,
-                                CC_DISALLOW_PIN_ALL, CC_DISALLOW_TRIGGER_ALL,
-                                CC_HELP, CC_KICK, CC_OPEN_HIRING, CC_PIN,
-                                CC_PING, CC_SET_TRIGGER, CC_SET_WELCOME,
-                                CC_SHOW_WELCOME, CC_SILENT_PIN, CC_SQUAD,
-                                CC_TRIGGER_LIST, CC_TURN_OFF_WELCOME,
-                                CC_TURN_ON_WELCOME, CC_UNSET_TRIGGER,
-                                CC_WEEK_STATISTICS)
-from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
-                           ADMIN_COMMAND_FIRE_UP, ADMIN_COMMAND_GROUPS,
-                           ADMIN_COMMAND_ORDER, ADMIN_COMMAND_RECRUIT,
-                           ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_SQUAD_LIST,
-                           ADMIN_COMMAND_STATUS, STATISTICS_COMMAND_EXP,
-                           STATISTICS_COMMAND_SKILLS, TOP_COMMAND_ATTACK,
-                           TOP_COMMAND_BATTLES, TOP_COMMAND_BUILD,
-                           TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP,
-                           USER_COMMAND_BACK, USER_COMMAND_BUILD,
-                           USER_COMMAND_CONTACTS, USER_COMMAND_ME,
-                           USER_COMMAND_REGISTER, USER_COMMAND_SETTINGS,
-                           USER_COMMAND_SQUAD, USER_COMMAND_SQUAD_LEAVE,
-                           USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
-                           USER_COMMAND_TOP, USER_COMMAND_HIDE, USER_COMMAND_EXCHANGE, STATISTICS_COMMAND_QUESTS)
+from core.chat_commands import *
+from core.commands import *
 from core.decorators import user_allowed
-from core.exchange import sniping_info, hide_gold_info
+from core.exchange.hide import hide_gold_info
+from core.exchange.snipe import sniping_info
 from core.functions.activity import (battle_activity, day_activity,
                                      week_activity)
 from core.functions.admins import admins_for_users, list_admins
-from core.functions.bosses import (boss_hydra, boss_leader, boss_monoeye,
-                                   boss_zhalo)
 from core.functions.common import (admin_panel, delete_msg, delete_user, error,
-                                   help_msg, ping, stock_compare_forwarded,
-                                   trade_compare, web_auth)
+                                   help_msg, ping, stock_compare_forwarded)
+from core.functions.common.pin import not_pin_all, pin, pin_all, silent_pin
 from core.functions.inline_keyboard_handling import (callback_query,
                                                      inlinequery, send_status)
 from core.functions.order_groups import add_group, group_list
 from core.functions.orders import order, orders
-from core.functions.pin import not_pin_all, pin, pin_all, silent_pin
-from core.functions.profile import (build_report_received, char_show,
-                                    char_update, grant_access,
-                                    handle_access_token, profession_update,
-                                    repair_report_received, report_received,
-                                    settings, user_panel)
+from core.functions.profile import (build_report_received, char_update,
+                                    grant_access, handle_access_token,
+                                    profession_update, repair_report_received,
+                                    report_received, settings, show_char,
+                                    user_panel)
 from core.functions.quest import parse_quest
 from core.functions.squad import (battle_attendance_show, battle_reports_show,
                                   call_squad, close_hiring,
                                   leave_squad_request, list_squad_requests,
                                   open_hiring, remove_from_squad, squad_about,
                                   squad_list, squad_request)
-from core.functions.statistics import (exp_statistic, skill_statistic,
-                                       statistic_about, quest_statistic)
+from core.functions.statistics import (exp_statistic, quest_statistic,
+                                       skill_statistic, statistic_about)
 from core.functions.top import (attack_top, def_top, exp_top, top_about,
                                 week_battle_top, week_build_top)
 from core.functions.triggers import (del_trigger, disable_trigger_all,
@@ -79,11 +54,10 @@ from core.jobs.job_queue import (add_after_war_messages,
                                  add_pre_war_messages,
                                  add_war_warning_messages)
 from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
-                         REPAIR_REPORT, REPORT, STOCK, TRADE_BOT)
+                         REPAIR_REPORT, REPORT, STOCK)
 from core.state import GameState, get_game_state
-from core.texts import MSG_IN_DEV
-from core.types import Admin, Squad, User, Session
-from core.utils import create_or_update_user, send_async
+from core.types import Admin, Session, Squad, User
+from core.utils import create_or_update_user
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler
 from cwmq.handler.digest import digest_handler
@@ -91,6 +65,7 @@ from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
 
 Session()
+
 
 @run_async
 @user_allowed
@@ -158,14 +133,6 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
             pin_all(bot, update)
         elif text == CC_DISALLOW_PIN_ALL:
             not_pin_all(bot, update)
-        elif text in CC_BOSS_1:
-            boss_leader(bot, update)
-        elif text in CC_BOSS_2:
-            boss_zhalo(bot, update)
-        elif text in CC_BOSS_3:
-            boss_monoeye(bot, update)
-        elif text in CC_BOSS_4:
-            boss_hydra(bot, update)
         elif text == CC_OPEN_HIRING:
             open_hiring(bot, update)
         elif text == CC_CLOSE_HIRING:
@@ -221,7 +188,7 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
             elif text == ADMIN_COMMAND_FIRE_UP.lower():
                 remove_from_squad(bot, update)
             elif text == USER_COMMAND_ME.lower():
-                char_show(bot, update)
+                show_char(bot, update)
             elif text == USER_COMMAND_REGISTER.lower():
                 grant_access(bot, update)
             elif text == USER_COMMAND_SETTINGS.lower():
@@ -238,11 +205,6 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                 week_build_top(bot, update)
             elif text == TOP_COMMAND_BATTLES.lower():
                 week_battle_top(bot, update)
-            elif text == USER_COMMAND_BUILD.lower():
-                send_async(bot,
-                           chat_id=update.message.chat.id,
-                           text=MSG_IN_DEV,
-                           parse_mode=ParseMode.HTML)
             elif text == USER_COMMAND_STATISTICS.lower():
                 statistic_about(bot, update)
             elif text == STATISTICS_COMMAND_EXP.lower():
@@ -255,8 +217,6 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                 squad_about(bot, update)
             elif text == USER_COMMAND_SQUAD_LEAVE.lower():
                 leave_squad_request(bot, update)
-            elif text == USER_COMMAND_CONTACTS.lower():
-                web_auth(bot, update)
             elif text == ADMIN_COMMAND_ADMINPANEL.lower():
                 admin_panel(bot, update)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
@@ -286,9 +246,6 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                     else:
                         # Handle everying else as Quest-Text.. At least for now...
                         parse_quest(bot, update)
-                elif from_id == TRADEBOT_ID:
-                    if TRADE_BOT in text:
-                        trade_compare(bot, update, chat_data)
             elif not is_admin:
                 user_panel(bot, update)
             else:
