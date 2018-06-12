@@ -3,4 +3,7 @@ Flask
 PyMySQL
 python-telegram-bot
 requests
-SQLAlchemy
+SQLAlchemy>=1.2.7
+pandas
+pika
+redis

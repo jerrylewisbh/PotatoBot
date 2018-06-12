@@ -1,7 +1,11 @@
+# Ignore stats .png
+*.png
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+.DS_Store
 
 # C extensions
 *.so
@@ -51,6 +55,7 @@ coverage.xml
 
 # Django stuff:
 *.log
+*.log.*
 local_settings.py
 
 # Flask stuff:
@@ -91,3 +96,5 @@ ENV/
 config.py
 
 .vscode
+
+dump.rdb

@@ -1,127 +1,120 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, time, timedelta
-import json
 import logging
 import re
+from datetime import datetime, timedelta
+from logging.handlers import TimedRotatingFileHandler
 
-from sqlalchemy import func, tuple_
-from telegram import (
-    Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
-)
-from telegram.ext import (
-    Updater, CommandHandler, MessageHandler,
-    Filters, CallbackQueryHandler
-)
+from telegram import Bot, ParseMode, Update
+from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
+                          Updater, MessageQueue)
 from telegram.ext.dispatcher import run_async
-from telegram.error import TelegramError
 
-from config import TOKEN, GOVERNMENT_CHAT, CASTLE
-from core.chat_commands import CC_SET_WELCOME, CC_HELP, CC_SQUAD, CC_SHOW_WELCOME, CC_TURN_ON_WELCOME, \
-    CC_TURN_OFF_WELCOME, CC_SET_TRIGGER, CC_UNSET_TRIGGER, CC_TRIGGER_LIST, CC_ADMIN_LIST, CC_PING, CC_DAY_STATISTICS, \
-    CC_WEEK_STATISTICS, CC_BATTLE_STATISTICS, CC_ALLOW_TRIGGER_ALL, CC_DISALLOW_TRIGGER_ALL, CC_ADMINS, \
-    CC_ALLOW_PIN_ALL, CC_DISALLOW_PIN_ALL, CC_BOSS_1, CC_BOSS_2, CC_BOSS_3, CC_BOSS_4, CC_OPEN_HIRING, CC_CLOSE_HIRING, \
-    CC_PIN, CC_SILENT_PIN, CC_DELETE, CC_KICK
-from core.commands import ADMIN_COMMAND_STATUS, ADMIN_COMMAND_RECRUIT, ADMIN_COMMAND_ORDER, ADMIN_COMMAND_SQUAD_LIST, \
-    ADMIN_COMMAND_GROUPS, ADMIN_COMMAND_FIRE_UP, USER_COMMAND_ME, USER_COMMAND_BUILD, USER_COMMAND_CONTACTS, \
-    USER_COMMAND_SQUAD, USER_COMMAND_STATISTICS, USER_COMMAND_TOP, USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_BACK, \
-    TOP_COMMAND_ATTACK, TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP, STATISTICS_COMMAND_EXP, USER_COMMAND_SQUAD_LEAVE, \
-    ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_ADMINPANEL, TOP_COMMAND_BUILD, \
-    TOP_COMMAND_BATTLES
-from core.constants import DAYS_PROFILE_REMIND, DAYS_OLD_PROFILE_KICK
-from core.functions.activity import (
-    day_activity, week_activity, battle_activity
-)
-from core.functions.admins import (
-    list_admins, admins_for_users, set_admin, del_admin,
-    set_global_admin, set_super_admin, del_global_admin
-)
-from core.functions.ban import unban, ban
-from core.functions.bosses import (
-    boss_leader, boss_zhalo, boss_monoeye, boss_hydra)
+from config import CASTLE, DEBUG, EXT_ID, TOKEN, LOGFILE, CWBOT_ID, TRADEBOT_ID
+from core.battle import report_after_battle
+from core.bot import MQBot
+from core.chat_commands import (CC_ADMIN_LIST, CC_ADMINS, CC_ALLOW_PIN_ALL,
+                                CC_ALLOW_TRIGGER_ALL, CC_BATTLE_STATISTICS,
+                                CC_BOSS_1, CC_BOSS_2, CC_BOSS_3, CC_BOSS_4,
+                                CC_CLOSE_HIRING, CC_DAY_STATISTICS, CC_DELETE,
+                                CC_DISALLOW_PIN_ALL, CC_DISALLOW_TRIGGER_ALL,
+                                CC_HELP, CC_KICK, CC_OPEN_HIRING, CC_PIN,
+                                CC_PING, CC_SET_TRIGGER, CC_SET_WELCOME,
+                                CC_SHOW_WELCOME, CC_SILENT_PIN, CC_SQUAD,
+                                CC_TRIGGER_LIST, CC_TURN_OFF_WELCOME,
+                                CC_TURN_ON_WELCOME, CC_UNSET_TRIGGER,
+                                CC_WEEK_STATISTICS)
+from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
+                           ADMIN_COMMAND_FIRE_UP, ADMIN_COMMAND_GROUPS,
+                           ADMIN_COMMAND_ORDER, ADMIN_COMMAND_RECRUIT,
+                           ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_SQUAD_LIST,
+                           ADMIN_COMMAND_STATUS, STATISTICS_COMMAND_EXP,
+                           STATISTICS_COMMAND_SKILLS, TOP_COMMAND_ATTACK,
+                           TOP_COMMAND_BATTLES, TOP_COMMAND_BUILD,
+                           TOP_COMMAND_DEFENCE, TOP_COMMAND_EXP,
+                           USER_COMMAND_BACK, USER_COMMAND_BUILD,
+                           USER_COMMAND_CONTACTS, USER_COMMAND_ME,
+                           USER_COMMAND_REGISTER, USER_COMMAND_SETTINGS,
+                           USER_COMMAND_SQUAD, USER_COMMAND_SQUAD_LEAVE,
+                           USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
+                           USER_COMMAND_TOP, USER_COMMAND_HIDE, USER_COMMAND_EXCHANGE, STATISTICS_COMMAND_QUESTS)
+from core.decorators import user_allowed
+from core.exchange import sniping_info, hide_gold_info
+from core.functions.activity import (battle_activity, day_activity,
+                                     week_activity)
+from core.functions.admins import admins_for_users, list_admins
+from core.functions.bosses import (boss_hydra, boss_leader, boss_monoeye,
+                                   boss_zhalo)
+from core.functions.common import (admin_panel, delete_msg, delete_user, error,
+                                   help_msg, ping, stock_compare_forwarded,
+                                   trade_compare, web_auth)
+from core.functions.inline_keyboard_handling import (callback_query,
+                                                     inlinequery, send_status)
+from core.functions.order_groups import add_group, group_list
 from core.functions.orders import order, orders
+from core.functions.pin import not_pin_all, pin, pin_all, silent_pin
+from core.functions.profile import (build_report_received, char_show,
+                                    char_update, grant_access,
+                                    handle_access_token, profession_update,
+                                    repair_report_received, report_received,
+                                    settings, user_panel)
+from core.functions.quest import parse_quest
+from core.functions.squad import (battle_attendance_show, battle_reports_show,
+                                  call_squad, close_hiring,
+                                  leave_squad_request, list_squad_requests,
+                                  open_hiring, remove_from_squad, squad_about,
+                                  squad_list, squad_request)
+from core.functions.statistics import (exp_statistic, skill_statistic,
+                                       statistic_about, quest_statistic)
+from core.functions.top import (attack_top, def_top, exp_top, top_about,
+                                week_battle_top, week_build_top)
+from core.functions.triggers import (del_trigger, disable_trigger_all,
+                                     enable_trigger_all, list_triggers,
+                                     set_trigger, trigger_show)
+from core.functions.welcome import (disable_welcome, enable_welcome,
+                                    set_welcome, show_welcome, welcome)
+from core.handlers.trigger_handler import add_commands
+from core.jobs.job_queue import (add_after_war_messages,
+                                 add_battle_report_messages,
+                                 add_pre_war_messages,
+                                 add_war_warning_messages)
+from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
+                         REPAIR_REPORT, REPORT, STOCK, TRADE_BOT)
+from core.state import GameState, get_game_state
+from core.texts import MSG_IN_DEV
+from core.types import Admin, Squad, User, Session
+from core.utils import create_or_update_user, send_async
+from cwmq import Consumer, Publisher
+from cwmq.handler.deals import deals_handler
+from cwmq.handler.digest import digest_handler
+from cwmq.handler.offers import offers_handler
+from cwmq.handler.profiles import profile_handler
 
-from core.functions.common import (
-    help_msg, ping, start, error, kick,
-    admin_panel, stock_compare, trade_compare,
-    delete_msg, delete_user,
-    user_panel, web_auth)
-from core.functions.inline_keyboard_handling import (
-    callback_query, send_status, send_order
-)
-from core.functions.inline_markup import QueryType
-from core.functions.order_groups import group_list, add_group
-from core.functions.pin import pin, not_pin_all, pin_all, silent_pin
-from core.functions.profile import char_update, char_show, find_by_username, report_received, build_report_received, \
-    repair_report_received
-from core.functions.squad import (
-    add_squad, del_squad, set_invite_link, set_squad_name,
-    enable_thorns, disable_thorns,
-    squad_list, squad_request, list_squad_requests,
-    open_hiring, close_hiring, remove_from_squad, add_to_squad,
-    leave_squad_request, squad_about, call_squad, battle_reports_show)
-from core.functions.statistics import statistic_about, exp_statistic
-from core.functions.top import top_about, attack_top, exp_top, def_top, global_build_top, week_build_top, \
-    week_battle_top
-from core.functions.triggers import (
-    set_trigger, add_trigger, del_trigger, list_triggers, enable_trigger_all,
-    disable_trigger_all, trigger_show,
-    set_global_trigger, add_global_trigger, del_global_trigger
-)
-from core.functions.welcome import (
-    welcome, set_welcome, show_welcome, enable_welcome, disable_welcome
-)
-from core.regexp import PROFILE, HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, STOCK, TRADE_BOT
-from core.texts import (
-    MSG_SQUAD_READY, MSG_FULL_TEXT_LINE, MSG_FULL_TEXT_TOTAL,
-    MSG_MAIN_INLINE_BATTLE, MSG_MAIN_READY_TO_BATTLE, MSG_IN_DEV, MSG_UPDATE_PROFILE, MSG_SQUAD_DELETE_OUTDATED,
-    MSG_SQUAD_DELETE_OUTDATED_EXT)
-from core.types import Session, Order, Squad, Admin, user_allowed, Character, SquadMember, User
-from core.utils import add_user, send_async
-
-from sqlalchemy.exc import SQLAlchemyError
-
-# -----constants----
-CWBOT_ID = 265204902
-TRADEBOT_ID = 278525885
-# -------------------
-
-logging.basicConfig(
-    level=logging.WARNING,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-
-
-def battle_time():
-    """ Определяет, наступило ли время битвы """
-    now = datetime.now().time()
-    if now.hour % 4 == 3 and now.minute >= 57:
-        return True
-    return False
-
-
-def del_msg(bot, job):
-    try:
-        bot.delete_message(job.context[0], job.context[1])
-    except TelegramError:
-        pass
-
+Session()
 
 @run_async
 @user_allowed
-def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
-    add_user(update.message.from_user, session)
+def manage_all(bot: Bot, update: Update, chat_data, job_queue):
+    create_or_update_user(update.message.from_user)
+
+    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
+    registered = user and user.character and (user.character.castle == CASTLE or update.message.from_user.id == EXT_ID)
     if update.message.chat.type in ['group', 'supergroup', 'channel']:
-        squad = session.query(Squad).filter_by(
+        squad = Session.query(Squad).filter_by(
             chat_id=update.message.chat.id).first()
-        admin = session.query(Admin).filter(
+        admin = Session.query(Admin).filter(
             Admin.user_id == update.message.from_user.id and
             Admin.admin_group in [update.message.chat.id, 0]).first()
 
-        if squad is not None and admin is None and battle_time():
+        logging.debug("SILENCE STATE: State: {}, Squad: {}, Admin: {}".format(
+            get_game_state(),
+            squad.squad_name if squad else 'NO SQUAD',
+            admin,
+        ))
+
+        if squad and squad.silence_enabled and not admin and GameState.BATTLE_SILENCE in get_game_state():
             bot.delete_message(update.message.chat.id,
                                update.message.message_id)
-
         if not update.message.text:
             return
 
@@ -131,7 +124,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             set_welcome(bot, update)
         elif text == CC_HELP:
             help_msg(bot, update)
-        elif text == CC_SQUAD:
+        elif text == CC_SQUAD and registered:
             call_squad(bot, update)
         elif text == CC_SHOW_WELCOME:
             show_welcome(bot, update)
@@ -195,7 +188,7 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             trigger_show(bot, update)
 
     elif update.message.chat.type == 'private':
-        admin = session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         is_admin = False
         for _ in admin:
             is_admin = True
@@ -207,11 +200,11 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
         elif update.message.text:
             text = update.message.text.lower()
 
-            if text == ADMIN_COMMAND_STATUS.lower():
+            if text == ADMIN_COMMAND_STATUS.lower() and registered:
                 send_status(bot, update)
-            elif text == USER_COMMAND_BACK.lower():
+            elif text == USER_COMMAND_BACK.lower() and registered:
                 user_panel(bot, update)
-            elif text == USER_COMMAND_SQUAD_REQUEST.lower():
+            elif text == USER_COMMAND_SQUAD_REQUEST.lower() and registered:
                 squad_request(bot, update)
             elif text == ADMIN_COMMAND_RECRUIT.lower():
                 list_squad_requests(bot, update)
@@ -223,11 +216,17 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 group_list(bot, update)
             elif text == ADMIN_COMMAND_REPORTS.lower():
                 battle_reports_show(bot, update)
+            elif text == ADMIN_COMMAND_ATTENDANCE.lower():
+                battle_attendance_show(bot, update)
             elif text == ADMIN_COMMAND_FIRE_UP.lower():
                 remove_from_squad(bot, update)
             elif text == USER_COMMAND_ME.lower():
                 char_show(bot, update)
-            elif text == USER_COMMAND_TOP.lower():
+            elif text == USER_COMMAND_REGISTER.lower():
+                grant_access(bot, update)
+            elif text == USER_COMMAND_SETTINGS.lower():
+                settings(bot, update)
+            elif text == USER_COMMAND_TOP.lower() and registered:
                 top_about(bot, update)
             elif text == TOP_COMMAND_ATTACK.lower():
                 attack_top(bot, update)
@@ -248,6 +247,10 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 statistic_about(bot, update)
             elif text == STATISTICS_COMMAND_EXP.lower():
                 exp_statistic(bot, update)
+            elif text == STATISTICS_COMMAND_SKILLS.lower():
+                skill_statistic(bot, update)
+            elif text == STATISTICS_COMMAND_QUESTS.lower():
+                quest_statistic(bot, update)
             elif text == USER_COMMAND_SQUAD.lower():
                 squad_about(bot, update)
             elif text == USER_COMMAND_SQUAD_LEAVE.lower():
@@ -258,14 +261,17 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                 admin_panel(bot, update)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
                 add_group(bot, update, chat_data)
-
+            elif text == USER_COMMAND_HIDE.lower():
+                hide_gold_info(bot, update)
+            elif text == USER_COMMAND_EXCHANGE.lower():
+                sniping_info(bot, update)
+            # TODO: FWD Checks are no longer needed here if command_handler decorator is used properly.
             elif update.message.forward_from:
                 from_id = update.message.forward_from.id
-
                 if from_id == CWBOT_ID:
                     if text.startswith(STOCK):
-                        stock_compare(bot, update, chat_data)
-                    elif re.search(PROFILE, update.message.text) or re.search(HERO, update.message.text):
+                        stock_compare_forwarded(bot, update, chat_data)
+                    elif re.search(HERO, update.message.text):
                         char_update(bot, update)
                     elif re.search(REPORT, update.message.text):
                         report_received(bot, update)
@@ -273,6 +279,13 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
                         build_report_received(bot, update)
                     elif re.search(REPAIR_REPORT, update.message.text):
                         repair_report_received(bot, update)
+                    elif re.search(PROFESSION, update.message.text):
+                        profession_update(bot, update)
+                    elif re.search(ACCESS_CODE, update.message.text):
+                        handle_access_token(bot, update)
+                    else:
+                        # Handle everying else as Quest-Text.. At least for now...
+                        parse_quest(bot, update)
                 elif from_id == TRADEBOT_ID:
                     if TRADE_BOT in text:
                         trade_compare(bot, update, chat_data)
@@ -286,234 +299,92 @@ def manage_all(bot: Bot, update: Update, session, chat_data, job_queue):
             order(bot, update, chat_data)
 
 
-@run_async
-def ready_to_battle(bot: Bot, job_queue):
-    session = Session()
-    try:
-        group = session.query(Squad).all()
-        for item in group:
-            new_order = Order()
-            new_order.text = MSG_MAIN_READY_TO_BATTLE
-            new_order.chat_id = item.chat_id
-            new_order.date = datetime.now()
-            new_order.confirmed_msg = 0
-            session.add(new_order)
-            session.commit()
-
-            callback_data = json.dumps(
-                {'t': QueryType.OrderOk.value, 'id': new_order.id})
-            markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton(MSG_MAIN_INLINE_BATTLE,
-                                      callback_data=callback_data)]])
-
-            msg = send_order(bot, new_order.text, 0, new_order.chat_id, markup)
-
-            try:
-                msg = msg.result().result()
-                if msg is not None:
-                    bot.request.post(bot.base_url + '/pinChatMessage',
-                                     {'chat_id': new_order.chat_id,
-                                      'message_id': msg.message_id,
-                                      'disable_notification': False})
-
-            except TelegramError as err:
-                bot.logger.error(err.message)
-
-    except SQLAlchemyError as err:
-        bot.logger.error(str(err))
-        Session.rollback()
-
-
-@run_async
-def ready_to_battle_result(bot: Bot, job_queue):
-    session = Session()
-    try:
-        group = session.query(Squad).all()
-        full_attack = 0
-        full_defence = 0
-        full_text = ''
-        full_count = 0
-
-        for item in group:
-            ready_order = session.query(Order).filter_by(
-                chat_id=item.chat_id,
-                text=MSG_MAIN_READY_TO_BATTLE).order_by(Order.date.desc()).first()
-
-            if ready_order is not None:
-                attack = 0
-                defence = 0
-                for clear in ready_order.cleared:
-                    if clear.user.character:
-                        attack += clear.user.character.attack
-                        defence += clear.user.character.defence
-
-                text = MSG_SQUAD_READY.format(len(ready_order.cleared),
-                                              item.squad_name,
-                                              attack,
-                                              defence)
-
-                send_async(bot,
-                           chat_id=item.chat_id,
-                           text=text,
-                           parse_mode=ParseMode.HTML)
-
-                full_attack += attack
-                full_defence += defence
-                full_count += len(ready_order.cleared)
-                full_text += MSG_FULL_TEXT_LINE.format(item.squad_name,
-                                                       len(ready_order.cleared),
-                                                       attack,
-                                                       defence)
-
-        full_text += MSG_FULL_TEXT_TOTAL.format(full_count,
-                                                full_attack,
-                                                full_defence)
-
-        send_async(bot,
-                   chat_id=GOVERNMENT_CHAT,
-                   text=full_text,
-                   parse_mode=ParseMode.HTML)
-
-    except SQLAlchemyError as err:
-        bot.logger.error(str(err))
-        Session.rollback()
-
-
-@run_async
-def fresh_profiles(bot: Bot, job_queue):
-    session = Session()
-    try:
-        actual_profiles = session.query(Character.user_id, func.max(Character.date)). \
-            group_by(Character.user_id)
-        actual_profiles = actual_profiles.all()
-        characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
-                                                     .in_([(a[0], a[1]) for a in actual_profiles]),
-                                                     datetime.now() - timedelta(
-                                                         days=DAYS_PROFILE_REMIND) > Character.date,
-                                                     Character.date > datetime.now() - timedelta(
-                                                         days=DAYS_OLD_PROFILE_KICK))
-        if CASTLE:
-            characters = characters.filter_by(castle=CASTLE)
-        characters = characters.all()
-        for character in characters:
-            send_async(bot,
-                       chat_id=character.user_id,
-                       text=MSG_UPDATE_PROFILE,
-                       parse_mode=ParseMode.HTML)
-        characters = session.query(Character).filter(tuple_(Character.user_id, Character.date)
-                                                     .in_([(a[0], a[1]) for a in actual_profiles]),
-                                                     Character.date < datetime.now() - timedelta(
-                                                         days=DAYS_OLD_PROFILE_KICK)).all()
-        members = session.query(SquadMember, User).filter(SquadMember.user_id
-                                                          .in_([character.user_id for character in characters])) \
-            .join(User, User.id == SquadMember.user_id).all()
-        for member, user in members:
-            session.delete(member)
-            admins = session.query(Admin).filter_by(admin_group=member.squad_id).all()
-            for adm in admins:
-                send_async(bot, chat_id=adm.user_id,
-                           text=MSG_SQUAD_DELETE_OUTDATED_EXT
-                           .format(member.user.character.name, member.user.username, member.squad.squad_name),
-                           parse_mode=ParseMode.HTML)
-            send_async(bot, chat_id=member.squad_id,
-                       text=MSG_SQUAD_DELETE_OUTDATED_EXT.format(member.user.character.name, member.user.username,
-                                                                 member.squad.squad_name),
-                       parse_mode=ParseMode.HTML)
-            send_async(bot,
-                       chat_id=member.user_id,
-                       text=MSG_SQUAD_DELETE_OUTDATED,
-                       parse_mode=ParseMode.HTML)
-        session.commit()
-    except SQLAlchemyError as err:
-        bot.logger.error(str(err))
-        Session.rollback()
-
-
 def main():
-    # Create the EventHandler and pass it your bot's token.
-    updater = Updater(TOKEN)
+    # Logging!
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    # Get the dispatcher to register handlers
+    # Logging for console
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.WARNING)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    rh = TimedRotatingFileHandler(LOGFILE, when='midnight', backupCount=10)
+    rh.setLevel(logging.DEBUG)
+    rh.setFormatter(formatter)
+    logger.addHandler(rh)
+
+    # Create the EventHandler and pass it your bot's token.
+    from telegram.ext import MessageHandler, Filters
+    from telegram.utils.request import Request
+
+    token = TOKEN
+    # for test purposes limit global throughput to 3 messages per 3 seconds
+    q = MessageQueue(all_burst_limit=3, all_time_limit_ms=3000)
+    request = Request(con_pool_size=8)
+    bot = MQBot(token, request=request, mqueue=q)
+    updater = Updater(bot=bot)
+    updater.bot.logger.setLevel(logging.INFO)
+
+    # Get the dispatcher to register handler
     disp = updater.dispatcher
 
-    # on different commands - answer in Telegram
-    disp.add_handler(CommandHandler("start", user_panel))
-    disp.add_handler(CommandHandler("admin", admin_panel))
-    disp.add_handler(CommandHandler("help", help_msg))
-    disp.add_handler(CommandHandler("ping", ping))
-    disp.add_handler(CommandHandler("set_global_trigger", set_global_trigger))
-    disp.add_handler(CommandHandler("add_global_trigger", add_global_trigger))
-    disp.add_handler(CommandHandler("del_global_trigger", del_global_trigger))
-    disp.add_handler(CommandHandler("set_trigger", set_trigger))
-    disp.add_handler(CommandHandler("add_trigger", add_trigger))
-    disp.add_handler(CommandHandler("del_trigger", del_trigger))
-    disp.add_handler(CommandHandler("list_triggers", list_triggers))
-    disp.add_handler(CommandHandler("set_welcome", set_welcome))
-    disp.add_handler(CommandHandler("enable_welcome", enable_welcome))
-    disp.add_handler(CommandHandler("disable_welcome", disable_welcome))
-    disp.add_handler(CommandHandler("show_welcome", show_welcome))
-    disp.add_handler(CommandHandler("add_admin", set_admin))
-    disp.add_handler(CommandHandler("add_global_admin", set_global_admin))
-    disp.add_handler(CommandHandler("del_global_admin", del_global_admin))
-    disp.add_handler(CommandHandler("add_super_admin", set_super_admin))
-    disp.add_handler(CommandHandler("del_admin", del_admin))
-    disp.add_handler(CommandHandler("list_admins", list_admins))
-    disp.add_handler(CommandHandler("kick", kick))
-    disp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
-    disp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
-    disp.add_handler(CommandHandler("me", char_show))
-
-    disp.add_handler(CommandHandler("add_squad", add_squad))
-    disp.add_handler(CommandHandler("del_squad", del_squad))
-    disp.add_handler(CommandHandler("enable_thorns", enable_thorns))
-    disp.add_handler(CommandHandler("disable_thorns", disable_thorns))
-    disp.add_handler(CommandHandler("set_squad_name", set_squad_name))
-    disp.add_handler(CommandHandler("set_invite_link", set_invite_link))
-    disp.add_handler(CommandHandler("find", find_by_username))
-    disp.add_handler(CommandHandler("add", add_to_squad))
-    disp.add_handler(CommandHandler("ban", ban))
-    disp.add_handler(CommandHandler("unban", unban))
+    add_commands(disp)
 
     disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True, pass_job_queue=True))
+
+    disp.add_handler(InlineQueryHandler(inlinequery))
 
     # on noncommand i.e message - echo the message on Telegram
     disp.add_handler(MessageHandler(Filters.status_update, welcome))
     # disp.add_handler(MessageHandler(
     # Filters.text, manage_text, pass_chat_data=True))
+
     disp.add_handler(MessageHandler(
-        Filters.all, manage_all, pass_chat_data=True, pass_job_queue=True))
+        Filters.all,
+        manage_all,
+        pass_chat_data=True,
+        pass_job_queue=True
+    ))
 
     # log all errors
     disp.add_error_handler(error)
+    add_war_warning_messages(updater)
 
-    updater.job_queue.run_daily(ready_to_battle, time(hour=7, minute=50))
-    updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=7, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=11, minute=50))
-    updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=11, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=15, minute=50))
-    updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=15, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=19, minute=50))
-    updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=19, minute=55))
-    updater.job_queue.run_daily(ready_to_battle, time(hour=23, minute=50))
-    updater.job_queue.run_daily(ready_to_battle_result,
-                                time(hour=23, minute=55))
-    updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=7, minute=40))
-    updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=11, minute=40))
-    updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=15, minute=40))
-    updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=19, minute=40))
-    updater.job_queue.run_daily(fresh_profiles,
-                                time(hour=23, minute=40))
+    # API refreshing, etc.
+    add_pre_war_messages(updater)
+    add_after_war_messages(updater)
+    add_battle_report_messages(updater)
+
+    # THIS IS FOR DEBUGGING AND TESTING!
+    if DEBUG:
+        updater.job_queue.run_once(report_after_battle, datetime.now() + timedelta(seconds=5))
 
     # Start the Bot
     updater.start_polling()
+
+    # After we've set up the bot we also now start consuming the CW APMQ messages in seperate threads
+    # and handle them
+
+    # Consumer...
+    logging.info("Setting up MQ Consumer")
+    q_in = Consumer(
+        profile_handler,
+        deals_handler,
+        offers_handler,
+        digest_handler,
+        dispatcher=updater
+    )
+    q_in.setName("T1_IN")
+    q_in.start()
+
+    # Publisher
+    q_out = Publisher()
+    q_out.setName("T1_OUT")
+    q_out.start()
+
     # app.run(port=API_PORT)
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
@@ -522,4 +393,9 @@ def main():
 
 
 if __name__ == '__main__':
+    # Force bot TZ into UTC
+    import os
+
+    os.environ['TZ'] = 'UTC'
+
     main()

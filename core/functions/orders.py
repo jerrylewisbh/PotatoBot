@@ -1,15 +1,18 @@
-from telegram import Update, Bot
-from core.types import AdminType, Admin, admin_allowed, MessageType
-from core.utils import send_async
-from core.functions.inline_markup import generate_order_groups_markup, generate_flag_orders
+from core.functions.inline_markup import (generate_flag_orders,
+                                          generate_order_groups_markup)
 from core.texts import *
+from core.types import Admin, AdminType, MessageType, Session
+from core.decorators import admin_allowed
+from core.utils import send_async
+from telegram import Bot, Update
 
+Session()
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def order(bot: Bot, update: Update, session, chat_data):
+def order(bot: Bot, update: Update, chat_data):
     chat_data['order_wait'] = False
-    admin_user = session.query(Admin).filter(Admin.user_id == update.message.from_user.id).all()
-    markup = generate_order_groups_markup(session, admin_user, chat_data['pin'] if 'pin' in chat_data else True,
+    admin_user = Session.query(Admin).filter(Admin.user_id == update.message.from_user.id).all()
+    markup = generate_order_groups_markup(admin_user, chat_data['pin'] if 'pin' in chat_data else True,
                                           chat_data['btn'] if 'btn' in chat_data else True)
     msg = update.message
     if msg.audio:
@@ -47,7 +50,7 @@ def order(bot: Bot, update: Update, session, chat_data):
 
 
 @admin_allowed(adm_type=AdminType.GROUP)
-def orders(bot: Bot, update: Update, session, chat_data):
+def orders(bot: Bot, update: Update, chat_data):
     markup = generate_flag_orders()
     chat_data['order_wait'] = True
     send_async(bot, chat_id=update.message.chat.id, text=MSG_FLAG_CHOOSE_HEADER, reply_markup=markup)
