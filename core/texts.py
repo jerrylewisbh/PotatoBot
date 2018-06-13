@@ -588,8 +588,8 @@ MSG_QUEST_STAT = "\n\nJust continue sending me your quest reports.\n\n_Hint: Ove
 
 # Exchange stuff
 HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
-               "*With this feature enabled I will try to spend all your gold once you issue /hide." \
-               "As this feature becomes more mature we will allow you to even do this automatically!*. \n\n" \
+               "*With this feature enabled I will try to spend all your gold once you issue /hide. " \
+               "As this feature becomes more mature we will probably allow you to even do this automatically!* \n\n" \
                "You can set your buy-preferences via `/ah <itemId> <prio> <maxPrice>`.\n" \
                "Leave `<maxPrice>` out to always buy at market price. You can get a list of items with `/items`. \n\n" \
                "Examples: \n" \

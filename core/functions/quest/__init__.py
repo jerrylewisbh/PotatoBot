@@ -61,6 +61,8 @@ def save_user_quest(user: User, update: Update, quest_data):
 
 @command_handler()
 def parse_quest(bot: Bot, update: Update, user: User):
+
+
     quest_data = analyze_text(update.message.text)
 
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
