@@ -126,7 +126,12 @@ def send_graph(bot: Bot, user: User):
         plot.savefig(file, format='png')
 
     with open(filename, 'rb') as file:
-        bot.sendPhoto(user.id, file, MSG_FORAY_INTRO)
+        bot.sendPhoto(
+            user.id,
+            file,
+            MSG_FORAY_INTRO,
+            parse_mode=ParseMode.MARKDOWN,
+        )
 
     plot.clf()
     os.remove(filename)
