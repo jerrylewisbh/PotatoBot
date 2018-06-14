@@ -1,21 +1,6 @@
 from telegram import KeyboardButton, ReplyKeyboardMarkup
 
-from core.commands import (ADMIN_COMMAND_ADMINPANEL, ADMIN_COMMAND_ATTENDANCE,
-                           ADMIN_COMMAND_FIRE_UP, ADMIN_COMMAND_GROUPS,
-                           ADMIN_COMMAND_ORDER, ADMIN_COMMAND_RECRUIT,
-                           ADMIN_COMMAND_REPORTS, ADMIN_COMMAND_SQUAD_LIST,
-                           ADMIN_COMMAND_STATUS, STATISTICS_COMMAND_EXP,
-                           STATISTICS_COMMAND_QUESTS,
-                           STATISTICS_COMMAND_SKILLS, TOP_COMMAND_ATTACK,
-                           TOP_COMMAND_BATTLES, TOP_COMMAND_DEFENCE,
-                           TOP_COMMAND_EXP, USER_COMMAND_BACK,
-                           USER_COMMAND_EXCHANGE, USER_COMMAND_HIDE,
-                           USER_COMMAND_ME, USER_COMMAND_REGISTER,
-                           USER_COMMAND_REGISTER_CONTINUE,
-                           USER_COMMAND_SETTINGS, USER_COMMAND_SQUAD,
-                           USER_COMMAND_SQUAD_LEAVE,
-                           USER_COMMAND_SQUAD_REQUEST, USER_COMMAND_STATISTICS,
-                           USER_COMMAND_TOP)
+from core.commands import *
 from core.types import Session, User
 
 Session()
@@ -84,9 +69,13 @@ def generate_statistics_markup():
         [
             KeyboardButton(STATISTICS_COMMAND_EXP),
             KeyboardButton(STATISTICS_COMMAND_SKILLS),
-            KeyboardButton(STATISTICS_COMMAND_QUESTS)
-        ],
-        [KeyboardButton(USER_COMMAND_BACK)]]
+        ], [
+            KeyboardButton(STATISTICS_COMMAND_QUESTS),
+            KeyboardButton(STATISTICS_COMMAND_FORAY),
+        ], [
+            KeyboardButton(USER_COMMAND_BACK)
+        ]
+    ]
     return ReplyKeyboardMarkup(buttons, True)
 
 

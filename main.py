@@ -41,6 +41,7 @@ from core.functions.squad import (battle_attendance_show, battle_reports_show,
                                   squad_list, squad_request)
 from core.functions.statistics import (exp_statistic, quest_statistic,
                                        skill_statistic, statistic_about)
+from core.functions.statistics.foray import foray_statistic
 from core.functions.top import (attack_top, def_top, exp_top, top_about,
                                 week_battle_top, week_build_top)
 from core.functions.triggers import (del_trigger, disable_trigger_all,
@@ -213,6 +214,8 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                 skill_statistic(bot, update)
             elif text == STATISTICS_COMMAND_QUESTS.lower():
                 quest_statistic(bot, update)
+            elif text == STATISTICS_COMMAND_FORAY.lower():
+                foray_statistic(bot, update)
             elif text == USER_COMMAND_SQUAD.lower():
                 squad_about(bot, update)
             elif text == USER_COMMAND_SQUAD_LEAVE.lower():

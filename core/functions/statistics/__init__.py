@@ -30,58 +30,64 @@ def statistic_about(bot: Bot, update: Update):
                text=MSG_STATISTICS_ABOUT,
                reply_markup=markup)
 
+def get_relative_details_for_location(user: User, from_date: datetime, location: Location):
+    text = ""
+    base_stats = Session.query(
+        func.count(UserQuest.id).label('count'),
+        func.sum(UserQuest.exp).label("exp_sum"),
+        func.avg(UserQuest.exp).label("exp_avg"),
+        func.sum(UserQuest.gold).label("gold_sum"),
+        func.avg(UserQuest.gold).label("gold_avg")
+    ).filter(
+        UserQuest.user_id == user.id,
+        UserQuest.location_id == location.id,
+        UserQuest.from_date > from_date
+    ).first()
 
-def relative_details(user: User, from_date: datetime, FORAY_QUEST_LOCATION_ID=None):
+    item_stats = Session.query(
+        func.sum(UserQuestItem.count).label('item_sum'),
+        func.avg(UserQuestItem.count).label('item_avg')
+    ).join(UserQuest).filter(
+        UserQuest.user_id == user.id,
+        UserQuest.location == location,
+        UserQuest.from_date > from_date
+    ).first()
+
+    if location.id != QUEST_LOCATION_ARENA_ID:
+        text += MSG_QUEST_STAT_LOCATION.format(
+            location.name,
+            base_stats.count if base_stats.count else 0,
+            base_stats.exp_avg if base_stats.exp_avg else 0,
+            base_stats.gold_avg if base_stats.gold_avg else 0,
+            item_stats.item_avg if item_stats.item_avg else 0,
+            base_stats.exp_sum if base_stats.exp_sum else 0,
+            base_stats.gold_sum if base_stats.gold_sum else 0,
+            item_stats.item_sum if item_stats.item_sum else 0,
+        )
+    else:
+        text += MSG_QUEST_STAT_NO_LOOT.format(
+            location.name,
+            base_stats.count if base_stats.count else 0,
+            base_stats.exp_avg if base_stats.exp_avg else 0,
+            base_stats.gold_avg if base_stats.gold_avg else 0,
+            base_stats.exp_sum if base_stats.exp_sum else 0,
+            base_stats.gold_sum if base_stats.gold_sum else 0,
+        )
+
+    # Additional stats for foray...
+    if location.id == QUEST_LOCATION_FORAY_ID:
+        text += __get_additional_stats_foray(from_date, location, text, user)
+    elif location.id in [QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID]:
+        text += __get_additional_stats_basic(from_date, location, user)
+
+    return text
+
+
+def get_relative_details(user: User, from_date: datetime):
     locations = Session.query(Location).all()
     text = ""
     for location in locations:
-        base_stats = Session.query(
-            func.count(UserQuest.id).label('count'),
-            func.sum(UserQuest.exp).label("exp_sum"),
-            func.avg(UserQuest.exp).label("exp_avg"),
-            func.sum(UserQuest.gold).label("gold_sum"),
-            func.avg(UserQuest.gold).label("gold_avg")
-        ).filter(
-            UserQuest.user_id == user.id,
-            UserQuest.location_id == location.id,
-            UserQuest.from_date > from_date
-        ).first()
-
-        item_stats = Session.query(
-            func.sum(UserQuestItem.count).label('item_sum'),
-            func.avg(UserQuestItem.count).label('item_avg')
-        ).join(UserQuest).filter(
-            UserQuest.user_id == user.id,
-            UserQuest.location == location,
-            UserQuest.from_date > from_date
-        ).first()
-
-        if location.id != QUEST_LOCATION_ARENA_ID:
-            text += MSG_QUEST_STAT_LOCATION.format(
-                location.name,
-                base_stats.count if base_stats.count else 0,
-                base_stats.exp_avg if base_stats.exp_avg else 0,
-                base_stats.gold_avg if base_stats.gold_avg else 0,
-                item_stats.item_avg if item_stats.item_avg else 0,
-                base_stats.exp_sum if base_stats.exp_sum else 0,
-                base_stats.gold_sum if base_stats.gold_sum else 0,
-                item_stats.item_sum if item_stats.item_sum else 0,
-            )
-        else:
-            text += MSG_QUEST_STAT_NO_LOOT.format(
-                location.name,
-                base_stats.count if base_stats.count else 0,
-                base_stats.exp_avg if base_stats.exp_avg else 0,
-                base_stats.gold_avg if base_stats.gold_avg else 0,
-                base_stats.exp_sum if base_stats.exp_sum else 0,
-                base_stats.gold_sum if base_stats.gold_sum else 0,
-            )
-
-        # Additional stats for foray...
-        if location.id == QUEST_LOCATION_FORAY_ID:
-            text += __get_additional_stats_foray(from_date, location, text, user)
-        elif location.id in [QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID]:
-            text += __get_additional_stats_basic(from_date, location, user)
+        get_relative_details_for_location()
 
     return text
 
@@ -168,10 +174,9 @@ def quest_statistic(bot: Bot, update: Update, user: User):
     logging.info("User '%s' called quest_statistic", user.id)
 
     text = MSG_QUEST_7_DAYS
-    text += relative_details(user, datetime.utcnow() - timedelta(days=7))
+    text += get_relative_details(user, datetime.utcnow() - timedelta(days=7))
     text += MSG_QUEST_OVERALL
-    text += relative_details(user, datetime.utcnow() - timedelta(weeks=300))
-    text += MSG_QUEST_STAT
+    text += get_relative_details(user, datetime.utcnow() - timedelta(weeks=300))
 
     bot.sendMessage(
         chat_id=user.id,

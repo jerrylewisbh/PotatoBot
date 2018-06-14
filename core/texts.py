@@ -562,7 +562,7 @@ MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"
 MSG_QUEST_ACCEPTED = "Thank you for sending in this quest."
 MSG_FORAY_ACCEPTED = "Thank you for sending in your successful 🗡Foray."
-MSG_FORAY_FAILED = "Thank you for sending in your failed 🗡Foray. Cheer up!"
+MSG_FORAY_FAILED = "Thank you for sending me this 🗡Foray information."
 MSG_FORAY_ACCEPTED_KNIGHT = "Thank you for sending in your successful 🗡Foray. Where you offered to /pledge your allegiance to a village?"
 MSG_FORAY_ACCEPTED_SAVED_PLEDGE = "Congratulations! You were offered a new pledge. Thank you for this information!"
 MSG_FORAY_ACCEPTED_SAVED = "You unfortunately did not get a new /pledge. Thank you for this information!"
@@ -578,6 +578,8 @@ MSG_QUEST_STAT_LOCATION = "*{} ({})*: \n" \
 MSG_QUEST_STAT_NO_LOOT = "*{} ({})*: \n" \
                           "Avg: {:.2f}🔥, {:.2f}💰\n" \
                           "Ttl: {:.2f}🔥, {:.2f}💰\n"
+MSG_FORAY_INTRO = "There are the overall statistics for all the forays I know of. Please forward them to me to get " \
+                  "more detailed statistics! These stats also contain /pledge rate for knights."
 
 MSG_QUEST_STAT_FORAY = "Success rate: {: .2f}% / Pledge rate: {: .2f}%\n"
 MSG_QUEST_BASIC_STAT = "Success rate: {: .2f}%\n"
