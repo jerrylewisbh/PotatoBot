@@ -112,7 +112,7 @@ profile.py
 """
 
 @command_handler(
-    testing_only=True
+    squad_only=True
 )
 def hide_gold_info(bot: Bot, update: Update, user: User):
     logging.warning("hide_gold_info called by %s", update.message.chat.id)
@@ -137,7 +137,7 @@ def hide_gold_info(bot: Bot, update: Update, user: User):
 
 
 @command_handler(
-    testing_only=True
+    squad_only=True
 )
 def hide_items(bot: Bot, update: Update, user: User, **kwargs):
     args = None
@@ -146,8 +146,7 @@ def hide_items(bot: Bot, update: Update, user: User, **kwargs):
 
     # Manually triggered hide....
     logging.info("hide_items called by %s", user.id)
-    if not user or not user.is_tester and not user.is_api_trade_allowed:
-        logging.info("No user, not a tester or no trade API")
+    if not user.is_api_trade_allowed:
         return
 
     set_hide_mode(user)
@@ -209,7 +208,7 @@ def get_hide_result(user):
 
 
 @command_handler(
-    testing_only=True
+    squad_only=True
 )
 def auto_hide(bot: Bot, update: Update, user: User, **kwargs):
     args = None
