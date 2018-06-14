@@ -113,7 +113,7 @@ def send_graph(bot: Bot, user: User):
 
     ax2 = ax.twinx()
     pledge_x, pledge_y = __get_knight_pledgerate()
-    ax2.bar(pledge_x, pledge_y, alpha=0.3, color='slategrey')
+    ax2.bar(pledge_x, pledge_y, 1, alpha=0.3, color='slategrey')
     ax2.set_ylabel("Pledge rate", color='slategrey')
     ax2.tick_params('y', colors='slategrey')
 
