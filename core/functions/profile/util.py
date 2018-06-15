@@ -37,7 +37,7 @@ def parse_hero_text(report_text):
         'castle': parsed.group("castle"),
         'castle_name': CASTLE_MAP[parsed.group("castle")],
         'name_standalone': parsed.group("name"),
-        'name': "{}{}".format(
+        'name': "[{}]{}".format(
             parsed.group("guild") if parsed.group("guild") else "",
             parsed.group("name"),
         ),
@@ -56,8 +56,10 @@ def parse_hero_text(report_text):
         'expertise': parsed.group("expertise") if parsed.group("expertise") else None,
         'pvp': parsed.group("pvp") if parsed.group("expertise") else None,
         'diamonds': int(parsed.group("diamonds")) if parsed.group("diamonds") else 0,
-        'equipment': parsed.group("equipment")
+        'equipment': parsed.group(22)
     }
+
+
     # TODO: Should boosted def/atk be used?
 
 
