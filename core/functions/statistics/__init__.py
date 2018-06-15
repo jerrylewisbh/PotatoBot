@@ -87,7 +87,7 @@ def get_relative_details(user: User, from_date: datetime):
     locations = Session.query(Location).all()
     text = ""
     for location in locations:
-        get_relative_details_for_location()
+        text += get_relative_details_for_location(user, from_date, location)
 
     return text
 

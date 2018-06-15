@@ -66,7 +66,7 @@ def __get_knight_pledgerate():
         count(UserQuest.pledge).label("pledge_flag_counter")
     ).join(Location).filter(
         UserQuest.location_id == QUEST_LOCATION_FORAY_ID,
-        UserQuest.successful == True,
+        UserQuest.pledge == True,
         UserQuest.user_id.in_(
             Session.query(User.id).join(Character).filter(Character.characterClass == "Knight").distinct()
         )
@@ -79,7 +79,7 @@ def __get_knight_pledgerate():
         count(UserQuest.pledge).label("pledge_flag_counter")
     ).join(Location).filter(
         UserQuest.location_id == QUEST_LOCATION_FORAY_ID,
-        UserQuest.successful == False,
+        UserQuest.pledge == False,
         UserQuest.user_id.in_(
             Session.query(User.id).join(Character).filter(Character.characterClass == "Knight").distinct()
         )
@@ -105,6 +105,7 @@ def __get_knight_pledgerate():
     for hour, values in overall.items():
         x.append(hour)
         y.append(100 / values['all'] * values['pledges'] if values['pledges'] else 0)
+
     return x, y
 
 
@@ -116,13 +117,17 @@ def send_graph(bot: Bot, user: User):
     ind = numpy.arange(0 + 1)
     width = 0.25
 
-    x, y = __get_overall_successrate()
+    x, y, labels = __get_overall_successrate()
     ax.set_xlabel("Hour of the day in UTC timezone")
     plot.plot(x, y, color='firebrick')
     ax.set_ylabel('Foray success rate', color='firebrick')
     ax.tick_params('y', colors='firebrick')
     ax.set_title('Foray success by hour and pledge-rate')
     ax.set_xticks([x for x in range(0, 24)])
+
+    for i, txt in enumerate(labels):
+        ax.annotate(txt, (x[i], y[i]))
+
     ax.grid(True)
 
     ax2 = ax.twinx()
@@ -175,10 +180,12 @@ def __get_overall_successrate():
 
     y = []
     x = []
+    labels = []
     for hour, values in overall.items():
         x.append(hour)
         y.append(100 / values['all'] * values['successful'] if values['successful'] else 0)
-    return x, y
+        labels.append(values['all'])
+    return x, y, labels
 
 
 @command_handler()
