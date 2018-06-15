@@ -66,7 +66,7 @@ def __get_knight_pledgerate():
         count(UserQuest.pledge).label("pledge_flag_counter")
     ).join(Location).filter(
         UserQuest.location_id == QUEST_LOCATION_FORAY_ID,
-        UserQuest.successful == True,
+        UserQuest.pledge == True,
         UserQuest.user_id.in_(
             Session.query(User.id).join(Character).filter(Character.characterClass == "Knight").distinct()
         )
@@ -79,7 +79,7 @@ def __get_knight_pledgerate():
         count(UserQuest.pledge).label("pledge_flag_counter")
     ).join(Location).filter(
         UserQuest.location_id == QUEST_LOCATION_FORAY_ID,
-        UserQuest.successful == False,
+        UserQuest.pledge == False,
         UserQuest.user_id.in_(
             Session.query(User.id).join(Character).filter(Character.characterClass == "Knight").distinct()
         )
