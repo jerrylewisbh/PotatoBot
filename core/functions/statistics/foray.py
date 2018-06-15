@@ -4,7 +4,7 @@ import os
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plot
 
-from sqlalchemy import func, tuple_, extract
+from sqlalchemy import func, tuple_, extract, distinct
 from sqlalchemy.sql.functions import count
 from telegram import Bot, ParseMode, Update
 
@@ -61,18 +61,30 @@ def __get_additional_stats_foray(from_date, location, text, user):
 
 
 def __get_knight_pledgerate():
-    stats = Session.query(
+    stats_success = Session.query(
         extract('hour', UserQuest.forward_date).label('hour'),
-        UserQuest.pledge.label("pledge_successful"),
         count(UserQuest.pledge).label("pledge_flag_counter")
     ).join(Location).filter(
         UserQuest.location_id == QUEST_LOCATION_FORAY_ID,
+        UserQuest.successful == True,
         UserQuest.user_id.in_(
             Session.query(User.id).join(Character).filter(Character.characterClass == "Knight").distinct()
         )
     ).group_by(
-        'hour',
-        UserQuest.pledge
+        'hour'
+    ).order_by(UserQuest.successful).all()
+
+    stats_fail = Session.query(
+        extract('hour', UserQuest.forward_date).label('hour'),
+        count(UserQuest.pledge).label("pledge_flag_counter")
+    ).join(Location).filter(
+        UserQuest.location_id == QUEST_LOCATION_FORAY_ID,
+        UserQuest.successful == False,
+        UserQuest.user_id.in_(
+            Session.query(User.id).join(Character).filter(Character.characterClass == "Knight").distinct()
+        )
+    ).group_by(
+        'hour'
     ).order_by(UserQuest.successful).all()
 
     overall = {}
@@ -81,10 +93,12 @@ def __get_knight_pledgerate():
             'all': 0,
             'pledges': 0,
         }
-    for hourly_data in stats:
+    for hourly_data in stats_fail:
         overall[hourly_data.hour]['all'] += hourly_data.pledge_flag_counter
-        if hourly_data.pledge_successful:
-            overall[hourly_data.hour]['pledges'] += hourly_data.pledge_flag_counter
+    for hourly_data in stats_success:
+        overall[hourly_data.hour]['all'] += hourly_data.pledge_flag_counter
+        overall[hourly_data.hour]['pledges'] += hourly_data.pledge_flag_counter
+
 
     y = []
     x = []
