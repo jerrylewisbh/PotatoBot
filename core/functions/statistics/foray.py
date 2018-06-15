@@ -68,12 +68,13 @@ def __get_knight_pledgerate():
     ).join(Location).filter(
         UserQuest.location_id == QUEST_LOCATION_FORAY_ID,
         UserQuest.pledge == True,
+        UserQuest.successful == True,
         UserQuest.user_id.in_(
             Session.query(User.id).join(Character).filter(Character.characterClass == "Knight").distinct()
         )
     ).group_by(
         'hour'
-    ).order_by(UserQuest.successful).all()
+    ).all()
 
     stats_fail = Session.query(
         extract('hour', UserQuest.forward_date).label('hour'),
@@ -81,12 +82,13 @@ def __get_knight_pledgerate():
     ).join(Location).filter(
         UserQuest.location_id == QUEST_LOCATION_FORAY_ID,
         UserQuest.pledge == False,
+        UserQuest.successful == True,
         UserQuest.user_id.in_(
             Session.query(User.id).join(Character).filter(Character.characterClass == "Knight").distinct()
         )
     ).group_by(
         'hour'
-    ).order_by(UserQuest.successful).all()
+    ).all()
 
     overall = {}
     for x in range(0, 24):
@@ -99,7 +101,6 @@ def __get_knight_pledgerate():
     for hourly_data in stats_success:
         overall[hourly_data.hour]['all'] += hourly_data.pledge_flag_counter
         overall[hourly_data.hour]['pledges'] += hourly_data.pledge_flag_counter
-
 
     y = []
     x = []
