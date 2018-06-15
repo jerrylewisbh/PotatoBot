@@ -16,6 +16,7 @@ from core.texts import *
 from core.types import (Character, Location, Profession, Session, User,
                         UserQuest, UserQuestItem)
 
+matplotlib.use('Agg')
 Session()
 
 def __get_additional_stats_foray(from_date, location, text, user):

@@ -21,7 +21,7 @@ from core.utils import send_async
 
 Session()
 
-
+matplotlib.use('Agg')
 @user_allowed
 def statistic_about(bot: Bot, update: Update):
     markup = generate_statistics_markup()
