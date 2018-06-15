@@ -59,7 +59,6 @@ def parse_hero_text(report_text):
         'equipment': parsed.group(22)
     }
 
-
     # TODO: Should boosted def/atk be used?
 
 

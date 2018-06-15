@@ -122,22 +122,44 @@ def send_graph(bot: Bot, user: User):
     x, y, labels = __get_overall_successrate()
     ax.set_xlabel("Hour of the day in UTC timezone")
     plot.plot(x, y, color='firebrick')
-    ax.set_ylabel('Foray success rate', color='firebrick')
+    ax.set_ylabel('Foray success rate in %', color='firebrick')
     ax.tick_params('y', colors='firebrick')
     ax.set_title('Foray success by hour and pledge-rate')
     ax.set_xticks([x for x in range(0, 24)])
+    ax.set_ylim([0, 110])
+    ax.set_yticks([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110])
 
     for i, txt in enumerate(labels):
-        ax.annotate(txt, (x[i], y[i]))
+        if txt:
+            ax.annotate(txt, (x[i], y[i]))
 
     ax.grid(True)
 
     ax2 = ax.twinx()
     pledge_x, pledge_y = __get_knight_pledgerate()
     ax2.bar(pledge_x, pledge_y, 1, alpha=0.3, color='slategrey')
-    ax2.set_ylabel("Pledge rate", color='slategrey')
+    ax2.set_ylabel("Pledge rate in %", color='slategrey')
     ax2.tick_params('y', colors='slategrey')
+    ax2.set_ylim([0, 110])
+    ax2.set_yticks([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110])
 
+    """ax3 = ax.twinx()
+    daytime_x = [x for x in range(0, 24)]
+    daytime_y = [2.5 for x in range(0, 24)]
+    ax3.set_ylim([0, 110])
+    daytime_colors = [
+        'wheat',
+        'wheat',
+        'gold',
+        'gold',
+        'darkgoldenrod',
+        'darkgoldenrod',
+        'darkgray',
+        'darkgray',
+    ]
+    ax3.bar(daytime_x, daytime_y, 1, color=daytime_colors)"""
+
+    plot.text(-2, -16, MSG_GAME_TIMES, family='monospace')
 
     # add some text for labels, title and axes ticks
 

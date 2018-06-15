@@ -582,6 +582,16 @@ MSG_FORAY_INTRO = "Statistics for all forays I know. Forward them to me to get "
                   "more detailed stats! This graph also contains /pledge rate for knights.\n\n" \
                   "_Tip: Your personal statistics can be found in 🗺Quests_"
 
+MSG_GAME_TIMES = """Time in UTC and In-Game daytime:
++------------+----------------+----------------+----------------+
+|   State    |    Cycle 1     |    Cycle 2     |    Cycle 3     |
++------------+----------------+----------------+----------------+
+| Morning:   | 23:00 to 01:00 | 07:00 to 09:00 | 15:00 to 17:00 |
+| Day:       | 01:00 to 03:00 | 09:00 to 11:00 | 17:00 to 19:00 |
+| Dawn:      | 03:00 to 05:00 | 11:00 to 13:00 | 19:00 to 21:00 |
+| Night:     | 05:00 to 07:00 | 13:00 to 15:00 | 21:00 TO 23:00 |
++------------+----------------+----------------+----------------+"""
+
 MSG_QUEST_STAT_FORAY = "Success rate: {: .2f}% / Pledge rate: {: .2f}%\n"
 MSG_QUEST_BASIC_STAT = "Success rate: {: .2f}%\n"
 
