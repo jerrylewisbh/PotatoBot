@@ -9,7 +9,7 @@ HERO = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)(?P<guild>(\[.+\])?)(?P<ri
        '.+Atk: (?P<attack>[0-9]+) 🛡Def: (?P<defence>[0-9]+)\n' \
        '🔥Exp: (?P<exp>[0-9]+)/(?P<exp_needed>[0-9]+)\n' \
        '🔋Stamina: (?P<stamina>[0-9]+)/(?P<max_stamina>[0-9]+)\n' \
-       '(?:💧Mana: (?P<mana>[0-9]+/[0-9]+\n))?'\
+       '(?:💧Mana: (?P<mana>[0-9]+)/(?P<totalMana>[0-9]+\n))?'\
        '💰(?P<gold>-?[0-9]+)(?: 👝(?P<pouches>[0-9]+))?(?: 💎(?P<diamonds>[0-9]+))?\n' \
        '(?:🤺PVP: (?P<pvp>[0-9]+)\n)?' \
        '(?:📚Expertise: (?P<expertise>.+)\n)?' \
