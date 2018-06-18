@@ -38,7 +38,7 @@ def parse_hero_text(report_text):
         'castle_name': CASTLE_MAP[parsed.group("castle")],
         'name_standalone': parsed.group("name"),
         'name': "{}{}".format(
-            "[{}]".format(parsed.group("guild")) if parsed.group("guild") else "",
+            "{}".format(parsed.group("guild")) if parsed.group("guild") else "",
             parsed.group("name"),
         ),
         'ribbon': parsed.group("ribbon") if parsed.group("ribbon") else None,
