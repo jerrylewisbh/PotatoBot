@@ -609,7 +609,7 @@ HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFee
                "- `/ah 01 1 30` to buy Thread for a maximum price of 30 💰 until you can't afford another one\n" \
                "- `/ah 20 2` to by Leather for the lowest price currently on the market until you can't buy any more of it.\n\n" \
                "_Note: If you already have set an order for one priority this gets overriden._\n\n" \
-               "To remove a item from your settings do `/ah <itemId>`.\n\n" \
+               "To remove an item from your settings do `/ah <itemId>`.\n\n" \
                "*Your current settings are:*\n" \
                "{}"
 
@@ -622,7 +622,7 @@ HIDE_BUY_UNLIMITED = "- P{}: Buy {} (`{}`)\n"
 HIDE_BUY_LIMITED = "- P{}: Buy {} (`{}`) for a maximum price of {} 💰\n"
 HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
 HIDE_REMOVED = "{} was removed from your hiding list!"
-HIDE_RESULT_INTRO = "<b>Hiding finshed! Your results:\n</b>"
+HIDE_RESULT_INTRO = "<b>Hiding finished! Your results:\n</b>"
 HIDE_BOUGHT = "You bought <b>{}</b> for {}💰\n"
 
 SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
