@@ -29,6 +29,7 @@ def parse_hero_text(report_text):
     if not report_text:
         return None
 
+
     parsed = re.search(HERO, report_text, flags=re.UNICODE)
     if not parsed:
         return None
@@ -56,7 +57,7 @@ def parse_hero_text(report_text):
         'expertise': parsed.group("expertise") if parsed.group("expertise") else None,
         'pvp': parsed.group("pvp") if parsed.group("expertise") else None,
         'diamonds': int(parsed.group("diamonds")) if parsed.group("diamonds") else 0,
-        'equipment': parsed.group(22)
+        'equipment': parsed.group(23)
     }
 
     # TODO: Should boosted def/atk be used?
