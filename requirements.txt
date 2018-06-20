@@ -7,3 +7,4 @@ SQLAlchemy>=1.2.7
 pandas
 pika
 redis
+pycparser
