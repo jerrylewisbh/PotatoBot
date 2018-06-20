@@ -68,6 +68,11 @@ from cwmq.handler.profiles import profile_handler
 Session()
 
 
+class MessageAction:
+    def __init__(self, condition, action):
+        self.condition = condition
+        self.action = action
+
 @run_async
 @user_allowed
 def manage_all(bot: Bot, update: Update, chat_data, job_queue):
@@ -94,43 +99,52 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
         if not update.message.text:
             return
 
+        is_welcome_trigger = lambda msg: msg.startswith(CC_SET_WELCOME)
+        is_help_trigger = lambda msg: msg == CC_HELP
+        is_squad_trigger = lambda is_registered: lambda msg: msg == CC_SQUAD and is_registered
+        is_show_welcome_trigger = lambda msg: msg == CC_SHOW_WELCOME
+        is_enable_welcome_trigger = lambda msg: msg == CC_TURN_ON_WELCOME
+        is_disable_welcome_trigger = lambda msg: msg == CC_TURN_OFF_WELCOME
+        is_trigger_trigger = lambda msg: msg.startswith(CC_SET_TRIGGER)
+        is_untrigger_trigger = lambda msg: msg.startswith(CC_UNSET_TRIGGER)
+        is_trigger_list_trigger = lambda msg: msg == CC_TRIGGER_LIST
+        is_admin_list_trigger = lambda msg: msg == CC_ADMIN_LIST
+        is_ping_trigger = lambda msg: msg == CC_PING
+        is_daily_stats_trigger = lambda msg: msg == CC_DAY_STATISTICS
+        is_weekly_stats_trigger = lambda msg: msg == CC_WEEK_STATISTICS
+        is_battle_stats_trigger = lambda msg: msg == CC_BATTLE_STATISTICS
+        is_allow_trigger_all_trigger = lambda msg: msg == CC_ALLOW_TRIGGER_ALL
+        is_disallow_trigger_all_trigger = lambda msg: msg == CC_DISALLOW_TRIGGER_ALL
+        is_admins_trigger = lambda msg: msg == CC_ADMINS
+
+        message_actions = [
+            MessageAction(condition=is_welcome_trigger, action=set_welcome),
+            MessageAction(condition=is_help_trigger, action=help_msg),
+            MessageAction(condition=is_squad_trigger(registered), action=call_squad),
+            MessageAction(condition=is_show_welcome_trigger, action=show_welcome),
+            MessageAction(condition=is_enable_welcome_trigger, action=enable_welcome),
+            MessageAction(condition=is_disable_welcome_trigger, action=disable_welcome),
+            MessageAction(condition=is_trigger_trigger, action=set_trigger),
+            MessageAction(condition=is_untrigger_trigger, action=del_trigger),
+            MessageAction(condition=is_trigger_list_trigger, action=list_triggers),
+            MessageAction(condition=is_admin_list_trigger, action=list_admins),
+            MessageAction(condition=is_ping_trigger, action=ping),
+            MessageAction(condition=is_daily_stats_trigger, action=day_activity),
+            MessageAction(condition=is_weekly_stats_trigger, action=week_activity),
+            MessageAction(condition=is_battle_stats_trigger, action=battle_activity),
+            MessageAction(condition=is_allow_trigger_all_trigger, action=enable_trigger_all),
+            MessageAction(condition=is_disallow_trigger_all_trigger, action=disable_trigger_all),
+            MessageAction(condition=is_admins_trigger, action=admins_for_users),
+        ]
+
         text = update.message.text.lower()
 
-        if text.startswith(CC_SET_WELCOME):
-            set_welcome(bot, update)
-        elif text == CC_HELP:
-            help_msg(bot, update)
-        elif text == CC_SQUAD and registered:
-            call_squad(bot, update)
-        elif text == CC_SHOW_WELCOME:
-            show_welcome(bot, update)
-        elif text == CC_TURN_ON_WELCOME:
-            enable_welcome(bot, update)
-        elif text == CC_TURN_OFF_WELCOME:
-            disable_welcome(bot, update)
-        elif text.startswith(CC_SET_TRIGGER):
-            set_trigger(bot, update)
-        elif text.startswith(CC_UNSET_TRIGGER):
-            del_trigger(bot, update)
-        elif text == CC_TRIGGER_LIST:
-            list_triggers(bot, update)
-        elif text == CC_ADMIN_LIST:
-            list_admins(bot, update)
-        elif text == CC_PING:
-            ping(bot, update)
-        elif text == CC_DAY_STATISTICS:
-            day_activity(bot, update)
-        elif text == CC_WEEK_STATISTICS:
-            week_activity(bot, update)
-        elif text == CC_BATTLE_STATISTICS:
-            battle_activity(bot, update)
-        elif text == CC_ALLOW_TRIGGER_ALL:
-            enable_trigger_all(bot, update)
-        elif text == CC_DISALLOW_TRIGGER_ALL:
-            disable_trigger_all(bot, update)
-        elif text in CC_ADMINS:
-            admins_for_users(bot, update)
-        elif text == CC_ALLOW_PIN_ALL:
+        for message_action in message_actions:
+            if message_action.condition(text):
+                message_action.action(bot, update)
+                break
+
+        if text == CC_ALLOW_PIN_ALL:
             pin_all(bot, update)
         elif text == CC_DISALLOW_PIN_ALL:
             not_pin_all(bot, update)
