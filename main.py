@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import re
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
@@ -14,19 +13,15 @@ from config import CASTLE, CWBOT_ID, DEBUG, EXT_ID, LOGFILE, TOKEN
 from core.battle import report_after_battle
 from core.bot import MQBot
 from core.decorators import user_allowed
-from core.functions.common import (delete_msg, delete_user, error,
+from core.functions.common import (error,
                                    stock_compare_forwarded)
-from core.functions.common.pin import pin, silent_pin
 from core.functions.inline_keyboard_handling import (callback_query,
                                                      inlinequery)
 from core.functions.order_groups import add_group
 from core.functions.orders import order
-from core.functions.profile import (build_report_received, char_update,
-                                    handle_access_token,
-                                    profession_update, repair_report_received,
-                                    report_received, user_panel)
+from core.functions.profile import (report_received)
 from core.functions.quest import parse_quest
-from core.functions.triggers import (trigger_show)
+from core.functions.triggers import trigger_show
 from core.functions.welcome import (welcome)
 from core.handlers.group_handler import *
 from core.handlers.private_handler import *
@@ -35,8 +30,7 @@ from core.jobs.job_queue import (add_after_war_messages,
                                  add_battle_report_messages,
                                  add_pre_war_messages,
                                  add_war_warning_messages)
-from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
-                         REPAIR_REPORT, REPORT, STOCK)
+from core.regexp import (REPORT, STOCK)
 from core.state import GameState, get_game_state
 from core.types import Admin, Session, Squad, User
 from core.utils import create_or_update_user
@@ -75,7 +69,7 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
         if not update.message.text:
             return
 
-        handlers = [
+        group_handlers = [
             welcome_handler,
             help_handler,
             squad_handler(registered),
@@ -101,19 +95,11 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
 
         text = update.message.text.lower()
 
-        is_msg_handled = handle_message(handlers, text, bot, update)
+        is_msg_handled = handle_message(group_handlers, text, bot, update)
 
         if not is_msg_handled:
             if update.message.reply_to_message is not None:
-                if text == CC_PIN:
-                    pin(bot, update)
-                elif text == CC_SILENT_PIN:
-                    silent_pin(bot, update)
-                elif text == CC_DELETE:
-                    delete_msg(bot, update)
-                elif text == CC_KICK:
-                    delete_user(bot, update)
-                else:
+                if not handle_message(group_reply_handlers, text, bot, update):
                     trigger_show(bot, update)
             elif re.search(REPORT, update.message.text):
                 if update.message.forward_from.id == CWBOT_ID:
@@ -132,7 +118,7 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
             order(bot, update, chat_data)
         elif update.message.text:
 
-            handlers = [
+            private_handlers = [
                 send_status_handler(registered),
                 user_panel_handler(registered),
                 squad_request_handler(registered),
@@ -166,7 +152,7 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
 
             text = update.message.text.lower()
 
-            is_msg_handled = handle_message(handlers, text, bot, update)
+            is_msg_handled = handle_message(private_handlers, text, bot, update)
 
             if not is_msg_handled:
                 if 'wait_group_name' in chat_data and chat_data['wait_group_name']:
@@ -177,20 +163,8 @@ def manage_all(bot: Bot, update: Update, chat_data, job_queue):
                     if from_id == CWBOT_ID:
                         if text.startswith(STOCK):
                             stock_compare_forwarded(bot, update, chat_data)
-                        elif re.search(HERO, update.message.text):
-                            char_update(bot, update)
-                        elif re.search(REPORT, update.message.text):
-                            report_received(bot, update)
-                        elif re.search(BUILD_REPORT, update.message.text):
-                            build_report_received(bot, update)
-                        elif re.search(REPAIR_REPORT, update.message.text):
-                            repair_report_received(bot, update)
-                        elif re.search(PROFESSION, update.message.text):
-                            profession_update(bot, update)
-                        elif re.search(ACCESS_CODE, update.message.text):
-                            handle_access_token(bot, update)
-                        else:
-                            # Handle everying else as Quest-Text.. At least for now...
+                        elif not handle_message(forward_handlers, text, bot, update):
+                            # Handle everything else as Quest-Text.. At least for now...
                             parse_quest(bot, update)
                 elif not is_admin:
                     user_panel(bot, update)

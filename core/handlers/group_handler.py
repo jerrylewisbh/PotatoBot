@@ -1,8 +1,8 @@
 from core.chat_commands import *
 from core.functions.activity import day_activity, week_activity, battle_activity
 from core.functions.admins import list_admins, admins_for_users
-from core.functions.common import help_msg, ping
-from core.functions.common.pin import pin_all, not_pin_all
+from core.functions.common import help_msg, ping, delete_msg, delete_user
+from core.functions.common.pin import pin_all, not_pin_all, pin, silent_pin
 from core.functions.squad import open_hiring, close_hiring
 from core.functions.triggers import set_trigger, del_trigger, list_triggers, enable_trigger_all, disable_trigger_all
 from core.functions.welcome import set_welcome, show_welcome, enable_welcome, disable_welcome
@@ -95,3 +95,26 @@ open_hiring_handler = SimpleHandler(
 close_hiring_handler = SimpleHandler(
     message=CC_CLOSE_HIRING,
     action=close_hiring)
+
+pin_handler = SimpleHandler(
+    message=CC_PIN,
+    action=pin)
+
+silent_pin_handler = SimpleHandler(
+    message=CC_SILENT_PIN,
+    action=silent_pin)
+
+delete_msg_handler = SimpleHandler(
+    message=CC_DELETE,
+    action=delete_msg)
+
+delete_user_handler = SimpleHandler(
+    message=CC_KICK,
+    action=delete_user)
+
+group_reply_handlers = [
+    pin_handler,
+    silent_pin_handler,
+    delete_msg_handler,
+    delete_user_handler
+]
