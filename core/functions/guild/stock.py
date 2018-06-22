@@ -9,13 +9,13 @@ def generate_gstock_requests(query):
 
     if len(query) >= 3 and query[1].isdigit():
         quantity = int(query[1])
-        requested_item = " ".join(query[2:]).title()
+        requested_item = " ".join(query[2:])
     elif len(query) >= 2:
-        requested_item = " ".join(query[1:]).title()
+        requested_item = " ".join(query[1:])
 
     if requested_item:
         items = Session.query(Item).filter(
-            Item.name.like(requested_item + "%")).all()
+            Item.name.ilike("%" + requested_item + "%")).all()
 
         for item in items:
             results.append({"label": query[0] + " " + str(quantity) + " " + item.name,
