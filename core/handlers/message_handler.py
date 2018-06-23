@@ -13,12 +13,6 @@ class SimpleHandler(MessageHandler):
         self.action = action
 
 
-class RegisteredOnlyHandler(MessageHandler):
-    def __init__(self, message, action, is_registered):
-        self.condition = lambda msg, update: msg.lower() == message.lower() and is_registered
-        self.action = action
-
-
 class RegexHandler(MessageHandler):
     def __init__(self, regex, action):
         self.condition = lambda msg, update: re.search(regex, update.message.text)

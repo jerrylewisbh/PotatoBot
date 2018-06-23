@@ -1,21 +1,24 @@
-from config import EXT_ID, CWBOT_ID
-from core.decorators import admin_allowed, command_handler
-from core.functions.common import stock_split, stock_compare_text
-from core.functions.profile.util import *
-from core.functions.profile.util import __send_user_with_settings
-from core.functions.reply_markup import generate_user_markup
-from core.regexp import (ACCESS_CODE, BUILD_REPORT, HERO, PROFESSION,
-                         REPAIR_REPORT)
-from core.state import GameState, get_game_state
-from core.template import fill_char_template
+import logging
+from datetime import datetime, timedelta
+from telegram import Update, Bot, ParseMode
+
+from config import CWBOT_ID, CASTLE, EXT_ID
+from core.decorators import command_handler, admin_allowed
+from core.regexp import BUILD_REPORT, ACCESS_CODE
+from core.state import get_game_state, GameState
 from core.texts import *
-from core.types import (BuildReport, Character, Report,
-                        User, Session)
+from core.types import Session, BuildReport, User
 from core.utils import send_async
 from cwmq import Publisher, wrapper
+from functions.common import stock_compare_text, stock_split
 
+from functions.profile import *
+from functions.profile.util import *
 
 # Get the Publisher Singleton
+from functions.profile.util import __send_user_with_settings
+from functions.reply_markup import generate_user_markup
+
 p = Publisher()
 
 Session()

@@ -1,21 +1,22 @@
-from core.commands import *
-from core.exchange.hide import hide_gold_info
-from core.exchange.snipe import sniping_info
-from core.functions.common import admin_panel
-from core.functions.inline_keyboard_handling import send_status
-from core.functions.order_groups import group_list
-from core.functions.orders import orders
-from core.functions.profile import user_panel, show_char, grant_access, settings, char_update, report_received, \
-    build_report_received, repair_report_received, profession_update, handle_access_token
-from core.functions.squad import (battle_attendance_show, battle_reports_show,
+from functions.common import admin_panel
+from functions.inline_keyboard_handling import send_status
+from functions.order_groups import group_list
+from functions.orders import orders
+from functions.squad import (battle_attendance_show, battle_reports_show,
                                   leave_squad_request, list_squad_requests,
                                   remove_from_squad, squad_about,
                                   squad_list, squad_request)
-from core.functions.statistics import statistic_about, exp_statistic, skill_statistic, quest_statistic
-from core.functions.statistics.foray import foray_statistic
-from core.functions.top import top_about, attack_top, def_top, exp_top, week_build_top, week_battle_top
+from functions.statistics import statistic_about, exp_statistic, skill_statistic, quest_statistic
+from functions.statistics.foray import foray_statistic
+from functions.top import top_about, attack_top, def_top, exp_top, week_build_top, week_battle_top
+
+from core.commands import *
+from core.exchange.hide import hide_gold_info
+from core.exchange.snipe import sniping_info
 from core.handlers.message_handler import *
 from core.regexp import HERO, REPORT, BUILD_REPORT, REPAIR_REPORT, PROFESSION, ACCESS_CODE
+from functions.profile import user_panel, show_char, grant_access, settings, char_update, report_received, \
+    build_report_received, repair_report_received, profession_update, handle_access_token
 
 
 def send_status_handler(is_registered):
@@ -26,24 +27,21 @@ def send_status_handler(is_registered):
 
 
 def user_panel_handler(is_registered):
-    return RegisteredOnlyHandler(
+    return SimpleHandler(
         message=USER_COMMAND_BACK,
-        action=user_panel,
-        is_registered=is_registered)
+        action=user_panel)
 
 
 def squad_request_handler(is_registered):
-    return RegisteredOnlyHandler(
+    return SimpleHandler(
         message=USER_COMMAND_SQUAD_REQUEST,
-        action=squad_request,
-        is_registered=is_registered)
+        action=squad_request)
 
 
 def top_about_handler(is_registered):
-    return RegisteredOnlyHandler(
+    return SimpleHandler(
         message=USER_COMMAND_TOP,
-        action=top_about,
-        is_registered=is_registered)
+        action=top_about)
 
 
 list_squad_requests_handler = SimpleHandler(

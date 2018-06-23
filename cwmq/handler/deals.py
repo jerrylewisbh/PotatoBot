@@ -1,13 +1,12 @@
 import json
 import logging
-from config import CC_EXCHANGE_ORDERS
 
+from functions.reply_markup import generate_user_markup
 from sqlalchemy import func
 from telegram import ParseMode
 
+from config import CC_EXCHANGE_ORDERS
 from core.exchange.hide import append_hide_result, autohide, get_hide_mode
-from core.functions.common import MSG_DEAL_SOLD
-from core.functions.reply_markup import generate_user_markup
 from core.texts import *
 from core.types import Item, Session, User, UserExchangeOrder, new_item
 from cwmq import Publisher

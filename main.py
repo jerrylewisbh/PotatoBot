@@ -4,6 +4,15 @@ import logging
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
+from functions.common import (error,
+                                   stock_compare_forwarded)
+from functions.inline_keyboard_handling import (callback_query,
+                                                     inlinequery)
+from functions.order_groups import add_group
+from functions.orders import order
+from functions.quest import parse_quest
+from functions.triggers import trigger_show
+from functions.welcome import (welcome)
 from telegram import Bot, Update
 from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
                           MessageQueue, Updater)
@@ -13,16 +22,6 @@ from config import CASTLE, CWBOT_ID, DEBUG, EXT_ID, LOGFILE, TOKEN
 from core.battle import report_after_battle
 from core.bot import MQBot
 from core.decorators import user_allowed
-from core.functions.common import (error,
-                                   stock_compare_forwarded)
-from core.functions.inline_keyboard_handling import (callback_query,
-                                                     inlinequery)
-from core.functions.order_groups import add_group
-from core.functions.orders import order
-from core.functions.profile import (report_received)
-from core.functions.quest import parse_quest
-from core.functions.triggers import trigger_show
-from core.functions.welcome import (welcome)
 from core.handlers.group_handler import *
 from core.handlers.private_handler import *
 from core.handlers.trigger_handler import add_commands

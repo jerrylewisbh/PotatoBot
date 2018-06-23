@@ -1,22 +1,12 @@
 import json
 import logging
-from config import WAITING_ROOM_LINK
 from datetime import datetime, timedelta
 from json import loads
 from uuid import uuid4
 
-from sqlalchemy import and_
-from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
-                      InlineQueryResultArticle, InputTextMessageContent,
-                      ParseMode, TelegramError, Update)
-from telegram.ext import Job, JobQueue
-from telegram.ext.dispatcher import run_async
-
-from core.decorators import admin_allowed, user_allowed
-from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Castle, Icons
-from core.functions.admins import del_adm
-from core.functions.common import StockType, stock_compare_text
-from core.functions.inline_markup import (QueryType, generate_forward_markup,
+from functions.common import StockType, stock_compare_text
+from functions.guild import generate_gstock_requests
+from functions.inline_markup import (QueryType, generate_forward_markup,
                                           generate_group_info,
                                           generate_group_manage,
                                           generate_groups_manage,
@@ -28,20 +18,30 @@ from core.functions.inline_markup import (QueryType, generate_forward_markup,
                                           generate_profile_buttons,
                                           generate_squad_list,
                                           generate_squad_members)
-from core.functions.profile.util import (annotate_stock_with_price,
+from functions.profile.util import (annotate_stock_with_price,
                                          send_settings)
-from core.functions.reply_markup import generate_user_markup
-from core.functions.squad import leave_squad
-from core.functions.top import (global_battle_top, global_build_top,
+from functions.reply_markup import generate_user_markup
+from functions.squad import leave_squad
+from functions.top import (global_battle_top, global_build_top,
                                 global_squad_build_top, week_battle_top,
                                 week_build_top, week_squad_build_top)
+from sqlalchemy import and_
+from telegram import (Bot, InlineKeyboardButton, InlineKeyboardMarkup,
+                      InlineQueryResultArticle, InputTextMessageContent,
+                      ParseMode, TelegramError, Update)
+from telegram.ext import Job, JobQueue
+from telegram.ext.dispatcher import run_async
+
+from config import WAITING_ROOM_LINK
+from core.decorators import admin_allowed, user_allowed
+from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Castle, Icons
 from core.template import fill_char_template
 from core.texts import *
 from core.types import (Admin, AdminType, Location, MessageType, Order,
                         OrderCleared, OrderGroup, OrderGroupItem, Report,
                         Session, Squad, SquadMember, Stock, User, UserQuest)
 from core.utils import create_or_update_user, send_async, update_group
-from core.functions.guild import generate_gstock_requests
+from functions.admins import del_adm
 
 order_updated = {}
 

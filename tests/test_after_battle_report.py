@@ -2,7 +2,6 @@ import os
 import sys
 
 from core.battle import create_user_report
-from core.functions.quest import *
 from core.types import *
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

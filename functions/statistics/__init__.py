@@ -3,21 +3,19 @@ import os
 from datetime import datetime, timedelta
 from math import pi
 
+import matplotlib.pyplot as plot
+import numpy
 import pandas as pd
-from pycparser.ply.yacc import yacc
 from sqlalchemy import func, tuple_
 from telegram import Bot, ParseMode, Update
 
-import matplotlib.pyplot as plot
-import numpy
-
 from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
 from core.decorators import command_handler, user_allowed
-from core.functions.reply_markup import generate_statistics_markup
 from core.texts import *
 from core.types import (Character, Location, Profession, Session, User,
                         UserQuest, UserQuestItem)
 from core.utils import send_async
+from functions.reply_markup import generate_statistics_markup
 
 Session()
 

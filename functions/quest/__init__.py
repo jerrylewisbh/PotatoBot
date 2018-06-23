@@ -1,16 +1,14 @@
 import json
-import re
-from enum import IntFlag, auto
+
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update, Bot
 
 from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
-
 from core.decorators import command_handler
-from core.functions.inline_markup import QueryType
-from core.functions.quest.parse import QuestType, analyze_text
 from core.texts import *
 from core.types import (Item, Location, Quest, Session, User, UserQuest,
                         UserQuestItem)
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update, Bot
+from functions.inline_markup import QueryType
+from functions.quest.parse import QuestType, analyze_text
 
 Session()
 

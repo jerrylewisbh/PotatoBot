@@ -2,7 +2,6 @@
 import functools
 import json
 import logging
-import queue
 import uuid
 from threading import Thread
 

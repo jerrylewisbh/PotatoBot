@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-from config import (CASTLE, DAYS_OLD_PROFILE_KICK, DAYS_PROFILE_REMIND,
-                    GOVERNMENT_CHAT)
 from datetime import datetime, timedelta
 from typing import Optional
 
+from functions.common import (get_weighted_diff, stock_compare_text,
+                                   stock_split)
+from functions.inline_keyboard_handling import send_order
+from functions.inline_markup import QueryType
 from sqlalchemy import and_, func, tuple_
 from sqlalchemy.exc import SQLAlchemyError
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
@@ -13,18 +15,16 @@ from telegram.error import TelegramError
 from telegram.ext import Job
 from telegram.ext.dispatcher import run_async
 
-from core.functions.common import (get_weighted_diff, stock_compare_text,
-                                   stock_split)
-from core.functions.inline_keyboard_handling import send_order
-from core.functions.inline_markup import QueryType
-from core.functions.profile.util import (format_report, get_latest_report,
-                                         get_stock_before_after_war)
+from config import (CASTLE, DAYS_OLD_PROFILE_KICK, DAYS_PROFILE_REMIND,
+                    GOVERNMENT_CHAT)
 from core.state import get_last_battle
 from core.texts import *
 from core.types import (Admin, Character, Order, Report, Session, Squad,
                         SquadMember, User)
 from core.utils import send_async
 from cwmq import Publisher
+from functions.profile import (format_report, get_latest_report,
+                               get_stock_before_after_war)
 
 Session()
 

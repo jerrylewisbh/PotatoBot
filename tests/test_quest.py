@@ -2,11 +2,11 @@ import os
 import sys
 import unittest
 
+from functions.quest.parse import analyze_text, QuestType
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from tests.fixtures import *
-
-from core.functions.quest.parse import QuestType, analyze_text
 
 
 class TestTime(unittest.TestCase):

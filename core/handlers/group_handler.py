@@ -1,19 +1,19 @@
+from functions.activity import day_activity, week_activity, battle_activity
+from functions.admins import list_admins, admins_for_users
+from functions.common import help_msg, ping, delete_msg, delete_user
+from functions.squad import open_hiring, close_hiring
+from functions.triggers import set_trigger, del_trigger, list_triggers, enable_trigger_all, disable_trigger_all
+from functions.welcome import set_welcome, show_welcome, enable_welcome, disable_welcome
+
 from core.chat_commands import *
-from core.functions.activity import day_activity, week_activity, battle_activity
-from core.functions.admins import list_admins, admins_for_users
-from core.functions.common import help_msg, ping, delete_msg, delete_user
-from core.functions.common.pin import pin_all, not_pin_all, pin, silent_pin
-from core.functions.squad import open_hiring, close_hiring
-from core.functions.triggers import set_trigger, del_trigger, list_triggers, enable_trigger_all, disable_trigger_all
-from core.functions.welcome import set_welcome, show_welcome, enable_welcome, disable_welcome
-from core.handlers.message_handler import MessageHandler, SimpleHandler, RegisteredOnlyHandler
+from core.handlers.message_handler import MessageHandler, SimpleHandler
+from functions.common.pin import pin_all, not_pin_all, pin, silent_pin
 
 
 def squad_handler(is_registered):
-    return RegisteredOnlyHandler(
+    return SimpleHandler(
         message=CC_SQUAD,
-        action=help_msg,
-        is_registered=is_registered)
+        action=help_msg)
 
 
 welcome_handler = MessageHandler(

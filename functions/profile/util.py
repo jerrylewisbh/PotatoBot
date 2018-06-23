@@ -1,16 +1,15 @@
 import logging
 import re
-from config import CASTLE, REDIS_PORT, REDIS_SERVER
 from datetime import datetime, timedelta
 from enum import Enum
 
 import redis
+from functions.inline_markup import (generate_profile_buttons,
+                                          generate_settings_buttons)
 from telegram import Bot, ParseMode, Update
 
+from config import CASTLE, REDIS_PORT, REDIS_SERVER
 from core.enums import CASTLE_MAP
-from core.functions.common import StockType, ban_traitor
-from core.functions.inline_markup import (generate_profile_buttons,
-                                          generate_settings_buttons)
 from core.regexp import BUILD_REPORT, HERO, PROFESSION, REPAIR_REPORT, REPORT
 from core.state import get_last_battle
 from core.template import fill_char_template
@@ -18,6 +17,7 @@ from core.texts import *
 from core.types import (BuildReport, Character, Equip, Item, Profession,
                         Report, Session, Stock, User, new_item)
 from core.utils import send_async
+from functions.common import StockType, ban_traitor
 
 
 class BuildType(Enum):

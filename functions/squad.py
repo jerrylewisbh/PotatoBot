@@ -1,24 +1,18 @@
-from config import MINIMUM_SQUAD_MEMBER_LEVEL
 from datetime import datetime, timedelta
 
 from sqlalchemy import and_, func, tuple_
 from telegram import Bot, ParseMode, TelegramError, Update
 
-from core.decorators import admin_allowed, user_allowed
-from core.functions.inline_markup import (generate_fire_up,
-                                          generate_leave_squad,
-                                          generate_other_reports,
-                                          generate_squad_invite_answer,
-                                          generate_squad_list,
-                                          generate_squad_request,
-                                          generate_squad_request_answer,
-                                          generate_yes_no)
-from core.functions.reply_markup import generate_squad_markup
+from config import MINIMUM_SQUAD_MEMBER_LEVEL
+from core.decorators import admin_allowed, user_allowed, command_handler
 from core.template import fill_char_template
 from core.texts import *
 from core.types import (Admin, AdminType, Character, Group, Report, Session,
                         Squad, SquadMember, User)
 from core.utils import send_async
+from functions.inline_markup import generate_squad_list, generate_leave_squad, generate_squad_request, generate_yes_no, \
+    generate_fire_up, generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer
+from functions.reply_markup import generate_squad_markup
 
 TOP_START_DATE = datetime(2017, 12, 11)
 
@@ -190,7 +184,7 @@ def squad_list(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LIST, reply_markup=markup)
 
 
-@user_allowed
+@command_handler()
 def squad_request(bot: Bot, update: Update):
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     if user is not None:

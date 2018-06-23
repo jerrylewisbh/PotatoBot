@@ -1,20 +1,18 @@
 import logging
-import numpy
 import os
-from datetime import datetime, timedelta
-import matplotlib.pyplot as plot
+from datetime import datetime
 
-from sqlalchemy import func, tuple_, extract, distinct
+import matplotlib.pyplot as plot
+import numpy
+from sqlalchemy import func, extract
 from sqlalchemy.sql.functions import count
 from telegram import Bot, ParseMode, Update
 
-from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
-from core.decorators import command_handler, user_allowed
-from core.functions.reply_markup import generate_statistics_markup
-from core.functions.statistics import get_relative_details_for_location
+from config import QUEST_LOCATION_FORAY_ID
+from core.decorators import command_handler
 from core.texts import *
-from core.types import (Character, Location, Profession, Session, User,
-                        UserQuest, UserQuestItem)
+from core.types import (Character, Location, Session, User,
+                        UserQuest)
 
 plot.ioff()
 Session()

@@ -1,15 +1,12 @@
 import logging
-import uuid
 from datetime import datetime
 from enum import Enum
 
+from functions.reply_markup import (generate_admin_markup)
 from sqlalchemy import func
 from telegram import Bot, ParseMode, Update, TelegramError
 
-from config import GOVERNMENT_CHAT
 from core.decorators import admin_allowed, user_allowed
-from core.functions.reply_markup import (generate_admin_markup)
-from core.functions.triggers import trigger_decorator
 from core.state import GameState, get_game_state
 from core.texts import *
 from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_YOU_BANNED, MSG_BAN_COMPLETE, \
@@ -17,6 +14,7 @@ from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_Y
 from core.types import Admin, AdminType, Stock, User, Session, Item, Ban, SquadMember, Squad, UserExchangeOrder, \
     UserStockHideSetting
 from core.utils import send_async
+from functions.triggers import trigger_decorator
 
 Session()
 

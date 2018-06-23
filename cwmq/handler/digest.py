@@ -1,16 +1,14 @@
 import json
 import logging
-from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
 
 import redis
 from sqlalchemy import func
 
-from core.exchange.hide import autohide
-from core.functions.common import (MSG_API_INCOMPLETE_SETUP,
-                                   MSG_DISABLED_TRADING)
-from core.types import (Item, Session, User, UserExchangeOrder,
-                        UserStockHideSetting)
+from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
+from core.types import (Item, Session, UserExchangeOrder)
 from cwmq import Publisher, wrapper
+from functions.common import (MSG_API_INCOMPLETE_SETUP,
+                              MSG_DISABLED_TRADING)
 
 Session()
 
