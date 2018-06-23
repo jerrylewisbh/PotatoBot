@@ -147,6 +147,7 @@ def hide_items(bot: Bot, update: Update, user: User, **kwargs):
     # Manually triggered hide....
     logging.info("hide_items called by %s", user.id)
     if not user.is_api_trade_allowed:
+        wrapper.request_trade_terminal_access(bot, user)
         return
 
     set_hide_mode(user)
