@@ -299,8 +299,7 @@ def ban_traitor(bot: Bot, user_id):
         Session.commit()
         squads = Session.query(Squad).all()
 
-        # for squad in squads:
-        send_async(bot, chat_id=GOVERNMENT_CHAT, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
+        #send_async(bot, chat_id=GOVERNMENT_CHAT, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
 
 
 @admin_allowed()
