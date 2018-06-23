@@ -541,8 +541,8 @@ MSG_USER_BATTLE_REPORT_STOCK = "\n{}\n{}\n\n <i>🕑 Last Updates: {} / {}</i>"
 MSG_SETTINGS_INFO = "<b>Your settings:</b>\n" \
                     "- Automatic stock report after war: {}\n" \
                     "- Send notification when I sell something: {}\n" \
-                    "- Hide Gold: {}\n" \
-                    "- Sniping: {}\n\n" \
+                    "- Sniping: {}\n" \
+                    "- Hide Gold: {}\n\n" \
                     "<i>Last profile update: {}</i>\n" \
                     "<i>Last stock update: {}</i>"
 MSG_NEEDS_API_ACCESS = "Requires API Access. Please 🔑Register"

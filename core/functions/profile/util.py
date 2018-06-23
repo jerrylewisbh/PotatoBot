@@ -322,19 +322,19 @@ def __send_user_with_settings(bot: Bot, update: Update, user: User):
 
 def send_settings(bot, update, user):
     automated_report = MSG_NEEDS_API_ACCESS
-    if user.setting_automated_report and user.api_token and user.is_api_profile_allowed:
+    if user.api_token and user.is_api_profile_allowed:
         automated_report = user.setting_automated_deal_report
 
     automated_deal_report = MSG_NEEDS_API_ACCESS
-    if user.setting_automated_deal_report and user.api_token and user.is_api_stock_allowed:
+    if user.api_token and user.is_api_stock_allowed:
         automated_deal_report = user.setting_automated_deal_report
 
     automated_sniping = MSG_NEEDS_TRADE_ACCESS
-    if user.setting_automated_sniping and user.api_token and user.is_api_trade_allowed:
-        automated_deal_report = user.setting_automated_deal_report
+    if user.api_token and user.is_api_trade_allowed:
+        automated_sniping =  user.setting_automated_sniping
 
     automated_hiding = MSG_NEEDS_TRADE_ACCESS
-    if user.setting_automated_sniping and user.api_token and user.is_api_trade_allowed:
+    if user.api_token and user.is_api_trade_allowed:
         automated_hiding = user.setting_automated_hiding
 
     msg = MSG_SETTINGS_INFO.format(
