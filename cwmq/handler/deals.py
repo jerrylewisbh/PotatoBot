@@ -65,7 +65,7 @@ def __handle_hides(user, data, channel, method, dispatcher):
 
 
 def __handle_sold(user, data, channel, method, dispatcher):
-    if user and user.setting_automated_deal_report:
+    if user and user.setting_automated_deal_report and not user.is_banned:
         dispatcher.bot.send_message(
             user.id,
             MSG_DEAL_SOLD.format(
@@ -82,7 +82,7 @@ def __handle_sold(user, data, channel, method, dispatcher):
 
 
 def __handle_snipes(user, data, channel, method, dispatcher):
-    if user.setting_automated_sniping and not user.sniping_suspended:
+    if user.setting_automated_sniping and not user.sniping_suspended and not user.is_banned:
         logger.warning("[Snipe] Snipe-Check for %s", user.id)
         # Check if we have a sniping order for this item + user
         item = Session.query(Item).filter(func.lower(Item.name) == data['item'].lower()).first()
