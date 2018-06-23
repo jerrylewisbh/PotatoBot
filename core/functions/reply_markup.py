@@ -15,7 +15,7 @@ def generate_admin_markup(full=False):
     return ReplyKeyboardMarkup(buttons, True)
 
 
-def generate_user_markup(user_id=None):
+def generate_user_markup(user_id: int = None):
     """ Create a users keyboard. If user_id is given check if there are settings... """
     user = None
     if user_id:

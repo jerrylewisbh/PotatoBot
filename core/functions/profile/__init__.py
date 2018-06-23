@@ -291,12 +291,11 @@ def revoke(bot: Bot, update: Update, user: User):
     Session.add(user)
     Session.commit()
 
-    btns = generate_profile_buttons(user)
     send_async(
         bot,
         chat_id=user.id,
         text=MSG_API_ACCESS_RESET,
-        reply_markup=btns,
+        reply_markup=generate_user_markup(user.id),
         parse_mode=ParseMode.HTML
     )
 
