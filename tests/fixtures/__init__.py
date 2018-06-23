@@ -110,6 +110,9 @@ Fozzie from 🥔Potato Castle was stronger than [JIN]Sinkoz from 🐺Wolfpack Ca
 You received: 30 exp.
 Leaderboard of fighters are updated: /top5 & /top6. Congratulations!"""
 
+FORAY_SUCCESS_2 = """[FTW]GrumpyGecko was completely clueless. Village was successfully pillaged. You feel pleased about yourself.
+Received 32 gold and 41 exp."""
+
 ARENA_FAIL = """0❤️🥔Fozzie
 VS
 6❤️🐺[LIL]arrrsyy

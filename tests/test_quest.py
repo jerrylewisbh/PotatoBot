@@ -33,6 +33,13 @@ class TestTime(unittest.TestCase):
         self.assertEqual(a["exp"], 92)
         self.assertNotEqual(a["items"], {})
 
+        a = analyze_text(FORAY_SUCCESS_2)
+        self.assertEqual(a["type"], QuestType.FORAY)
+        self.assertTrue(a["success"])
+        self.assertEqual(a["gold"], 32)
+        self.assertEqual(a["exp"], 41)
+        self.assertEqual(a["items"], {})
+
     def test_go_success_identification(self):
         a = analyze_text(GO)
         self.assertEqual(a["type"], QuestType.STOP)
