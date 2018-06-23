@@ -600,7 +600,18 @@ MSG_QUEST_OVERALL = "\n\n*Overall:*\n\n"
 MSG_QUEST_STAT = "\n\nJust continue sending me your quest reports.\n\n_Hint: Overall statistics, item details, etc. coming soonish..._"
 
 # Exchange stuff
-HIDE_WELCOME = """*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)
+HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
+               "*With this feature enabled I will try to spend all your gold once you issue /hide. " \
+               "As this feature becomes more mature we will probably allow you to even do this automatically!* \n\n" \
+               "You can set your buy-preferences via `/ah <itemId> <prio> <maxPrice>`.\n" \
+               "Leave `<maxPrice>` out to always buy at market price. You can get a list of items with `/items`. \n\n" \
+               "Examples: \n" \
+               "- `/ah 01 1 30` to buy Thread for a maximum price of 30 💰 until you can't afford another one\n" \
+               "- `/ah 20 2` to by Leather for the lowest price currently on the market until you can't buy any more of it.\n\n" \
+               "_Note: If you already have set an order for one priority this gets overriden._\n\n" \
+               "To remove an item from your settings do `/ah <itemId>`.\n\n" \
+               "*Your current settings are:*\n" \
+               "{}"
 
 *With this feature enabled I will try to spend all your gold once you issue /hide. As this feature becomes more mature we will probably allow you to even do this automatically!* 
 
@@ -628,7 +639,7 @@ HIDE_BUY_UNLIMITED = "- P{}: Buy {} (`{}`)\n"
 HIDE_BUY_LIMITED = "- P{}: Buy {} (`{}`) for a maximum price of {} 💰\n"
 HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
 HIDE_REMOVED = "{} was removed from your hiding list!"
-HIDE_RESULT_INTRO = "<b>Hiding finshed! Your results:\n</b>"
+HIDE_RESULT_INTRO = "<b>Hiding finished! Your results:\n</b>"
 HIDE_BOUGHT = "You bought <b>{}</b> for {}💰\n"
 
 SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \

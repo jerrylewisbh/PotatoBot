@@ -72,10 +72,10 @@ def repair_report_received(bot: Bot, update: Update, user: User):
     allow_private=True
 )
 def report_received(bot: Bot, update: Update, user: User):
-    logging.info("Handling report for %s", user.id)
-    if datetime.now() - update.message.forward_date > timedelta(minutes=1):
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
-        return
+    #logging.info("Handling report for %s", user.id)
+    #if datetime.now() - update.message.forward_date > timedelta(minutes=1):
+    #    send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
+    #    return
 
     state = get_game_state()
     if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
@@ -87,7 +87,9 @@ def report_received(bot: Bot, update: Update, user: User):
             parse_mode=ParseMode.HTML)
         return
 
+    print("parse report")
     parsed_report = parse_report_text(update.message.text)
+    print(user.character.name)
     if parsed_report and user.character and parsed_report['name'] == user.character.name:
         date = update.message.forward_date
         if (update.message.forward_date.hour < 7):

@@ -4,12 +4,12 @@
 EMOJI = u"(\ud83d[\ude00-\ude4f])|(\ud83c[\udf00-\uffff])|(\ud83d[\u0000-\uddff])|(\ud83d[\ude80-\udeff])|(\ud83c[\udde0-\uddff])+"
 
 # Fixme: Expertise is not extracted...
-HERO = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)(?P<guild>(\[.+\])?)(?P<ribbon>(🎗?))(?P<name>.+) of (?:.+) .+\n' \
+HERO = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)(?P<guild>(\[.+\])?)(?P<ribbon>(🎗?))(?P<name>.+)\n' \
        '🏅Level: (?P<level>[0-9]+)\n' \
        '.+Atk: (?P<attack>[0-9]+) 🛡Def: (?P<defence>[0-9]+)\n' \
        '🔥Exp: (?P<exp>[0-9]+)/(?P<exp_needed>[0-9]+)\n' \
        '🔋Stamina: (?P<stamina>[0-9]+)/(?P<max_stamina>[0-9]+)\n' \
-       '(?:💧Mana: (?P<mana>[0-9]+/[0-9]+\n))?'\
+       '(?:💧Mana: (?P<mana>[0-9]+)/(?P<totalMana>[0-9]+\n))?'\
        '💰(?P<gold>-?[0-9]+)(?: 👝(?P<pouches>[0-9]+))?(?: 💎(?P<diamonds>[0-9]+))?\n' \
        '(?:🤺PVP: (?P<pvp>[0-9]+)\n)?' \
        '(?:📚Expertise: (?P<expertise>.+)\n)?' \

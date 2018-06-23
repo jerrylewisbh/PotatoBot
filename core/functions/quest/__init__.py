@@ -155,7 +155,7 @@ def parse_quest(bot: Bot, update: Update, user: User):
 
         bot.sendMessage(
             chat_id=user.id,
-            text=MSG_ARENA_ACCEPTED if QuestType.ARENA else MSG_ARENA_FAILED,
+            text=MSG_ARENA_ACCEPTED if quest_data['type'] == QuestType.ARENA else MSG_ARENA_FAILED,
             parse_mode=ParseMode.HTML,
         )
     elif quest_data['type'] == QuestType.STOP:
