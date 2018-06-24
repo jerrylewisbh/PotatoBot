@@ -118,7 +118,7 @@ def update_confirmed(bot: Bot, job: Job):
 
 @run_async
 @command_handler()
-def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueue):
+def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_queue: JobQueue):
     try:
         update_group(update.callback_query.message.chat)
 

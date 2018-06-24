@@ -9,6 +9,7 @@ from core.utils import create_or_update_user
 
 Session()
 
+# TODO: A lot of this can be moved out here in favor of python-telegram-command handlers and filters!
 def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_private: bool = True,
                     allow_group: bool = False, allow_channel: bool = False,
                     allow_banned: bool = False, squad_only: bool = False, testing_only: bool = False,
@@ -115,19 +116,12 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                 raise ValueError("None is no valid AdminType!")
             elif min_permission not in AdminType:
                 raise ValueError("Given permission does not match an existing AdminType")
-            # print(user.permission)
-
-            # The lower the number, the higher the permission is...
-            # if permissions_required in [AdminType.SUPER, AdminType.FULL]:
-            #    # Highest permission levels. Just pass
-            #    logging.debug("%s is admin-type %s!", user.id, user.permission)
             elif min_permission != AdminType.NOT_ADMIN:
                 # We need actual admin-permissions. Check.
                 if not check_admin(update, min_permission):
                     logging.warning("user_id='%s' is not allowed to perform this action", user.id)
                     return
-
-            # Else: Normal user permissions...
+            # Else: Normal user permissions rqd...
 
             logging.info("User '%s' has called: '%s'", user.id, func.__name__)
 

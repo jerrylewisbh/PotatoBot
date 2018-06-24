@@ -64,6 +64,7 @@ def parse_hero_text(report_text):
 
 
 def parse_hero(bot: Bot, profile, user_id, date):
+    """ Parse a forwarded hero """
     char = Session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
         parsed_data = parse_hero_text(profile)
@@ -82,6 +83,14 @@ def parse_hero(bot: Bot, profile, user_id, date):
         char.maxStamina = parsed_data['max_stamina']
         char.gold = parsed_data['gold']
         char.donateGold = parsed_data['pouches']
+
+        # We don't get this fom forwarded text. So get it from the last one sent in to make sure its set.
+        last_with_class = Session.query(Character).filter(
+            Character.user_id == user_id,
+            Character.characterClass is not None
+        ).order_by(Character.date).first()
+        if last_with_class:
+            char.characterClass = last_with_class.characterClass
 
         # if parsed_data.group(21):
         #    char.pet = str(parsed_data.group(21))
