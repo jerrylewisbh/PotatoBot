@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 
 from telegram import Bot, Update
 
-from core.decorators import admin_allowed
+from core.decorators import command_handler
 from core.texts import MSG_ORDER_STATISTIC, MSG_ORDER_STATISTIC_OUT_FORMAT
-from core.types import AdminType, Session, Squad
+from core.types import AdminType, Session, Squad, User
 from core.utils import send_async
 
 Session()
@@ -30,24 +30,36 @@ def activity(squad, days=0, hours=0):
     return msg
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def day_activity(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_group=True,
+    allow_private=False
+)
+def day_activity(bot: Bot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         msg = activity(squad, days=1)
         send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def week_activity(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_group=True,
+    allow_private=False
+)
+def week_activity(bot: Bot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         msg = activity(squad, days=7)
         send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def battle_activity(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_group=True,
+    allow_private=False
+)
+def battle_activity(bot: Bot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         msg = activity(squad, hours=4)

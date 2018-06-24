@@ -6,7 +6,7 @@ MSG_ORDER_STATISTIC_OUT_FORMAT = '{}: {}/{}\n'
 MSG_USER_UNKNOWN = 'No such user'
 
 MSG_NEW_GROUP_ADMIN = """Welcome our new administrator: @{}!
-Check the commands list with /help command"""
+Check the commands.py list with /help command"""
 MSG_NEW_GROUP_ADMIN_EXISTS = '@{} already has administrator rights'
 
 MSG_DEL_GROUP_ADMIN_NOT_EXIST = '@{} never had any power here!'
@@ -46,7 +46,7 @@ MSG_START_MEMBER_SQUAD_REGISTERED = 'Welcome back 🥔{}!\n\n' \
 
 MSG_ADMIN_WELCOME = 'Welcome, master!'
 
-MSG_HELP_GLOBAL_ADMIN = """Welcome commands:
+MSG_HELP_GLOBAL_ADMIN = """Welcome commands.py:
 /enable_welcome — enable welcome message.
 /disable_welcome — disable welcome message.
 /set_welcome <text> — set welcome message. \
@@ -55,7 +55,7 @@ if not set to First and Last name, or ID,
 using %last_name%, %first_name%, %id%.
 /show_welcome — show welcome message.
 
-Trigger commands:
+Trigger commands.py:
 Reply to a message or file with /set_trigger <trigger text> — \
 set message to reply with on a trigger (only current chat)
 /del_trigger <trigger> — delete trigger.
@@ -64,7 +64,7 @@ Reply to a message or file with /set_global_trigger <trigger text> — \
 set message to reply with on a trigger (all chats)
 /del_global_trigger <trigger> — delete trigger.
 
-Super administrator commands:
+Super administrator commands.py:
 /add_admin <user> — add administrator to current chat.
 /del_admin <user> — delete administrator from current chat.
 /list_admins — show list of current chat administrators.
@@ -77,7 +77,7 @@ Super administrator commands:
 
 
 
-Squad commands:
+Squad commands.py:
 /add_squad - Create a new squad and associates it to the current group
 /del_squad - Delete the squad associated with teh group
 /enable_thorns - Prevent non members of the squad be in the group
@@ -94,16 +94,17 @@ Squad commands:
 /unban <user> - Unban an user from the squad
 
 
-User commands:
+User commands.py:
 /items - List known items
 /hide - Manually trigger hide
 /resume - Resume suspended sniping
 /s <itemID> <maxPrice> [<limit>] - Create snipe order
 /sr <itemID> - Remove sniping order
 /report - Show your last report (including stock change if API is enabled)
+admins - Show Admins/Commanders
+commander - Show Admins/Commanders
 
-
-Free text commands:
+Free text commands.py:
 daily stats  - Show squad daily stats
 weekly stats - Show squad weekly stats
 battle stats - Show last batle stats for batle
@@ -118,7 +119,7 @@ Reply any message with Delete to delete it
 
 """
 
-MSG_HELP_GROUP_ADMIN = """Welcome commands:
+MSG_HELP_GROUP_ADMIN = """Welcome commands.py:
 /enable_welcome — enable welcome message.
 /disable_welcome — disable welcome message.
 /set_welcome <text> — set welcome message. \
@@ -127,7 +128,7 @@ if not set to First and Last name, or ID,
 using %last_name%, %first_name%, %id%.
 /show_welcome — show welcome message.
 
-Squad commands:
+Squad commands.py:
 /enable_thorns - Prevent non members of the squad be in the group
 /disable_thorns - Allow non members of the group to be in the squad
 /enable_silence  - Deletes all messages typed 3 minutes before battle
@@ -140,7 +141,7 @@ Squad commands:
 /unban <user> - Unban an user from the squad
 
 
-Free text commands:
+Free text commands.py:
 daily stats  - Show squad daily stats
 weekly stats - Show squad weekly stats
 battle stats - Show last batle stats for batle

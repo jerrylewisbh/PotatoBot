@@ -1,5 +1,7 @@
 import logging
 
+from core.handler import *
+from core.types import AdminType
 from functions.common import admin_panel, ban, help_msg, kick, ping, unban
 from functions.profile import (find_by_character, find_by_id,
                                     find_by_username, grant_access, revoke,
@@ -17,7 +19,7 @@ from functions.triggers import (add_global_trigger, add_trigger,
                                      set_trigger)
 from functions.welcome import (disable_welcome, enable_welcome,
                                     set_welcome, show_welcome)
-from telegram.ext import CommandHandler, Dispatcher
+from telegram.ext import CommandHandler, Dispatcher, Filters
 
 from core.exchange import list_items
 from core.exchange.hide import auto_hide, hide_items
@@ -26,15 +28,19 @@ from functions.admins import (del_admin, del_global_admin, get_log,
                               list_admins, set_admin, set_global_admin,
                               set_super_admin)
 
+user = FilterUser()
+squad_user = FilterSquad()
 
-def add_commands(disp: Dispatcher):
 
+def add_handler(disp: Dispatcher):
     # NOTE: Use the @command_handler decorator for the functions registered here! This will provide you with the User
     # object and additionally filters by chat-type (private, group, etc.)
 
-    logging.debug("Starting adding command handlers")
-    # on different commands - answer in Telegram
+    logging.debug("Starting adding button handlers")
+
     disp.add_handler(CommandHandler("start", user_panel))
+
+    # on different commands - answer in Telegram
     disp.add_handler(CommandHandler("admin", admin_panel))
     disp.add_handler(CommandHandler("help", help_msg))
     disp.add_handler(CommandHandler("ping", ping))
@@ -91,4 +97,4 @@ def add_commands(disp: Dispatcher):
     disp.add_handler(CommandHandler('hide', hide_items))
     disp.add_handler(CommandHandler('revoke', revoke))
 
-    logging.info("Finished adding command handlers")
+    logging.info("Finished adding button handlers")

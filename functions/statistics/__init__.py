@@ -10,7 +10,7 @@ from sqlalchemy import func, tuple_
 from telegram import Bot, ParseMode, Update
 
 from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
-from core.decorators import command_handler, user_allowed
+from core.decorators import command_handler
 from core.texts import *
 from core.types import (Character, Location, Profession, Session, User,
                         UserQuest, UserQuestItem)
@@ -20,13 +20,15 @@ from functions.reply_markup import generate_statistics_markup
 Session()
 
 plot.ioff()
-@user_allowed
-def statistic_about(bot: Bot, update: Update):
+@command_handler()
+def statistic_about(bot: Bot, update: Update, user: User):
     markup = generate_statistics_markup()
-    send_async(bot,
-               chat_id=update.message.chat.id,
-               text=MSG_STATISTICS_ABOUT,
-               reply_markup=markup)
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=MSG_STATISTICS_ABOUT,
+        reply_markup=markup
+    )
 
 def get_relative_details_for_location(user: User, from_date: datetime, location: Location):
     text = ""
@@ -184,7 +186,7 @@ def quest_statistic(bot: Bot, update: Update, user: User):
     )
 
 
-@user_allowed
+@command_handler()
 def quest_statistic_old(bot: Bot, update: Update):
     logging.debug("Quest statistics.py")
 
@@ -253,7 +255,7 @@ def quest_statistic_old(bot: Bot, update: Update):
     os.remove(filename)
 
 
-@user_allowed
+@command_handler()
 def quest_statistic_line_one(bot: Bot, update: Update, session):
     logging.debug("Quest statistics.py")
 
@@ -337,7 +339,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
     os.remove(filename)
 
 
-@user_allowed
+@command_handler()
 def quest_statistic_split(bot: Bot, update: Update):
     logging.debug("Quest statistics.py")
 
@@ -417,7 +419,7 @@ def quest_statistic_split(bot: Bot, update: Update):
     os.remove(filename)
 
 
-@user_allowed
+@command_handler()
 def quest_statistic_one(bot: Bot, update: Update):
     logging.debug("Quest statistics.py")
 
@@ -496,8 +498,8 @@ def autolabel(ax, rects):
                     ha='center', va='bottom')
 
 
-@user_allowed
-def skill_statistic(bot: Bot, update: Update):
+@command_handler()
+def skill_statistic(bot: Bot, update: Update, user: User):
     my_class = Session.query(Profession).filter_by(
         user_id=update.message.from_user.id).order_by(
         Profession.date.desc()).first()
@@ -601,8 +603,8 @@ def skill_statistic(bot: Bot, update: Update):
     os.remove(filename)
 
 
-@user_allowed
-def exp_statistic(bot: Bot, update: Update):
+@command_handler()
+def exp_statistic(bot: Bot, update: Update, user: User):
     profiles = Session.query(Character).filter_by(user_id=update.message.from_user.id)\
         .order_by(Character.date).all()
     plot.switch_backend('ps')

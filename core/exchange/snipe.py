@@ -169,7 +169,7 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
         # TODO: Check again if this is OK!
         return
 
-    # A user can directly enter snipe-commands. Check permissions and stop with processing.
+    # A user can directly enter snipe-commands.py. Check permissions and stop with processing.
     if not user.is_api_trade_allowed:
         logging.info(
             "[Sniping] TradeTerminal is not allowed user_id=%s. Sniping/Options are not possible. Requesting access",

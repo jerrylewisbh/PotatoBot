@@ -3,7 +3,7 @@ from config import LOGFILE, SUPER_ADMIN_ID
 
 from telegram import Bot, Update
 
-from core.decorators import admin_allowed, user_allowed
+from core.decorators import command_handler
 from core.texts import *
 from core.types import Admin, AdminType, Session, User
 from core.utils import send_async
@@ -11,8 +11,10 @@ from core.utils import send_async
 Session()
 
 
-@admin_allowed()
-def set_admin(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def set_admin(bot: Bot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
@@ -60,8 +62,10 @@ def del_adm(bot, chat_id, user):
                    text=MSG_DEL_GROUP_ADMIN.format(user.username))
 
 
-@admin_allowed()
-def del_admin(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def del_admin(bot: Bot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     if msg.find('@') != -1:
         msg = msg.replace('@', '')
@@ -85,8 +89,10 @@ def del_admin(bot: Bot, update: Update):
             del_adm(bot, update.message.chat.id, user)
 
 
-@admin_allowed()
-def list_admins(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def list_admins(bot: Bot, update: Update, user: User):
     admins = Session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
     users = []
     for admin_user in admins:
@@ -101,8 +107,10 @@ def list_admins(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
-@user_allowed
-def admins_for_users(bot: Bot, update: Update):
+@command_handler(
+    allow_group=True
+)
+def admins_for_users(bot: Bot, update: Update, user: User):
     admins = Session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
     users = []
     for admin_user in admins:
@@ -119,8 +127,10 @@ def admins_for_users(bot: Bot, update: Update):
     send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
-@admin_allowed(adm_type=AdminType.SUPER)
-def set_global_admin(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.SUPER,
+)
+def set_global_admin(bot: Bot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
@@ -150,8 +160,10 @@ def set_global_admin(bot: Bot, update: Update):
                            text=MSG_NEW_GLOBAL_ADMIN_EXISTS.format(user.username))
 
 
-@user_allowed(False)
-def set_super_admin(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.SUPER,
+)
+def set_super_admin(bot: Bot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
@@ -190,8 +202,10 @@ def set_super_admin(bot: Bot, update: Update):
                                text=MSG_NEW_SUPER_ADMIN.format(user.username))
 
 
-@admin_allowed(adm_type=AdminType.SUPER)
-def del_global_admin(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.SUPER,
+)
+def del_global_admin(bot: Bot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     if msg.find('@') != -1:
         msg = msg.replace('@', '')
@@ -239,9 +253,10 @@ def del_global_admin(bot: Bot, update: Update):
                            text=MSG_DEL_GLOBAL_ADMIN.format(user.username))
 
 
-@user_allowed(False)
-def get_log(bot: Bot, update: Update):
-    # Fixme: Decorator "@admin_allowed(adm_type=AdminType.SUPER)" instead of other check... But this is NYI
+@command_handler(
+    min_permission=AdminType.SUPER,
+)
+def get_log(bot: Bot, update: Update, user: User):
     if update.message.from_user.id != SUPER_ADMIN_ID:
         logging.info("User %s tried to request logs and is not allowed to!", update.message.from_user.id)
         return

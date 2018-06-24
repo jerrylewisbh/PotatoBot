@@ -2,7 +2,7 @@ from config import ACADEM_CHAT_ID, CASTLE_CHAT_ID
 
 from telegram import Bot, Update
 
-from core.decorators import user_allowed
+from core.decorators import command_handler
 from core.template import fill_template
 from core.texts import *
 from core.types import Group, Session, User
@@ -11,8 +11,8 @@ from core.utils import send_async
 Session()
 
 
-@user_allowed
-def newbie(bot: Bot, update: Update):
+@command_handler()
+def newbie(bot: Bot, update: Update, user: User):
     if ACADEM_CHAT_ID and CASTLE_CHAT_ID:
         if update.message.chat.id in [CASTLE_CHAT_ID]:
             for new_chat_member in update.message.new_chat_members:

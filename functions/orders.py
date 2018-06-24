@@ -1,16 +1,18 @@
 from telegram import Bot, Update
 
-from core.decorators import admin_allowed
+from core.decorators import command_handler
 from core.texts import *
-from core.types import Admin, AdminType, MessageType, Session
+from core.types import Admin, AdminType, MessageType, Session, User
 from core.utils import send_async
 from functions.inline_markup import generate_order_groups_markup, generate_flag_orders
 
 Session()
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def order(bot: Bot, update: Update, chat_data):
+@command_handler(
+    min_permission=AdminType.GROUP,
+)
+def order(bot: Bot, update: Update, user: User, chat_data):
     chat_data['order_wait'] = False
     admin_user = Session.query(Admin).filter(Admin.user_id == update.message.from_user.id).all()
     markup = generate_order_groups_markup(admin_user, chat_data['pin'] if 'pin' in chat_data else True,
@@ -46,12 +48,19 @@ def order(bot: Bot, update: Update, chat_data):
     else:
         chat_data['order'] = msg.text
         chat_data['order_type'] = MessageType.TEXT.value
-    send_async(bot, chat_id=update.message.chat.id, text=MSG_ORDER_SEND_HEADER,
-               reply_markup=markup)
+
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=MSG_ORDER_SEND_HEADER,
+        reply_markup=markup
+    )
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def orders(bot: Bot, update: Update, chat_data):
+@command_handler(
+    min_permission=AdminType.GROUP,
+)
+def orders(bot: Bot, update: Update, user: User, chat_data):
     markup = generate_flag_orders()
     chat_data['order_wait'] = True
     send_async(bot, chat_id=update.message.chat.id, text=MSG_FLAG_CHOOSE_HEADER, reply_markup=markup)

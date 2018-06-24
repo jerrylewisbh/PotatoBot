@@ -5,10 +5,10 @@ from sqlalchemy import text as text_
 from telegram import Bot, Update
 
 from config import CASTLE
-from core.decorators import user_allowed, command_handler
+from core.decorators import command_handler
 from core.texts import *
 from core.types import (BuildReport, Character, Report, Session, Squad,
-                        SquadMember)
+                        SquadMember, User)
 from core.utils import send_async
 from functions.inline_markup import generate_build_top, generate_battle_top
 from functions.reply_markup import generate_top_markup
@@ -19,7 +19,7 @@ Session()
 
 
 @command_handler()
-def top_about(bot: Bot, update: Update):
+def top_about(bot: Bot, update: Update, user: User):
     markup = generate_top_markup()
     send_async(bot,
                chat_id=update.message.chat.id,
@@ -60,24 +60,24 @@ def get_top(condition, header, field_name, icon, user_id, additional_filter=text
     return text
 
 
-@user_allowed
-def attack_top(bot: Bot, update: Update):
+@command_handler()
+def attack_top(bot: Bot, update: Update, user: User):
     text = get_top(Character.attack.desc(), MSG_TOP_ATTACK, 'attack', '⚔', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
                text=text)
 
 
-@user_allowed
-def def_top(bot: Bot, update: Update):
+@command_handler()
+def def_top(bot: Bot, update: Update, user: User):
     text = get_top(Character.defence.desc(), MSG_TOP_DEFENCE, 'defence', '🛡', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
                text=text)
 
 
-@user_allowed
-def exp_top(bot: Bot, update: Update):
+@command_handler()
+def exp_top(bot: Bot, update: Update, user: User):
     text = get_top(Character.exp.desc(), MSG_TOP_EXPERIENCE, 'exp', '🔥', update.message.from_user.id)
     send_async(bot,
                chat_id=update.message.chat.id,
@@ -120,8 +120,8 @@ def gen_squad_top_msg(data, counts, header, icon):
     return text
 
 
-@user_allowed
-def global_build_top(bot: Bot, update: Update):
+@command_handler()
+def global_build_top(bot: Bot, update: Update, user: User):
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -151,8 +151,8 @@ def global_build_top(bot: Bot, update: Update):
                             reply_markup=markup)
 
 
-@user_allowed
-def week_build_top(bot: Bot, update: Update):
+@command_handler()
+def week_build_top(bot: Bot, update: Update, user: User):
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -183,8 +183,8 @@ def week_build_top(bot: Bot, update: Update):
                             reply_markup=markup)
 
 
-@user_allowed
-def week_squad_build_top(bot: Bot, update: Update):
+@command_handler()
+def week_squad_build_top(bot: Bot, update: Update, user: User):
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -212,8 +212,8 @@ def week_squad_build_top(bot: Bot, update: Update):
                             reply_markup=markup)
 
 
-@user_allowed
-def global_squad_build_top(bot: Bot, update: Update):
+@command_handler()
+def global_squad_build_top(bot: Bot, update: Update, user: User):
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -240,8 +240,8 @@ def global_squad_build_top(bot: Bot, update: Update):
                             reply_markup=markup)
 
 
-@user_allowed
-def week_battle_top(bot: Bot, update: Update):
+@command_handler()
+def week_battle_top(bot: Bot, update: Update, user: User):
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -273,8 +273,8 @@ def week_battle_top(bot: Bot, update: Update):
                             reply_markup=markup)
 
 
-@user_allowed
-def global_battle_top(bot: Bot, update: Update):
+@command_handler()
+def global_battle_top(bot: Bot, update: Update, user: User):
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)
     actual_profiles = actual_profiles.all()

@@ -1,17 +1,10 @@
-import logging
-from datetime import datetime, timedelta
-from telegram import Update, Bot, ParseMode
-
-from config import CWBOT_ID, CASTLE, EXT_ID
-from core.decorators import command_handler, admin_allowed
-from core.regexp import BUILD_REPORT, ACCESS_CODE
-from core.state import get_game_state, GameState
-from core.texts import *
-from core.types import Session, BuildReport, User
-from core.utils import send_async
+from config import CWBOT_ID
+from core.decorators import command_handler
+from core.regexp import ACCESS_CODE
+from core.state import GameState, get_game_state
+from core.types import AdminType
 from cwmq import Publisher, wrapper
 from functions.common import stock_compare_text, stock_split
-
 from functions.profile import *
 from functions.profile.util import *
 
@@ -387,8 +380,10 @@ def settings(bot: Bot, update: Update, user: User):
     send_settings(bot, update, user)
 
 
-@admin_allowed()
-def find_by_username(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def find_by_username(bot: Bot, update: Update, user: User):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
@@ -399,8 +394,10 @@ def find_by_username(bot: Bot, update: Update):
             send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
 
 
-@admin_allowed()
-def find_by_character(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def find_by_character(bot: Bot, update: Update, user: User):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
@@ -412,8 +409,10 @@ def find_by_character(bot: Bot, update: Update):
                 send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
 
 
-@admin_allowed()
-def find_by_id(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def find_by_id(bot: Bot, update: Update, user: User):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')

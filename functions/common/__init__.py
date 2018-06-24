@@ -2,11 +2,11 @@ import logging
 from datetime import datetime
 from enum import Enum
 
-from functions.reply_markup import (generate_admin_markup)
 from sqlalchemy import func
 from telegram import Bot, ParseMode, Update, TelegramError
 
-from core.decorators import admin_allowed, user_allowed
+from config import CWBOT_ID
+from core.decorators import command_handler
 from core.state import GameState, get_game_state
 from core.texts import *
 from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_YOU_BANNED, MSG_BAN_COMPLETE, \
@@ -14,6 +14,7 @@ from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_Y
 from core.types import Admin, AdminType, Stock, User, Session, Item, Ban, SquadMember, Squad, UserExchangeOrder, \
     UserStockHideSetting
 from core.utils import send_async
+from functions.reply_markup import (generate_admin_markup)
 from functions.triggers import trigger_decorator
 
 Session()
@@ -29,8 +30,11 @@ def error(bot: Bot, update, error, **kwargs):
     logging.error("An error (%s) occurred: %s", (type(error), error.message))
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def admin_panel(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=True
+)
+def admin_panel(bot: Bot, update: Update, user: User):
     if update.message.chat.type == 'private':
         admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         full_adm = False
@@ -41,13 +45,17 @@ def admin_panel(bot: Bot, update: Update):
                    reply_markup=generate_admin_markup(full_adm))
 
 
-@admin_allowed()
-def kick(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.NOT_ADMIN,
+    allow_private=False,
+    allow_group=True
+)
+def kick(bot: Bot, update: Update, user: User):
     bot.leave_chat(update.message.chat.id)
 
 
-@trigger_decorator
-def help_msg(bot: Bot, update):
+@command_handler()
+def help_msg(bot: Bot, update, user: User):
     admin_user = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     global_adm = False
     for adm in admin_user:
@@ -62,8 +70,12 @@ def help_msg(bot: Bot, update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_USER)
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def ping(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=True,
+    allow_group=True
+)
+def ping(bot: Bot, update: Update, user: User):
     send_async(bot, chat_id=update.message.chat.id, text=MSG_PING.format(update.message.from_user.username))
 
 
@@ -193,8 +205,10 @@ def stock_compare(user_id, new_stock_text):
     return None
 
 
-@user_allowed(False)
-def stock_compare_forwarded(bot: Bot, update: Update, chat_data: dict):
+@command_handler(
+    forward_from=CWBOT_ID
+)
+def stock_compare_forwarded(bot: Bot, update: Update, user: User, chat_data: dict):
     # If user-stock is automatically updated via API do not allow reports during SILENCE
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
 
@@ -215,20 +229,30 @@ def stock_compare_forwarded(bot: Bot, update: Update, chat_data: dict):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_STOCK_COMPARE_WAIT, parse_mode=ParseMode.HTML)
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
 def delete_msg(bot: Bot, update: Update):
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.reply_to_message.message_id)
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.message_id)
 
 
-@admin_allowed()
-def delete_user(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+    allow_private=False,
+    allow_group=True
+)
+def delete_user(bot: Bot, update: Update, user: User):
     bot.kickChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
     bot.unbanChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
 
 
-@admin_allowed()
-def ban(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def ban(bot: Bot, update: Update, user: User):
     username, reason = update.message.text.split(' ', 2)[1:]
     username = username.replace('@', '')
     user = Session.query(User).filter_by(username=username).first()
@@ -260,8 +284,8 @@ def ban(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
 
 
-def ban_traitor(bot: Bot, user_id):
-    user = Session.query(User).filter_by(id=user_id).first()
+def ban_traitor(bot: Bot, update: Update, user: User):
+    user = Session.query(User).filter_by(id=user.id).first()
     if user:
         logging.warning("Banning %s", user.id)
         banned = Ban()
@@ -300,8 +324,10 @@ def ban_traitor(bot: Bot, user_id):
         #send_async(bot, chat_id=GOVERNMENT_CHAT, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
 
 
-@admin_allowed()
-def unban(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL
+)
+def unban(bot: Bot, update: Update, user: User):
     username = update.message.text.split(' ', 1)[1]
     username = username.replace('@', '')
     user = Session.query(User).filter_by(username=username).first()

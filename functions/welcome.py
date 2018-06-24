@@ -1,13 +1,13 @@
 import logging
-from config import ACADEM_CHAT_ID, CASTLE, CASTLE_CHAT_ID
 from time import time
 
 from telegram import Bot, Update
 
-from core.decorators import admin_allowed, user_allowed
+from config import ACADEM_CHAT_ID, CASTLE, CASTLE_CHAT_ID
+from core.decorators import command_handler
 from core.template import fill_template
 from core.texts import *
-from core.types import Admin, AdminType, Session, WelcomeMsg, Wellcomed
+from core.types import Admin, AdminType, Session, WelcomeMsg, Wellcomed, User
 from core.utils import create_or_update_user, send_async, update_group
 
 last_welcome = 0
@@ -15,7 +15,6 @@ last_welcome = 0
 Session()
 
 
-@user_allowed(False)
 def welcome(bot: Bot, update: Update):
     #newbie(bot, update)
     global last_welcome
@@ -71,8 +70,11 @@ def welcome(bot: Bot, update: Update):
                     Session.commit()
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def set_welcome(bot: Bot, update: Update):
+@command_handler(
+    allow_group=True,
+    min_permission=AdminType.GROUP
+)
+def set_welcome(bot: Bot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
@@ -85,8 +87,11 @@ def set_welcome(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_WELCOME_SET)
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def enable_welcome(bot: Bot, update: Update):
+@command_handler(
+    allow_group=True,
+    min_permission=AdminType.GROUP
+)
+def enable_welcome(bot: Bot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         group.welcome_enabled = True
@@ -95,8 +100,11 @@ def enable_welcome(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_WELCOME_ENABLED)
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def disable_welcome(bot: Bot, update: Update):
+@command_handler(
+    allow_group=True,
+    min_permission=AdminType.GROUP
+)
+def disable_welcome(bot: Bot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         group.welcome_enabled = False
@@ -105,8 +113,11 @@ def disable_welcome(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_WELCOME_DISABLED)
 
 
-@admin_allowed(adm_type=AdminType.GROUP)
-def show_welcome(bot: Bot, update):
+@command_handler(
+    allow_group=True,
+    min_permission=AdminType.GROUP
+)
+def show_welcome(bot: Bot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()

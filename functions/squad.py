@@ -4,7 +4,7 @@ from sqlalchemy import and_, func, tuple_
 from telegram import Bot, ParseMode, TelegramError, Update
 
 from config import MINIMUM_SQUAD_MEMBER_LEVEL
-from core.decorators import admin_allowed, user_allowed, command_handler
+from core.decorators import command_handler
 from core.template import fill_char_template
 from core.texts import *
 from core.types import (Admin, AdminType, Character, Group, Report, Session,
@@ -19,8 +19,8 @@ TOP_START_DATE = datetime(2017, 12, 11)
 Session()
 
 
-@user_allowed
-def squad_about(bot: Bot, update: Update):
+@command_handler()
+def squad_about(bot: Bot, update: Update, user: User):
     admin = Session.query(Admin).filter(Admin.user_id == update.message.from_user.id,
                                         Admin.admin_group != 0).first()
 
@@ -38,31 +38,38 @@ def squad_about(bot: Bot, update: Update):
                reply_markup=markup)
 
 
-@admin_allowed()
-def add_squad(bot: Bot, update: Update):
-    if update.message.chat.type == 'supergroup':
-        squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-        if squad is None:
-            squad = Squad()
-            squad.chat_id = update.message.chat.id
-            squad.thorns_enabled = False
-            msg = update.message.text.split(' ', 1)
-            if len(msg) == 2:
-                squad.squad_name = msg[1]
-            else:
-                group = Session.query(Group).filter_by(id=update.message.chat.id).first()
-                squad.squad_name = group.title
-            Session.add(squad)
-            Session.commit()
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NEW.format(squad.squad_name),
-                       parse_mode=ParseMode.HTML)
+@command_handler(
+    min_permission=AdminType.FULL,
+    allow_private=False,
+    allow_group=True
+)
+def add_squad(bot: Bot, update: Update, user: User):
+    squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+    if squad is None:
+        squad = Squad()
+        squad.chat_id = update.message.chat.id
+        squad.thorns_enabled = False
+        msg = update.message.text.split(' ', 1)
+        if len(msg) == 2:
+            squad.squad_name = msg[1]
+        else:
+            group = Session.query(Group).filter_by(id=update.message.chat.id).first()
+            squad.squad_name = group.title
+        Session.add(squad)
+        Session.commit()
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NEW.format(squad.squad_name),
+                   parse_mode=ParseMode.HTML)
 
 
-@admin_allowed()
-def set_invite_link(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+    allow_private=False,
+    allow_group=True
+)
+def set_invite_link(bot: Bot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     new_invite_link = ''
-    if update.message.chat.type == 'supergroup' and squad is not None:
+    if squad:
         msg = update.message.text.split(' ', 1)
         if len(msg) == 2:
             new_invite_link = msg[1]
@@ -79,10 +86,14 @@ def set_invite_link(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LINK_SAVED)
 
 
-@admin_allowed()
-def set_squad_name(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+    allow_private=False,
+    allow_group=True
+)
+def set_squad_name(bot: Bot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-    if update.message.chat.type == 'supergroup' and squad is not None:
+    if squad:
         msg = update.message.text.split(' ', 1)
         if len(msg) == 2:
             squad.squad_name = msg[1]
@@ -92,10 +103,14 @@ def set_squad_name(bot: Bot, update: Update):
                        parse_mode=ParseMode.HTML)
 
 
-@admin_allowed()
-def del_squad(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+    allow_private=False,
+    allow_group=True
+)
+def del_squad(bot: Bot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-    if update.message.chat.type == 'supergroup' and squad is not None:
+    if squad:
         for member in squad.members:
             Session.delete(member)
         for order_group_item in squad.chat.group_items:
@@ -105,68 +120,94 @@ def del_squad(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_DELETE)
 
 
-@admin_allowed(AdminType.GROUP)
-def enable_thorns(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def enable_thorns(bot: Bot, update: Update, user: User):
     group = Session.query(Group).filter_by(id=update.message.chat.id).first()
-    if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
+    if group and len(group.squad) == 1:
         group.squad[0].thorns_enabled = True
         Session.add(group.squad[0])
         Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_THORNS_ENABLED)
 
 
-@admin_allowed(AdminType.GROUP)
-def enable_reminders(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def enable_reminders(bot: Bot, update: Update, user: User):
     group = Session.query(Group).filter_by(id=update.message.chat.id).first()
-    if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
+    if group and len(group.squad) == 1:
         group.squad[0].reminders_enabled = True
         Session.add(group.squad[0])
         Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REMINDERS_ENABLED)
 
 
-@admin_allowed(AdminType.GROUP)
-def enable_silence(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def enable_silence(bot: Bot, update: Update, user: User):
     group = Session.query(Group).filter_by(id=update.message.chat.id).first()
-    if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
+    if group and len(group.squad) == 1:
         group.squad[0].silence_enabled = True
         Session.add(group.squad[0])
         Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_SILENCE_ENABLED)
 
 
-@admin_allowed(AdminType.GROUP)
-def disable_thorns(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def disable_thorns(bot: Bot, update: Update, user: User):
     group = Session.query(Group).filter_by(id=update.message.chat.id).first()
-    if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
+    if group and len(group.squad) == 1:
         group.squad[0].thorns_enabled = False
         Session.add(group.squad[0])
         Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_THORNS_DISABLED)
 
 
-@admin_allowed(AdminType.GROUP)
-def disable_silence(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def disable_silence(bot: Bot, update: Update, user: User):
     group = Session.query(Group).filter_by(id=update.message.chat.id).first()
-    if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
+    if group and len(group.squad) == 1:
         group.squad[0].silence_enabled = False
         Session.add(group.squad[0])
         Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_SILENCE_DISABLED)
 
 
-@admin_allowed(AdminType.GROUP)
-def disable_reminders(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def disable_reminders(bot: Bot, update: Update, user: User):
     group = Session.query(Group).filter_by(id=update.message.chat.id).first()
-    if update.message.chat.type == 'supergroup' and group is not None and len(group.squad) == 1:
+    if group and len(group.squad) == 1:
         group.squad[0].reminders_enabled = False
         Session.add(group.squad[0])
         Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REMINDERS_DISABLED)
 
 
-@admin_allowed(AdminType.GROUP)
-def squad_list(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP
+)
+def squad_list(bot: Bot, update: Update, user: User):
     admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     global_adm = False
     for adm in admin:
@@ -185,7 +226,7 @@ def squad_list(bot: Bot, update: Update):
 
 
 @command_handler()
-def squad_request(bot: Bot, update: Update):
+def squad_request(bot: Bot, update: Update, user: User):
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     if user is not None:
         if user.username is None:
@@ -206,8 +247,10 @@ def squad_request(bot: Bot, update: Update):
             send_async(bot, chat_id=update.message.chat.id, text=MSG_NO_PROFILE_IN_BOT)
 
 
-@admin_allowed(AdminType.GROUP)
-def list_squad_requests(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP
+)
+def list_squad_requests(bot: Bot, update: Update, user: User):
     admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     group_admin = []
     for adm in admin:
@@ -235,8 +278,12 @@ def list_squad_requests(bot: Bot, update: Update):
                    text=MSG_SQUAD_REQUEST_EMPTY)
 
 
-@admin_allowed(AdminType.GROUP)
-def open_hiring(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def open_hiring(bot: Bot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         squad.hiring = True
@@ -245,8 +292,12 @@ def open_hiring(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_RECRUITING_ENABLED)
 
 
-@admin_allowed(AdminType.GROUP)
-def close_hiring(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def close_hiring(bot: Bot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         squad.hiring = False
@@ -255,8 +306,10 @@ def close_hiring(bot: Bot, update: Update):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_RECRUITING_DISABLED)
 
 
-@admin_allowed(AdminType.GROUP)
-def remove_from_squad(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP
+)
+def remove_from_squad(bot: Bot, update: Update, user: User):
     admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     group_admin = []
     for adm in admin:
@@ -273,8 +326,8 @@ def remove_from_squad(bot: Bot, update: Update):
                        reply_markup=markup, parse_mode=ParseMode.HTML)
 
 
-@user_allowed
-def leave_squad_request(bot: Bot, update: Update):
+@command_handler()
+def leave_squad_request(bot: Bot, update: Update, user: User):
     member = Session.query(SquadMember).filter_by(user_id=update.message.from_user.id).first()
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
     if member:
@@ -326,8 +379,12 @@ def leave_squad(bot: Bot, user: User, member: SquadMember, message):
         send_async(bot, chat_id=user.id, text=MSG_SQUAD_ALREADY_DELETED)
 
 
-@admin_allowed(AdminType.GROUP)
-def add_to_squad(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def add_to_squad(bot: Bot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         username = update.message.text.split(' ', 1)
@@ -347,8 +404,12 @@ def add_to_squad(bot: Bot, update: Update):
                                reply_markup=markup)
 
 
-@admin_allowed(AdminType.FULL)
-def force_add_to_squad(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+    allow_private=False,
+    allow_group=True
+)
+def force_add_to_squad(bot: Bot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         username = update.message.text.split(' ', 1)
@@ -377,8 +438,12 @@ def force_add_to_squad(bot: Bot, update: Update):
                                 '@' + user.username))
 
 
-@admin_allowed(AdminType.GROUP)
-def call_squad(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def call_squad(bot: Bot, update: Update, user: User):
     limit = 3
     count = 0
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
@@ -396,8 +461,10 @@ def call_squad(bot: Bot, update: Update):
             count += 1
 
 
-@admin_allowed(AdminType.GROUP)
-def battle_attendance_show(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP
+)
+def battle_attendance_show(bot: Bot, update: Update, user: User):
     admin = Session.query(Admin, Squad).filter(Admin.user_id == update.message.from_user.id,
                                                Squad.chat_id == Admin.admin_group).all()
     group_admin = []
@@ -431,8 +498,10 @@ def battle_attendance_show(bot: Bot, update: Update):
                        text=text)
 
 
-@admin_allowed(AdminType.GROUP)
-def battle_reports_show(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.GROUP
+)
+def battle_reports_show(bot: Bot, update: Update, user: User):
     admin = Session.query(Admin, Squad).filter(Admin.user_id == update.message.from_user.id,
                                                Squad.chat_id == Admin.admin_group).all()
     group_admin = []

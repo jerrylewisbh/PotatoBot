@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from json import loads
 from uuid import uuid4
 
+from core.decorators import command_handler
 from functions.common import StockType, stock_compare_text
 from functions.guild import generate_gstock_requests
 from functions.inline_markup import (QueryType, generate_forward_markup,
@@ -33,7 +34,6 @@ from telegram.ext import Job, JobQueue
 from telegram.ext.dispatcher import run_async
 
 from config import WAITING_ROOM_LINK
-from core.decorators import admin_allowed, user_allowed
 from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Castle, Icons
 from core.template import fill_char_template
 from core.texts import *
@@ -48,8 +48,10 @@ order_updated = {}
 Session()
 
 
-@admin_allowed()
-def send_status(bot: Bot, update: Update):
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def send_status(bot: Bot, update: Update, user: User):
     msg = MSG_GROUP_STATUS_CHOOSE_CHAT
     squads = Session.query(Squad).all()
     inline_keys = []
@@ -115,7 +117,7 @@ def update_confirmed(bot: Bot, job: Job):
 
 
 @run_async
-@user_allowed
+@command_handler()
 def callback_query(bot: Bot, update: Update, chat_data: dict, job_queue: JobQueue):
     try:
         update_group(update.callback_query.message.chat)
