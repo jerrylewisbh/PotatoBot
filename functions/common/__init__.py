@@ -2,10 +2,11 @@ import logging
 from datetime import datetime
 from enum import Enum
 
+import redis
 from sqlalchemy import func
 from telegram import Bot, ParseMode, Update, TelegramError
 
-from config import CWBOT_ID
+from config import CWBOT_ID, REDIS_SERVER, REDIS_PORT
 from core.decorators import command_handler
 from core.state import GameState, get_game_state
 from core.texts import *
@@ -161,12 +162,18 @@ def stock_compare_text(old_stock, new_stock):
         resource_diff_add, resource_diff_del = get_diff(resources_new, resources_old)
         msg = MSG_STOCK_COMPARE_HARVESTED
         hits = 0
+        running_total = 0
         if len(resource_diff_add):
             for key, val in resource_diff_add:
                 item = __get_item(key)
                 if item and item.pillagable:
+                    gain_worth = __get_item_worth(item.name)
                     hits += 1
-                    msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
+                    if item.tradable:
+                        running_total += (gain_worth * val)
+                        msg += MSG_STOCK_COMPARE_W_PRICE.format(key, gain_worth, val, (gain_worth * val))
+                    else:
+                        msg += MSG_STOCK_COMPARE_WO_PRICE.format(key, val)
         if hits == 0:
             msg += MSG_EMPTY
 
@@ -176,10 +183,20 @@ def stock_compare_text(old_stock, new_stock):
             for key, val in resource_diff_del:
                 item = __get_item(key)
                 if item and item.pillagable:
+                    loss_worth = __get_item_worth(item.name)
                     hits += 1
-                    msg += MSG_STOCK_COMPARE_FORMAT.format(key, val)
+                    if item.tradable:
+                        running_total -= (loss_worth * val)
+                        msg += MSG_STOCK_COMPARE_W_PRICE.format(key, loss_worth, val, (loss_worth * val))
+                    else:
+                        msg += MSG_STOCK_COMPARE_WO_PRICE.format(key, val)
         if hits == 0:
             msg += MSG_EMPTY
+
+
+        if running_total != 0:
+            msg += MSG_STOCK_OVERALL_CHANGE.format(running_total)
+
         return msg
 
     return None
@@ -342,3 +359,12 @@ def unban(bot: Bot, update: Update, user: User):
             send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_NOT_BANNED)
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
+
+
+def __get_item_worth(item_name):
+    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+    item_prices = r.lrange(item_name, 0, -1)
+
+    if item_prices:
+        return int(min(item_prices))
+    return None

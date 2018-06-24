@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from core.decorators import command_handler
 from functions.common import StockType, stock_compare_text
-from functions.guild import generate_gstock_requests
+from functions.guild.stock import generate_gstock_requests
 from functions.inline_markup import (QueryType, generate_forward_markup,
                                           generate_group_info,
                                           generate_group_manage,

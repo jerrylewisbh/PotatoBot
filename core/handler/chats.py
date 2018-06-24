@@ -8,6 +8,7 @@ from functions.activity import *
 from functions.admins import *
 from functions.common import *
 from functions.common.pin import *
+from functions.guild.stock import withdraw
 from functions.profile import *
 from functions.squad import *
 from functions.triggers import *
@@ -59,5 +60,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(PROFESSION, profession_update))
     disp.add_handler(RegexHandler(ACCESS_CODE, handle_access_token))
     disp.add_handler(RegexHandler(to_re(STOCK), stock_compare_forwarded, pass_chat_data=True))
+
+    disp.add_handler(RegexHandler(to_re(GUILD_WAREHOUSE ), withdraw))
 
     logging.info("Finished adding chat handlers")

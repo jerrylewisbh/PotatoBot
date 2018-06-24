@@ -1,4 +1,4 @@
-from config import CWBOT_ID
+from config import CWBOT_ID, EXT_ID
 from core.decorators import command_handler
 from core.regexp import ACCESS_CODE
 from core.state import GameState, get_game_state

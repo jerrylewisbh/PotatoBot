@@ -164,9 +164,12 @@ MSG_PING = 'Go and dig some potatoes, @{}!'
 
 MSG_STOCK_COMPARE_HARVESTED = '📦<b>You got:</b>\n'
 MSG_STOCK_COMPARE_LOST = '\n📦<b>You lost:</b>\n'
-MSG_STOCK_COMPARE_FORMAT = '{} ({})\n'
+MSG_STOCK_OVERALL_CHANGE = '\n<b>Estimated change:</b> {0:+}💰\n'
+MSG_STOCK_COMPARE_W_PRICE = '{} <i>({} x {} = {}💰)</i>\n'
+MSG_STOCK_COMPARE_WO_PRICE = '{} ({})\n'
 MSG_STOCK_COMPARE_WAIT = 'Waiting for data to compare...'
 MSG_STOCK_PRICE = "{} <i>({} x {} = {}💰)</i>\n"
+MSG_STOCK_OVERALL_PRICE = "\nEstimated overall worth: {}💰\n"
 MSG_STOCK_OVERALL_PRICE = "\nEstimated overall worth: {}💰\n"
 
 
@@ -658,3 +661,7 @@ SNIPE_SUSPENDED_NOTICE = '*Warning:* Sniping items is currently suspended since 
 SNIPE_CONTINUED = "Automated buying will now be continued."
 SNIPE_NOT_SUSPENDED = "Automated buying is not suspended."
 ITEM_LIST = "*Items I know:*\n"
+
+
+GUILD_DEPOSIT = "*Deposit:*"
+GUILD_WITHDRAW = "*Withdraw:*"

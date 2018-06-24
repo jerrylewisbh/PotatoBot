@@ -38,7 +38,8 @@ BUILD_REPORT = 'Ты вернулся со стройки: (.+), прогрес�
 
 REPAIR_REPORT = 'Здание отремонтировано: (.+)'
 
-STOCK = '📦storage'
+STOCK = '📦Storage'
+GUILD_WAREHOUSE = 'Guild Warehouse:'
 
 PROFESSION = '(.*) skills levels:'
 

@@ -3,12 +3,9 @@ import re
 from datetime import datetime, timedelta
 from enum import Enum
 
-import redis
-from functions.inline_markup import (generate_profile_buttons,
-                                          generate_settings_buttons)
 from telegram import Bot, ParseMode, Update
 
-from config import CASTLE, REDIS_PORT, REDIS_SERVER
+from config import CASTLE
 from core.enums import CASTLE_MAP
 from core.regexp import BUILD_REPORT, HERO, PROFESSION, REPAIR_REPORT, REPORT
 from core.state import get_last_battle
@@ -17,7 +14,9 @@ from core.texts import *
 from core.types import (BuildReport, Character, Equip, Item, Profession,
                         Report, Session, Stock, User, new_item)
 from core.utils import send_async
-from functions.common import StockType, ban_traitor
+from functions.common import StockType, ban_traitor, __get_item_worth
+from functions.inline_markup import (generate_profile_buttons,
+                                     generate_settings_buttons)
 
 
 class BuildType(Enum):
@@ -90,7 +89,7 @@ def parse_hero(bot: Bot, profile, user_id, date):
             Character.characterClass is not None
         ).order_by(Character.date).first()
         if last_with_class:
-            char.characterClass = last_with_class.characterClass
+            char.characterClass = last_with_class
 
         # if parsed_data.group(21):
         #    char.pet = str(parsed_data.group(21))
@@ -432,8 +431,6 @@ def get_stock_before_after_war(user: User) -> tuple:
 
 
 def annotate_stock_with_price(bot: Bot, stock: str):
-    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
-
     stock_text = ""
     overall_worth = 0
     for line in stock.splitlines():
@@ -446,16 +443,15 @@ def annotate_stock_with_price(bot: Bot, stock: str):
             elif db_item and not db_item.tradable:
                 stock_text += "{}\n".format(line)
             else:
-                item_prices = r.lrange(find.group("item"), 0, -1)
-                if item_prices:
-                    min_price = int(min(item_prices))
+                lowest_price = __get_item_worth(find.group("item"))
+                if lowest_price:
                     count = int(find.group("count"))
-                    item_overall = (count * min_price)
+                    item_overall = (count * lowest_price)
                     overall_worth += item_overall
                     stock_text += MSG_STOCK_PRICE.format(
                         find.group("item"),
                         count,
-                        min_price,
+                        lowest_price,
                         item_overall,
                     )
                 else:
@@ -466,3 +462,4 @@ def annotate_stock_with_price(bot: Bot, stock: str):
     stock_text += MSG_STOCK_OVERALL_PRICE.format(overall_worth)
 
     return stock_text
+

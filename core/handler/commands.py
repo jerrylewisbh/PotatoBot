@@ -3,6 +3,7 @@ import logging
 from core.handler import *
 from core.types import AdminType
 from functions.common import admin_panel, ban, help_msg, kick, ping, unban
+from functions.guild.stock import deposit, withdraw
 from functions.profile import (find_by_character, find_by_id,
                                     find_by_username, grant_access, revoke,
                                     show_char, show_report, user_panel)
@@ -96,5 +97,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler('items', list_items))
     disp.add_handler(CommandHandler('hide', hide_items))
     disp.add_handler(CommandHandler('revoke', revoke))
+
+    disp.add_handler(CommandHandler('deposit', deposit))
 
     logging.info("Finished adding button handlers")
