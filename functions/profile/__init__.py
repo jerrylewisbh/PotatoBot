@@ -2,7 +2,7 @@ from config import CWBOT_ID, EXT_ID
 from core.decorators import command_handler
 from core.regexp import ACCESS_CODE
 from core.state import GameState, get_game_state
-from core.types import AdminType
+from core.types import AdminType, check_admin, Admin
 from cwmq import Publisher, wrapper
 from functions.common import stock_compare_text, stock_split
 from functions.profile import *
@@ -381,43 +381,100 @@ def settings(bot: Bot, update: Update, user: User):
 
 
 @command_handler(
-    min_permission=AdminType.FULL,
+    min_permission=AdminType.GROUP,
 )
 def find_by_username(bot: Bot, update: Update, user: User):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
-        if msg != '':
-            user = Session.query(User).filter_by(username=msg).first()
-            __send_user_with_settings(bot, update, user)
-        else:
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+        if msg:
+            account = Session.query(User).filter_by(username=msg).first()
+
+            if account:
+                admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+                global_adm = False
+                for adm in admin:
+                    if adm.admin_type <= AdminType.FULL.value:
+                        global_adm = True
+                        break
+
+                if global_adm:
+                    __send_user_with_settings(bot, update, account)
+                    return
+                else:
+                    group_ids = []
+                    for adm in admin:
+                        group_ids.append(adm.admin_group)
+
+                    if account.member.squad.chat_id in group_ids:
+                        __send_user_with_settings(bot, update, account)
+                        return
+
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
 
 
 @command_handler(
-    min_permission=AdminType.FULL,
+    min_permission=AdminType.GROUP,
 )
 def find_by_character(bot: Bot, update: Update, user: User):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg:
-            char = Session.query(Character).filter_by(name=msg).order_by(Character.date.desc()).first()
-            if char:
-                __send_user_with_settings(bot, update, char.user)
-            else:
-                send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+            account = Session.query(Character).filter_by(name=msg).order_by(Character.date.desc()).first()
+            if account:
+                account = account.user
+
+                admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+                global_adm = False
+                for adm in admin:
+                    if adm.admin_type <= AdminType.FULL.value:
+                        global_adm = True
+                        break
+
+                if global_adm:
+                    __send_user_with_settings(bot, update, account)
+                    return
+                else:
+                    group_ids = []
+                    for adm in admin:
+                        group_ids.append(adm.admin_group)
+
+                    if account.member.squad.chat_id in group_ids:
+                        __send_user_with_settings(bot, update, account)
+                        return
+
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
 
 
 @command_handler(
-    min_permission=AdminType.FULL,
+    min_permission=AdminType.GROUP,
 )
 def find_by_id(bot: Bot, update: Update, user: User):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
         if msg:
-            user = Session.query(User).filter_by(id=msg).first()
-            __send_user_with_settings(bot, update, user)
-        else:
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+            account = Session.query(User).filter_by(id=msg).first()
+
+            if account:
+                admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
+                global_adm = False
+                for adm in admin:
+                    if adm.admin_type <= AdminType.FULL.value:
+                        global_adm = True
+                        break
+
+                if global_adm:
+                    __send_user_with_settings(bot, update, account)
+                    return
+                else:
+                    group_ids = []
+                    for adm in admin:
+                        group_ids.append(adm.admin_group)
+
+                    if account.member.squad.chat_id in group_ids:
+                        __send_user_with_settings(bot, update, account)
+                        return
+
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)

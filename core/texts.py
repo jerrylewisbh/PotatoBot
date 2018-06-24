@@ -70,12 +70,7 @@ Super administrator commands.py:
 /list_admins — show list of current chat administrators.
 /enable_trigger — allow everyone to call trigger.
 /disable_trigger — forbid everyone to call trigger.
-/find <user> - Show user status by telegram user name
-/findc <ign> - Show user status by ingame name
-/findi <id> - Show user status by telegram uquique id
 /get_log - Get latest logfile
-
-
 
 Squad commands.py:
 /add_squad - Create a new squad and associates it to the current group
@@ -92,7 +87,9 @@ Squad commands.py:
 /forceadd <user> - add user to a squad without asking for confirmation
 /ban <user> <reason> - Ban an user from the squad
 /unban <user> - Unban an user from the squad
-
+/find <user> - Show user status by telegram user name
+/findc <ign> - Show user status by ingame name
+/findi <id> - Show user status by telegram uquique id
 
 User commands.py:
 /items - List known items
@@ -303,7 +300,8 @@ MSG_REPORT_OLD = 'Your report stinks like rotten potato, next time try to send i
 MSG_REPORT_EXISTS = 'The report for this battle has already been submitted.'
 MSG_REPORT_OK = 'Thank you. Do not forget to forward reports on every battle.'
 
-MSG_PROFILE_NOT_FOUND = 'In the potato plantation records, there is still no data about this hero'
+MSG_PROFILE_NOT_FOUND = 'In the potato plantation records, there is still no data about this hero or you are not ' \
+                        'permitted to see him.'
 MSG_SQUAD_REQUEST_EMPTY = 'At the moment no one wants to join you.'
 
 MSG_NO_PROFILE_IN_BOT = 'Please forward me a recent /hero command or grant me access to your profile!'
