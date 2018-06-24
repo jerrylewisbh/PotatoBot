@@ -125,6 +125,8 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
         user = create_or_update_user(update.effective_user)
 
         data = json.loads(update.callback_query.data)
+        print(data)
+        print(QueryType(data['t']))
         if data['t'] == QueryType.GroupList.value:
             group_list(bot, update, user, data)
         elif data['t'] == QueryType.GroupInfo.value:
@@ -559,10 +561,12 @@ def squad_list(bot, update):
             group_ids.append(adm.admin_group)
         squads = Session.query(Squad).filter(Squad.chat_id in group_ids).all()
     markup = generate_squad_list(squads)
-    bot.editMessageText(MSG_SQUAD_LIST,
-                        update.callback_query.message.chat.id,
-                        update.callback_query.message.message_id,
-                        reply_markup=markup)
+    bot.editMessageText(
+        MSG_SQUAD_LIST,
+        update.callback_query.message.chat.id,
+        update.callback_query.message.message_id,
+        reply_markup=markup
+    )
 
 
 def trigger_order_button(bot: Bot, update: Update, user: User, data: dict, chat_data: dict):
@@ -683,12 +687,17 @@ def squad_leave(bot, data, update, user):
 
 
 def list_members(bot, update, user, data):
-    squad = Session.query(Squad).filter_by(chat_id=data['id']).first()
+    squad = Session.query(Squad).filter(Squad.chat_id == data['id']).first()
     markups = generate_squad_members(squad.members)
+    print(markups)
     for markup in markups:
-        send_async(bot, chat_id=update.callback_query.message.chat.id,
-                   text=squad.squad_name,
-                   reply_markup=markup, parse_mode=ParseMode.HTML)
+        send_async(
+            bot,
+            chat_id=update.callback_query.message.chat.id,
+            text=squad.squad_name,
+            reply_markup=markup,
+            parse_mode=ParseMode.HTML
+        )
 
 
 def show_skills(bot, update, user, data):
