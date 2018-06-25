@@ -1,15 +1,18 @@
 import logging
+
+import re
+
 from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
 
 import redis
 from telegram import Bot, ParseMode, Update
 
 from core.decorators import command_handler
-from functions.exchange import get_item_by_cw_id
 from core.texts import *
-from core.types import Session, User, UserStockHideSetting
+from core.types import Session, User, UserStockHideSetting, new_item, Item
 from core.utils import send_async
 from cwmq import wrapper
+from functions.exchange import get_item_by_cw_id
 
 
 def __get_autohide_settings(user):
@@ -160,6 +163,36 @@ def hide_items(bot: Bot, update: Update, user: User, **kwargs):
 
     autohide(user)
 
+@command_handler()
+def hide_list(bot: Bot, update: Update, user: User):
+    """ Generate a forwardable list of items to hide... """
+    if user.is_api_stock_allowed:
+        wrapper.update_stock(user)
+
+    if not user.stock:
+        return
+
+    text = HIDE_LIST
+
+    for line in user.stock.stock.splitlines():
+        find = re.search(r"(?P<item>.+)(?: \((?P<count>[0-9]+)\))", line)
+        if find:
+            db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
+            if not db_item:
+                new_item(bot, find.group("item"), False)
+                db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
+
+            if db_item.cw_id:
+                text += "\n[{} ({}x)](https://t.me/share/url?url=/wts_{}_{}_1000)".format(
+                    db_item.name, find.group("count"), db_item.cw_id, find.group("count"),
+                )
+
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=text,
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
 def exit_hide_mode(user):
     logging.debug("[Hide] user_id='%s' exiting hide_mode", user.id)

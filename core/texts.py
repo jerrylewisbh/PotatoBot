@@ -628,6 +628,7 @@ HIDE_ITEM_NOT_TRADABLE = "Sorry, this item is currently not tradable!"
 HIDE_REMOVED = "{} was removed from your hiding list!"
 HIDE_RESULT_INTRO = "<b>Hiding finished! Your results:\n</b>"
 HIDE_BOUGHT = "You bought <b>{}</b> for {}💰\n"
+HIDE_LIST = "*Choose items to hide and forward to Chatwars:*"
 
 SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
     "*Automated buying of items at a given price*\n" \
