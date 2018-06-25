@@ -26,13 +26,18 @@ def offers_handler(channel, method, properties, body, dispatcher):
     data = json.loads(body)
 
     try:
-        item = Session.query(Item).filter(func.lower(Item.name) == data['item'].lower()).first()
+        item = Session.query(Item).filter(
+            func.lower(Item.name) == data['item'].lower()
+        ).first()
+
         if not item:
             new_item(dispatcher.bot, data['item'], True)
         logging.debug("%s/%s: %s", item.id, item.cw_id, item.name)
 
         # No orders...
-        orders = item.user_orders.order_by(UserExchangeOrder.id).all()
+        orders = item.user_orders.filter(
+            UserExchangeOrder.max_price <= data['price']
+        ).order_by(UserExchangeOrder.id).all()
         if not orders:
             channel.basic_ack(method.delivery_tag)
             return
