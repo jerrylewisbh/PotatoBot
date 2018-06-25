@@ -1,5 +1,6 @@
 # Ignore stats .png
 *.png
+session_name.session
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

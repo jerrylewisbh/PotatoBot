@@ -1,12 +1,23 @@
-from telegram import Bot, Update
+import logging
+from datetime import datetime, timedelta
+from json import loads
+
+from telegram import Bot, Update, TelegramError
+from telegram.ext import run_async, JobQueue, Job
 
 from core.decorators import command_handler
+from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Icons, Castle
 from core.texts import *
-from core.types import Admin, AdminType, MessageType, Session, User
+from core.texts import MSG_ORDER_CLEARED_BY_HEADER, MSG_EMPTY, MSG_ORDER_SENT, MSG_ORDER_SEND_HEADER, MSG_ORDER_CLEARED, \
+    MSG_ORDER_CLEARED_ERROR
+from core.types import Admin, AdminType, MessageType, Session, User, Order, OrderGroup, Squad, SquadMember, OrderCleared
 from core.utils import send_async
-from functions.inline_markup import generate_order_groups_markup, generate_flag_orders
+from functions.inline_markup import generate_order_groups_markup, generate_flag_orders, generate_ok_markup, \
+    generate_forward_markup, generate_order_chats_markup
 
 Session()
+
+order_updated = {}
 
 
 @command_handler(
@@ -64,3 +75,251 @@ def orders(bot: Bot, update: Update, user: User, chat_data):
     markup = generate_flag_orders()
     chat_data['order_wait'] = True
     send_async(bot, chat_id=update.message.chat.id, text=MSG_FLAG_CHOOSE_HEADER, reply_markup=markup)
+
+
+@run_async
+def send_order(bot, order, order_type, chat_id, markup):
+    try:
+        msg_sent = None
+        if order_type == MessageType.AUDIO.value:
+            msg_sent = bot.send_audio(chat_id, order, reply_markup=markup)
+        elif order_type == MessageType.DOCUMENT.value:
+            msg_sent = bot.send_document(chat_id, order, reply_markup=markup)
+        elif order_type == MessageType.VOICE.value:
+            msg_sent = bot.send_voice(chat_id, order, reply_markup=markup)
+        elif order_type == MessageType.STICKER.value:
+            msg_sent = bot.send_sticker(chat_id, order, reply_markup=markup)
+        elif order_type == MessageType.CONTACT.value:
+            msg = order.replace('\'', '"')
+            contact = loads(msg)
+            if 'phone_number' not in contact.keys():
+                contact['phone_number'] = None
+            if 'first_name' not in contact.keys():
+                contact['first_name'] = None
+            if 'last_name' not in contact.keys():
+                contact['last_name'] = None
+                msg_sent = bot.send_contact(chat_id,
+                                            contact['phone_number'],
+                                            contact['first_name'],
+                                            contact['last_name'],
+                                            reply_markup=markup)
+        elif order_type == MessageType.VIDEO.value:
+            msg_sent = bot.send_video(chat_id, order, reply_markup=markup)
+        elif order_type == MessageType.VIDEO_NOTE.value:
+            msg_sent = bot.send_video_note(chat_id, order, reply_markup=markup)
+        elif order_type == MessageType.LOCATION.value:
+            msg = order.replace('\'', '"')
+            location = loads(msg)
+            msg_sent = bot.send_location(chat_id, location['latitude'], location['longitude'], reply_markup=markup)
+        elif order_type == MessageType.PHOTO.value:
+            msg_sent = bot.send_photo(chat_id, order, reply_markup=markup)
+        else:
+            logging.info("SEND ORDER")
+            msg_sent = send_async(bot, chat_id=chat_id, text=order, disable_web_page_preview=True, reply_markup=markup)
+        return msg_sent
+    except TelegramError as err:
+        bot.logger.error(err.message)
+        return None
+
+
+def order_button(bot: Bot, update: Update, user: User, data, chat_data):
+    order_text = chat_data['order']
+    order_type = chat_data['order_type']
+    order_pin = chat_data['pin'] if 'pin' in chat_data else True
+    order_btn = chat_data['btn'] if 'btn' in chat_data else True
+    logging.info("Order: text='%s', order_btn='%s', order_text IN CASTLE_LIST='%s'",
+                 order_text, order_btn, (order_text in CASTLE_LIST))
+    if not data['g']:
+        if order_btn:
+            order = Order()
+            order.text = order_text
+            order.chat_id = data['id']
+            order.date = datetime.now()
+            msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY).result()
+            if msg:
+                order.confirmed_msg = msg.message_id
+            else:
+                order.confirmed_msg = 0
+            Session.add(order)
+            Session.commit()
+            markup = generate_ok_markup(
+                order.id,
+                0,
+                order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
+                order_text
+            )
+            msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
+        else:
+            markup = None
+            if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
+                markup = generate_forward_markup(order_text, 0)
+            msg = send_order(bot, order_text, order_type, data['id'], markup).result().result()
+        if order_pin and msg:
+            try:
+                bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': data['id'],
+                                                                    'message_id': msg.message_id,
+                                                                    'disable_notification': False})
+            except TelegramError as err:
+                bot.logger.error(err.message)
+    else:
+        group = Session.query(OrderGroup).filter_by(id=data['id']).first()
+        for item in group.items:
+            if order_btn:
+                order = Order()
+                order.text = order_text
+                order.chat_id = item.chat_id
+                order.date = datetime.now()
+                msg = send_async(
+                    bot,
+                    chat_id=order.chat_id,
+                    text=MSG_ORDER_CLEARED_BY_HEADER +
+                    MSG_EMPTY
+                ).result()
+                if msg:
+                    order.confirmed_msg = msg.message_id
+                else:
+                    order.confirmed_msg = 0
+                Session.add(order)
+                Session.commit()
+                markup = generate_ok_markup(
+                    order.id,
+                    0,
+                    order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
+                    order_text
+                )
+                msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
+            else:
+                markup = None
+                if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
+                    markup = generate_forward_markup(order_text, 0)
+                msg = send_order(bot, order_text, order_type, item.chat_id, markup).result().result()
+            if order_pin and msg:
+                try:
+                    bot.request.post(bot.base_url + '/pinChatMessage',
+                                     {'chat_id': item.chat_id, 'message_id': msg.message_id,
+                                      'disable_notification': False})
+                except TelegramError as err:
+                    bot.logger.error(err.message)
+    update.callback_query.answer(text=MSG_ORDER_SENT)
+
+
+def trigger_order_button(bot: Bot, update: Update, user: User, data: dict, chat_data: dict):
+    if 'btn' in chat_data:
+        chat_data['btn'] = not chat_data['btn']
+    else:
+        chat_data['btn'] = False
+    if data['g']:
+        admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
+        markup = generate_order_groups_markup(
+            admin_user,
+            chat_data['pin'] if 'pin' in chat_data else True,
+            chat_data['btn'] if 'btn' in chat_data else True)
+        bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)
+    else:
+        markup = generate_order_chats_markup(chat_data['pin'] if 'pin' in chat_data else True,
+                                             chat_data['btn'] if 'btn' in chat_data else True)
+        bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)
+
+
+def trigger_order_pin(bot: Bot, update: Update, user: User, data: dict, chat_data: dict):
+    if 'pin' in chat_data:
+        chat_data['pin'] = not chat_data['pin']
+    else:
+        chat_data['pin'] = False
+    if data['g']:
+        admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
+        markup = generate_order_groups_markup(
+            admin_user,
+            chat_data['pin'] if 'pin' in chat_data else True,
+            chat_data['btn'] if 'btn' in chat_data else True)
+        bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)
+    else:
+        markup = generate_order_chats_markup(chat_data['pin'] if 'pin' in chat_data else True,
+                                             chat_data['btn'] if 'btn' in chat_data else True)
+        bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)
+
+
+def inline_order_confirmed(bot: Bot, update: Update, user: User, data: dict, job_queue: JobQueue):
+    order = Session.query(Order).filter_by(id=data['id']).first()
+    if order is not None:
+        squad = Session.query(Squad).filter_by(chat_id=order.chat_id).first()
+        if squad is not None:
+            squad_member = Session.query(SquadMember).filter_by(squad_id=squad.chat_id,
+                                                                user_id=update.callback_query.from_user.id,
+                                                                approved=True).first()
+            if squad_member is not None:
+                order_ok = Session.query(OrderCleared).filter_by(order_id=data['id'],
+                                                                 user_id=squad_member.user_id).first()
+                if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
+                    order_ok = OrderCleared()
+                    order_ok.order_id = data['id']
+                    order_ok.user_id = update.callback_query.from_user.id
+                    Session.add(order_ok)
+                    Session.commit()
+                    if order.confirmed_msg != 0:
+                        if order.id not in order_updated or \
+                                    datetime.now() - order_updated[order.id] > timedelta(seconds=4):
+                            order_updated[order.id] = datetime.now()
+                            job_queue.run_once(update_confirmed, 5, order)
+                    update.callback_query.answer(text=MSG_ORDER_CLEARED)
+                else:
+                    update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
+            else:
+                update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
+        else:
+            order_ok = Session.query(OrderCleared).filter_by(order_id=data['id'],
+                                                             user_id=update.callback_query.from_user.id).first()
+            if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
+                order_ok = OrderCleared()
+                order_ok.order_id = data['id']
+                order_ok.user_id = update.callback_query.from_user.id
+                Session.add(order_ok)
+                Session.commit()
+                if order.confirmed_msg != 0:
+                    if order.id not in order_updated or \
+                            datetime.now() - order_updated[order.id] > timedelta(seconds=4):
+                        order_updated[order.id] = datetime.now()
+                        job_queue.run_once(update_confirmed, 5, order)
+                update.callback_query.answer(text=MSG_ORDER_CLEARED)
+            else:
+                update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
+
+
+def inline_orders(bot: Bot, update: Update, user: User, data: dict, chat_data: dict):
+    chat_data['order_wait'] = False
+    if 'txt' in data and len(data['txt']):
+        if data['txt'] == Icons.LES.value:
+            chat_data['order'] = Castle.LES.value
+        elif data['txt'] == Icons.GORY.value:
+            chat_data['order'] = Castle.GORY.value
+        elif data['txt'] == Icons.SEA.value:
+            chat_data['order'] = Castle.SEA.value
+        else:
+            chat_data['order'] = data['txt']
+    markup = generate_order_chats_markup(chat_data['pin'] if 'pin' in chat_data else True,
+                                         chat_data['btn'] if 'btn' in chat_data else True)
+    bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
+                        update.callback_query.message.chat.id,
+                        update.callback_query.message.message_id,
+                        reply_markup=markup)
+
+
+def update_confirmed(bot: Bot, job: Job):
+    order = job.context
+    confirmed = order.cleared
+    msg = MSG_ORDER_CLEARED_BY_HEADER
+    for confirm in confirmed:
+        msg += str(confirm.user) + '\n'
+    bot.editMessageText(msg, order.chat_id, order.confirmed_msg)

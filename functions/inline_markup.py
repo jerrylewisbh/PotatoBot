@@ -146,12 +146,32 @@ def generate_order_chats_markup(pin=True, btn=True):
     squads = Session.query(Squad).all()
     inline_keys = []
     for squad in squads:
-        inline_keys.append([InlineKeyboardButton(squad.squad_name, callback_data=json.dumps(
-            {'t': QueryType.Order.value, 'g': False, 'id': squad.chat_id}))])
-    inline_keys.append([InlineKeyboardButton(MSG_ORDER_PIN if pin else MSG_ORDER_NO_PIN, callback_data=json.dumps(
-        {'t': QueryType.TriggerOrderPin.value, 'g': False}))])
-    inline_keys.append([InlineKeyboardButton(MSG_ORDER_BUTTON if btn else MSG_ORDER_NO_BUTTON, callback_data=json.dumps(
-        {'t': QueryType.TriggerOrderButton.value, 'g': False}))])
+        inline_keys.append([
+            InlineKeyboardButton(
+                squad.squad_name,
+                callback_data=json.dumps(
+                    {'t': QueryType.Order.value, 'g': False, 'id': squad.chat_id}
+                ))
+        ])
+
+    inline_keys.append([
+        InlineKeyboardButton(
+            MSG_ORDER_PIN if pin else MSG_ORDER_NO_PIN,
+            callback_data=json.dumps(
+                {'t': QueryType.TriggerOrderPin.value, 'g': False}
+            )
+        )
+    ])
+
+    inline_keys.append([
+        InlineKeyboardButton(
+            MSG_ORDER_BUTTON if btn else MSG_ORDER_NO_BUTTON,
+            callback_data=json.dumps(
+                {'t': QueryType.TriggerOrderButton.value, 'g': False}
+            )
+        )
+    ])
+
     inline_markup = InlineKeyboardMarkup(inline_keys)
     return inline_markup
 
@@ -509,10 +529,20 @@ def generate_fire_up(members):
     limit = limit if len(members) > limit else len(members)
     logging.debug("generate_fire_up - limit: %s", limit)
     for member in members:
-        inline_keys.append([InlineKeyboardButton('🔥{}: {}⚔ {}🛡'.format(member.user, member.user.character.attack,
-                                                                         member.user.character.defence),
-                                                 callback_data=json.dumps(
-                                                     {'t': QueryType.LeaveSquad.value, 'id': member.user_id}))])
+        if not member.user.character:
+            continue
+        inline_keys.append([
+            InlineKeyboardButton(
+                '🔥{}: {}⚔ {}🛡'.format(
+                    member.user,
+                    member.user.character.attack,
+                    member.user.character.defence
+                ),
+                callback_data=json.dumps(
+                    {'t': QueryType.LeaveSquad.value, 'id': member.user_id}
+                )
+            )
+        ])
         count = count + 1
         if count >= limit:
             count = 0

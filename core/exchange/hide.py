@@ -13,7 +13,7 @@ from cwmq import wrapper
 
 
 def __get_autohide_settings(user):
-    logging.warning("Getting UserStockHideSetting for %s", user.id)
+    logging.info("Getting UserStockHideSetting for %s", user.id)
 
     settings = user.hide_settings.order_by("priority").all()
     if not settings:
@@ -215,7 +215,7 @@ def auto_hide(bot: Bot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
-    logging.warning("[Hide] auto_hide called by %s - args='%s'", update.message.chat.id, args)
+    logging.info("[Hide] auto_hide called by %s - args='%s'", update.message.chat.id, args)
 
     if len(args) < 1 or len(args) > 3:
         send_async(

@@ -6,7 +6,7 @@ from typing import Optional
 
 from functions.common import (get_weighted_diff, stock_compare_text,
                                    stock_split)
-from functions.inline_keyboard_handling import send_order
+from functions.orders import send_order
 from functions.inline_markup import QueryType
 from sqlalchemy import and_, func, tuple_
 from sqlalchemy.exc import SQLAlchemyError

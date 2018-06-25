@@ -1,40 +1,35 @@
-# -*- coding: utf-8 -*-
-import json
-import redis
+from uuid import uuid4
 
-from config import REDIS_SERVER, REDIS_PORT
+from telegram import (InlineQueryResultArticle, InputTextMessageContent)
+
+from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Castle
+from core.types import (Session)
+from functions.guild.stock import generate_gstock_requests
+
+Session()
 
 
-def get_action(uuid):
-    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
-    action = json.loads(r.get(uuid))
-    return action
+def inlinequery(bot, update):
+    """Handle the inline query."""
+    query = update.inline_query.query
+    results = []
 
-def create_button(title: InlineButton, user: User, back: bool = False, **kwargs: object) -> InlineKeyboardButton:
-    """ Convenience wrapper for creating a button... """
-
-    logging.info(title.name)
-    cb = create_callback(
-        title.name,
-        user=user,
-        back=back
-    )
-    return InlineKeyboardButton(str(title.value), callback_data=cb)
-
-def create_callback(action: str, user: User, back: bool = False) -> str:
-    """ Callback data for Telegram is limited to a few bytes. To be more flexible we create a UUID and store the
-    actual callback-data in Redis. Keys are stored for up to one day and then get removed."""
-
-    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
-
-    print(type(action))
-    data = json.dumps({
-        'action': action,
-        'user_id': user.id,
-        'back': back
-    })
-    print(data)
-
-    callback_id = str(uuid.uuid1())
-    r.set(callback_id, data, ex=3600*180) # Age out data after 180 days...
-    return callback_id
+    if query in CASTLE_LIST or query.startswith(TACTICTS_COMMAND_PREFIX):
+        results = [
+            InlineQueryResultArticle(id=0,
+                                     title=("DEFEND " if Castle.BLUE.value == query
+                                                         or query.startswith(TACTICTS_COMMAND_PREFIX)
+                                            else "ATTACK ") + query,
+                                     input_message_content=InputTextMessageContent(query))]
+    elif query.startswith("withdraw ") or query.startswith ("deposit "):
+        withdraw_requests = generate_gstock_requests(query)
+        if withdraw_requests:
+            for entry in withdraw_requests:
+                results.append(
+                    InlineQueryResultArticle(
+                        id=uuid4(),
+                        title=entry["label"],
+                        input_message_content=InputTextMessageContent(entry["command"])
+                    )
+                )
+    update.inline_query.answer(results)

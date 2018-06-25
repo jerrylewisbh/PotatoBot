@@ -6,7 +6,7 @@ MSG_ORDER_STATISTIC_OUT_FORMAT = '{}: {}/{}\n'
 MSG_USER_UNKNOWN = 'No such user'
 
 MSG_NEW_GROUP_ADMIN = """Welcome our new administrator: @{}!
-Check the commands.py list with /help command"""
+Check the list with /help command"""
 MSG_NEW_GROUP_ADMIN_EXISTS = '@{} already has administrator rights'
 
 MSG_DEL_GROUP_ADMIN_NOT_EXIST = '@{} never had any power here!'
@@ -46,7 +46,7 @@ MSG_START_MEMBER_SQUAD_REGISTERED = 'Welcome back 🥔{}!\n\n' \
 
 MSG_ADMIN_WELCOME = 'Welcome, master!'
 
-MSG_HELP_GLOBAL_ADMIN = """Welcome commands.py:
+MSG_HELP_GLOBAL_ADMIN = """Welcome:
 /enable_welcome — enable welcome message.
 /disable_welcome — disable welcome message.
 /set_welcome <text> — set welcome message. \
@@ -55,7 +55,7 @@ if not set to First and Last name, or ID,
 using %last_name%, %first_name%, %id%.
 /show_welcome — show welcome message.
 
-Trigger commands.py:
+Trigger:
 Reply to a message or file with /set_trigger <trigger text> — \
 set message to reply with on a trigger (only current chat)
 /del_trigger <trigger> — delete trigger.
@@ -64,7 +64,7 @@ Reply to a message or file with /set_global_trigger <trigger text> — \
 set message to reply with on a trigger (all chats)
 /del_global_trigger <trigger> — delete trigger.
 
-Super administrator commands.py:
+Super administrator:
 /add_admin <user> — add administrator to current chat.
 /del_admin <user> — delete administrator from current chat.
 /list_admins — show list of current chat administrators.
@@ -72,7 +72,7 @@ Super administrator commands.py:
 /disable_trigger — forbid everyone to call trigger.
 /get_log - Get latest logfile
 
-Squad commands.py:
+Squad:
 /add_squad - Create a new squad and associates it to the current group
 /del_squad - Delete the squad associated with teh group
 /enable_thorns - Prevent non members of the squad be in the group
@@ -91,7 +91,7 @@ Squad commands.py:
 /findc <ign> - Show user status by ingame name
 /findi <id> - Show user status by telegram uquique id
 
-User commands.py:
+User:
 /items - List known items
 /hide - Manually trigger hide
 /resume - Resume suspended sniping
@@ -101,7 +101,7 @@ User commands.py:
 admins - Show Admins/Commanders
 commander - Show Admins/Commanders
 
-Free text commands.py:
+Free text:
 daily stats  - Show squad daily stats
 weekly stats - Show squad weekly stats
 battle stats - Show last batle stats for batle
@@ -116,7 +116,7 @@ Reply any message with Delete to delete it
 
 """
 
-MSG_HELP_GROUP_ADMIN = """Welcome commands.py:
+MSG_HELP_GROUP_ADMIN = """Welcome:
 /enable_welcome — enable welcome message.
 /disable_welcome — disable welcome message.
 /set_welcome <text> — set welcome message. \
@@ -125,7 +125,7 @@ if not set to First and Last name, or ID,
 using %last_name%, %first_name%, %id%.
 /show_welcome — show welcome message.
 
-Squad commands.py:
+Squad:
 /enable_thorns - Prevent non members of the squad be in the group
 /disable_thorns - Allow non members of the group to be in the squad
 /enable_silence  - Deletes all messages typed 3 minutes before battle
@@ -138,7 +138,7 @@ Squad commands.py:
 /unban <user> - Unban an user from the squad
 
 
-Free text commands.py:
+Free text:
 daily stats  - Show squad daily stats
 weekly stats - Show squad weekly stats
 battle stats - Show last batle stats for batle
@@ -206,7 +206,7 @@ MSG_ORDER_CLEARED = 'Recorded, soldier!'
 
 
 MSG_ORDER_CLEARED_ERROR = 'STOP! You do not belong here!!!!'
-MSG_ORDER_SEND_HEADER = 'Where to send?'
+MSG_ORDER_SEND_HEADER = 'Where to send?\n\nImportant: Do not use \"Button\" for battle orders as this slows down the order process considerably!'
 
 MSG_ORDER_GROUP_CONFIG_HEADER = 'Group settings: {}'
 MSG_ORDER_GROUP_NEW = 'Send me the name of a new group of squads'

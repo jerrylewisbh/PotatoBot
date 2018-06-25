@@ -1,14 +1,12 @@
 from config import CWBOT_ID, EXT_ID
 from core.decorators import command_handler
 from core.regexp import ACCESS_CODE
-from core.state import GameState, get_game_state
-from core.types import AdminType, check_admin, Admin
+from core.state import get_game_state, GameState
+from core.types import AdminType, Admin
 from cwmq import Publisher, wrapper
 from functions.common import stock_compare_text, stock_split
-from functions.profile import *
-from functions.profile.util import *
 
-# Get the Publisher Singleton
+from functions.profile.util import *
 from functions.profile.util import __send_user_with_settings
 from functions.reply_markup import generate_user_markup
 
@@ -478,3 +476,86 @@ def find_by_id(bot: Bot, update: Update, user: User):
                         return
 
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
+
+
+def show_hero(bot, update, user, data):
+    user = Session.query(User).filter_by(id=data['id']).first()
+    update.callback_query.answer(text=MSG_CLEARED)
+    back = data['b'] if 'b' in data else False
+
+    # We need a profile first!
+    if not user.character:
+        text = MSG_NO_PROFILE_IN_BOT
+        if user.api_token:
+            text = MSG_API_TRY_AGAIN
+
+        send_async(
+            bot,
+            chat_id=update.callback_query.message.chat.id,
+            text=text,
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    bot.editMessageText(
+        fill_char_template(
+            MSG_PROFILE_SHOW_FORMAT,
+            user,
+            user.character,
+            user.profession
+        ),
+        update.callback_query.message.chat.id,
+        update.callback_query.message.message_id,
+        reply_markup=generate_profile_buttons(user, back)
+    )
+
+
+def show_skills(bot, update, user, data):
+    user = Session.query(User).filter_by(id=data['id']).first()
+    update.callback_query.answer(text=MSG_CLEARED)
+    back = data['b'] if 'b' in data else False
+    bot.editMessageText('{}\n{} {}'.format(user.profession.skillList, MSG_LAST_UPDATE, user.profession.date),
+                        update.callback_query.message.chat.id,
+                        update.callback_query.message.message_id,
+                        reply_markup=generate_profile_buttons(user, back)
+                        )
+
+
+def show_equip(bot, update, user, data):
+    user = Session.query(User).filter_by(id=data['id']).first()
+    update.callback_query.answer(text=MSG_CLEARED)
+    back = data['b'] if 'b' in data else False
+    bot.editMessageText('{}\n\n{} {}'.format(user.equip.equip, MSG_LAST_UPDATE, user.equip.date),
+                        update.callback_query.message.chat.id,
+                        update.callback_query.message.message_id,
+                        reply_markup=generate_profile_buttons(user, back)
+                        )
+
+
+def show_stock(bot, update, user, data):
+    user = Session.query(User).filter_by(id=data['id']).first()
+    update.callback_query.answer(text=MSG_CLEARED)
+    back = data['b'] if 'b' in data else False
+    second_newest = Session.query(Stock).filter_by(
+        user_id=update.callback_query.message.chat.id,
+        stock_type=StockType.Stock.value
+    ).order_by(Stock.date.desc()).limit(1).offset(1).one()
+    stock_diff = stock_compare_text(second_newest.stock, user.stock.stock)
+
+    stock = annotate_stock_with_price(bot, user.stock.stock)
+
+    stock_text = "{}\n{}\n{}\n <i>{}: {}</i>".format(
+        stock,
+        MSG_CHANGES_SINCE_LAST_UPDATE,
+        stock_diff,
+        MSG_LAST_UPDATE,
+        user.stock.date.strftime("%Y-%m-%d %H:%M:%S")
+    )
+
+    bot.editMessageText(
+        stock_text,
+        update.callback_query.message.chat.id,
+        update.callback_query.message.message_id,
+        reply_markup=generate_profile_buttons(user, back),
+        parse_mode=ParseMode.HTML
+    )

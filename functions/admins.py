@@ -7,6 +7,7 @@ from core.decorators import command_handler
 from core.texts import *
 from core.types import Admin, AdminType, Session, User
 from core.utils import send_async
+from functions.inline_markup import generate_group_info
 
 Session()
 
@@ -268,3 +269,12 @@ def get_log(bot: Bot, update: Update, user: User):
                 chat_id=update.message.chat.id,
                 document=file
             )
+
+
+def delete_admin(bot, update, user, data):
+    admin_user = Session.query(User).filter_by(id=data['uid']).first()
+    if admin_user:
+        del_adm(bot, data['gid'], admin_user)
+    msg, inline_markup = generate_group_info(data['gid'])
+    bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
+                        reply_markup=inline_markup)

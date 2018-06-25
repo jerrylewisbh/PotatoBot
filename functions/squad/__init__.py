@@ -1,18 +1,25 @@
+import json
 from datetime import datetime, timedelta
 
 from sqlalchemy import and_, func, tuple_
-from telegram import Bot, ParseMode, TelegramError, Update
+from telegram import Bot, ParseMode, TelegramError, Update, InlineKeyboardButton, InlineKeyboardMarkup
 
-from config import MINIMUM_SQUAD_MEMBER_LEVEL
+from config import MINIMUM_SQUAD_MEMBER_LEVEL, WAITING_ROOM_LINK
 from core.decorators import command_handler
 from core.template import fill_char_template
 from core.texts import *
+from core.texts import MSG_GO_AWAY, MSG_SQUAD_REQUEST_DECLINED, MSG_SQUAD_ADD_ACCEPTED, MSG_SQUAD_LIST, \
+    MSG_SQUAD_REQUEST_DECLINED_ANSWER, MSG_SQUAD_REQUEST_ACCEPTED, MSG_SQUAD_REQUEST_ACCEPTED_ANSWER, \
+    MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK, MSG_SQUAD_REQUESTED, MSG_SQUAD_REQUEST_NEW, MSG_SQUAD_REQUEST_EXISTS, \
+    MSG_SQUAD_DELETE, MSG_GROUP_STATUS_CHOOSE_CHAT, REST_ICON, ATTACK_ICON, DEFENSE_ICON, PRELIMINARY_ICON, \
+    MSG_REPORT_SUMMARY_ROW, MSG_REPORT_SUMMARY_ROW_EMPTY, MSG_REPORT_SUMMARY_HEADER, MSG_SQUAD_LEAVE_DECLINE
 from core.types import (Admin, AdminType, Character, Group, Report, Session,
                         Squad, SquadMember, User)
 from core.utils import send_async
 from functions.inline_markup import generate_squad_list, generate_leave_squad, generate_squad_request, generate_yes_no, \
-    generate_fire_up, generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer
-from functions.reply_markup import generate_squad_markup
+    generate_fire_up, generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, QueryType, \
+    generate_squad_members
+from functions.reply_markup import generate_squad_markup, generate_user_markup
 
 TOP_START_DATE = datetime(2017, 12, 11)
 
@@ -543,6 +550,8 @@ def battle_reports_show(bot: Bot, update: Update, user: User):
                 full_stock += report.earned_stock
                 total_reports += 1
             else:
+                if not user.character:
+                    continue
                 text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
                 texts.append(text)
 
@@ -575,3 +584,253 @@ def battle_reports_show(bot: Bot, update: Update, user: User):
                     reply_markup=markup)
                 #send_async(bot, chat_id=update.message.chat.id, text=repo_list, parse_mode=ParseMode.HTML, reply_markup=markup)
                 repo_list = ''
+
+
+def squad_invite_decline(bot, update, user, data):
+    if update.callback_query.from_user.id != data['id']:
+        update.callback_query.answer(text=MSG_GO_AWAY)
+        return
+    user = Session.query(User).filter_by(id=data['id']).first()
+    bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + user.username),
+                        update.callback_query.message.chat.id,
+                        update.callback_query.message.message_id)
+
+
+def squad_invite_accept(bot, update, user, data):
+    if update.callback_query.from_user.id != data['id']:
+        update.callback_query.answer(text=MSG_GO_AWAY)
+        return
+    member = Session.query(SquadMember).filter_by(user_id=data['id']).first()
+    if member is None:
+        member = SquadMember()
+        member.user_id = user.id
+        member.squad_id = update.callback_query.message.chat.id
+        member.approved = True
+        Session.add(member)
+        Session.commit()
+        bot.editMessageText(MSG_SQUAD_ADD_ACCEPTED.format('@' + user.username),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id)
+
+
+def inline_squad_list(bot, update):
+    admin = Session.query(Admin).filter_by(user_id=update.callback_query.from_user.id).all()
+    global_adm = False
+    for adm in admin:
+        if adm.admin_type <= AdminType.FULL.value:
+            global_adm = True
+            break
+    if global_adm:
+        squads = Session.query(Squad).all()
+    else:
+        group_ids = []
+        for adm in admin:
+            group_ids.append(adm.admin_group)
+        squads = Session.query(Squad).filter(Squad.chat_id in group_ids).all()
+    markup = generate_squad_list(squads)
+    bot.editMessageText(
+        MSG_SQUAD_LIST,
+        update.callback_query.message.chat.id,
+        update.callback_query.message.message_id,
+        reply_markup=markup
+    )
+
+
+def squad_request_decline(bot, update, user, data):
+    member = Session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
+    if member:
+        bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + member.user.username),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id)
+        Session.delete(member)
+        Session.commit()
+        send_async(bot, chat_id=member.user_id, text=MSG_SQUAD_REQUEST_DECLINED_ANSWER)
+
+
+def squad_request_accept(bot, update, user, data):
+    member = Session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
+    if member:
+        member.approved = True
+        Session.add(member)
+        Session.commit()
+        bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@' + member.user.username),
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id)
+
+        squad = Session.query(Squad).filter_by(chat_id=member.squad_id).first()
+        answer = ""
+        if squad.invite_link is None:
+            answer = MSG_SQUAD_REQUEST_ACCEPTED_ANSWER
+        else:
+            answer = MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK.format(member.squad.invite_link)
+        send_async(bot, chat_id=member.user_id, text=answer,
+                   reply_markup=generate_user_markup(member.user_id))
+        send_async(
+            bot,
+            chat_id=member.squad_id,
+            text=MSG_SQUAD_REQUEST_ACCEPTED.format(
+                '@' + member.user.username))
+
+
+def inline_squad_request(bot, data, update, user):
+    member = Session.query(SquadMember).filter_by(user_id=update.callback_query.from_user.id).first()
+    if member is None:
+        member = SquadMember()
+        member.user_id = update.callback_query.from_user.id
+        member.squad_id = data['id']
+        Session.add(member)
+        Session.commit()
+        admins = Session.query(Admin).filter_by(admin_group=data['id']).all()
+        usernames = ['@' + Session.query(User).filter_by(id=admin.user_id).first().username for admin in admins]
+        bot.editMessageText(
+            MSG_SQUAD_REQUESTED.format(
+                member.squad.squad_name,
+                WAITING_ROOM_LINK
+            ),
+            update.callback_query.message.chat.id,
+            update.callback_query.message.message_id, parse_mode=ParseMode.HTML)
+        admins = Session.query(Admin).filter_by(admin_group=member.squad.chat_id).all()
+        for adm in admins:
+            send_async(bot, chat_id=adm.user_id, text=MSG_SQUAD_REQUEST_NEW)
+    else:
+        markup = generate_leave_squad(user.id)
+        bot.editMessageText(MSG_SQUAD_REQUEST_EXISTS,
+                            update.callback_query.message.chat.id,
+                            update.callback_query.message.message_id,
+                            reply_markup=markup)
+
+
+def squad_leave(bot, data, update, user):
+    member = Session.query(SquadMember).filter_by(user_id=data['id']).first()
+    leave_squad(bot, user, member, update.effective_message)
+
+
+def inline_squad_delete(bot, update, user, data):
+    squad = Session.query(Squad).filter_by(chat_id=data['gid']).first()
+    if squad is not None:
+        for member in squad.members:
+            Session.delete(member)
+        Session.delete(squad)
+        Session.commit()
+        send_async(bot, chat_id=data['gid'], text=MSG_SQUAD_DELETE)
+    msg = MSG_GROUP_STATUS_CHOOSE_CHAT
+    squads = Session.query(Squad).all()
+    inline_keys = []
+    for squad in squads:
+        inline_keys.append(InlineKeyboardButton(squad.squad_name,
+                                                callback_data=json.dumps({'t': QueryType.GroupInfo.value,
+                                                                          'id': squad.chat_id})))
+    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
+    bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
+                        reply_markup=inline_markup)
+
+
+def inline_list_squad_members(bot, update, user, data):
+    squad = Session.query(Squad).filter(Squad.chat_id == data['id']).first()
+    markups = generate_squad_members(squad.members)
+    print(markups)
+    for markup in markups:
+        send_async(
+            bot,
+            chat_id=update.callback_query.message.chat.id,
+            text=squad.squad_name,
+            reply_markup=markup,
+            parse_mode=ParseMode.HTML
+        )
+
+
+def other_report(bot, update, user, data):
+    squad = Session.query(Squad).filter(Squad.chat_id == data['c']).first()
+    time_from = datetime.fromtimestamp(data['ts'])
+    time_to = time_from + timedelta(hours=4)
+    reports = Session.query(User, Report) \
+        .join(SquadMember) \
+        .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from, Report.date < time_to)) \
+        .filter(SquadMember.squad_id == data['c']).order_by(Report.date.desc()).all()
+    texts = []
+    full_def = 0
+    full_atk = 0
+    full_exp = 0
+    full_gold = 0
+    full_stock = 0
+    total_reports = 0
+    total_members = 0
+    for user, report in reports:
+        total_members += 1
+        if report:
+            icon = REST_ICON if report.earned_exp == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
+            icon = PRELIMINARY_ICON + icon if report.preliminary_report else icon
+            text = MSG_REPORT_SUMMARY_ROW.format(icon,
+                                                 report.name, user.username, report.attack, report.defence,
+                                                 report.earned_exp, report.earned_gold, report.earned_stock)
+            texts.append(text)
+            full_atk += report.attack
+            full_def += report.defence
+            full_exp += report.earned_exp
+            full_gold += report.earned_gold
+            full_stock += report.earned_stock
+            total_reports += 1
+        else:
+            text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
+            texts.append(text)
+    template = MSG_REPORT_SUMMARY_HEADER.format(
+        squad.squad_name,
+        time_from.strftime('%d-%m-%Y %H:%M'),
+        total_reports,
+        total_members,
+        full_atk,
+        full_def,
+        full_exp,
+        full_gold,
+        full_stock)
+    limit = 50
+    count = 0
+    repo_list = ''
+    limit = limit if len(texts) > limit else len(texts)
+    for element in texts:
+        repo_list += element
+        count = count + 1
+        if count >= limit:
+            count = 0
+            text = template + repo_list
+            markup = generate_other_reports(time_from, squad.chat_id)
+            bot.sendMessage(
+                chat_id=update.callback_query.message.chat.id,
+                text=text,
+                parse_mode=ParseMode.HTML,
+                reply_markup=markup)
+            repo_list = ''
+
+
+def squad_leave_no(bot, update):
+    bot.editMessageText(MSG_SQUAD_LEAVE_DECLINE,
+                        update.callback_query.message.chat.id,
+                        update.callback_query.message.message_id)
+
+
+def group_list(bot: Bot, update: Update, user: User, data):
+    msg = MSG_GROUP_STATUS_CHOOSE_CHAT
+    squads = Session.query(Squad).all()
+    inline_keys = []
+    for squad in squads:
+        inline_keys.append(InlineKeyboardButton(squad.squad_name,
+                                                callback_data=json.dumps({'t': QueryType.GroupInfo.value,
+                                                                          'id': squad.chat_id})))
+    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
+    bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
+                        reply_markup=inline_markup)
+
+
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def send_status(bot: Bot, update: Update, user: User):
+    msg = MSG_GROUP_STATUS_CHOOSE_CHAT
+    squads = Session.query(Squad).all()
+    inline_keys = []
+    for squad in squads:
+        inline_keys.append(InlineKeyboardButton(squad.squad_name,
+                                                callback_data=json.dumps({'t': QueryType.GroupInfo.value,
+                                                                          'id': squad.chat_id})))
+    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
+    send_async(bot, chat_id=update.message.chat.id, text=msg, reply_markup=inline_markup)

@@ -5,6 +5,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Upda
 from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
 from core.decorators import command_handler
 from core.texts import *
+from core.texts import MSG_QUEST_OK, MSG_FORAY_ACCEPTED_SAVED_PLEDGE, MSG_FORAY_ACCEPTED_SAVED
 from core.types import (Item, Location, Quest, Session, User, UserQuest,
                         UserQuestItem)
 from functions.inline_markup import QueryType
@@ -171,4 +172,33 @@ def parse_quest(bot: Bot, update: Update, user: User):
             chat_id=user.id,
             text=MSG_FORAY_ACCEPTED,
             parse_mode=ParseMode.HTML,
+        )
+
+
+def set_user_quest_location(bot, update, user, data):
+    user_quest = Session.query(UserQuest).filter_by(id=data['uq']).first()
+    if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
+        location = Session.query(Location).filter_by(id=data['l']).first()
+        user_quest.location = location
+        Session.add(user_quest)
+        Session.commit()
+
+        bot.editMessageText(
+            MSG_QUEST_OK.format(location.name),
+            update.callback_query.message.chat.id,
+            update.callback_query.message.message_id
+        )
+
+
+def set_user_foray_pledge(bot, update, user, data):
+    user_quest = Session.query(UserQuest).filter_by(id=data['uq']).first()
+    if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
+        user_quest.pledge = data['s']
+        Session.add(user_quest)
+        Session.commit()
+
+        bot.editMessageText(
+            MSG_FORAY_ACCEPTED_SAVED_PLEDGE if data['s'] else MSG_FORAY_ACCEPTED_SAVED,
+            update.callback_query.message.chat.id,
+            update.callback_query.message.message_id
         )

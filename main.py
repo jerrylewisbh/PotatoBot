@@ -9,17 +9,18 @@ from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
                           MessageQueue, Updater)
 from telegram.ext.dispatcher import run_async
 
-from config import DEBUG, LOGFILE, TOKEN, CWBOT_ID, FWD_CHANNEL, SUPER_ADMIN_ID, FWD_BOT
+from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT
 from core.battle import report_after_battle
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler import buttons, chats
 from core.handler import commands
+from core.handler.inline.__init__ import (inlinequery)
+from core.handler.callback import callback_query
 from core.jobs.job_queue import (add_after_war_messages,
                                  add_battle_report_messages,
                                  add_pre_war_messages,
                                  add_war_warning_messages)
-from core.regexp import STOCK
 from core.state import GameState, get_game_state
 from core.types import Admin, Session, Squad, User
 from core.utils import create_or_update_user
@@ -28,13 +29,10 @@ from cwmq.handler.deals import deals_handler
 from cwmq.handler.digest import digest_handler
 from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
-from functions.common import (error, stock_compare_forwarded)
-from functions.inline_keyboard_handling import (callback_query,
-                                                inlinequery)
+from functions.common import (error)
 from functions.order_groups import add_group
 from functions.orders import order
 from functions.profile import user_panel
-from functions.quest import parse_quest
 from functions.report import fwd_report
 from functions.welcome import (welcome)
 

@@ -7,14 +7,13 @@ from core.exchange.hide import hide_gold_info
 from core.exchange.snipe import sniping_info
 from functions import orders
 from functions.common import admin_panel
-from functions.inline_keyboard_handling import send_status
 from functions.order_groups import group_list
 from functions.orders import orders
 from functions.profile import user_panel, show_char, grant_access, settings
 from functions.squad import (battle_attendance_show, battle_reports_show,
                              leave_squad_request, list_squad_requests,
                              remove_from_squad, squad_about,
-                             squad_list, squad_request)
+                             squad_list, squad_request, send_status)
 from functions.statistics import statistic_about, exp_statistic, skill_statistic, quest_statistic
 from functions.statistics.foray import foray_statistic
 from functions.top import top_about, attack_top, def_top, exp_top, week_build_top, week_battle_top

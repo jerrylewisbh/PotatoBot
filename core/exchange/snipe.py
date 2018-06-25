@@ -12,7 +12,7 @@ from cwmq import wrapper
 
 
 def __get_snipe_settings(user: User):
-    logging.warning("Getting UserExchangeOrder for %s", user.id)
+    logging.info("Getting UserExchangeOrder for %s", user.id)
 
     settings = user.sniping_settings.all()
     if not settings:
@@ -41,7 +41,7 @@ def sniping_info(bot: Bot, update: Update, user: User, **kwargs):
     if "args" in kwargs:
         args = kwargs["args"]
 
-    logging.warning("sniping_info called by %s", update.message.chat.id)
+    logging.info("sniping_info called by %s", update.message.chat.id)
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user.is_api_trade_allowed:
