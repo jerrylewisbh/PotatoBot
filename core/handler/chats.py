@@ -1,8 +1,5 @@
-import logging
+from telegram.ext import Dispatcher, RegexHandler, MessageHandler
 
-from telegram.ext import Dispatcher, RegexHandler
-
-from core.chat_commands import *
 from core.regexp import *
 from functions.activity import *
 from functions.admins import *
@@ -10,9 +7,39 @@ from functions.common import *
 from functions.common.pin import *
 from functions.guild.stock import withdraw
 from functions.profile import *
+from functions.report import *
 from functions.squad import *
 from functions.triggers import *
 from functions.welcome import *
+
+CC_SET_WELCOME = 'welcome:'
+CC_HELP = 'help'
+CC_SQUAD = 'squad'
+CC_SHOW_WELCOME = 'show welcome message'
+CC_TURN_ON_WELCOME = 'turn on welcome message'
+CC_TURN_OFF_WELCOME = 'turn off welcome message'
+CC_TURN_ON_REPORT_FWD = 'turn on minireport'
+CC_TURN_OFF_REPORT_FWD = 'turn off minireport'
+CC_SET_TRIGGER = 'trigger:'
+CC_UNSET_TRIGGER = 'untrigger:'
+CC_TRIGGER_LIST = 'trigger list'
+CC_ADMIN_LIST = 'admin list'
+CC_PING = 'ping'
+CC_DAY_STATISTICS = 'daily stats'
+CC_WEEK_STATISTICS = 'weekly stats'
+CC_BATTLE_STATISTICS = 'battle stats'
+CC_ALLOW_TRIGGER_ALL = 'allow everyone to trigger'
+CC_DISALLOW_TRIGGER_ALL = 'prevent everyone from triggering'
+CC_ADMINS = 'admins'
+CC_COMMANDER = 'commander'
+CC_ALLOW_PIN_ALL = 'allow everyone to pin'
+CC_DISALLOW_PIN_ALL = 'prevent everyone from pinning'
+CC_OPEN_HIRING = 'open admissions'
+CC_CLOSE_HIRING = 'close admissions'
+CC_PIN = 'pin and notify'
+CC_SILENT_PIN = 'pin'
+CC_DELETE = 'delete'
+CC_KICK = 'kick'
 
 
 def to_re(string):
@@ -32,6 +59,8 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(to_re(CC_SHOW_WELCOME), show_welcome))
     disp.add_handler(RegexHandler(to_re(CC_TURN_OFF_WELCOME), disable_welcome))
     disp.add_handler(RegexHandler(to_re(CC_TURN_ON_WELCOME), enable_welcome))
+    disp.add_handler(RegexHandler(to_re(CC_TURN_ON_REPORT_FWD), enable_report_fwd))
+    disp.add_handler(RegexHandler(to_re(CC_TURN_OFF_REPORT_FWD), disable_report_fwd))
     disp.add_handler(RegexHandler(to_re(CC_SET_TRIGGER), set_trigger))
     disp.add_handler(RegexHandler(to_re(CC_UNSET_TRIGGER), del_trigger))
     disp.add_handler(RegexHandler(to_re(CC_TRIGGER_LIST), list_triggers))

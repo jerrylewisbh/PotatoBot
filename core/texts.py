@@ -346,6 +346,8 @@ MSG_WELCOME_DEFAULT = 'Hi, %username%!'
 MSG_WELCOME_SET = 'The welcome text is set.'
 MSG_WELCOME_ENABLED = 'Welcome enabled'
 MSG_WELCOME_DISABLED = 'Welcome disabled'
+MSG_MINI_REPORT_FWD_DISABLED = 'Mini Report forward disabled'
+MSG_MINI_REPORT_FWD_ENABLED = 'Mini Report forward enabled'
 
 MSG_PIN_ALL_ENABLED = 'Anyone can pin'
 MSG_PIN_ALL_DISABLED = 'Now only admins can pin😡'

@@ -5,7 +5,11 @@ DB = 'mysql+pymysql://<username>:<password>@<host>/<dbname>?charset=utf8mb4' # Ð
 API_PORT = 88
 
 GOVERNMENT_CHAT = -1001149271906
-SUPER_ADMIN_ID = 0 #
+SUPER_ADMIN_ID = 0
+
+# Forwarding of messages from @CWMiniReportsBot
+FWD_CHANNEL = -1001253105879
+FWD_BOT = '@CWMiniReportsBot'
 
 CASTLE_CHAT_ID = None
 ACADEM_CHAT_ID = None

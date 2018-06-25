@@ -29,9 +29,6 @@ from functions.admins import (del_admin, del_global_admin, get_log,
                               list_admins, set_admin, set_global_admin,
                               set_super_admin)
 
-user = FilterUser()
-squad_user = FilterSquad()
-
 
 def add_handler(disp: Dispatcher):
     # NOTE: Use the @command_handler decorator for the functions registered here! This will provide you with the User

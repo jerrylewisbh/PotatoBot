@@ -69,6 +69,8 @@ class Group(Base):
     allow_pin_all = Column(Boolean, default=False)
     bot_in_group = Column(Boolean, default=True)
 
+    fwd_minireport = Column(Boolean, default=False)
+
     group_items = relationship('OrderGroupItem', back_populates='chat')
     squad = relationship('Squad', back_populates='chat')
     orders = relationship('Order', back_populates='chat')

@@ -9,11 +9,11 @@ from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
                           MessageQueue, Updater)
 from telegram.ext.dispatcher import run_async
 
-from config import DEBUG, LOGFILE, TOKEN, CWBOT_ID
+from config import DEBUG, LOGFILE, TOKEN, CWBOT_ID, FWD_CHANNEL, SUPER_ADMIN_ID
 from core.battle import report_after_battle
 from core.bot import MQBot
 from core.decorators import command_handler
-from core.handler import buttons, chats, handle_message
+from core.handler import buttons, chats
 from core.handler import commands
 from core.jobs.job_queue import (add_after_war_messages,
                                  add_battle_report_messages,
@@ -35,6 +35,7 @@ from functions.order_groups import add_group
 from functions.orders import order
 from functions.profile import user_panel
 from functions.quest import parse_quest
+from functions.report import fwd_report
 from functions.welcome import (welcome)
 
 Session()
@@ -122,8 +123,13 @@ def main():
     chats.add_handler(disp)
 
     disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True, pass_job_queue=True))
-
     disp.add_handler(InlineQueryHandler(inlinequery))
+
+    # CW Mini Reports Forwarding
+    disp.add_handler(MessageHandler(
+        (Filters.chat(FWD_CHANNEL) & Filters.user(SUPER_ADMIN_ID)),
+        fwd_report
+    ))
 
     # on noncommand i.e message - echo the message on Telegram
     disp.add_handler(MessageHandler(Filters.status_update, welcome))
