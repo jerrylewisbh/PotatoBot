@@ -9,7 +9,7 @@ from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
                           MessageQueue, Updater)
 from telegram.ext.dispatcher import run_async
 
-from config import DEBUG, LOGFILE, TOKEN, CWBOT_ID, FWD_CHANNEL, SUPER_ADMIN_ID
+from config import DEBUG, LOGFILE, TOKEN, CWBOT_ID, FWD_CHANNEL, SUPER_ADMIN_ID, FWD_BOT
 from core.battle import report_after_battle
 from core.bot import MQBot
 from core.decorators import command_handler
@@ -127,7 +127,7 @@ def main():
 
     # CW Mini Reports Forwarding
     disp.add_handler(MessageHandler(
-        (Filters.chat(FWD_CHANNEL) & Filters.user(SUPER_ADMIN_ID)),
+        (Filters.chat(FWD_CHANNEL) & Filters.user(FWD_BOT)),
         fwd_report
     ))
 
