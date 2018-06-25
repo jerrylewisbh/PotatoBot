@@ -4,11 +4,11 @@ from sqlalchemy import func
 from telegram import Bot, ParseMode, Update
 
 from core.decorators import command_handler
-from core.exchange import LIMIT_ORDER_AMOUNT, LIMIT_SNIPES, get_item_by_cw_id
 from core.texts import *
 from core.types import Session, User, UserExchangeOrder
 from core.utils import send_async
 from cwmq import wrapper
+from functions.exchange import LIMIT_ORDER_AMOUNT, LIMIT_SNIPES, get_item_by_cw_id
 
 
 def __get_snipe_settings(user: User):

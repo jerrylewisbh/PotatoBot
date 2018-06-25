@@ -2,20 +2,18 @@ import datetime
 import json
 import logging
 
-from functions.common import stock_compare
-from functions.profile.util import get_required_xp
-from functions.reply_markup import generate_user_markup
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
 from telegram import Bot, ParseMode
 
 from config import BOT_ONE_STEP_API
 from core.enums import CASTLE_MAP, CLASS_MAP
-from core.exchange.hide import (autohide, exit_hide_mode,
-                                get_best_fulfillable_order, get_hide_mode,
-                                get_hide_result)
 from core.texts import *
 from core.types import Character, Session, User
 from cwmq import Publisher, wrapper
+from functions.common import stock_compare
+from functions.exchange.hide import exit_hide_mode, autohide, get_hide_result, get_best_fulfillable_order, get_hide_mode
+from functions.profile.util import get_required_xp
+from functions.reply_markup import generate_user_markup
 
 Session()
 p = Publisher()

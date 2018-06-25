@@ -5,7 +5,7 @@ import redis
 from telegram import Bot, ParseMode, Update
 
 from core.decorators import command_handler
-from core.exchange import get_item_by_cw_id
+from functions.exchange import get_item_by_cw_id
 from core.texts import *
 from core.types import Session, User, UserStockHideSetting
 from core.utils import send_async

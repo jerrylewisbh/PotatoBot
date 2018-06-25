@@ -3,10 +3,10 @@ import logging
 from telegram.ext import Dispatcher, RegexHandler
 
 from core.commands import *
-from core.exchange.hide import hide_gold_info
-from core.exchange.snipe import sniping_info
 from functions import orders
 from functions.common import admin_panel
+from functions.exchange.hide import hide_gold_info
+from functions.exchange.snipe import sniping_info
 from functions.order_groups import group_list
 from functions.orders import orders
 from functions.profile import user_panel, show_char, grant_access, settings
