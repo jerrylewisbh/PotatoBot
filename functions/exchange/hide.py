@@ -202,8 +202,7 @@ def hide_list(bot: Bot, update: Update, user: User):
                 worth = __get_item_worth(db_item.name)
                 for x in range(0, order_count):
                     if order_count == 1:
-                        link = "\n[{}x {}](https://t.me/share/url?url=/wts_{}_{}_1000) _({} x {} = {}💰)_".format(
-                            count,
+                        link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) _{} x {} = {}💰_".format(
                             db_item.name,
                             db_item.cw_id,
                             lot_size,
@@ -213,28 +212,26 @@ def hide_list(bot: Bot, update: Update, user: User):
                         )
                     elif x == order_count -1:
                         remaining = int(count % max_weight)
-                        link = "\n[{}x {} ({}/{})](https://t.me/share/url?url=/wts_{}_{}_1000) _({} x {} = {}💰)_".format(
-                            remaining,                  # Number of items
+                        link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) _{} x {} = {}💰 ({}/{})_".format(
                             db_item.name,               # Name
-                            x + 1,                      # Batch X
-                            order_count,                # ... of Y
                             db_item.cw_id,              # Command: Item ID
                             remaining,                  # Command: Number of items
                             remaining,                  # Number of items
                             worth,                      # Worth
-                            remaining * worth           # Overall worth
+                            remaining * worth,          # Overall worth
+                            x + 1,                      # Batch X
+                            order_count,                # ... of Y
                         )
                     else:
-                        link = "\n[{}x {} ({}/{})](https://t.me/share/url?url=/wts_{}_{}_1000) _({} x {} = {}💰)_".format(
-                            lot_size,           # Number of items
+                        link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) _{} x {} = {}💰 ({}/{})_".format(
                             db_item.name,       # Name
-                            x+1,                # Batch X
-                            order_count,        # ... of Y
                             db_item.cw_id,      # Command: Item ID
                             lot_size,           # Command: Number of items
                             lot_size,           # Number of items
                             worth,              # Worth
-                            (worth * lot_size)  # Overall worth
+                            (worth * lot_size), # Overall worth
+                            x + 1,              # Batch X
+                            order_count,        # ... of Y
                         )
                     item_list.append((worth, link))
 
