@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime, timedelta
 
 from sqlalchemy import and_, func, tuple_
@@ -509,6 +510,7 @@ def battle_attendance_show(bot: Bot, update: Update, user: User):
     min_permission=AdminType.GROUP
 )
 def battle_reports_show(bot: Bot, update: Update, user: User):
+    logging.info("battle_reports_show")
     admin = Session.query(Admin, Squad).filter(Admin.user_id == update.message.from_user.id,
                                                Squad.chat_id == Admin.admin_group).all()
     group_admin = []
@@ -728,7 +730,6 @@ def inline_squad_delete(bot, update, user, data):
 def inline_list_squad_members(bot, update, user, data):
     squad = Session.query(Squad).filter(Squad.chat_id == data['id']).first()
     markups = generate_squad_members(squad.members)
-    print(markups)
     for markup in markups:
         send_async(
             bot,
@@ -771,7 +772,7 @@ def other_report(bot, update, user, data):
             full_stock += report.earned_stock
             total_reports += 1
         else:
-            text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
+            text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name if user.character else "Unknown", user.username)
             texts.append(text)
     template = MSG_REPORT_SUMMARY_HEADER.format(
         squad.squad_name,

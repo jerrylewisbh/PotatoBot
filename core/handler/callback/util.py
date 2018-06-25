@@ -40,13 +40,11 @@ def create_callback(action: str, user: User, back: bool = False) -> str:
 
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
 
-    print(type(action))
     data = json.dumps({
         'action': action,
         'user_id': user.id,
         'back': back
     })
-    print(data)
 
     callback_id = str(uuid.uuid1())
     r.set(callback_id, data, ex=3600*180) # Age out data after 180 days...

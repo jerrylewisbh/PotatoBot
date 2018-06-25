@@ -81,9 +81,7 @@ def report_received(bot: Bot, update: Update, user: User):
             parse_mode=ParseMode.HTML)
         return
 
-    print("parse report")
     parsed_report = parse_report_text(update.message.text)
-    print(user.character.name)
     if parsed_report and user.character and parsed_report['name'] == user.character.name:
         date = update.message.forward_date
         if (update.message.forward_date.hour < 7):

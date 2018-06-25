@@ -430,8 +430,8 @@ MSG_PLOT_DESCRIPTION = 'On average {} experience per day. For the next level, yo
 MSG_PLOT_DESCRIPTION_SKILL = 'Here you can compare the level of your skills with the average for the whole castle. Note it is still beta, please report if you find something wrong'
 
 MSG_SQUAD_CALL_HEADER = 'Everybody come here!\n'
-MSG_REPORT_SUMMARY_HEADER = 'Reports of the squad {} for the battle {}' \
-                            'Reports: {} from {}\n' \
+MSG_REPORT_SUMMARY_HEADER = 'Reports of the squad {} for the battle {}\n' \
+                            'Report: {} from {}\n' \
                             '<b>General</b>\n' \
                             'Attack: ⚔{}\n' \
                             'Defense: 🛡{}\n' \
@@ -460,7 +460,7 @@ MSG_REPORT_TOTAL = '\n\n({} attacked / {} defended)\n' \
 
 
 
-MSG_REPORT_SUMMARY_ROW = '{} <b>{}</b> (@{})\n ⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'
+MSG_REPORT_SUMMARY_ROW = '{} <b>{}</b> (@{})\n       ⚔{} 🛡{} 🔥{} 💰{} 📦{}\n'
 MSG_REPORT_SUMMARY_ROW_EMPTY = '<b>{}</b> (@{}) ❗\n'
 
 

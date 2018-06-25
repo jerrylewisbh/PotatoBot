@@ -32,8 +32,6 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
         user = create_or_update_user(update.effective_user)
 
         data = json.loads(update.callback_query.data)
-        print(data)
-        print(QueryType(data['t']))
         if data['t'] == QueryType.GroupList.value:
             group_list(bot, update, user, data)
         elif data['t'] == QueryType.GroupInfo.value:

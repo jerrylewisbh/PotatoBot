@@ -47,7 +47,6 @@ def fwd_report(bot: Bot, update: Update):
     for group in fwd_group:
         logging.debug("Forwarding report to '%s/%s'", group.id, group.title)
 
-        print(update)
         bot.forward_message(
             chat_id=group.id,
             from_chat_id=FWD_CHANNEL,

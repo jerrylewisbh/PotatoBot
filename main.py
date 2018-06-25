@@ -10,7 +10,7 @@ from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
 from telegram.ext.dispatcher import run_async
 
 from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT
-from core.battle import report_after_battle
+from core.battle import report_after_battle, ready_to_battle, ready_to_battle_result
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler import buttons, chats
@@ -153,6 +153,7 @@ def main():
     # THIS IS FOR DEBUGGING AND TESTING!
     if DEBUG:
         updater.job_queue.run_once(report_after_battle, datetime.now() + timedelta(seconds=5))
+        updater.job_queue.run_once(ready_to_battle_result, datetime.now() + timedelta(seconds=5))
 
     # Start the Bot
     updater.start_polling()
