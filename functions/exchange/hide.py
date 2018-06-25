@@ -2,6 +2,8 @@ import logging
 
 import re
 
+import math
+
 from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
 
 import redis
@@ -12,6 +14,7 @@ from core.texts import *
 from core.types import Session, User, UserStockHideSetting, new_item, Item
 from core.utils import send_async
 from cwmq import wrapper
+from functions.common import __get_item_worth
 from functions.exchange import get_item_by_cw_id
 
 
@@ -165,6 +168,7 @@ def hide_items(bot: Bot, update: Update, user: User, **kwargs):
 
 @command_handler()
 def hide_list(bot: Bot, update: Update, user: User):
+    logging.info("hide_list called by user_id='%s'", user.id)
     """ Generate a forwardable list of items to hide... """
     if user.is_api_stock_allowed:
         wrapper.update_stock(user)
@@ -174,6 +178,7 @@ def hide_list(bot: Bot, update: Update, user: User):
 
     text = HIDE_LIST
 
+    item_list = []
     for line in user.stock.stock.splitlines():
         find = re.search(r"(?P<item>.+)(?: \((?P<count>[0-9]+)\))", line)
         if find:
@@ -182,10 +187,62 @@ def hide_list(bot: Bot, update: Update, user: User):
                 new_item(bot, find.group("item"), False)
                 db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
 
+            count = int(find.group("count"))
+
             if db_item.cw_id:
-                text += "\n[{} ({}x)](https://t.me/share/url?url=/wts_{}_{}_1000)".format(
-                    db_item.name, find.group("count"), db_item.cw_id, find.group("count"),
-                )
+                # We might have to split orders if weight > 1000
+                order_count = 1
+                max_weight = 1000 / db_item.weight
+                if count > max_weight:
+                    lot_size = int(max_weight)
+                    order_count = int(math.ceil(count / max_weight))
+                else:
+                    lot_size = count
+
+                worth = __get_item_worth(db_item.name)
+                for x in range(0, order_count):
+                    if order_count == 1:
+                        link = "\n[{}x {}](https://t.me/share/url?url=/wts_{}_{}_1000) _({} x {} = {}💰)_".format(
+                            count,
+                            db_item.name,
+                            db_item.cw_id,
+                            lot_size,
+                            count,
+                            worth,
+                            (worth * count)
+                        )
+                    elif x == order_count -1:
+                        remaining = int(count % max_weight)
+                        link = "\n[{}x {} ({}/{})](https://t.me/share/url?url=/wts_{}_{}_1000) _({} x {} = {}💰)_".format(
+                            remaining,                  # Number of items
+                            db_item.name,               # Name
+                            x + 1,                      # Batch X
+                            order_count,                # ... of Y
+                            db_item.cw_id,              # Command: Item ID
+                            remaining,                  # Command: Number of items
+                            remaining,                  # Number of items
+                            worth,                      # Worth
+                            remaining * worth           # Overall worth
+                        )
+                    else:
+                        link = "\n[{}x {} ({}/{})](https://t.me/share/url?url=/wts_{}_{}_1000) _({} x {} = {}💰)_".format(
+                            lot_size,           # Number of items
+                            db_item.name,       # Name
+                            x+1,                # Batch X
+                            order_count,        # ... of Y
+                            db_item.cw_id,      # Command: Item ID
+                            lot_size,           # Command: Number of items
+                            lot_size,           # Number of items
+                            worth,              # Worth
+                            (worth * lot_size)  # Overall worth
+                        )
+                    item_list.append((worth, link))
+
+    for item in sorted(item_list, key=lambda x: x[0], reverse=True):
+        text += item[1]
+
+    if not item_list:
+        text += MSG_EMPTY
 
     send_async(
         bot,
