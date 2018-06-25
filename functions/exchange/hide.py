@@ -202,7 +202,7 @@ def hide_list(bot: Bot, update: Update, user: User):
                 worth = __get_item_worth(db_item.name)
                 for x in range(0, order_count):
                     if order_count == 1:
-                        link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) _{} x {} = {}💰_".format(
+                        link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) {} x {} = {}💰".format(
                             db_item.name,
                             db_item.cw_id,
                             lot_size,
@@ -212,7 +212,7 @@ def hide_list(bot: Bot, update: Update, user: User):
                         )
                     elif x == order_count -1:
                         remaining = int(count % max_weight)
-                        link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) _{} x {} = {}💰 ({}/{})_".format(
+                        link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) {} x {} = {}💰 ({}/{})".format(
                             db_item.name,               # Name
                             db_item.cw_id,              # Command: Item ID
                             remaining,                  # Command: Number of items
@@ -223,7 +223,7 @@ def hide_list(bot: Bot, update: Update, user: User):
                             order_count,                # ... of Y
                         )
                     else:
-                        link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) _{} x {} = {}💰 ({}/{})_".format(
+                        link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) {} x {} = {}💰 ({}/{})".format(
                             db_item.name,       # Name
                             db_item.cw_id,      # Command: Item ID
                             lot_size,           # Command: Number of items
