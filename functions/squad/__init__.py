@@ -452,22 +452,23 @@ def force_add_to_squad(bot: Bot, update: Update, user: User):
     allow_group=True
 )
 def call_squad(bot: Bot, update: Update, user: User):
-    limit = 3
-    count = 0
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         users = Session.query(User).join(SquadMember).filter(User.id == SquadMember.user_id)\
             .filter(SquadMember.squad_id == squad.chat_id).all()
         msg = MSG_SQUAD_CALL_HEADER
+        all_users = []
         for user in users:
             if user.username is not None:
-                msg += '@' + user.username + ' '
-            if count > limit:
-                send_async(bot, chat_id=update.message.chat.id, text=msg)
-                msg = ""
-                count = 0
-            count += 1
-
+                all_users.append('@{}'.format(user.username))
+        
+        # Make batches of 4 users max...
+        notify_users = [all_users[x:x+4] for x in range(0, len(all_users), 4)]
+        for batch in notify_users:
+            text = ""
+            for user in batch:
+                text += "{} ".format(user)
+            send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 @command_handler(
     min_permission=AdminType.GROUP
