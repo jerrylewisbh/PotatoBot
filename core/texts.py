@@ -586,6 +586,8 @@ MSG_FORAY_INTRO = "Statistics for all forays I know. Forward them to me to get "
                   "more detailed stats! This graph also contains /pledge rate for knights.\n\n" \
                   "_Tip: Your personal statistics can be found in 🗺Quests_"
 
+MSG_ITEM_STAT = "*Item droprates:*"
+
 MSG_GAME_TIMES = """Time in UTC and In-Game daytime:
 +------------+----------------+----------------+----------------+
 |   State    |    Cycle 1     |    Cycle 2     |    Cycle 3     |

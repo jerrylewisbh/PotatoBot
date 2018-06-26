@@ -2,8 +2,9 @@ import json
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update, Bot
 
-from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
+from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID, CWBOT_ID
 from core.decorators import command_handler
+from core.state import get_game_state, GameState
 from core.texts import *
 from core.texts import MSG_QUEST_OK, MSG_FORAY_ACCEPTED_SAVED_PLEDGE, MSG_FORAY_ACCEPTED_SAVED
 from core.types import (Item, Location, Quest, Session, User, UserQuest,
@@ -20,6 +21,14 @@ def save_user_quest(user: User, update: Update, quest_data):
     uq.forward_date = update.message.forward_date
     uq.exp = quest_data['exp']
     uq.gold = quest_data['gold']
+
+    # Set Daytime (remove additional time-markers)
+    daytime = get_game_state(update.message.forward_date)
+    daytime &= ~GameState.HOWLING_WIND
+    daytime &= ~GameState.NO_REPORTS
+    daytime &= ~GameState.BATTLE_SILENCE
+    uq.daytime = daytime
+
     uq.successful = quest_data['success']
     if quest_data['type'] in [QuestType.FORAY, QuestType.FORAY_FAILED]:
         uq.location_id = QUEST_LOCATION_FORAY_ID
@@ -58,10 +67,10 @@ def save_user_quest(user: User, update: Update, quest_data):
     return uq
 
 
-@command_handler()
+@command_handler(
+    forward_from=CWBOT_ID
+)
 def parse_quest(bot: Bot, update: Update, user: User):
-
-
     quest_data = analyze_text(update.message.text)
 
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()

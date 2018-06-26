@@ -7,13 +7,15 @@ import matplotlib.pyplot as plot
 import numpy
 import pandas as pd
 from sqlalchemy import func, tuple_
+from sqlalchemy.sql.functions import count
 from telegram import Bot, ParseMode, Update
 
 from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
 from core.decorators import command_handler
+from core.state import GameState
 from core.texts import *
 from core.types import (Character, Location, Profession, Session, User,
-                        UserQuest, UserQuestItem)
+                        UserQuest, UserQuestItem, Item)
 from core.utils import send_async
 from functions.reply_markup import generate_statistics_markup
 
@@ -177,6 +179,83 @@ def quest_statistic(bot: Bot, update: Update, user: User):
     text += get_relative_details(user, datetime.utcnow() - timedelta(days=7))
     text += MSG_QUEST_OVERALL
     text += get_relative_details(user, datetime.utcnow() - timedelta(weeks=300))
+
+    bot.sendMessage(
+        chat_id=user.id,
+        text=text,
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=generate_statistics_markup(),
+    )
+
+def __get_item_statistics_by_location(location: Location):
+    text = "*{}:*".format(location.name)
+
+    # Overall statistics
+    overall_count = Session.query(func.count(UserQuest.id)).filter(
+        UserQuest.location_id == location.id
+    ).scalar()
+
+    item_loot_overall = Session.query(
+        func.sum(UserQuestItem.count).label("sum"),
+        func.count(UserQuestItem.count).label("count")
+    ).filter(
+        UserQuest.location_id == location.id
+    ).join(UserQuest).first()
+
+    text += """
+Overall chance for loot: {:.2f}%
+Average loot: {:.2f}
+    """.format(
+        item_loot_overall.count / overall_count * 100,
+        (item_loot_overall.sum / item_loot_overall.count) if item_loot_overall.count else 0,
+    )
+
+    # Item Statistics
+    item_drops = Session.query(
+        Item
+    ).filter(
+        UserQuestItem.user_quest_id.in_(
+            Session.query(UserQuest.id).filter(UserQuest.location_id == location.id)
+        )
+    ).join(UserQuestItem).join(UserQuest).distinct().order_by(Item.id).all()
+
+    print(item_drops)
+
+    daytimes = (
+        GameState.MORNING,
+        GameState.DAY,
+        GameState.EVENING,
+        GameState.NIGHT
+    )
+
+    for item in item_drops:
+        text += "{}:\n".format(item.name)
+        stats = Session.query(
+            UserQuest.daytime.label("daytime"),
+            func.sum(UserQuestItem.count).label("sum"),
+        ).filter(
+            UserQuest.location_id == location.id,
+            UserQuestItem.item_id == item.id
+        ).join(UserQuestItem).group_by(UserQuest.daytime).all()
+
+
+
+        for daytime in daytimes:
+            text += "{}:\n".format(daytime.name)
+
+    print("------")
+
+    return text
+
+
+@command_handler()
+def item_statistic(bot: Bot, update: Update, user: User):
+    logging.info("User '%s' called item_statistic", user.id)
+
+    text = MSG_ITEM_STAT
+
+    for location in Session.query(Location).all():
+        text += __get_item_statistics_by_location(location)
 
     bot.sendMessage(
         chat_id=user.id,

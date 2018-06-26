@@ -14,7 +14,7 @@ from functions.squad import (battle_attendance_show, battle_reports_show,
                              leave_squad_request, list_squad_requests,
                              remove_from_squad, squad_about,
                              squad_list, squad_request, send_status)
-from functions.statistics import statistic_about, exp_statistic, skill_statistic, quest_statistic
+from functions.statistics import statistic_about, exp_statistic, skill_statistic, quest_statistic, item_statistic
 from functions.statistics.foray import foray_statistic
 from functions.top import top_about, attack_top, def_top, exp_top, week_build_top, week_battle_top
 
@@ -57,6 +57,8 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(to_re(TOP_COMMAND_BATTLES), week_battle_top))
     disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_EXP), exp_statistic))
     disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_QUESTS), quest_statistic))
+    disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_QUESTS_ALL), quest_statistic))
+    disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_ITEMS_ALL), item_statistic))
     disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_FORAY), foray_statistic))
     disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_SKILLS), skill_statistic))
 

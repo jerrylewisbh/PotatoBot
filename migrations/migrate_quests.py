@@ -5,27 +5,28 @@
 import os
 import sys
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
 from core.state import GameState, get_game_state
 from core.types import *
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 session = Session()
 
-a = session.query(UserQuest).filter(UserQuest.daytime == 0).all()
+a = session.query(UserQuest).filter().all()
 
 for item in a:
-    daytime = get_game_state(item.from_date)
+    daytime = get_game_state(item.forward_date)
 
     # Remove additional state...
     daytime &= ~GameState.HOWLING_WIND
     daytime &= ~GameState.NO_REPORTS
     daytime &= ~GameState.BATTLE_SILENCE
 
-    print("... Migrating")
-
     item.daytime = int(daytime)
+
+    print("Migrating {} -> {}".format(item.id, daytime.name))
 
     session.add(item)
     session.commit()

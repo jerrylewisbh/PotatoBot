@@ -9,7 +9,7 @@ from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
                           MessageQueue, Updater)
 from telegram.ext.dispatcher import run_async
 
-from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT
+from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT, CWBOT_ID
 from core.battle import report_after_battle, ready_to_battle, ready_to_battle_result
 from core.bot import MQBot
 from core.decorators import command_handler
@@ -33,6 +33,7 @@ from functions.common import (error)
 from functions.order_groups import add_group
 from functions.orders import order
 from functions.profile import user_panel
+from functions.quest import parse_quest
 from functions.report import fwd_report
 from functions.welcome import (welcome)
 
@@ -60,8 +61,10 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
         ))
 
         if squad and squad.silence_enabled and not admin and GameState.BATTLE_SILENCE in get_game_state():
-            bot.delete_message(update.message.chat.id,
-                               update.message.message_id)
+            bot.delete_message(
+                update.message.chat.id,
+                update.message.message_id
+            )
     elif update.message.chat.type == 'private':
         admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         is_admin = False
@@ -72,7 +75,9 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
         if 'order_wait' in chat_data and chat_data['order_wait']:
             order(bot, update, user, chat_data=chat_data)
         elif update.message.text:
-            if 'wait_group_name' in chat_data and chat_data['wait_group_name']:
+            if update.message.forward_from and update.message.forward_from.id == CWBOT_ID:
+                parse_quest(bot, update, user)
+            elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
                 add_group(bot, update, user, chat_data=chat_data)
             elif not is_admin:
                 user_panel(bot, update)
@@ -125,7 +130,7 @@ def main():
 
     # CW Mini Reports Forwarding
     disp.add_handler(MessageHandler(
-        (Filters.chat(FWD_CHANNEL) & Filters.user(FWD_BOT)),
+        (Filters.chat(FWD_CHANNEL) & Filters.user(username=[FWD_BOT])),
         fwd_report
     ))
 

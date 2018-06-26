@@ -186,7 +186,7 @@ def stock_compare_text(old_stock, new_stock):
                     loss_worth = __get_item_worth(item.name)
                     hits += 1
                     if item.tradable:
-                        running_total -= (loss_worth * val)
+                        running_total += (loss_worth * val)
                         msg += MSG_STOCK_COMPARE_W_PRICE.format(key, loss_worth, val, (loss_worth * val))
                     else:
                         msg += MSG_STOCK_COMPARE_WO_PRICE.format(key, val)
@@ -195,6 +195,7 @@ def stock_compare_text(old_stock, new_stock):
 
 
         if running_total != 0:
+            print(running_total)
             msg += MSG_STOCK_OVERALL_CHANGE.format(running_total)
 
         return msg

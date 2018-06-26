@@ -97,7 +97,7 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                 )
                 return
 
-            if forward_from and forward_from != update.message.forward_from.id:
+            if forward_from and update.message.forward_from and forward_from != update.message.forward_from.id:
                 logging.debug("Message is not a valid forward %s!=%s", update.message.forward_from.id, forward_from)
                 return
 
