@@ -104,14 +104,14 @@ def report_received(bot: Bot, update: Update, user: User):
         ).first()
 
         if report and report.castle != CASTLE:
-            ban_traitor(bot, update.message.from_user.id)
+            __ban_traitor(bot, update.message.from_user.id)
             return
 
         if not report or (report and report.preliminary_report):
             save_report(update.message.text, update.message.from_user.id, update.message.forward_date)
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
             if report and report.castle != CASTLE:
-                ban_traitor(bot, update.message.from_user.id)
+                __ban_traitor(bot, update.message.from_user.id)
         else:
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
 
@@ -156,7 +156,7 @@ def char_update(bot: Bot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
                    parse_mode=ParseMode.HTML)
     if char and char.castle != CASTLE:
-        ban_traitor(bot, update.message.from_user.id)
+        __ban_traitor(bot, update.message.from_user.id)
 
 
 @command_handler(

@@ -302,15 +302,17 @@ def ban(bot: Bot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
 
 
-def ban_traitor(bot: Bot, update: Update, user: User):
-    user = Session.query(User).filter_by(id=user.id).first()
+def __ban_traitor(bot: Bot, update: Update, user_id: int):
+    user = Session.query(User.id == user_id).first()
     if user:
         logging.warning("Banning %s", user.id)
+
         banned = Ban()
         banned.user_id = user.id
         banned.from_date = datetime.now()
         banned.to_date = datetime.max
         banned.reason = MSG_REASON_TRAITOR
+
         member = Session.query(SquadMember).filter_by(user_id=user.id).first()
         if member:
             Session.delete(member)
@@ -320,15 +322,7 @@ def ban_traitor(bot: Bot, update: Update, user: User):
             except TelegramError as err:
                 bot.logger.error(err.message)
 
-        # Disable API settings but keep his api credentials until user revokes them herself/himself.
-        user.setting_automated_sniping = False
-        user.setting_automated_hiding = False
-        user.setting_automated_report = False
-        user.setting_automated_deal_report = False
-
-        # Remove all his settings...
-        Session.query(UserExchangeOrder).filter(UserExchangeOrder.user_id == user.id).delete()
-        Session.query(UserStockHideSetting).filter(UserStockHideSetting.user_id == user.id).delete()
+        __disable_api_functions(user)
 
         admins = Session.query(Admin).filter_by(user_id=user.id).all()
         # for admin in admins:
@@ -340,6 +334,20 @@ def ban_traitor(bot: Bot, update: Update, user: User):
         squads = Session.query(Squad).all()
 
         #send_async(bot, chat_id=GOVERNMENT_CHAT, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
+
+
+def __disable_api_functions(user):
+    logging.info("Disabling API functions for user_id='%s'", user.id)
+    # Disable API settings but keep his api credentials until user revokes them herself/himself.
+    user.setting_automated_sniping = False
+    user.setting_automated_hiding = False
+    user.setting_automated_report = False
+    user.setting_automated_deal_report = False
+    # Remove all his settings...
+    Session.query(UserExchangeOrder).filter(UserExchangeOrder.user_id == user.id).delete()
+    Session.query(UserStockHideSetting).filter(UserStockHideSetting.user_id == user.id).delete()
+    Session.add(user)
+    Session.commit()
 
 
 @command_handler(

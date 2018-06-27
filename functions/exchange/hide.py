@@ -133,6 +133,19 @@ def hide_gold_info(bot: Bot, update: Update, user: User):
         wrapper.request_trade_terminal_access(bot, user)
         return
 
+    if not user.setting_automated_hiding:
+        logging.info(
+            "setting_automated_hiding is not enabled for user_id=%s.",
+            user.id
+        )
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=HIDE_DISABLED,
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        return
+
     text = __get_autohide_settings(user)
     send_async(
         bot,

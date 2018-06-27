@@ -40,13 +40,25 @@ def sniping_info(bot: Bot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
-
     logging.info("sniping_info called by %s", update.message.chat.id)
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user.is_api_trade_allowed:
         logging.info("TradeTerminal is not allowed for user_id=%s. Sniping not possible. Requesting access", user.id)
         wrapper.request_trade_terminal_access(bot, user)
+        return
+
+    if not user.setting_automated_sniping:
+        logging.info(
+            "setting_automated_sniping is not enabled for user_id=%s.",
+            user.id
+        )
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=SNIPE_DISABLED,
+            parse_mode=ParseMode.MARKDOWN,
+        )
         return
 
     current_settings = __get_snipe_settings(user)

@@ -618,7 +618,7 @@ HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFee
                "To remove an item from your settings do `/ah <itemId>`.\n\n" \
                "*Your current settings are:*\n" \
                "{}"
-
+HIDE_DISABLED = "You have to enable hiding in your settings first!"
 HIDE_STARTED = "Started hiding. This can take a few minutes. I'll notify you when I'm done. _Note: If you are currently busy questing this will not work and you have to start over!_"
 HIDE_WRONG_ARGS = "Sorry, the /ah command you issued is not valid. Try again."
 HIDE_WRONG_LIMIT = "Sorry, the limit you specified is not valid. Try again."

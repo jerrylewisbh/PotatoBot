@@ -14,7 +14,7 @@ from core.texts import *
 from core.types import (BuildReport, Character, Equip, Item, Profession,
                         Report, Session, Stock, User, new_item)
 from core.utils import send_async
-from functions.common import StockType, ban_traitor, __get_item_worth
+from functions.common import StockType, __ban_traitor, __get_item_worth
 from functions.inline_markup import (generate_profile_buttons,
                                      generate_settings_buttons)
 
@@ -106,7 +106,7 @@ def parse_hero(bot: Bot, profile, user_id, date):
             Session.commit()
         else:
             Session.rollback()
-            ban_traitor(bot, user_id)
+            __ban_traitor(bot, user_id)
             logging.warning('%s is a traitor!', user_id)
     return char
 
