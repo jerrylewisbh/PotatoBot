@@ -353,6 +353,16 @@ def leave_squad(bot: Bot, user: User, member: SquadMember, message):
     if member:
         squad = Session.query(Squad).filter(Squad.chat_id == member.squad_id).first()
         member_user = Session.query(User).filter(User.id == member.user_id).first()
+
+        # Disable sniping, etc.
+        member_user.setting_automated_report = False
+        member_user.setting_automated_deal_report = False
+        member_user.setting_automated_hiding = False
+        member_user.setting_automated_sniping = False
+
+        Session.add(member_user)
+        Session.commit()
+
         Session.delete(member)
         Session.commit()
         if member.approved:

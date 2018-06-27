@@ -169,7 +169,7 @@ def stock_compare_text(old_stock, new_stock):
                 if item and item.pillagable:
                     gain_worth = __get_item_worth(item.name)
                     hits += 1
-                    if item.tradable:
+                    if item.tradable and gain_worth:
                         running_total += (gain_worth * val)
                         msg += MSG_STOCK_COMPARE_W_PRICE.format(key, gain_worth, val, (gain_worth * val))
                     else:
@@ -183,9 +183,9 @@ def stock_compare_text(old_stock, new_stock):
             for key, val in resource_diff_del:
                 item = __get_item(key)
                 if item and item.pillagable:
-                    loss_worth = __get_item_worth(item.name)
                     hits += 1
-                    if item.tradable:
+                    loss_worth = __get_item_worth(item.name)
+                    if item.tradable and loss_worth:
                         running_total += (loss_worth * val)
                         msg += MSG_STOCK_COMPARE_W_PRICE.format(key, loss_worth, val, (loss_worth * val))
                     else:
