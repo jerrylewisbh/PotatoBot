@@ -34,7 +34,6 @@ def disable_report_fwd(bot: Bot, update: Update, user: User):
 
 
 def fwd_report(bot: Bot, update: Update):
-    print(update)
     if not update.channel_post or (update.effective_chat and update.effective_chat.id != FWD_CHANNEL):
         # No channel post or wrong channel: Done!
         return

@@ -195,7 +195,6 @@ def stock_compare_text(old_stock, new_stock):
 
 
         if running_total != 0:
-            print(running_total)
             msg += MSG_STOCK_OVERALL_CHANGE.format(running_total)
 
         return msg
