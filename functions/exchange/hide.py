@@ -121,7 +121,7 @@ profile.py
     squad_only=True
 )
 def hide_gold_info(bot: Bot, update: Update, user: User):
-    logging.warning("hide_gold_info called by %s", update.message.chat.id)
+    logging.info("hide_gold_info called by %s", update.message.chat.id)
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
 

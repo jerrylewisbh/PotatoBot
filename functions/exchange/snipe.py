@@ -83,7 +83,7 @@ def sniping_remove(bot: Bot, update: Update, user: User, **kwargs):
     if "args" in kwargs:
         args = kwargs["args"]
 
-    logging.warning("sniping_remove called by %s - args='%s'", update.message.chat.id, args)
+    logging.info("sniping_remove called by %s - args='%s'", update.message.chat.id, args)
     if len(args) != 1:
         send_async(
             bot,
@@ -119,7 +119,7 @@ def sniping_remove(bot: Bot, update: Update, user: User, **kwargs):
     ).first()
 
     if ueo:
-        logging.warning("Remove sniping order for item %s and user %s", item.name, user.id)
+        logging.info("Remove sniping order for item %s and user %s", item.name, user.id)
         Session.delete(ueo)
         Session.commit()
 
@@ -135,7 +135,7 @@ def sniping_remove(bot: Bot, update: Update, user: User, **kwargs):
     squad_only=True
 )
 def sniping_resume(bot: Bot, update: Update, user: User):
-    logging.warning("sniping_resume called by %s", update.message.chat.id)
+    logging.info("sniping_resume called by %s", update.message.chat.id)
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
 
     if not user:
@@ -174,7 +174,7 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
-    logging.warning("[Sniping] called by %s - args='%s'", update.message.chat.id, args)
+    logging.info("[Sniping] called by %s - args='%s'", update.message.chat.id, args)
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
     if not user:
@@ -227,7 +227,7 @@ def sniping(bot: Bot, update: Update, user: User, **kwargs):
     try:
         max_price = int(args[1])
     except Exception:
-        logging.warning("[Sniping] Invalid max_price=%s from user_id=%s", args[1], user.id)
+        logging.info("[Sniping] Invalid max_price=%s from user_id=%s", args[1], user.id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
