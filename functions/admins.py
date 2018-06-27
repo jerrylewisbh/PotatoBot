@@ -1,5 +1,5 @@
 import logging
-from config import LOGFILE, SUPER_ADMIN_ID
+from config import LOGFILE, SUPER_ADMIN_ID, LOG_ALLOWED_RECIPIENTS
 
 from telegram import Bot, Update
 
@@ -254,12 +254,10 @@ def del_global_admin(bot: Bot, update: Update, user: User):
                            text=MSG_DEL_GLOBAL_ADMIN.format(user.username))
 
 
-@command_handler(
-    min_permission=AdminType.SUPER,
-)
+@command_handler()
 def get_log(bot: Bot, update: Update, user: User):
-    if update.message.from_user.id != SUPER_ADMIN_ID:
-        logging.info("User %s tried to request logs and is not allowed to!", update.message.from_user.id)
+    if update.message.from_user.id not in LOG_ALLOWED_RECIPIENTS:
+        logging.warning("User %s tried to request logs and is not allowed to!", update.message.from_user.id)
         return
 
     logging.info("User %s requrested logs", update.message.from_user.id)

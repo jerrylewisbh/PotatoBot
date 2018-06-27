@@ -34,7 +34,11 @@ def disable_report_fwd(bot: Bot, update: Update, user: User):
 
 
 def fwd_report(bot: Bot, update: Update):
-    if not update.message.text or not update.message.text.startswith("⛳️Battle results"):
+    print(update)
+    if not update.channel_post or (update.effective_chat and update.effective_chat.id != FWD_CHANNEL):
+        # No channel post or wrong channel: Done!
+        return
+    if not update.channel_post.text or not update.channel_post.text.startswith("⛳️Battle results"):
         # Nothing to do...
         return
 
@@ -50,7 +54,7 @@ def fwd_report(bot: Bot, update: Update):
         bot.forward_message(
             chat_id=group.id,
             from_chat_id=FWD_CHANNEL,
-            message_id=update.message.message_id
+            message_id=update.channel_post.message_id
         )
 
 

@@ -85,7 +85,9 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                     logging.debug("Message received in private but allow_private=False. Ignoring message.")
                     return
 
-            #user = create_or_update_user(update.message.from_user)
+            if update.channel_post:
+                # Channel posts are not allowed. Block functions
+                return
             user = create_or_update_user(update.effective_user)
             if not user:
                 logging.error("create_or_update_user() did not return a User!")

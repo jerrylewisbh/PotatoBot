@@ -7,20 +7,23 @@ from logging.handlers import TimedRotatingFileHandler
 from telegram import Bot, Update
 from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
                           MessageQueue, Updater)
+from telegram.ext import MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
+from telegram.utils.request import Request
 
-from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT, CWBOT_ID
-from core.battle import report_after_battle, ready_to_battle, ready_to_battle_result
+from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT, CWBOT_ID, LOG_CHANNEL_LEVEL, LOG_CHANNEL
+from core.battle import report_after_battle, ready_to_battle_result
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler import buttons, chats
 from core.handler import commands
-from core.handler.inline.__init__ import (inlinequery)
 from core.handler.callback import callback_query
+from core.handler.inline.__init__ import (inlinequery)
 from core.jobs.job_queue import (add_after_war_messages,
                                  add_battle_report_messages,
                                  add_pre_war_messages,
                                  add_war_warning_messages)
+from core.logging import TelegramHandler, HtmlFormatter
 from core.state import GameState, get_game_state
 from core.types import Admin, Session, Squad, User
 from core.utils import create_or_update_user
@@ -101,14 +104,11 @@ def main():
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
+    # Logging into file
     rh = TimedRotatingFileHandler(LOGFILE, when='midnight', backupCount=10)
     rh.setLevel(logging.DEBUG)
     rh.setFormatter(formatter)
     logger.addHandler(rh)
-
-    # Create the EventHandler and pass it your bot's token.
-    from telegram.ext import MessageHandler, Filters
-    from telegram.utils.request import Request
 
     token = TOKEN
     # for test purposes limit global throughput to 3 messages per 3 seconds
@@ -117,6 +117,12 @@ def main():
     bot = MQBot(token, request=request, mqueue=q)
     updater = Updater(bot=bot)
     updater.bot.logger.setLevel(logging.INFO)
+
+    # Logging to telegram
+    th = TelegramHandler(bot, LOG_CHANNEL)
+    th.setLevel(LOG_CHANNEL_LEVEL)
+    th.setFormatter(HtmlFormatter(use_emoji=True))
+    logger.addHandler(th)
 
     # Get the dispatcher to register handler
     disp = updater.dispatcher
@@ -128,11 +134,8 @@ def main():
     disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True, pass_job_queue=True))
     disp.add_handler(InlineQueryHandler(inlinequery))
 
-    # CW Mini Reports Forwarding
-    disp.add_handler(MessageHandler(
-        (Filters.chat(FWD_CHANNEL) & Filters.user(username=[FWD_BOT])),
-        fwd_report
-    ))
+    # CW Mini Reports Forwarding - Checking is done in function
+    disp.add_handler(MessageHandler(Filters.all, fwd_report))
 
     # on noncommand i.e message - echo the message on Telegram
     disp.add_handler(MessageHandler(Filters.status_update, welcome))

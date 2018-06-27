@@ -29,6 +29,8 @@ def create_or_update_user(telegram_user: telegram.User) -> User:
     :type telegram_user: object
     :rtype: User
     """
+    if not telegram_user:
+        return None
     user = Session.query(User).filter_by(id=telegram_user.id).first()
     if not user:
         user = User(

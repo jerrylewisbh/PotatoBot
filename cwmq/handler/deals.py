@@ -82,43 +82,43 @@ def __handle_sold(user, data, channel, method, dispatcher):
 
 def __handle_snipes(user, data, channel, method, dispatcher):
     if user.setting_automated_sniping and not user.sniping_suspended and not user.is_banned:
-        logger.warning("[Snipe] Snipe-Check for %s", user.id)
+        logger.info("[Snipe] Snipe-Check for %s", user.id)
         # Check if we have a sniping order for this item + user
         item = Session.query(Item).filter(func.lower(Item.name) == data['item'].lower()).first()
         if not item:
-            logging.warning("[Snipe] Unknown item %s", data['item'])
+            logging.info("[Snipe] Unknown item %s", data['item'])
             new_item(dispatcher.bot, data["item"], True)
             return
 
-        logging.warning("[Snipe] Item: %s (%s/%s)", item.name, item.id, item.cw_id)
+        logging.info("[Snipe] Item: %s (%s/%s)", item.name, item.id, item.cw_id)
 
         order = Session.query(UserExchangeOrder).filter(
             UserExchangeOrder.user == user,
             UserExchangeOrder.item == item).first()
         if not order:
             # Nothing to do...
-            logging.warning("[Snipe] No order from %s for %s", user.id, item.cw_id)
+            logging.info("[Snipe] No order from %s for %s", user.id, item.cw_id)
             return
 
         if data['price'] > order.max_price:
-            logging.warning("[Snipe] Price does not match price of order! Order Price=%s, Price=%s, User=%s",
+            logging.info("[Snipe] Price does not match price of order! Order Price=%s, Price=%s, User=%s",
                             order.max_price, data['price'], user.id)
             return
 
         outstanding_count = order.outstanding_order - data['qty']
         if outstanding_count < 0:
-            logging.warning("outstanding_count < 0 for %s", user.id)
+            logging.info("outstanding_count < 0 for %s", user.id)
 
         if outstanding_count == 0:
             # Order is completed!
-            logging.warning("[Snipe] Order for %s from %s and price %s is completed!", order.item.name, user.id,
+            logging.info("[Snipe] Order for %s from %s and price %s is completed!", order.item.name, user.id,
                             order.max_price)
-            logging.warning("[Snipe] Deleting %s", order)
+            logging.info("[Snipe] Deleting %s", order)
             Session.delete(order)
             Session.commit()
         elif outstanding_count > 0:
             order.outstanding_order = outstanding_count
-            logging.warning("[Snipe] Order for %s from %s and price %s now only needs %s items!", order.item.name,
+            logging.info("[Snipe] Order for %s from %s and price %s now only needs %s items!", order.item.name,
                             user.id,
                             order.max_price, order.outstanding_order)
             Session.add(order)
