@@ -92,13 +92,14 @@ class HtmlFormatter(TelegramFormatter):
         :param logging.LogRecord record:
         """
         super(HtmlFormatter, self).format(record)
-
         if record.funcName:
             record.funcName = escape(str(record.funcName))
         if record.name:
             record.name = escape(str(record.name))
         if record.msg:
             record.msg = escape(record.getMessage())
+        if record.stack_info:
+            record.stack_info = escape(record.stack_info)
         if self.use_emoji:
             if record.levelno == logging.DEBUG:
                 record.levelname = EMOJI.WHITE_CIRCLE

@@ -219,8 +219,6 @@ Average loot: {:.2f}
         )
     ).join(UserQuestItem).join(UserQuest).distinct().order_by(Item.id).all()
 
-    print(item_drops)
-
     daytimes = (
         GameState.MORNING,
         GameState.DAY,
@@ -242,8 +240,6 @@ Average loot: {:.2f}
 
         for daytime in daytimes:
             text += "{}:\n".format(daytime.name)
-
-    print("------")
 
     return text
 
