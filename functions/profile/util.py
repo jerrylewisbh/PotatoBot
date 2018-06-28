@@ -331,7 +331,7 @@ def __send_user_with_settings(bot: Bot, update: Update, user: User):
 def send_settings(bot, update, user):
     automated_report = MSG_NEEDS_API_ACCESS
     if user.api_token and user.is_api_profile_allowed:
-        automated_report = user.setting_automated_deal_report
+        automated_report = user.setting_automated_report
 
     automated_deal_report = MSG_NEEDS_API_ACCESS
     if user.api_token and user.is_api_stock_allowed:
