@@ -49,13 +49,17 @@ def ready_to_battle(bot: Bot, job_queue: Job):
                 {'t': QueryType.OrderOk.value, 'id': new_order.id}
             )
 
-            msg = send_order(bot, new_order.text, 0, new_order.chat_id, markup=None)
+            msg = send_order(
+                bot,
+                new_order.text,
+                0,
+                new_order.chat_id,
+                markup=None
+            )
 
             try:
-                msg = msg.result().result().result()
-                print(msg)
+                msg = msg.result()
                 if msg:
-                    print(msg)
                     bot.request.post(
                         bot.base_url + '/pinChatMessage', {
                             'chat_id': new_order.chat_id,
