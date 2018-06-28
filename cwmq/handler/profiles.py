@@ -140,7 +140,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
-                logger.warning("User has not granted Profile/Stock access but we have a token. Requesting access")
+                logger.info("User has not granted Profile/Stock access but we have a token. Requesting access")
                 wrapper.request_profile_access(dispatcher.bot, user)
             elif data['result'] == "Ok":
                 # Seems we have access although we thought we don't have it...
@@ -172,6 +172,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c.castle = data['payload']['profile']['castle']
                 c.gold = data['payload']['profile']['gold']
                 c.donateGold = data['payload']['profile']['pouches'] if 'pouches' in data['payload']['profile'] else 0
+                #c.guild = data['payload']['profile']['guild'] if 'guild' in data['payload']['guild'] else None
+                #c.guild_tag = data['payload']['profile']['guild_tag'] if 'guild_tag' in data['payload']['guild_tag'] else None
                 Session.add(c)
                 Session.commit()
 
@@ -191,7 +193,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
-                logger.warning("User has not granted Stock access but we have a token. Requesting access")
+                logger.info("User has not granted Stock access but we have a token. Requesting access")
                 wrapper.request_stock_access(dispatcher.bot, user)
             elif data['result'] == "Ok":
                 if not user:
@@ -227,10 +229,10 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
-                logger.warning("TradeTerminal is Forbidden for user=%s. Requesting access", user.id)
+                logger.info("TradeTerminal is Forbidden for user=%s. Requesting access", user.id)
                 wrapper.request_trade_terminal_access(dispatcher.bot, user)
             elif data['result'] in ["BattleIsNear", "ProhibitedItem", "UserIsBusy"]:
-                logger.warning("Buy action for did not go through. Reason: %s", data['result'])
+                logger.info("Buy action for did not go through. Reason: %s", data['result'])
             elif data['result'] == "InsufficientFunds":
                 # Don't suspend sniping if user is in "hide mode"
                 if get_hide_mode(user):

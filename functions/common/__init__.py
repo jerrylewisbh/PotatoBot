@@ -5,6 +5,7 @@ from enum import Enum
 import redis
 from sqlalchemy import func
 from telegram import Bot, ParseMode, Update, TelegramError
+from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated
 
 from config import CWBOT_ID, REDIS_SERVER, REDIS_PORT
 from core.decorators import command_handler
@@ -13,7 +14,7 @@ from core.texts import *
 from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_YOU_BANNED, MSG_BAN_COMPLETE, \
     MSG_USER_UNKNOWN, MSG_REASON_TRAITOR, MSG_YOU_UNBANNED, MSG_USER_UNBANNED, MSG_USER_NOT_BANNED
 from core.types import Admin, AdminType, Stock, User, Session, Item, Ban, SquadMember, Squad, UserExchangeOrder, \
-    UserStockHideSetting
+    UserStockHideSetting, Group
 from core.utils import send_async
 from functions.reply_markup import (generate_admin_markup)
 from functions.triggers import trigger_decorator
@@ -26,9 +27,49 @@ class StockType(Enum):
     TradeBot = 1
 
 
-def error(bot: Bot, update, error, **kwargs):
+def error_callback(bot: Bot, update, error, **kwargs):
     """ Error handling """
-    logging.error("An error (%s) occurred: %s", type(error), error.message)
+    try:
+        raise error
+    except Unauthorized:
+        if update.message.chat_id:
+            # Group?
+            group = Session.query(Group).filter(Group.id == update.message.chat_id).first()
+            if group is not None:
+                group.bot_in_group = False
+                Session.add(group)
+                Session.commit()
+        # remove update.message.chat_id from conversation list
+        logging.warning(
+            "Unauthorized occurred: %s. We should probably remove user user_id='%s' from bot.",
+            error.message,
+            update.message.chat_id,
+            exc_info=True
+        )
+    except BadRequest:
+        # handle malformed requests - read more below!
+        logging.error("BadRequest occurred: %s", error.message, exc_info=True)
+    except TimedOut:
+        # handle slow connection problems
+        logging.error("TimedOut occurred: %s", error.message, exc_info=True)
+    except NetworkError:
+        # handle other connection problems
+
+        logging.error("NetworkError occurred: %s", error.message, exc_info=True)
+    except ChatMigrated as e:
+        # the chat_id of a group has changed, use e.new_chat_id instead
+        logging.warning(
+            "ChatMigrated occurred: %s",
+            error.message,
+            exc_info=True
+        )
+    except TelegramError:
+        # handle all other telegram related errors
+        logging.error("TelegramError occurred: %s", error.message, exc_info=True)
+    except Exception:
+        print("START ##################################################")
+        print(error)
+        print("END ####################################################")
 
 
 @command_handler(

@@ -13,7 +13,7 @@ from telegram.ext.dispatcher import run_async
 from telegram.utils.request import Request
 
 from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT, CWBOT_ID, LOG_GROUP_LEVEL, LOG_GROUP, LOG_LEVEL
-from core.battle import report_after_battle, ready_to_battle_result
+from core.battle import report_after_battle, ready_to_battle_result, refresh_api_users
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler import buttons, chats
@@ -33,7 +33,7 @@ from cwmq.handler.deals import deals_handler
 from cwmq.handler.digest import digest_handler
 from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
-from functions.common import (error)
+from functions.common import error_callback
 from functions.order_groups import add_group
 from functions.orders import order
 from functions.profile import user_panel
@@ -127,7 +127,7 @@ def main():
     th.setFormatter(HtmlFormatter(use_emoji=True))
     throttle = RateLimitingFilter(rate=1, per=60, burst=5)
     th.addFilter(throttle)
-    logger.addHandler(th)
+    #logger.addHandler(th)
 
     # Get the dispatcher to register handler
     disp = updater.dispatcher
@@ -151,11 +151,11 @@ def main():
         pass_job_queue=True
     ))
 
-    # log all errors
-    disp.add_error_handler(error)
-    add_war_warning_messages(updater)
+    # Python Telegram Bot Error handler
+    disp.add_error_handler(error_callback)
 
     # API refreshing, etc.
+    add_war_warning_messages(updater)
     add_pre_war_messages(updater)
     add_after_war_messages(updater)
     add_battle_report_messages(updater)
@@ -164,6 +164,7 @@ def main():
     if DEBUG:
         updater.job_queue.run_once(report_after_battle, datetime.now() + timedelta(seconds=5))
         updater.job_queue.run_once(ready_to_battle_result, datetime.now() + timedelta(seconds=5))
+        updater.job_queue.run_once(refresh_api_users, datetime.now() + timedelta(seconds=5))
 
     # Start the Bot
     updater.start_polling()
