@@ -23,9 +23,8 @@ client.start()
 
 for item in dir(commands):
     if not item.startswith("__"):
-        #client.send_message('@KartoffelTheTestBot', getattr(commands, item))
-        #time.sleep(1)
-        pass
+        client.send_message('@KartoffelTheTestBot', getattr(commands, item))
+        time.sleep(1)
 
 
 for item in dir(chats):
