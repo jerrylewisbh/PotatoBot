@@ -10,7 +10,7 @@ from core.types import *
 
 Session()
 
-the_url = input("Url to Heroku Dataclip JSON: ")
+the_url = input("Url to Heroku Dataclip CSV: ")
 
 with urllib.request.urlopen(the_url) as url:
     the_file = codecs.iterdecode(url, 'utf-8')
