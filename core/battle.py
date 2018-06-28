@@ -46,21 +46,22 @@ def ready_to_battle(bot: Bot, job_queue: Job):
             Session.commit()
 
             callback_data = json.dumps(
-                {'t': QueryType.OrderOk.value, 'id': new_order.id})
-            markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton(MSG_MAIN_INLINE_BATTLE,
-                                      callback_data=callback_data)]])
+                {'t': QueryType.OrderOk.value, 'id': new_order.id}
+            )
 
             msg = send_order(bot, new_order.text, 0, new_order.chat_id, markup=None)
 
             try:
-                msg = msg.result().result()
+                msg = msg.result().result().result()
+                print(msg)
                 if msg:
-                    bot.request.post(bot.base_url + '/pinChatMessage',
-                                     {'chat_id': new_order.chat_id,
-                                      'message_id': msg.message_id,
-                                      'disable_notification': False})
-
+                    print(msg)
+                    bot.request.post(
+                        bot.base_url + '/pinChatMessage', {
+                            'chat_id': new_order.chat_id,
+                            'message_id': msg.message_id,
+                            'disable_notification': False
+                        })
             except TelegramError as err:
                 bot.logger.error(err.message)
 
