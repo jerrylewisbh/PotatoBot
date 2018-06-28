@@ -12,7 +12,7 @@ from telegram.ext import MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
 from telegram.utils.request import Request
 
-from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT, CWBOT_ID, LOG_GROUP_LEVEL, LOG_GROUP, LOG_LEVEL
+from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, CWBOT_ID, LOG_GROUP_LEVEL, LOG_GROUP, LOG_LEVEL
 from core.battle import report_after_battle, ready_to_battle_result, refresh_api_users
 from core.bot import MQBot
 from core.decorators import command_handler

@@ -1,6 +1,6 @@
 from telegram import Bot, Update
 
-from config import FWD_BOT, FWD_CHANNEL
+from config import FWD_CHANNEL
 from core.decorators import command_handler
 from core.texts import *
 from core.types import *
