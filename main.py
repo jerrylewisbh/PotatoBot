@@ -13,7 +13,7 @@ from telegram.ext.dispatcher import run_async
 from telegram.utils.request import Request
 
 from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, CWBOT_ID, LOG_GROUP_LEVEL, LOG_GROUP, LOG_LEVEL
-from core.battle import report_after_battle, ready_to_battle_result, refresh_api_users
+from core.battle import report_after_battle, ready_to_battle_result, refresh_api_users, fresh_profiles, ready_to_battle
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler import buttons, chats
@@ -24,6 +24,7 @@ from core.jobs.job_queue import (add_after_war_messages,
                                  add_battle_report_messages,
                                  add_pre_war_messages,
                                  add_war_warning_messages)
+from core.texts import *
 from core.logging import TelegramHandler, HtmlFormatter
 from core.state import GameState, get_game_state
 from core.types import Admin, Session, Squad, User
@@ -40,6 +41,7 @@ from functions.profile import user_panel
 from functions.quest import parse_quest
 from functions.report import fwd_report
 from functions.welcome import (welcome)
+
 
 Session()
 
@@ -162,9 +164,14 @@ def main():
 
     # THIS IS FOR DEBUGGING AND TESTING!
     if DEBUG:
-        updater.job_queue.run_once(report_after_battle, datetime.now() + timedelta(seconds=5))
-        updater.job_queue.run_once(ready_to_battle_result, datetime.now() + timedelta(seconds=5))
-        updater.job_queue.run_once(refresh_api_users, datetime.now() + timedelta(seconds=5))
+        now = datetime.now()
+        updater.job_queue.run_once(report_after_battle, now + timedelta(seconds=5))
+        updater.job_queue.run_once(ready_to_battle_result, now + timedelta(seconds=10))
+        updater.job_queue.run_once(refresh_api_users, now + timedelta(seconds=15))
+        updater.job_queue.run_once(fresh_profiles, now + timedelta(seconds=20))
+        updater.job_queue.run_once(ready_to_battle, now + timedelta(seconds=25), context=MSG_MAIN_SEND_REPORTS)
+        updater.job_queue.run_once(ready_to_battle, now + timedelta(seconds=30), context=MSG_MAIN_READY_TO_BATTLE_30)
+        updater.job_queue.run_once(ready_to_battle, now + timedelta(seconds=35), context=MSG_MAIN_READY_TO_BATTLE_45)
 
     # Start the Bot
     updater.start_polling()

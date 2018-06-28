@@ -64,6 +64,7 @@ def __handle_hides(user, data, channel, method, dispatcher):
 
 def __handle_sold(user, data, channel, method, dispatcher):
     if user and user.setting_automated_deal_report and not user.is_banned:
+        logging.info("[Deals/Hide] Sending user_id='%s' SOLD message", user.id)
         dispatcher.bot.send_message(
             user.id,
             MSG_DEAL_SOLD.format(
