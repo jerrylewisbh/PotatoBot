@@ -4,7 +4,7 @@ import logging
 import redis
 from sqlalchemy import func
 
-from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
+from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL, LOG_LEVEL_MQ
 from core.types import (Item, Session, UserExchangeOrder)
 from cwmq import Publisher, wrapper
 from functions.common import (MSG_API_INCOMPLETE_SETUP,
@@ -15,11 +15,10 @@ Session()
 p = Publisher()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
+logger.setLevel(LOG_LEVEL_MQ)
 
 def digest_handler(channel, method, properties, body, dispatcher):
-    logger.info('New message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
+    logger.debug('New message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
 
     try:

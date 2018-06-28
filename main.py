@@ -12,7 +12,7 @@ from telegram.ext import MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
 from telegram.utils.request import Request
 
-from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT, CWBOT_ID, LOG_CHANNEL_LEVEL, LOG_CHANNEL
+from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT, CWBOT_ID, LOG_GROUP_LEVEL, LOG_GROUP
 from core.battle import report_after_battle, ready_to_battle_result
 from core.bot import MQBot
 from core.decorators import command_handler
@@ -122,8 +122,8 @@ def main():
 
     # Logging to telegram
     # We enable throttling to avoid spamming the channel...
-    th = TelegramHandler(bot, LOG_CHANNEL)
-    th.setLevel(LOG_CHANNEL_LEVEL)
+    th = TelegramHandler(bot, LOG_GROUP)
+    th.setLevel(LOG_GROUP_LEVEL)
     th.setFormatter(HtmlFormatter(use_emoji=True))
     throttle = RateLimitingFilter(rate=1, per=60, burst=5)
     th.addFilter(throttle)

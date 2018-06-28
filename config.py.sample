@@ -30,9 +30,17 @@ CW_DIGEST_Q = "<username>_<botname>_sex_digest"
 
 CW_URL = "amqps://<username>:<pass>@api.chatwars.me:5673/?socket_timeout=10&connection_attempts=5&retry_delay=5"
 
+#
+# Logging-Settings
+#
 LOGFILE = 'botato.log'
-LOG_CHANNEL = -1001161151024
-LOG_CHANNEL_LEVEL = logging.WARNING
+
+LOG_LEVEL = logging.INFO
+LOG_LEVEL_MQ = logging.INFO
+
+# Logging into a Telegram Group
+LOG_GROUP = -1001161151024
+LOG_GROUP_LEVEL = logging.WARNING
 LOG_ALLOWED_RECIPIENTS = [
     SUPER_ADMIN_ID,
     176862585 # @chkorn

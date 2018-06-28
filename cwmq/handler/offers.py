@@ -4,7 +4,7 @@ import logging
 import redis
 from sqlalchemy import func
 
-from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
+from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL, LOG_LEVEL_MQ
 from core.types import Item, Session, UserExchangeOrder, new_item
 from cwmq import Publisher, wrapper
 from functions.common import (MSG_API_INCOMPLETE_SETUP,
@@ -14,7 +14,7 @@ Session()
 p = Publisher()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(LOG_LEVEL_MQ)
 
 r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
 
@@ -32,7 +32,7 @@ def offers_handler(channel, method, properties, body, dispatcher):
 
         if not item:
             new_item(dispatcher.bot, data['item'], True)
-        logging.debug("%s/%s: %s", item.id, item.cw_id, item.name)
+        logger.debug("%s/%s: %s", item.id, item.cw_id, item.name)
 
         # No orders...
         orders = item.user_orders.filter(
@@ -43,7 +43,7 @@ def offers_handler(channel, method, properties, body, dispatcher):
             return
 
         for order in orders:
-            logging.info(
+            logger.info(
                 "Order #%s - item='%s' - user_id='%s', is_api_trade_allowed='%s', setting_automated_sniping='%s', sniping_suspended='%s'",
                 order.id,
                 order.item.name,
@@ -54,11 +54,11 @@ def offers_handler(channel, method, properties, body, dispatcher):
 
             if data['price'] > order.max_price:
                 # Done...
-                logging.info("Price '%s' for '%s' is greater than max_price '%s'",
+                logger.info("Price '%s' for '%s' is greater than max_price '%s'",
                              data['price'], order.item.name, order.max_price)
                 continue  # Next order!
             elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping or order.user.sniping_suspended:
-                logging.info(
+                logger.info(
                     "Trade disabled for %s (API: '%s'/ Setting: '%s' / Suspended: '%s')",
                     order.user.id,
                     order.user.is_api_trade_allowed,
@@ -96,7 +96,7 @@ def offers_handler(channel, method, properties, body, dispatcher):
                     wrapper.want_to_buy(order.user, item.cw_id, 1, data['price'])
             except wrapper.APIInvalidTokenException:
                 # This really shouldn't happen unless the DB is messed up :-/
-                logging.warning("No API ID, incomplete setup. Informing user and disabling trade.")
+                logger.warning("No API ID, incomplete setup. Informing user and disabling trade.")
 
                 u = order.user
                 u.setting_automated_sniping = False
@@ -108,14 +108,14 @@ def offers_handler(channel, method, properties, body, dispatcher):
                     MSG_API_INCOMPLETE_SETUP + MSG_DISABLED_TRADING,
                 )
             except wrapper.APIMissingAccessRightsException:
-                logging.warning("Missing permissions for User '%s'.", order.user.id)
+                logger.warning("Missing permissions for User '%s'.", order.user.id)
                 # Not requesting it since this might spam a user every 5 minutes...
             except wrapper.APIMissingUserException:
-                logging.error("No/Invalid user for create_want_to_uy specified")
+                logger.error("No/Invalid user for create_want_to_uy specified")
             except wrapper.APIWrongItemCode as ex:
-                logging.error("Wrong item code was given: %s", ex)
+                logger.error("Wrong item code was given: %s", ex)
             except wrapper.APIWrongSettings:
-                logging.error("User has disabled all trade settings but you tried to create a Buy-Order")
+                logger.error("User has disabled all trade settings but you tried to create a Buy-Order")
 
         channel.basic_ack(method.delivery_tag)
 
@@ -124,11 +124,11 @@ def offers_handler(channel, method, properties, body, dispatcher):
             # Acknowledge if possible...
             channel.basic_ack(method.delivery_tag)
         except Exception:
-            logging.exception("Can't acknowledge message")
+            logger.exception("Can't acknowledge message")
 
         try:
             Session.rollback()
         except BaseException:
-            logging.exception("Can't do rollback")
+            logger.exception("Can't do rollback")
 
-        logging.exception("Exception in MQ handler occured!")
+        logger.exception("Exception in MQ handler occured!")

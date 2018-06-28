@@ -4,7 +4,7 @@ import logging
 from sqlalchemy import func
 from telegram import ParseMode
 
-from config import CC_EXCHANGE_ORDERS
+from config import CC_EXCHANGE_ORDERS, LOG_LEVEL_MQ
 from core.texts import *
 from core.types import Item, Session, User, UserExchangeOrder, new_item
 from cwmq import Publisher
@@ -16,8 +16,7 @@ Session()
 p = Publisher()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
+logger.setLevel(LOG_LEVEL_MQ)
 
 def deals_handler(channel, method, properties, body, dispatcher):
     logger.debug('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
@@ -40,20 +39,20 @@ def deals_handler(channel, method, properties, body, dispatcher):
             # Acknowledge if possible...
             channel.basic_ack(method.delivery_tag)
         except Exception:
-            logging.exception("Can't acknowledge message")
+            logger.exception("Can't acknowledge message")
 
         try:
             Session.rollback()
         except BaseException:
-            logging.exception("Can't do rollback")
+            logger.exception("Can't do rollback")
 
-        logging.exception("Exception in MQ handler occured!")
+        logger.exception("Exception in MQ handler occured!")
 
 
 def __handle_hides(user, data, channel, method, dispatcher):
     hide_mode = get_hide_mode(user)
     if not hide_mode or data['qty'] != 1:
-        logging.debug("[Deals/Hide] user_id='%s' not in hide-mode or qty!=1", user.id)
+        logger.debug("[Deals/Hide] user_id='%s' not in hide-mode or qty!=1", user.id)
         return
 
     hide_results = append_hide_result(
@@ -86,39 +85,39 @@ def __handle_snipes(user, data, channel, method, dispatcher):
         # Check if we have a sniping order for this item + user
         item = Session.query(Item).filter(func.lower(Item.name) == data['item'].lower()).first()
         if not item:
-            logging.info("[Snipe] Unknown item %s", data['item'])
+            logger.info("[Snipe] Unknown item %s", data['item'])
             new_item(dispatcher.bot, data["item"], True)
             return
 
-        logging.info("[Snipe] Item: %s (%s/%s)", item.name, item.id, item.cw_id)
+        logger.info("[Snipe] Item: %s (%s/%s)", item.name, item.id, item.cw_id)
 
         order = Session.query(UserExchangeOrder).filter(
             UserExchangeOrder.user == user,
             UserExchangeOrder.item == item).first()
         if not order:
             # Nothing to do...
-            logging.info("[Snipe] No order from %s for %s", user.id, item.cw_id)
+            logger.info("[Snipe] No order from %s for %s", user.id, item.cw_id)
             return
 
         if data['price'] > order.max_price:
-            logging.info("[Snipe] Price does not match price of order! Order Price=%s, Price=%s, User=%s",
+            logger.info("[Snipe] Price does not match price of order! Order Price=%s, Price=%s, User=%s",
                             order.max_price, data['price'], user.id)
             return
 
         outstanding_count = order.outstanding_order - data['qty']
         if outstanding_count < 0:
-            logging.info("outstanding_count < 0 for %s", user.id)
+            logger.info("outstanding_count < 0 for %s", user.id)
 
         if outstanding_count == 0:
             # Order is completed!
-            logging.info("[Snipe] Order for %s from %s and price %s is completed!", order.item.name, user.id,
+            logger.info("[Snipe] Order for %s from %s and price %s is completed!", order.item.name, user.id,
                             order.max_price)
-            logging.info("[Snipe] Deleting %s", order)
+            logger.info("[Snipe] Deleting %s", order)
             Session.delete(order)
             Session.commit()
         elif outstanding_count > 0:
             order.outstanding_order = outstanding_count
-            logging.info("[Snipe] Order for %s from %s and price %s now only needs %s items!", order.item.name,
+            logger.info("[Snipe] Order for %s from %s and price %s now only needs %s items!", order.item.name,
                             user.id,
                             order.max_price, order.outstanding_order)
             Session.add(order)

@@ -5,7 +5,7 @@ import logging
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
 from telegram import Bot, ParseMode
 
-from config import BOT_ONE_STEP_API
+from config import BOT_ONE_STEP_API, LOG_LEVEL_MQ
 from core.enums import CASTLE_MAP, CLASS_MAP
 from core.texts import *
 from core.types import Character, Session, User
@@ -19,8 +19,7 @@ Session()
 p = Publisher()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
+logger.setLevel(LOG_LEVEL_MQ)
 
 def profile_handler(channel, method, properties, body, dispatcher):
     logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
@@ -37,7 +36,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
             if data and "payload" in data and data["payload"] and "userId" in data['payload']:
                 user = Session.query(User).filter_by(id=data['payload']['userId']).first()
         except (InterfaceError, InvalidRequestError):
-            logging.warning("Request/Interface Error occured, doing rollback and trying again...")
+            logger.warning("Request/Interface Error occured, doing rollback and trying again...")
             Session.rollback()
             user = Session.query(User).filter_by(id=data['payload']['userId']).first()
 
@@ -228,15 +227,15 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 user = Session.query(User).filter_by(api_token=data['payload']['token']).first()
                 api_access_revoked(dispatcher.bot, user)
             elif data['result'] == "Forbidden":
-                logging.warning("TradeTerminal is Forbidden for user=%s. Requesting access", user.id)
+                logger.warning("TradeTerminal is Forbidden for user=%s. Requesting access", user.id)
                 wrapper.request_trade_terminal_access(dispatcher.bot, user)
             elif data['result'] in ["BattleIsNear", "ProhibitedItem", "UserIsBusy"]:
-                logging.warning("Buy action for did not go through. Reason: %s", data['result'])
+                logger.warning("Buy action for did not go through. Reason: %s", data['result'])
             elif data['result'] == "InsufficientFunds":
                 # Don't suspend sniping if user is in "hide mode"
                 if get_hide_mode(user):
                     if not get_best_fulfillable_order(user):
-                        logging.info("[Hide] No more fulfillable orders for user_id='%s' - I think....", user.id)
+                        logger.info("[Hide] No more fulfillable orders for user_id='%s' - I think....", user.id)
 
                         dispatcher.bot.send_message(
                             user.id,
@@ -247,7 +246,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
 
                         exit_hide_mode(user)
                     else:
-                        logging.info("[Hide] Continuing hide for user_id='%s'", user.id)
+                        logger.info("[Hide] Continuing hide for user_id='%s'", user.id)
                         autohide(user)
                 elif not user.sniping_suspended:
                     user.sniping_suspended = True
@@ -272,14 +271,14 @@ def profile_handler(channel, method, properties, body, dispatcher):
             # Acknowledge if possible...
             channel.basic_ack(method.delivery_tag)
         except Exception:
-            logging.exception("Can't acknowledge message")
+            logger.exception("Can't acknowledge message")
 
         try:
             Session.rollback()
         except BaseException:
-            logging.exception("Can't do rollback")
+            logger.exception("Can't do rollback")
 
-        logging.exception("Exception in MQ handler occured!")
+        logger.exception("Exception in MQ handler occured!")
 
 
 def api_access_revoked(bot: Bot, user):
