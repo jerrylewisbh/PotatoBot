@@ -2,6 +2,7 @@ import logging
 from html import escape
 
 from telegram import Bot, ParseMode
+from telegram.error import NetworkError
 
 from core.utils import send_async
 
@@ -36,12 +37,17 @@ class TelegramHandler(logging.Handler):
         return 'https://api.telegram.org/bot%s/%s' % (token, method)
 
     def send_message(self, text, **kwargs):
-        send_async(
-            self.bot,
-            chat_id=self.chat_id,
-            text=text,
-            parse_mode=ParseMode.HTML,
-         )
+        try:
+            send_async(
+                self.bot,
+                chat_id=self.chat_id,
+                text=text,
+                parse_mode=ParseMode.HTML,
+             )
+        except NetworkError:
+            print("NetworkError occured during send_async in logging function. Hopefully "
+                  "this log gets written with some other handler")
+
 
     def emit(self, record):
         text = self.format(record)

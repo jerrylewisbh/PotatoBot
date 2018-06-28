@@ -359,6 +359,9 @@ class Character(Base):
     gold = Column(Integer, default=0)
     donateGold = Column(Integer, default=0)
 
+    #guild = Column(UnicodeText(250), nullable=True, default=None)
+    #guild_tag = Column(UnicodeText(250), nullable=True, default=None)
+
     # Note: Technically this is also tracked in a characters profession-information. But this represents the
     # current state. Also this way we can display class info without having a users /class information which is not
     # (yet) available in the API
