@@ -129,7 +129,7 @@ def main():
     th.setFormatter(HtmlFormatter(use_emoji=True))
     throttle = RateLimitingFilter(rate=1, per=60, burst=5)
     th.addFilter(throttle)
-    #logger.addHandler(th)
+    logger.addHandler(th)
 
     # Get the dispatcher to register handler
     disp = updater.dispatcher
