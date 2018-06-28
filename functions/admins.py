@@ -265,7 +265,8 @@ def get_log(bot: Bot, update: Update, user: User):
         with open(LOGFILE, 'rb') as file:
             bot.send_document(
                 chat_id=update.message.chat.id,
-                document=file
+                document=file,
+                timeout=120 # Logs can be big, so use a bigger timeout...
             )
 
 

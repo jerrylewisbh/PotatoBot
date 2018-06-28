@@ -106,7 +106,7 @@ def main():
 
     # Logging into file
     rh = TimedRotatingFileHandler(LOGFILE, when='midnight', backupCount=10)
-    rh.setLevel(logging.DEBUG)
+    rh.setLevel(logging.INFO)
     rh.setFormatter(formatter)
     logger.addHandler(rh)
 
