@@ -92,7 +92,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler('items', list_items))
     disp.add_handler(CommandHandler('items_other', list_items_other))
     disp.add_handler(CommandHandler('hide', hide_items))
-    disp.add_handler(CommandHandler('hidelist', hide_list))
+    disp.add_handler(CommandHandler('hide_list', hide_list))
     disp.add_handler(CommandHandler('revoke', revoke))
 
     disp.add_handler(CommandHandler('deposit', deposit))
