@@ -75,9 +75,10 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
         for _ in admin:
             is_admin = True
             break
-
         if 'order_wait' in chat_data and chat_data['order_wait']:
             order(bot, update, user, chat_data=chat_data)
+        elif not update.channel_post and update.effective_chat and update.effective_chat.id == FWD_CHANNEL:
+            fwd_report(bot, update)
         elif update.message.text:
             if update.message.forward_from and update.message.forward_from.id == CWBOT_ID:
                 parse_quest(bot, update, user)
@@ -107,7 +108,7 @@ def main():
 
     # Logging into file
     rh = TimedRotatingFileHandler(LOGFILE, when='midnight', backupCount=10)
-    rh.setLevel(logging.INFO)
+    rh.setLevel(logging.DEBUG)
     rh.setFormatter(formatter)
     logger.addHandler(rh)
 
@@ -137,9 +138,6 @@ def main():
 
     disp.add_handler(CallbackQueryHandler(callback_query, pass_chat_data=True, pass_job_queue=True))
     disp.add_handler(InlineQueryHandler(inlinequery))
-
-    # CW Mini Reports Forwarding - Checking is done in function
-    disp.add_handler(MessageHandler(Filters.all, fwd_report))
 
     # on noncommand i.e message - echo the message on Telegram
     disp.add_handler(MessageHandler(Filters.status_update, welcome))

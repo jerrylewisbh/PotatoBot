@@ -1,4 +1,5 @@
 import json
+import logging
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update, Bot
 
@@ -27,7 +28,7 @@ def save_user_quest(user: User, update: Update, quest_data):
     daytime &= ~GameState.HOWLING_WIND
     daytime &= ~GameState.NO_REPORTS
     daytime &= ~GameState.BATTLE_SILENCE
-    uq.daytime = daytime
+    uq.daytime = daytime.value
 
     uq.successful = quest_data['success']
     if quest_data['type'] in [QuestType.FORAY, QuestType.FORAY_FAILED]:
@@ -71,6 +72,7 @@ def save_user_quest(user: User, update: Update, quest_data):
     forward_from=CWBOT_ID
 )
 def parse_quest(bot: Bot, update: Update, user: User):
+    logging.info("Parsing quest for user_id='%s'", user.id)
     quest_data = analyze_text(update.message.text)
 
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
