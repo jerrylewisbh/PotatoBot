@@ -28,7 +28,7 @@ class StockType(Enum):
 
 def error(bot: Bot, update, error, **kwargs):
     """ Error handling """
-    logging.error("An error (%s) occurred: %s", (type(error), error.message))
+    logging.error("An error (%s) occurred: %s", type(error), error.message)
 
 
 @command_handler(
