@@ -135,7 +135,7 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
             order.text = order_text
             order.chat_id = data['id']
             order.date = datetime.now()
-            msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY).result()
+            msg = send_async(bot, chat_id=order.chat_id, text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY).result().result()
             if msg:
                 order.confirmed_msg = msg.message_id
             else:
@@ -148,12 +148,12 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                 order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
                 order_text
             )
-            msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
+            msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result().result()
         else:
             markup = None
             if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
                 markup = generate_forward_markup(order_text, 0)
-            msg = send_order(bot, order_text, order_type, data['id'], markup).result().result()
+            msg = send_order(bot, order_text, order_type, data['id'], markup).result().result().result()
         if order_pin and msg:
             try:
                 bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': data['id'],
@@ -174,7 +174,7 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                     chat_id=order.chat_id,
                     text=MSG_ORDER_CLEARED_BY_HEADER +
                     MSG_EMPTY
-                ).result()
+                ).result().result()
                 if msg:
                     order.confirmed_msg = msg.message_id
                 else:
@@ -187,12 +187,12 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                     order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
                     order_text
                 )
-                msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result()
+                msg = send_order(bot, order.text, order_type, order.chat_id, markup).result().result().result()
             else:
                 markup = None
                 if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
                     markup = generate_forward_markup(order_text, 0)
-                msg = send_order(bot, order_text, order_type, item.chat_id, markup).result().result()
+                msg = send_order(bot, order_text, order_type, item.chat_id, markup).result().result().result()
             if order_pin and msg:
                 try:
                     bot.request.post(bot.base_url + '/pinChatMessage',

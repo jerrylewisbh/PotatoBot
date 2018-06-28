@@ -213,6 +213,8 @@ def hide_list(bot: Bot, update: Update, user: User):
                     lot_size = count
 
                 worth = __get_item_worth(db_item.name)
+                if not worth:
+                    continue
                 for x in range(0, order_count):
                     if order_count == 1:
                         link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) {} x {} = {}💰".format(
