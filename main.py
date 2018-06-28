@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
+from ratelimitingfilter import RateLimitingFilter
 from telegram import Bot, Update
 from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
                           MessageQueue, Updater)
@@ -119,9 +120,12 @@ def main():
     updater.bot.logger.setLevel(logging.INFO)
 
     # Logging to telegram
+    # We enable throttling to avoid spamming the channel...
     th = TelegramHandler(bot, LOG_CHANNEL)
     th.setLevel(LOG_CHANNEL_LEVEL)
     th.setFormatter(HtmlFormatter(use_emoji=True))
+    throttle = RateLimitingFilter(rate=1, per=60, burst=5)
+    th.addFilter(throttle)
     logger.addHandler(th)
 
     # Get the dispatcher to register handler
