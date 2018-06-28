@@ -12,7 +12,7 @@ from telegram.ext import MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
 from telegram.utils.request import Request
 
-from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT, CWBOT_ID, LOG_GROUP_LEVEL, LOG_GROUP
+from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, FWD_BOT, CWBOT_ID, LOG_GROUP_LEVEL, LOG_GROUP, LOG_LEVEL
 from core.battle import report_after_battle, ready_to_battle_result
 from core.bot import MQBot
 from core.decorators import command_handler
@@ -97,7 +97,7 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
 def main():
     # Logging!
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(LOG_LEVEL)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # Logging for console

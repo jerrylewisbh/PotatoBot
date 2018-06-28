@@ -7,10 +7,10 @@ from threading import Thread
 
 import pika
 
-from config import CW_OUT_Q, CW_IN_Q, CW_EXCHANGE, CW_URL, CW_DEALS_Q, CW_OFFERS_Q, CW_DIGEST_Q
+from config import CW_OUT_Q, CW_IN_Q, CW_EXCHANGE, CW_URL, CW_DEALS_Q, CW_OFFERS_Q, CW_DIGEST_Q, LOG_LEVEL_MQ
 
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(LOG_LEVEL_MQ)
 
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARN)
@@ -53,8 +53,8 @@ class Consumer(Thread):
         self.dispatcher = dispatcher
 
     def connect(self):
-        LOGGER.info('[Consumer] Connecting to Queue')
-        LOGGER.debug('[Consumer] Connecting to Queue %s', self._url)
+        logger.info('[Consumer] Connecting to Queue')
+        logger.debug('[Consumer] Connecting to Queue %s', self._url)
 
         return pika.SelectConnection(
             pika.URLParameters(self._url),
@@ -63,12 +63,12 @@ class Consumer(Thread):
         )
 
     def on_connection_open(self, unused_connection):
-        LOGGER.info('[Consumer] Connection opened')
+        logger.info('[Consumer] Connection opened')
         self.add_on_connection_close_callback()
         self.open_channel()
 
     def add_on_connection_close_callback(self):
-        LOGGER.info('[Consumer] Adding connection close callback')
+        logger.info('[Consumer] Adding connection close callback')
         self._connection.add_on_close_callback(self.on_connection_closed)
 
     def on_connection_closed(self, connection, reply_code, reply_text):
@@ -76,7 +76,7 @@ class Consumer(Thread):
         if self._closing:
             self._connection.ioloop.stop()
         else:
-            LOGGER.warning('[Consumer] Connection closed, reopening in 5 seconds: (%s) %s',
+            logger.warning('[Consumer] Connection closed, reopening in 5 seconds: (%s) %s',
                            reply_code, reply_text)
             self._connection.add_timeout(5, self.reconnect)
 
@@ -92,59 +92,59 @@ class Consumer(Thread):
         self._connection.channel(on_open_callback=self.on_channel_open)
 
     def on_channel_open(self, channel):
-        LOGGER.info('[Consumer] Channel opened')
+        logger.info('[Consumer] Channel opened')
         self._channel = channel
         self.add_on_channel_close_callback()
-        LOGGER.info('[Consumer] Setting up basic consumer')
+        logger.info('[Consumer] Setting up basic consumer')
         on_message_handler = functools.partial(self.handler, dispatcher=self.dispatcher)
         self._channel.basic_consume(on_message_handler, self.QUEUE)
 
-        LOGGER.info('[Consumer] Setting up basic consumer for DEALS')
+        logger.info('[Consumer] Setting up basic consumer for DEALS')
         on_message_handler_deals = functools.partial(self.deals_handler, dispatcher=self.dispatcher)
         self._channel.basic_consume(on_message_handler_deals, self.QUEUE_DEALS)
 
-        LOGGER.info('[Consumer] Setting up basic consumer for OFFERS')
+        logger.info('[Consumer] Setting up basic consumer for OFFERS')
         on_message_handler_offers = functools.partial(self.offers_handler, dispatcher=self.dispatcher)
         self._channel.basic_consume(on_message_handler_offers, self.QUEUE_OFFERS)
 
-        LOGGER.info('[Consumer] Setting up basic consumer for DIGEST')
+        logger.info('[Consumer] Setting up basic consumer for DIGEST')
         on_message_handler_digest = functools.partial(self.digest_handler, dispatcher=self.dispatcher)
         self._channel.basic_consume(on_message_handler_digest, self.QUEUE_DIGEST)
 
     def add_on_channel_close_callback(self):
-        LOGGER.info('[Consumer] Adding channel close callback')
+        logger.info('[Consumer] Adding channel close callback')
         self._channel.add_on_close_callback(self.on_channel_closed)
 
     def on_channel_closed(self, channel, reply_code, reply_text):
-        LOGGER.warning('[Consumer] Channel %i was closed: (%s) %s',
+        logger.warning('[Consumer] Channel %i was closed: (%s) %s',
                        channel, reply_code, reply_text)
         self._connection.close()
 
     def add_on_cancel_callback(self):
-        LOGGER.info('[Consumer] Adding consumer cancellation callback')
+        logger.info('[Consumer] Adding consumer cancellation callback')
         self._channel.add_on_cancel_callback(self.on_consumer_cancelled)
 
     def on_consumer_cancelled(self, method_frame):
-        LOGGER.info('[Consumer] Consumer was cancelled remotely, shutting down: %r',
+        logger.info('[Consumer] Consumer was cancelled remotely, shutting down: %r',
                     method_frame)
         if self._channel:
             self._channel.close()
 
     def acknowledge_message(self, delivery_tag):
-        LOGGER.info('[Consumer] Acknowledging message %s', delivery_tag)
+        logger.info('[Consumer] Acknowledging message %s', delivery_tag)
         self._channel.basic_ack(delivery_tag)
 
     def stop_consuming(self):
         if self._channel:
-            LOGGER.info('[Consumer] Sending a Basic.Cancel RPC command to RabbitMQ')
+            logger.info('[Consumer] Sending a Basic.Cancel RPC command to RabbitMQ')
             self._channel.basic_cancel(self.on_cancelok, self._consumer_tag)
 
     def on_cancelok(self, unused_frame):
-        LOGGER.info('[Consumer] RabbitMQ acknowledged the cancellation of the consumer')
+        logger.info('[Consumer] RabbitMQ acknowledged the cancellation of the consumer')
         self.close_channel()
 
     def close_channel(self):
-        LOGGER.info('[Consumer] Closing the channel')
+        logger.info('[Consumer] Closing the channel')
         self._channel.close()
 
     def run(self):
@@ -152,15 +152,15 @@ class Consumer(Thread):
         self._connection.ioloop.start()
 
     def stop(self):
-        LOGGER.info('[Consumer] Stopping')
+        logger.info('[Consumer] Stopping')
         self._closing = True
         self.stop_consuming()
         self._connection.ioloop.start()
-        LOGGER.info('[Consumer] Stopped')
+        logger.info('[Consumer] Stopped')
 
     def close_connection(self):
         """This method closes the connection to RabbitMQ."""
-        LOGGER.info('[Consumer] Closing connection')
+        logger.info('[Consumer] Closing connection')
         self._connection.close()
 
 
@@ -185,15 +185,15 @@ class Publisher(Thread, metaclass=Singleton):
         self._stopping = False
 
     def connect(self):
-        LOGGER.info('[Consumer] Connecting to Queue')
-        LOGGER.debug('[Consumer] Connecting to Queue %s', self._url)
+        logger.info('[Consumer] Connecting to Queue')
+        logger.debug('[Consumer] Connecting to Queue %s', self._url)
         return pika.SelectConnection(pika.URLParameters(self._url),
                                      on_open_callback=self.on_connection_open,
                                      on_close_callback=self.on_connection_closed,
                                      stop_ioloop_on_close=False)
 
     def on_connection_open(self, unused_connection):
-        LOGGER.info('[Publisher] Connection opened')
+        logger.info('[Publisher] Connection opened')
         self.open_channel()
 
     def on_connection_closed(self, connection, reply_code, reply_text):
@@ -201,28 +201,28 @@ class Publisher(Thread, metaclass=Singleton):
         if self._stopping:
             self._connection.ioloop.stop()
         else:
-            LOGGER.warning('[Publisher] Connection closed, reopening in 5 seconds: (%s) %s',
+            logger.warning('[Publisher] Connection closed, reopening in 5 seconds: (%s) %s',
                            reply_code, reply_text)
             self._connection.add_timeout(5, self._connection.ioloop.stop)
 
     def open_channel(self):
-        LOGGER.info('[Publisher] Creating a new channel')
+        logger.info('[Publisher] Creating a new channel')
         self._connection.channel(on_open_callback=self.on_channel_open)
 
     def on_channel_open(self, channel):
-        LOGGER.info('[Publisher] Channel opened')
+        logger.info('[Publisher] Channel opened')
         self._channel = channel
         self._channel.add_on_close_callback(self.on_channel_closed)
         self.setup_exchange(self.EXCHANGE)
 
     def on_channel_closed(self, channel, reply_code, reply_text):
-        LOGGER.warning('[Publisher] Channel was closed: (%s) %s', reply_code, reply_text)
+        logger.warning('[Publisher] Channel was closed: (%s) %s', reply_code, reply_text)
         self._channel = None
         if not self._stopping:
             self._connection.close()
 
     def setup_exchange(self, exchange_name):
-        LOGGER.info('[Publisher] Declaring exchange %s', exchange_name)
+        logger.info('[Publisher] Declaring exchange %s', exchange_name)
         self._channel.exchange_bind(
             self.on_exchange_declareok,
             exchange_name,
@@ -230,14 +230,14 @@ class Publisher(Thread, metaclass=Singleton):
         )
 
     def on_exchange_declareok(self, unused_frame):
-        LOGGER.info('[Publisher] Exchange declared')
+        logger.info('[Publisher] Exchange declared')
         # self.run_publisher()
         # self.bind_queue(self.QUEUE)
 
     def publish(self, body):
         # Dear future me: Currently correlation_ids are not sent back by the CW API making some things hard...
         # Check for it again in the future...
-        LOGGER.info("[Publisher] Publishing item: %s", json.dumps(body))
+        logger.info("[Publisher] Publishing item: %s", json.dumps(body))
 
         self._channel.basic_publish(
             exchange=self.EXCHANGE,
@@ -247,7 +247,7 @@ class Publisher(Thread, metaclass=Singleton):
                 correlation_id=str(uuid.uuid4())
             ),
         )
-        LOGGER.debug("[Publisher] ... published")
+        logger.debug("[Publisher] ... published")
 
     def run(self):
         """ Run the example code by connecting and then starting the IOLoop. """
@@ -268,21 +268,21 @@ class Publisher(Thread, metaclass=Singleton):
                     # Finish closing
                     self._connection.ioloop.start()
 
-        LOGGER.info('[Publisher] Stopped')
+        logger.info('[Publisher] Stopped')
 
     def stop(self):
-        LOGGER.info('Stopping')
+        logger.info('Stopping')
         self._stopping = True
         self.close_channel()
         self.close_connection()
 
     def close_channel(self):
         if self._channel is not None:
-            LOGGER.info('[Publisher] Closing the channel')
+            logger.info('[Publisher] Closing the channel')
             self._channel.close()
 
     def close_connection(self):
         """This method closes the connection to RabbitMQ."""
         if self._connection is not None:
-            LOGGER.info('[Publisher] Closing connection')
+            logger.info('[Publisher] Closing connection')
             self._connection.close()
