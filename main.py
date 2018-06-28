@@ -77,7 +77,7 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
             break
         if 'order_wait' in chat_data and chat_data['order_wait']:
             order(bot, update, user, chat_data=chat_data)
-        elif not update.channel_post and update.effective_chat and update.effective_chat.id == FWD_CHANNEL:
+        elif update.channel_post and update.effective_chat and update.effective_chat.id == FWD_CHANNEL:
             fwd_report(bot, update)
         elif update.message.text:
             if update.message.forward_from and update.message.forward_from.id == CWBOT_ID:
