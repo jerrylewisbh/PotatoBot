@@ -274,7 +274,7 @@ Set default status to DEF 🛡 and wait for orders.'
 
 MSG_MAIN_READY_TO_BATTLE_45 = 'WAAARRR IN 15 MINS!!\
 \n\n\
-1) 💰➡️🚫HIDE GOLD&STOCK NOW\
+1) 💰➡️🚫HIDE GOLD AND STOCK NOW\
 \n\n\
 2) Press 🛡  in the game bot \
 \n\n\
