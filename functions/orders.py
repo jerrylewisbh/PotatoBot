@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from json import loads
 
-from telegram import Bot, Update, TelegramError
+from telegram import Bot, Update, TelegramError, ReplyMarkup
 from telegram.ext import run_async, JobQueue, Job
 
 from core.decorators import command_handler
@@ -77,20 +77,29 @@ def orders(bot: Bot, update: Update, user: User, chat_data):
     send_async(bot, chat_id=update.message.chat.id, text=MSG_FLAG_CHOOSE_HEADER, reply_markup=markup)
 
 
-# Already runs async because not called directly...
-def send_order(bot, order, order_type, chat_id, markup):
+@run_async
+def send_order(bot: Bot, text: str, message_type: MessageType, chat_id: int, markup: ReplyMarkup, pin: bool = False):
+    logging.info(
+        "send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
+        bot,
+        text,
+        message_type,
+        chat_id,
+        markup,
+        pin
+    )
     try:
         msg_sent = None
-        if order_type == MessageType.AUDIO.value:
-            msg_sent = bot.send_audio(chat_id, order, reply_markup=markup)
-        elif order_type == MessageType.DOCUMENT.value:
-            msg_sent = bot.send_document(chat_id, order, reply_markup=markup)
-        elif order_type == MessageType.VOICE.value:
-            msg_sent = bot.send_voice(chat_id, order, reply_markup=markup)
-        elif order_type == MessageType.STICKER.value:
-            msg_sent = bot.send_sticker(chat_id, order, reply_markup=markup)
-        elif order_type == MessageType.CONTACT.value:
-            msg = order.replace('\'', '"')
+        if message_type == MessageType.AUDIO.value:
+            msg_sent = bot.send_audio(chat_id, text, reply_markup=markup)
+        elif message_type == MessageType.DOCUMENT.value:
+            msg_sent = bot.send_document(chat_id, text, reply_markup=markup)
+        elif message_type == MessageType.VOICE.value:
+            msg_sent = bot.send_voice(chat_id, text, reply_markup=markup)
+        elif message_type == MessageType.STICKER.value:
+            msg_sent = bot.send_sticker(chat_id, text, reply_markup=markup)
+        elif message_type == MessageType.CONTACT.value:
+            msg = text.replace('\'', '"')
             contact = loads(msg)
             if 'phone_number' not in contact.keys():
                 contact['phone_number'] = None
@@ -103,24 +112,43 @@ def send_order(bot, order, order_type, chat_id, markup):
                                             contact['first_name'],
                                             contact['last_name'],
                                             reply_markup=markup)
-        elif order_type == MessageType.VIDEO.value:
-            msg_sent = bot.send_video(chat_id, order, reply_markup=markup)
-        elif order_type == MessageType.VIDEO_NOTE.value:
-            msg_sent = bot.send_video_note(chat_id, order, reply_markup=markup)
-        elif order_type == MessageType.LOCATION.value:
-            msg = order.replace('\'', '"')
+        elif message_type == MessageType.VIDEO.value:
+            msg_sent = bot.send_video(chat_id, text, reply_markup=markup)
+        elif message_type == MessageType.VIDEO_NOTE.value:
+            msg_sent = bot.send_video_note(chat_id, text, reply_markup=markup)
+        elif message_type == MessageType.LOCATION.value:
+            msg = text.replace('\'', '"')
             location = loads(msg)
             msg_sent = bot.send_location(chat_id, location['latitude'], location['longitude'], reply_markup=markup)
-        elif order_type == MessageType.PHOTO.value:
-            msg_sent = bot.send_photo(chat_id, order, reply_markup=markup)
+        elif message_type == MessageType.PHOTO.value:
+            msg_sent = bot.send_photo(chat_id, text, reply_markup=markup)
         else:
             logging.info("SEND ORDER")
             msg_sent = bot.send_message(
                 chat_id=chat_id,
-                text=order,
+                text=text,
                 disable_web_page_preview=True,
                 reply_markup=markup
             )
+
+        if pin:
+            msg_result = msg_sent.result()
+            logging.info("Pinning for message_id='%s'", msg_result.message_id)
+            bot.pin_chat_message(
+                chat_id=chat_id,
+                message_id=msg_result.message_id,
+                disable_notification=False,
+            )
+
+        logging.info(
+            "END send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
+            bot,
+            text,
+            message_type,
+            chat_id,
+            markup,
+            pin
+        )
         return msg_sent
     except TelegramError as err:
         bot.logger.error(err.message)
@@ -133,8 +161,12 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
     order_type = chat_data['order_type']
     order_pin = chat_data['pin'] if 'pin' in chat_data else True
     order_btn = chat_data['btn'] if 'btn' in chat_data else True
-    logging.info("Order: text='%s', order_btn='%s', order_text IN CASTLE_LIST='%s'",
-                 order_text, order_btn, (order_text in CASTLE_LIST))
+    logging.info(
+        "Order: text='%s', order_btn='%s', order_text IN CASTLE_LIST='%s'",
+        order_text,
+        order_btn,
+        (order_text in CASTLE_LIST)
+    )
     if not data['g']:
         if order_btn:
             order = Order()
@@ -144,7 +176,7 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
             msg = bot.send_message(
                 chat_id=order.chat_id,
                 text=MSG_ORDER_CLEARED_BY_HEADER + MSG_EMPTY
-            ) # TODO: MARKER
+            ).result()
             if msg:
                 order.confirmed_msg = msg.message_id
             else:
@@ -157,19 +189,26 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                 order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
                 order_text
             )
-            msg = send_order(bot, order.text, order_type, order.chat_id, markup)
+            send_order(
+                bot=bot,
+                text=order.text,
+                message_type=order_type,
+                chat_id=order.chat_id,
+                markup=markup,
+                pin=order_pin
+            )
         else:
             markup = None
             if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
                 markup = generate_forward_markup(order_text, 0)
-            msg = send_order(bot, order_text, order_type, data['id'], markup)
-        if order_pin and msg:
-            try:
-                bot.request.post(bot.base_url + '/pinChatMessage', {'chat_id': data['id'],
-                                                                    'message_id': msg.message_id,
-                                                                    'disable_notification': False})
-            except TelegramError as err:
-                bot.logger.error(err.message)
+            send_order(
+                bot=bot,
+                text=order_text,
+                message_type=order_type,
+                chat_id=data['id'],
+                markup=markup,
+                pin=order_pin
+            )
     else:
         group = Session.query(OrderGroup).filter_by(id=data['id']).first()
         for item in group.items:
@@ -195,21 +234,28 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                     order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
                     order_text
                 )
-                msg = send_order(bot, order.text, order_type, order.chat_id, markup).result()
+                send_order(
+                    bot=bot,
+                    text=order.text,
+                    message_type=order_type,
+                    chat_id=order.chat_id,
+                    markup=markup,
+                    pin=order_pin
+                )
             else:
                 markup = None
                 if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
                     markup = generate_forward_markup(order_text, 0)
-                msg = send_order(bot, order_text, order_type, item.chat_id, markup).result()
-            if order_pin and msg:
-                try:
-                    bot.pin_chat_message(
-                        chat_id=item.chat_id,
-                        message_id=msg.message_id,
-                        disable_notification=False
-                    )
-                except TelegramError as err:
-                    bot.logger.error(err.message)
+
+                send_order(
+                    bot=bot,
+                    text=order_text,
+                    message_type=order_type,
+                    chat_id=item.chat_id,
+                    markup=markup,
+                    pin=order_pin
+                )
+
     update.callback_query.answer(text=MSG_ORDER_SENT)
 
 

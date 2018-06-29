@@ -30,6 +30,11 @@ def add_war_warning_messages(updater: Updater):
     updater.job_queue.run_daily(ready_to_battle_result, time(hour=16, minute=0))
     updater.job_queue.run_daily(ready_to_battle_result, time(hour=0, minute=0))
 
+    # Second run with hopefully more details...
+    updater.job_queue.run_daily(ready_to_battle_result, time(hour=6, minute=35))
+    updater.job_queue.run_daily(ready_to_battle_result, time(hour=14, minute=35))
+    updater.job_queue.run_daily(ready_to_battle_result, time(hour=22, minute=35))
+
     # Profiles...
     updater.job_queue.run_daily(fresh_profiles, time(hour=6, minute=40))
     updater.job_queue.run_daily(fresh_profiles, time(hour=14, minute=40))

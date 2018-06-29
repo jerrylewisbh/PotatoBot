@@ -115,8 +115,7 @@ def main():
     logger.addHandler(rh)
 
     token = TOKEN
-    # for test purposes limit global throughput to 3 messages per 3 seconds
-    q = MessageQueue(all_burst_limit=3, all_time_limit_ms=3000)
+    q = MessageQueue()
     request = Request(con_pool_size=8)
     bot = MQBot(token, request=request, mqueue=q)
     updater = Updater(bot=bot)
@@ -169,7 +168,7 @@ def main():
         updater.job_queue.run_once(ready_to_battle_result, now + timedelta(seconds=10))
         updater.job_queue.run_once(refresh_api_users, now + timedelta(seconds=15))
         updater.job_queue.run_once(fresh_profiles, now + timedelta(seconds=20))
-        updater.job_queue.run_once(ready_to_battle, now + timedelta(seconds=25), context=MSG_MAIN_SEND_REPORTS)
+        updater.job_queue.run_once(ready_to_battle, now + timedelta(seconds=5), context=MSG_MAIN_SEND_REPORTS)
         updater.job_queue.run_once(ready_to_battle, now + timedelta(seconds=30), context=MSG_MAIN_READY_TO_BATTLE_30)
         updater.job_queue.run_once(ready_to_battle, now + timedelta(seconds=35), context=MSG_MAIN_READY_TO_BATTLE_45)
 

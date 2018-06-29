@@ -330,9 +330,13 @@ def remove_from_squad(bot: Bot, update: Update, user: User):
         markups = generate_fire_up(members)
         squad = Session.query(Squad).filter_by(chat_id=adm.admin_group).first()
         for markup in markups:
-            send_async(bot, chat_id=update.message.chat.id,
-                       text=MSG_SQUAD_CLEAN.format(squad.squad_name),
-                       reply_markup=markup, parse_mode=ParseMode.HTML)
+            send_async(
+                bot,
+                chat_id=update.message.chat.id,
+                text=MSG_SQUAD_CLEAN.format(squad.squad_name),
+                reply_markup=markup,
+                parse_mode=ParseMode.HTML
+            )
 
 
 @command_handler()

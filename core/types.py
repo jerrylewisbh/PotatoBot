@@ -2,7 +2,7 @@
 import logging
 from config import DB, SUPER_ADMIN_ID
 from datetime import datetime
-from enum import Enum
+from enum import Enum, IntEnum
 
 from sqlalchemy import (BigInteger, Boolean, Column, DateTime, ForeignKey,
                         Integer, Text, UnicodeText, UniqueConstraint,
@@ -25,7 +25,7 @@ class AdminType(Enum):
     NOT_ADMIN = 100
 
 
-class MessageType(Enum):
+class MessageType(IntEnum):
     TEXT = 0
     VOICE = 1
     DOCUMENT = 2

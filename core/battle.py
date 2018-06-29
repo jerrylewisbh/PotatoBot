@@ -20,7 +20,7 @@ from config import (CASTLE, DAYS_OLD_PROFILE_KICK, DAYS_PROFILE_REMIND,
 from core.state import get_last_battle
 from core.texts import *
 from core.types import (Admin, Character, Order, Report, Session, Squad,
-                        SquadMember, User)
+                        SquadMember, User, MessageType)
 from core.utils import send_async
 from cwmq import Publisher
 from functions.profile import (format_report, get_latest_report,
@@ -28,15 +28,10 @@ from functions.profile import (format_report, get_latest_report,
 
 Session()
 
-
-@run_async
 def ready_to_battle(bot: Bot, job_queue: Job):
     try:
-        group = Session.query(Squad).all()
+        group = Session.query(Squad).filter(Squad.reminders_enabled == True).all()
         for item in group:
-            if not item.reminders_enabled:
-                continue
-
             new_order = Order()
             new_order.text = job_queue.context
             new_order.chat_id = item.chat_id
@@ -45,30 +40,14 @@ def ready_to_battle(bot: Bot, job_queue: Job):
             Session.add(new_order)
             Session.commit()
 
-            callback_data = json.dumps(
-                {'t': QueryType.OrderOk.value, 'id': new_order.id}
+            send_order(
+                bot=bot,
+                text=new_order.text,
+                message_type=MessageType.TEXT,
+                chat_id=new_order.chat_id,
+                markup=None,
+                pin=True
             )
-
-            msg = send_order(
-                bot,
-                new_order.text,
-                0,
-                new_order.chat_id,
-                markup=None
-            )
-
-            try:
-                msg = msg.result()
-                if msg:
-                    bot.request.post(
-                        bot.base_url + '/pinChatMessage', {
-                            'chat_id': new_order.chat_id,
-                            'message_id': msg.message_id,
-                            'disable_notification': False
-                        })
-            except TelegramError as err:
-                bot.logger.error(err.message)
-
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
         Session.rollback()

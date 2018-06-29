@@ -549,6 +549,9 @@ def generate_fire_up(members):
             inline_list.append(InlineKeyboardMarkup(inline_keys))
             inline_keys = []
 
+    if inline_keys:
+        inline_list.append(InlineKeyboardMarkup(inline_keys))
+
     return inline_list
 
 

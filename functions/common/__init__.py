@@ -342,8 +342,8 @@ def ban(bot: Bot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
 
 
-def __ban_traitor(bot: Bot, update: Update, user_id: int):
-    user = Session.query(User.id == user_id).first()
+def __ban_traitor(bot: Bot, user_id: int):
+    user = Session.query(User).filter(User.id == user_id).first()
     if user:
         logging.warning("Banning %s", user.id)
 

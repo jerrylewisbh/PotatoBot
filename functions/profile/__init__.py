@@ -4,7 +4,7 @@ from core.regexp import ACCESS_CODE
 from core.state import get_game_state, GameState
 from core.types import AdminType, Admin
 from cwmq import Publisher, wrapper
-from functions.common import stock_compare_text, stock_split
+from functions.common import stock_compare_text, stock_split, __ban_traitor
 
 from functions.profile.util import *
 from functions.profile.util import __send_user_with_settings

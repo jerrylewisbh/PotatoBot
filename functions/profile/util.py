@@ -64,6 +64,7 @@ def parse_hero_text(report_text):
 
 def parse_hero(bot: Bot, profile, user_id, date):
     """ Parse a forwarded hero """
+    logging.info("parse_hero for user_id='%s'", user_id)
     char = Session.query(Character).filter_by(user_id=user_id, date=date).first()
     if char is None:
         parsed_data = parse_hero_text(profile)
