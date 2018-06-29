@@ -11,6 +11,7 @@ CASTLE_MAP = {
     '🦌': 'Deerhorn',
     '🐉': 'Dragonscale',
     '🦈': 'Sharkteeth',
+    '⚱️': 'Urn',
 }
 
 CLASS_MAP = {
