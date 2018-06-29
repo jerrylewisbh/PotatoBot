@@ -503,9 +503,6 @@ def generate_squad_members(members):
             )
         )]
     )
-
-
-
     return inline_list
 
 

@@ -744,7 +744,6 @@ def inline_squad_delete(bot, update, user, data):
 
 def inline_list_squad_members(bot, update, user, data):
     logging.info("inline_list_squad_members called")
-    print(update.callback_query)
     squad = Session.query(Squad).filter(Squad.chat_id == data['id']).first()
     markups = generate_squad_members(squad.members)
     for markup in markups:
