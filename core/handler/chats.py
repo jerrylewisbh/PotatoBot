@@ -42,8 +42,11 @@ CC_DELETE = 'delete'
 CC_KICK = 'kick'
 
 
-def to_re(string):
-    return "^{}".format(string)
+def to_re(string, case_insensitive=True):
+    if case_insensitive:
+        return re.compile("^{}".format(string), re.IGNORECASE)
+    else:
+        return re.compile("^{}".format(string))
 
 def add_handler(disp: Dispatcher):
     # NOTE: Use the @command_handler decorator for the functions registered here! This will provide you with the User
@@ -88,7 +91,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(REPAIR_REPORT, repair_report_received))
     disp.add_handler(RegexHandler(PROFESSION, profession_update))
     disp.add_handler(RegexHandler(ACCESS_CODE, handle_access_token))
-    disp.add_handler(RegexHandler(to_re(STOCK), stock_compare_forwarded, pass_chat_data=True))
-    disp.add_handler(RegexHandler(to_re(GUILD_WAREHOUSE ), withdraw))
+    disp.add_handler(RegexHandler(to_re(STOCK, False), stock_compare_forwarded, pass_chat_data=True))
+    disp.add_handler(RegexHandler(to_re(GUILD_WAREHOUSE, False), withdraw))
 
     logging.info("Finished adding chat handlers")
