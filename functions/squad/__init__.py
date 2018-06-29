@@ -230,8 +230,14 @@ def squad_list(bot: Bot, update: Update, user: User):
         for adm in admin:
             group_ids.append(adm.admin_group)
         squads = Session.query(Squad).filter(Squad.chat_id.in_(group_ids)).all()
+
     markup = generate_squad_list(squads)
-    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_LIST, reply_markup=markup)
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=MSG_SQUAD_LIST,
+        reply_markup=markup
+    )
 
 
 @command_handler()
@@ -380,7 +386,7 @@ def leave_squad(bot: Bot, user: User, member: SquadMember, message):
             bot.logger.error(err.message)
 
         if member.user_id == user.id:
-            bot.editMessageText(MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
+            bot.edit_message_text(MSG_SQUAD_LEAVED.format(member_user.character.name, squad.squad_name),
                                 message.chat.id,
                                 message.message_id, parse_mode=ParseMode.HTML)
         else:
@@ -469,7 +475,7 @@ def call_squad(bot: Bot, update: Update, user: User):
         for user in users:
             if user.username is not None:
                 all_users.append('@{}'.format(user.username))
-        
+
         # Make batches of 4 users max...
         notify_users = [all_users[x:x+4] for x in range(0, len(all_users), 4)]
         for batch in notify_users:
@@ -602,7 +608,7 @@ def squad_invite_decline(bot, update, user, data):
         update.callback_query.answer(text=MSG_GO_AWAY)
         return
     user = Session.query(User).filter_by(id=data['id']).first()
-    bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + user.username),
+    bot.edit_message_text(MSG_SQUAD_REQUEST_DECLINED.format('@' + user.username),
                         update.callback_query.message.chat.id,
                         update.callback_query.message.message_id)
 
@@ -619,7 +625,7 @@ def squad_invite_accept(bot, update, user, data):
         member.approved = True
         Session.add(member)
         Session.commit()
-        bot.editMessageText(MSG_SQUAD_ADD_ACCEPTED.format('@' + user.username),
+        bot.edit_message_text(MSG_SQUAD_ADD_ACCEPTED.format('@' + user.username),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id)
 
@@ -639,7 +645,7 @@ def inline_squad_list(bot, update):
             group_ids.append(adm.admin_group)
         squads = Session.query(Squad).filter(Squad.chat_id in group_ids).all()
     markup = generate_squad_list(squads)
-    bot.editMessageText(
+    bot.edit_message_text(
         MSG_SQUAD_LIST,
         update.callback_query.message.chat.id,
         update.callback_query.message.message_id,
@@ -650,7 +656,7 @@ def inline_squad_list(bot, update):
 def squad_request_decline(bot, update, user, data):
     member = Session.query(SquadMember).filter_by(user_id=data['id'], approved=False).first()
     if member:
-        bot.editMessageText(MSG_SQUAD_REQUEST_DECLINED.format('@' + member.user.username),
+        bot.edit_message_text(MSG_SQUAD_REQUEST_DECLINED.format('@' + member.user.username),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id)
         Session.delete(member)
@@ -664,7 +670,7 @@ def squad_request_accept(bot, update, user, data):
         member.approved = True
         Session.add(member)
         Session.commit()
-        bot.editMessageText(MSG_SQUAD_REQUEST_ACCEPTED.format('@' + member.user.username),
+        bot.edit_message_text(MSG_SQUAD_REQUEST_ACCEPTED.format('@' + member.user.username),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id)
 
@@ -693,7 +699,7 @@ def inline_squad_request(bot, data, update, user):
         Session.commit()
         admins = Session.query(Admin).filter_by(admin_group=data['id']).all()
         usernames = ['@' + Session.query(User).filter_by(id=admin.user_id).first().username for admin in admins]
-        bot.editMessageText(
+        bot.edit_message_text(
             MSG_SQUAD_REQUESTED.format(
                 member.squad.squad_name,
                 WAITING_ROOM_LINK
@@ -705,7 +711,7 @@ def inline_squad_request(bot, data, update, user):
             send_async(bot, chat_id=adm.user_id, text=MSG_SQUAD_REQUEST_NEW)
     else:
         markup = generate_leave_squad(user.id)
-        bot.editMessageText(MSG_SQUAD_REQUEST_EXISTS,
+        bot.edit_message_text(MSG_SQUAD_REQUEST_EXISTS,
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
                             reply_markup=markup)
@@ -732,11 +738,13 @@ def inline_squad_delete(bot, update, user, data):
                                                 callback_data=json.dumps({'t': QueryType.GroupInfo.value,
                                                                           'id': squad.chat_id})))
     inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
-    bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
+    bot.edit_message_text(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                         reply_markup=inline_markup)
 
 
 def inline_list_squad_members(bot, update, user, data):
+    logging.info("inline_list_squad_members called")
+    print(update.callback_query)
     squad = Session.query(Squad).filter(Squad.chat_id == data['id']).first()
     markups = generate_squad_members(squad.members)
     for markup in markups:
@@ -813,7 +821,7 @@ def other_report(bot, update, user, data):
 
 
 def squad_leave_no(bot, update):
-    bot.editMessageText(MSG_SQUAD_LEAVE_DECLINE,
+    bot.edit_message_text(MSG_SQUAD_LEAVE_DECLINE,
                         update.callback_query.message.chat.id,
                         update.callback_query.message.message_id)
 
@@ -827,7 +835,7 @@ def group_list(bot: Bot, update: Update, user: User, data):
                                                 callback_data=json.dumps({'t': QueryType.GroupInfo.value,
                                                                           'id': squad.chat_id})))
     inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
-    bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
+    bot.edit_message_text(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                         reply_markup=inline_markup)
 
 

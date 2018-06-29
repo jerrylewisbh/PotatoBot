@@ -382,15 +382,20 @@ def generate_squad_list_key(squad):
         attack += character.attack
         defence += character.defence
         level += character.level
-    return [InlineKeyboardButton(
-        '{} : {}⚔ {}🛡 {}👥 {}🏅'.format(
-            squad.squad_name,
-            attack,
-            defence,
-            len(members),
-            int(level / (len(members) or 1))
-        ),
-        callback_data=json.dumps({'t': QueryType.MemberList.value, 'id': squad.chat_id}))]
+    return [
+        InlineKeyboardButton(
+            '{} : {}⚔ {}🛡 {}👥 {}🏅'.format(
+                squad.squad_name,
+                attack,
+                defence,
+                len(members),
+                int(level / (len(members) or 1))
+            ),
+            callback_data=json.dumps(
+                {'t': QueryType.MemberList.value, 'id': squad.chat_id}
+            )
+        )
+    ]
 
 
 def generate_yes_no(user_id):
