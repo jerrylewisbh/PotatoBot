@@ -39,10 +39,11 @@ class TelegramHandler(logging.Handler):
     def send_message(self, text, **kwargs):
         try:
             self.bot.send_message(
-                self.bot,
                 chat_id=self.chat_id,
                 text=text,
                 parse_mode=ParseMode.HTML,
+                disable_web_page_preview=True,
+                disable_notification=True,
              )
         except NetworkError as ex:
             logging.warning("Log was not send to telegram due to NetworkError Exception: %s", ex)
@@ -50,20 +51,11 @@ class TelegramHandler(logging.Handler):
 
     def emit(self, record):
         text = self.format(record)
-        data = {
-            'chat_id': self.chat_id,
-            'disable_web_page_preview': self.disable_web_page_preview,
-            'disable_notification': self.disable_notification,
-        }
 
-        if getattr(self.formatter, 'parse_mode', None):
-            data['parse_mode'] = self.formatter.parse_mode
-
-        response = self.send_message(text, **data)
-        if not response:
-            return
-
-        if not response.get('ok', False):
+        try:
+            self.send_message(text)
+        except Exception:
+            print('Telegram responded with ok=false status! {}'.format(response))
             logger.warning('Telegram responded with ok=false status! {}'.format(response))
 
 
