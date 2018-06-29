@@ -460,7 +460,7 @@ def generate_squad_members(members):
     characters = Session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                  .in_([(a[0], a[1]) for a in actual_profiles]))\
         .order_by(Character.level.desc()).all()
-    
+
     for character in characters:
         time_passed = datetime.now() - character.date
         status_emoji = '❇'

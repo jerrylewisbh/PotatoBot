@@ -4,13 +4,14 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
+from core.decorators import command_handler
 from functions.common import (get_weighted_diff, stock_compare_text,
                                    stock_split)
 from functions.orders import send_order
 from functions.inline_markup import QueryType
 from sqlalchemy import and_, func, tuple_
 from sqlalchemy.exc import SQLAlchemyError
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 from telegram.error import TelegramError
 from telegram.ext import Job
 from telegram.ext.dispatcher import run_async
@@ -20,7 +21,7 @@ from config import (CASTLE, DAYS_OLD_PROFILE_KICK, DAYS_PROFILE_REMIND,
 from core.state import get_last_battle
 from core.texts import *
 from core.types import (Admin, Character, Order, Report, Session, Squad,
-                        SquadMember, User, MessageType)
+                        SquadMember, User, MessageType, AdminType)
 from core.utils import send_async
 from cwmq import Publisher
 from functions.profile import (format_report, get_latest_report,
@@ -53,10 +54,18 @@ def ready_to_battle(bot: Bot, job_queue: Job):
         Session.rollback()
 
 
+@command_handler(
+    min_permission=AdminType.FULL,
+    allow_private=True
+)
+def call_ready_to_battle_result(bot: Bot, update: Update, user: User):
+    ready_to_battle_result(bot, None)
+
 @run_async
 def ready_to_battle_result(bot: Bot, job_queue: Job):
     if not GOVERNMENT_CHAT:
         return
+    logging.info("Generating ready_to_battle_result")
 
     global_def = 0
     global_atk = 0
@@ -134,7 +143,6 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
             global_stock
         )
         text += MSG_REPORT_TOTAL.format(players_atk, players_def, real_atk, real_def)
-
         send_async(
             bot,
             chat_id=GOVERNMENT_CHAT,
@@ -144,7 +152,7 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
         )
 
     except SQLAlchemyError as err:
-        bot.logger.error(str(err))
+        logging.error(str(err))
         Session.rollback()
 
 

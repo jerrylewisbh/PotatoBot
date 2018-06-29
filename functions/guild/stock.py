@@ -3,7 +3,7 @@ from telegram import Bot, Update, ParseMode
 
 from config import CWBOT_ID
 from core.decorators import command_handler
-from core.texts import GUILD_WITHDRAW, GUILD_DEPOSIT
+from core.texts import GUILD_WITHDRAW, GUILD_DEPOSIT, GUILD_WITHDRAW_HELP
 from core.types import Session, Item, User, new_item
 from core.utils import send_async
 from functions.reply_markup import generate_user_markup
@@ -31,6 +31,15 @@ def generate_gstock_requests(query):
 
         return results
 
+@command_handler()
+def withdraw_help(bot: Bot, update: Update, user: User):
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=GUILD_WITHDRAW_HELP,
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=generate_user_markup(user_id=update.message.from_user.id)
+    )
 
 @command_handler(
     forward_from=CWBOT_ID

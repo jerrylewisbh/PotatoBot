@@ -2,6 +2,7 @@ import logging
 
 from telegram.ext import CommandHandler, Dispatcher
 
+from core.battle import call_ready_to_battle_result
 from functions.admins import (del_admin, del_global_admin, get_log,
                               list_admins, set_admin, set_global_admin,
                               set_super_admin)
@@ -9,7 +10,7 @@ from functions.common import admin_panel, ban, help_msg, kick, ping, unban
 from functions.exchange import list_items, list_items_other
 from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume
-from functions.guild.stock import deposit
+from functions.guild.stock import deposit, withdraw_help
 from functions.profile import (find_by_character, find_by_id,
                                find_by_username, grant_access, revoke,
                                show_char, show_report, user_panel)
@@ -96,5 +97,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler('revoke', revoke))
 
     disp.add_handler(CommandHandler('deposit', deposit))
+    disp.add_handler(CommandHandler('withdraw', withdraw_help))
+    disp.add_handler(CommandHandler('battleresult', call_ready_to_battle_result))
 
     logging.info("Finished adding button handlers")

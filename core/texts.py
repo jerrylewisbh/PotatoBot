@@ -668,3 +668,4 @@ ITEM_LIST = "*Items I know:*\n"
 
 GUILD_DEPOSIT = "*Deposit:*"
 GUILD_WITHDRAW = "*Withdraw:*"
+GUILD_WITHDRAW_HELP = "Please forward me your Guild Warehouse"
