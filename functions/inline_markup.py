@@ -492,16 +492,19 @@ def generate_squad_members(members):
             inline_list.append(InlineKeyboardMarkup(inline_keys))
             inline_keys = []
 
-        inline_keys.append(
-            [InlineKeyboardButton(
-                MSG_BACK,
-                callback_data=json.dumps(
-                    {'t': QueryType.SquadList.value}
-                )
-            )]
-        )
+    if inline_keys:
+        inline_list.append(InlineKeyboardMarkup(inline_keys))
 
-    inline_list.append(InlineKeyboardMarkup(inline_keys))
+    inline_keys.append(
+        [InlineKeyboardButton(
+            MSG_BACK,
+            callback_data=json.dumps(
+                {'t': QueryType.SquadList.value}
+            )
+        )]
+    )
+
+
 
     return inline_list
 
