@@ -90,7 +90,7 @@ def parse_hero(bot: Bot, profile, user_id, date):
             Character.characterClass is not None
         ).order_by(Character.date).first()
         if last_with_class:
-            char.characterClass = last_with_class
+            char.characterClass = last_with_class.characterClass
 
         # if parsed_data.group(21):
         #    char.pet = str(parsed_data.group(21))
