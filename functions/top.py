@@ -1,6 +1,7 @@
+import logging
 from datetime import datetime, timedelta
 
-from sqlalchemy import func, tuple_
+from sqlalchemy import func, tuple_, collate
 from sqlalchemy import text as text_
 from telegram import Bot, Update
 
@@ -21,24 +22,36 @@ Session()
 @command_handler()
 def top_about(bot: Bot, update: Update, user: User):
     markup = generate_top_markup()
-    send_async(bot,
-               chat_id=update.message.chat.id,
-               text=MSG_TOP_ABOUT,
-               reply_markup=markup)
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=MSG_TOP_ABOUT,
+        reply_markup=markup
+    )
 
 
 def get_top(condition, header, field_name, icon, user_id, additional_filter=text_('')):
-    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
-        group_by(Character.user_id)
-    actual_profiles = actual_profiles.all()
-    characters = Session.query(Character).filter(tuple_(Character.user_id, Character.date)
-                                                 .in_([(a[0], a[1]) for a in actual_profiles]),
-                                                 Character.date > datetime.now() - timedelta(days=7),
-                                                 additional_filter)\
-        .order_by(condition)
+    newest_profiles = Session.query(
+        Character.user_id,
+        func.max(Character.date)
+    ).group_by(Character.user_id).all()
+
     if CASTLE:
-        characters = characters.filter_by(castle=CASTLE)
-    characters = characters.all()
+        # Remove all accounts where we have one non ptt castle occurence...
+        logging.debug("get_top: Filter by castle")
+        characters = Session.query(Character).filter(
+            tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
+            Character.date > datetime.now() - timedelta(days=7),
+            Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
+            additional_filter
+        ).order_by(condition).all()
+    else:
+        characters = Session.query(Character).filter(
+            tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
+            Character.date > datetime.now() - timedelta(days=7),
+            additional_filter
+        ).order_by(condition).all()
+
     text = header
     str_format = MSG_TOP_FORMAT
     for i in range(min(10, len(characters))):
@@ -63,25 +76,31 @@ def get_top(condition, header, field_name, icon, user_id, additional_filter=text
 @command_handler()
 def attack_top(bot: Bot, update: Update, user: User):
     text = get_top(Character.attack.desc(), MSG_TOP_ATTACK, 'attack', '⚔', update.message.from_user.id)
-    send_async(bot,
-               chat_id=update.message.chat.id,
-               text=text)
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=text
+    )
 
 
 @command_handler()
 def def_top(bot: Bot, update: Update, user: User):
     text = get_top(Character.defence.desc(), MSG_TOP_DEFENCE, 'defence', '🛡', update.message.from_user.id)
-    send_async(bot,
-               chat_id=update.message.chat.id,
-               text=text)
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=text
+    )
 
 
 @command_handler()
 def exp_top(bot: Bot, update: Update, user: User):
     text = get_top(Character.exp.desc(), MSG_TOP_EXPERIENCE, 'exp', '🔥', update.message.from_user.id)
-    send_async(bot,
-               chat_id=update.message.chat.id,
-               text=text)
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=text
+    )
 
 
 def gen_top_msg(data, user_id, header, icon):

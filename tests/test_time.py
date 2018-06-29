@@ -5,7 +5,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from core.state import GameState, get_game_state
+from core.state import GameState, get_game_state, get_last_battle
 
 
 class TestTime(unittest.TestCase):
@@ -150,6 +150,26 @@ class TestTime(unittest.TestCase):
                 self.assertIn(GameState.BATTLE_SILENCE, t_state, "Expected silence at {}!".format(t))
             else:
                 self.assertNotIn(GameState.BATTLE_SILENCE, t_state, "NO silence expected at {}?!".format(t))
+
+    def test_last_battle(self):
+        # fixture = (test_date, expected_date)
+        fixtures = (
+            (
+                datetime.datetime(year=2018, month=1, day=2, hour=1, minute=0, second=0, microsecond=0),
+                datetime.datetime(year=2018, month=1, day=1, hour=23, minute=0, second=0, microsecond=0),
+            ),
+            (
+                datetime.datetime(year=2018, month=1, day=2, hour=9, minute=0, second=0, microsecond=0),
+                datetime.datetime(year=2018, month=1, day=2, hour=7, minute=0, second=0, microsecond=0)
+            ),
+            (
+                datetime.datetime(year=2018, month=1, day=2, hour=17, minute=0, second=0, microsecond=0),
+                datetime.datetime(year=2018, month=1, day=2, hour=15, minute=0, second=0, microsecond=0)
+            )
+        )
+
+        for fixture in fixtures:
+            self.assertEqual(get_last_battle(fixture[0]), fixture[1])
 
 
 if __name__ == '__main__':

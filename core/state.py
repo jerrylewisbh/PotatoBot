@@ -76,9 +76,11 @@ def get_game_state(custom_time=None):
     return state
 
 
-def get_last_battle() -> datetime:
+def get_last_battle(date=None) -> datetime:
     # Get last battletime
-    now = datetime.now()
+    now = date
+    if not date:
+        now = datetime.now()
     if (now.hour < 7):
         now = now - timedelta(days=1)
 
