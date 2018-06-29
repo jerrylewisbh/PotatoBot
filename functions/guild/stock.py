@@ -26,8 +26,9 @@ def generate_gstock_requests(query):
             Item.name.ilike("%" + requested_item + "%")).all()
 
         for item in items:
-            results.append({"label": query[0] + " " + str(quantity) + " " + item.name,
-                            "command": "/g_" + query[0] + " " + item.cw_id + " " + str(quantity)})
+            if item.cw_id:
+                results.append({"label": query[0] + " " + str(quantity) + " " + item.name,
+                                "command": "/g_" + query[0] + " " + item.cw_id + " " + str(quantity)})
 
         return results
 
