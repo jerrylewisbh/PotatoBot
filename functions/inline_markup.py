@@ -449,19 +449,18 @@ def generate_other_reports(time: datetime, squad_id):
 
 def generate_squad_members(members):
     inline_keys = []
-    inline_list = []
     user_ids = []
-    limit = 50
-    count = 0
-    limit = limit if len(members) > limit else len(members)
     for member in members:
         user_ids.append(member.user_id)
-    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
-        filter(Character.user_id.in_(user_ids)). \
-        group_by(Character.user_id).all()
+
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)).filter(
+        Character.user_id.in_(user_ids)
+    ).group_by(Character.user_id).all()
+
     characters = Session.query(Character).filter(tuple_(Character.user_id, Character.date)
                                                  .in_([(a[0], a[1]) for a in actual_profiles]))\
         .order_by(Character.level.desc()).all()
+    
     for character in characters:
         time_passed = datetime.now() - character.date
         status_emoji = '❇'
@@ -486,24 +485,20 @@ def generate_squad_members(members):
                                        'b': True}
                                   ))])
 
-        count = count + 1
-        if count >= limit:
-            count = 0
-            inline_list.append(InlineKeyboardMarkup(inline_keys))
-            inline_keys = []
+    back_button = [InlineKeyboardButton(
+        MSG_BACK,
+        callback_data=json.dumps(
+            {'t': QueryType.SquadList.value}
+        )
+    )]
 
-    if inline_keys:
-        inline_list.append(InlineKeyboardMarkup(inline_keys))
+    markup_blocks = [inline_keys[x:x + 50] for x in range(0, len(inline_keys), 50)]
+    keyboards = []
+    for markup_block in markup_blocks:
+        markup_block.append(back_button)
+        keyboards.append(InlineKeyboardMarkup(markup_block))
 
-    inline_keys.append(
-        [InlineKeyboardButton(
-            MSG_BACK,
-            callback_data=json.dumps(
-                {'t': QueryType.SquadList.value}
-            )
-        )]
-    )
-    return inline_list
+    return keyboards
 
 
 def generate_squad_request_answer(user_id):
