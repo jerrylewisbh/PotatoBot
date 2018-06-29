@@ -73,7 +73,6 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
             update = args[1]
             #args = kwargs['args'] if kwargs and 'args' in kwargs else None
 
-
             if update.message and not update.callback_query:
                 if update.message.chat.type == 'channel' and not allow_channel:
                     logging.debug("Message received in channel but allow_channel=False. Ignoring message.")

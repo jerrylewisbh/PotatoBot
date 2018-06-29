@@ -13,7 +13,9 @@ Session()
 
 
 def trigger_decorator(func):
-    @command_handler()
+    @command_handler(
+        allow_group=True
+    )
     def wrapper(bot, update, *args, **kwargs):
         group = update_group(update.message.chat)
         if group is None and \
@@ -101,7 +103,7 @@ def add_global_trigger(bot: Bot, update: Update, user: User):
 
 
 @trigger_decorator
-def trigger_show(bot: Bot, update: Update):
+def trigger_show(bot: Bot, update: Update, user: User):
     trigger = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id, trigger=update.message.text).first()
     if trigger is None:
         trigger = Session.query(Trigger).filter_by(trigger=update.message.text).first()
@@ -184,7 +186,7 @@ def del_global_trigger(bot: Bot, update: Update, user: User):
 
 
 @trigger_decorator
-def list_triggers(bot: Bot, update: Update):
+def list_triggers(bot: Bot, update: Update, user: User):
     triggers = Session.query(Trigger).all()
     local_triggers = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id).all()
     msg = MSG_TRIGGER_LIST_HEADER + \
