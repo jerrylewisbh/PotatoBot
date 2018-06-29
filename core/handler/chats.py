@@ -65,7 +65,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(to_re(CC_UNSET_TRIGGER), del_trigger))
     disp.add_handler(RegexHandler(to_re(CC_TRIGGER_LIST), list_triggers))
     disp.add_handler(RegexHandler(to_re(CC_ADMIN_LIST), list_admins))
-    disp.add_handler(RegexHandler(to_re(CC_PING), battle_attendance_show))
+    disp.add_handler(RegexHandler(to_re(CC_PING), ping))
     disp.add_handler(RegexHandler(to_re(CC_DAY_STATISTICS), day_activity))
     disp.add_handler(RegexHandler(to_re(CC_WEEK_STATISTICS), week_activity))
     disp.add_handler(RegexHandler(to_re(CC_BATTLE_STATISTICS), battle_activity))
