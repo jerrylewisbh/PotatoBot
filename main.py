@@ -42,18 +42,18 @@ from functions.quest import parse_quest
 from functions.report import fwd_report
 from functions.welcome import (welcome)
 
-
 Session()
 
-
 @run_async
-@command_handler()
-def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
-    create_or_update_user(update.message.from_user)
-
-    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
-
-    if update.message.chat.type in ['group', 'supergroup', 'channel']:
+@command_handler(
+    allow_channel=True,
+    allow_group=True,
+    allow_private=True
+)
+def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):#
+    if update.effective_message.chat.type == "channel":
+        fwd_report(bot, update)
+    elif update.effective_message.chat.type in ['group', 'supergroup']:
         squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
 
         admin = Session.query(Admin).filter(
@@ -71,7 +71,8 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
                 update.message.chat.id,
                 update.message.message_id
             )
-    elif update.message.chat.type == 'private':
+
+    elif update.effective_message.chat.type == 'private':
         admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         is_admin = False
         for _ in admin:
@@ -79,8 +80,6 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
             break
         if 'order_wait' in chat_data and chat_data['order_wait']:
             order(bot, update, user, chat_data=chat_data)
-        elif update.channel_post and update.effective_chat and update.effective_chat.id == FWD_CHANNEL:
-            fwd_report(bot, update)
         elif update.message.text:
             if update.message.forward_from and update.message.forward_from.id == CWBOT_ID:
                 parse_quest(bot, update, user)
@@ -94,7 +93,6 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
             user_panel(bot, update)
         else:
             order(bot, update, user, chat_data=chat_data)
-
 
 def main():
     # Logging!

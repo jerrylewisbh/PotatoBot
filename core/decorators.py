@@ -85,47 +85,49 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                     logging.debug("Message received in private but allow_private=False. Ignoring message.")
                     return
 
-            if update.channel_post:
-                # Channel posts are not allowed. Block functions
-                return
-            user = create_or_update_user(update.effective_user)
-            if not user:
-                logging.error("create_or_update_user() did not return a User!")
-                raise ValueError("create_or_update_user() did not return a User!")
-            if user.is_banned and not allow_banned:
-                logging.info(
-                    "Message received from banned user '%s' but this is not an allowed function for a banned account.",
-                    user.id
-                )
-                return
-
             if forward_from and update.message.forward_from and forward_from != update.message.forward_from.id:
                 logging.debug("Message is not a valid forward %s!=%s", update.message.forward_from.id, forward_from)
                 return
 
-            if squad_only and not user.is_squadmember:
-                logging.debug("This is a squad only feature and user '%s' is no squad member", user.id)
-                return
-
-            if testing_only and not user.is_tester:
-                logging.debug(
-                    "This is a testing-squad only feature and user '%s' is no testing-squad member",
-                    user.id
-                )
-                return
-
-            if not min_permission:
-                raise ValueError("None is no valid AdminType!")
-            elif min_permission not in AdminType:
-                raise ValueError("Given permission does not match an existing AdminType")
-            elif min_permission != AdminType.NOT_ADMIN:
-                # We need actual admin-permissions. Check.
-                if not check_admin(update, min_permission):
-                    logging.warning("user_id='%s' is not allowed to perform this action", user.id)
+            if update.channel_post:
+                # Channel posts are not allowed. Block functions
+                logging.debug("Channel post... (be careful, user is None!)")
+                return func(bot, update, None, **kwargs)
+            else:
+                user = create_or_update_user(update.effective_user)
+                if not user:
+                    logging.error("create_or_update_user() did not return a User!")
+                    raise ValueError("create_or_update_user() did not return a User!")
+                if user.is_banned and not allow_banned:
+                    logging.info(
+                        "Message received from banned user '%s' but this is not an allowed function for a banned account.",
+                        user.id
+                    )
                     return
-            # Else: Normal user permissions rqd...
 
-            logging.info("User '%s' has called: '%s'", user.id, func.__name__)
+                if squad_only and not user.is_squadmember:
+                    logging.debug("This is a squad only feature and user '%s' is no squad member", user.id)
+                    return
+
+                if testing_only and not user.is_tester:
+                    logging.debug(
+                        "This is a testing-squad only feature and user '%s' is no testing-squad member",
+                        user.id
+                    )
+                    return
+
+                if not min_permission:
+                    raise ValueError("None is no valid AdminType!")
+                elif min_permission not in AdminType:
+                    raise ValueError("Given permission does not match an existing AdminType")
+                elif min_permission != AdminType.NOT_ADMIN:
+                    # We need actual admin-permissions. Check.
+                    if not check_admin(update, min_permission):
+                        logging.warning("user_id='%s' is not allowed to perform this action", user.id)
+                        return
+                # Else: Normal user permissions rqd...
+
+                logging.info("User '%s' has called: '%s'", user.id, func.__name__)
 
             return func(bot, update, user, **kwargs)
         return wrapper
