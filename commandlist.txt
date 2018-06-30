@@ -1,0 +1,15 @@
+Commandlist for @BotFather
+
+list_triggers - List public triggers
+report - Show your latest battle report
+items - Show tradable items
+items_other - Show additional items
+hide - Hide stock based on config
+hide_list - List items for manual hiding
+withdraw - Generate withdraw list for guild
+deposit - Generate deposit list for guild
+ah - Auto hide config
+sr - Remove sniping setting
+s - Sniping settings
+
+
