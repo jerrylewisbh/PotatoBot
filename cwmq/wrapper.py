@@ -93,7 +93,7 @@ def request_trade_terminal_access(bot: Bot, user: User):
     if not user:
         return
 
-    logging.warning("User has not granted Trade access but we have a token. Requesting access")
+    logging.info("User has not granted Trade access but we have a token. Requesting access")
     bot.send_message(
         user.id,
         MSG_API_REQUIRE_ACCESS_TRADE,
