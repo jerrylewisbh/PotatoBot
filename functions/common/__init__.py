@@ -39,13 +39,14 @@ def error_callback(bot: Bot, update, error, **kwargs):
                 group.bot_in_group = False
                 Session.add(group)
                 Session.commit()
-        # remove update.message.chat_id from conversation list
-        logging.warning(
-            "Unauthorized occurred: %s. We should probably remove user user_id='%s' from bot.",
-            error.message,
-            update.message.chat_id,
-            exc_info=True
-        )
+
+            # remove update.message.chat_id from conversation list
+            logging.warning(
+                "Unauthorized occurred: %s. We should probably remove user user_id='%s' from bot.",
+                error.message,
+                update.message.chat_id,
+                exc_info=True
+            )
     except BadRequest:
         # handle malformed requests - read more below!
         logging.error("BadRequest occurred: %s", error.message, exc_info=True)

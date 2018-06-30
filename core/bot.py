@@ -4,8 +4,10 @@
 '''
 MessageQueue usage example with @queuedmessage decorator.
 '''
+import logging
 
 import telegram.bot
+from telegram.error import Unauthorized
 from telegram.ext import messagequeue as mq
 
 
@@ -33,4 +35,14 @@ class MQBot(telegram.bot.Bot):
         #    print("---------------")
         #    print(kwargs['text'])
         #    print("---------------")
-        return super(MQBot, self).send_message(*args, **kwargs)
+
+        try:
+            return super(MQBot, self).send_message(*args, **kwargs)
+        except Unauthorized as ex:
+            if "chat_id" in kwargs:
+                logging.warning(
+                    "Unauthorized occurred: %s. We should probably remove user user_id='%s' from bot.",
+                    ex.message,
+                    kwargs['chat_id'],
+                    exc_info=True
+                )
