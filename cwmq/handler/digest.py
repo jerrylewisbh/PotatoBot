@@ -64,7 +64,7 @@ def __handle_snipe_orders(digest_item, item: Item, order: UserExchangeOrder, red
 
     if order.max_price not in digest_item['prices']:
         # Done...
-        logging.info("Targeted price '%s' for '%s' is not in digest list", order.max_price, order.item.name)
+        logging.debug("Targeted price '%s' for '%s' is not in digest list", order.max_price, order.item.name)
         return  # Next order!
     elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping or order.user.sniping_suspended:
         logging.info(
