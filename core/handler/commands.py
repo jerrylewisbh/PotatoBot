@@ -7,7 +7,7 @@ from functions.admins import (del_admin, del_global_admin, get_log,
                               list_admins, set_admin, set_global_admin,
                               set_super_admin)
 from functions.common import admin_panel, ban, help_msg, kick, ping, unban
-from functions.exchange import list_items, list_items_other
+from functions.exchange import list_items, list_items_other, list_items_unknown
 from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume
 from functions.guild.stock import deposit, withdraw_help
@@ -92,6 +92,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler('resume', sniping_resume))
     disp.add_handler(CommandHandler('items', list_items))
     disp.add_handler(CommandHandler('items_other', list_items_other))
+    disp.add_handler(CommandHandler('items_unknown', list_items_unknown))
     disp.add_handler(CommandHandler('hide', hide_items))
     disp.add_handler(CommandHandler('hide_list', hide_list))
     disp.add_handler(CommandHandler('revoke', revoke))
