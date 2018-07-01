@@ -122,7 +122,11 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                 elif min_permission != AdminType.NOT_ADMIN:
                     # We need actual admin-permissions. Check.
                     if not check_admin(update, min_permission):
-                        logging.warning("user_id='%s' is not allowed to perform this action", user.id)
+                        logging.warning(
+                            "'%s' is not allowed to call function '%s'!",
+                            "@{}".format(user.username) if user.username else user.id,
+                            func.__name__ if hasattr(func, "__name__") else "unknown,"
+                        )
                         return
                 # Else: Normal user permissions rqd...
 
