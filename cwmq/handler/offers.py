@@ -51,7 +51,7 @@ def offers_handler(channel, method, properties, body, dispatcher):
                 order.user.is_api_trade_allowed,
                 order.user.setting_automated_sniping,
                 order.user.sniping_suspended)
-            
+
             if data['price'] > order.max_price:
                 # Done...
                 logger.info("Price '%s' for '%s' is greater than max_price '%s'",

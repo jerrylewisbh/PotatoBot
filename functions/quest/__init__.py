@@ -62,8 +62,15 @@ def save_user_quest(user: User, update: Update, quest_data):
         uqi = UserQuestItem(count=count, item_id=item.id)
         uq.items.append(uqi)
 
-    Session.add(uq)
-    Session.commit()
+    try:
+        Session.add(uq)
+        Session.commit()
+    except Exception as ex:
+        logging.exception("Could not insert quest into DB. Rollaback!")
+        try:
+            Session.rollback()
+        except Exception:
+            logging.exception("Additional error during rollback!")
 
     return uq
 

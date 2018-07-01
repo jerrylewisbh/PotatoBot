@@ -40,6 +40,7 @@ from functions.orders import order
 from functions.profile import user_panel
 from functions.quest import parse_quest
 from functions.report import fwd_report
+from functions.triggers import trigger_show
 from functions.welcome import (welcome)
 
 Session()
@@ -71,6 +72,9 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):#
                 update.message.chat.id,
                 update.message.message_id
             )
+
+        if update.message.text:
+            trigger_show(bot, update)
 
     elif update.effective_message.chat.type == 'private':
         admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
