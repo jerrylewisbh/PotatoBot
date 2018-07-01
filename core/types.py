@@ -591,7 +591,7 @@ def new_item(bot: Bot, name: str, tradable: bool):
 
         bot.send_message(
             SUPER_ADMIN_ID,
-            "New item '{}' discovered on exchange!".format(name),
+            "New item '{}' discovered!".format(name),
         )
 
 
