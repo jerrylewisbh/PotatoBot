@@ -23,7 +23,7 @@ def generate_gstock_requests(query):
 
     if requested_item:
         items = Session.query(Item).filter(
-            Item.name.ilike("%" + requested_item + "%")).all()
+            Item.name.ilike("%" + requested_item + "%")).limit(20).all()
 
         for item in items:
             if item.cw_id:
