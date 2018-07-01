@@ -87,7 +87,7 @@ def __handle_snipes(user, data, channel, method, dispatcher):
         item = Session.query(Item).filter(func.lower(Item.name) == data['item'].lower()).first()
         if not item:
             logger.info("[Snipe] Unknown item %s", data['item'])
-            new_item(dispatcher.bot, data["item"], True)
+            new_item(data["item"], True)
             return
 
         logger.info("[Snipe] Item: %s (%s/%s)", item.name, item.id, item.cw_id)

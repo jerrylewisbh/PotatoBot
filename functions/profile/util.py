@@ -439,7 +439,7 @@ def annotate_stock_with_price(bot: Bot, stock: str):
         if find:
             db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
             if not db_item:
-                new_item(bot, find.group("item"), False)
+                new_item(find.group("item"), False)
                 stock_text += "{}\n".format(line)
             elif db_item and not db_item.tradable:
                 stock_text += "{}\n".format(line)

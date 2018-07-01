@@ -14,7 +14,7 @@ from core.texts import *
 from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_YOU_BANNED, MSG_BAN_COMPLETE, \
     MSG_USER_UNKNOWN, MSG_REASON_TRAITOR, MSG_YOU_UNBANNED, MSG_USER_UNBANNED, MSG_USER_NOT_BANNED
 from core.types import Admin, AdminType, Stock, User, Session, Item, Ban, SquadMember, Squad, UserExchangeOrder, \
-    UserStockHideSetting, Group
+    UserStockHideSetting, Group, new_item
 from core.utils import send_async
 from functions.reply_markup import (generate_admin_markup)
 from functions.triggers import trigger_decorator
@@ -153,7 +153,7 @@ def get_diff(dict_one, dict_two):
 def get_weight_multiplier(item_name):
     item = __get_item(item_name)
     if not item:
-        logging.warning("Could not find item %s in database! Guessing weight = 1", item_name)
+        new_item(item_name, False)
         return 1
 
     return item.weight

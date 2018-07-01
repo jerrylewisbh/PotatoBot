@@ -53,12 +53,11 @@ def withdraw(bot: Bot, update: Update, user: User):
         if find:
             db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
             if not db_item:
-                new_item(bot, find.group("item"), False)
-                db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
-
-            text += "\n[{} ({}x)](https://t.me/share/url?url={} {} {})".format(
-                db_item.name, find.group("count"), "/g_withdraw", find.group("itemId"), find.group("count")
-            )
+                db_item = new_item(find.group("item"), False)
+            if db_item:
+                text += "\n[{} ({}x)](https://t.me/share/url?url={} {} {})".format(
+                    db_item.name, find.group("count"), "/g_withdraw", find.group("itemId"), find.group("count")
+                )
 
     send_async(
         bot,
@@ -78,10 +77,8 @@ def deposit(bot: Bot, update: Update, user: User):
         if find:
             db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
             if not db_item:
-                new_item(bot, find.group("item"), False)
-                db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
-
-            if db_item.cw_id:
+                db_item = new_item(find.group("item"), False)
+            if db_item and db_item.cw_id:
                 text += "\n[{} ({}x)](https://t.me/share/url?url={} {} {})".format(
                     db_item.name, find.group("count"), "/g_deposit", db_item.cw_id, find.group("count")
                 )

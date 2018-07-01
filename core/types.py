@@ -580,7 +580,7 @@ def log(user_id, chat_id, func_name, args):
         # Session.remove()
 
 
-def new_item(bot: Bot, name: str, tradable: bool):
+def new_item(name: str, tradable: bool):
     if name:
         # Create items we do not yet know in the database....
         item = Item()
@@ -589,10 +589,10 @@ def new_item(bot: Bot, name: str, tradable: bool):
         Session.add(item)
         Session.commit()
 
-        bot.send_message(
-            SUPER_ADMIN_ID,
-            "New item '{}' discovered!".format(name),
-        )
+        logging.warning("New item '%s' discovered! You might need to adjust trade/weight options!", name)
+
+        return item
+    return None
 
 
 Base.metadata.create_all(ENGINE)

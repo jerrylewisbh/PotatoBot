@@ -31,7 +31,10 @@ def offers_handler(channel, method, properties, body, dispatcher):
         ).first()
 
         if not item:
-            new_item(dispatcher.bot, data['item'], True)
+            item = new_item(data['item'], True)
+            if not item:
+                # Still nothing...
+                return
         logger.debug("%s/%s: %s", item.id, item.cw_id, item.name)
 
         # No orders...

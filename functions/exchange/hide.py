@@ -197,11 +197,12 @@ def hide_list(bot: Bot, update: Update, user: User):
         if find:
             db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
             if not db_item:
-                new_item(bot, find.group("item"), False)
-                db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
+                db_item = new_item(find.group("item"), False)
+                if not db_item:
+                    # Still nothing?
+                    continue
 
             count = int(find.group("count"))
-
             if db_item.cw_id:
                 # We might have to split orders if weight > 1000
                 order_count = 1
