@@ -298,7 +298,7 @@ MSG_BUILD_REPORT_TOO_OLD = 'This report is very old, I can not accept it.'
 
 MSG_REPORT_OLD = 'Your report stinks like rotten potato, next time try to send it within a minute after receiving."'
 MSG_REPORT_EXISTS = 'The report for this battle has already been submitted.'
-MSG_REPORT_OK = 'Thank you. Do not forget to forward reports on every battle.'
+MSG_REPORT_MISSING = "No report for this period! Please forward me your /report from @chtwrsbot."
 
 MSG_PROFILE_NOT_FOUND = 'In the potato plantation records, there is still no data about this hero or you are not ' \
                         'permitted to see him.'

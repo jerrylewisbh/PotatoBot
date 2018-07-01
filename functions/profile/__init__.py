@@ -109,9 +109,9 @@ def report_received(bot: Bot, update: Update, user: User):
 
         if not report or (report and report.preliminary_report):
             save_report(update.message.text, update.message.from_user.id, update.message.forward_date)
-            send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_OK)
             if report and report.castle != CASTLE:
                 __ban_traitor(bot, update.message.from_user.id)
+            show_report(bot, update, user)
         else:
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
 
@@ -230,11 +230,10 @@ def show_report(bot: Bot, update: Update, user: User):
 
     # Nothing to show
     if not existing_report:
-        text = "No report for this period!"
         send_async(
             bot,
             chat_id=update.message.chat.id,
-            text=text,
+            text=MSG_REPORT_MISSING,
             reply_markup=generate_user_markup(user_id=user.id),
             parse_mode=ParseMode.HTML,
         )
