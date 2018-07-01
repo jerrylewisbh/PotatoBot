@@ -1,4 +1,5 @@
 from telegram import Bot, Update
+from telegram.error import BadRequest
 
 from config import FWD_CHANNEL
 from core.decorators import command_handler
@@ -51,10 +52,17 @@ def fwd_report(bot: Bot, update: Update):
     for group in fwd_group:
         logging.debug("Forwarding report to '%s/%s'", group.id, group.title)
 
-        bot.forward_message(
-            chat_id=group.id,
-            from_chat_id=FWD_CHANNEL,
-            message_id=update.channel_post.message_id
-        )
+        if group.id == FWD_CHANNEL:
+            logging.error("Forwarding battle reports is enabled for forward channel, this is a really bad idea!")
+            continue
+
+        try:
+            bot.forward_message(
+                chat_id=group.id,
+                from_chat_id=FWD_CHANNEL,
+                message_id=update.channel_post.message_id
+            )
+        except BadRequest:
+            logging.warning("BadRequest raised for fwd to '%s/%s'", group.id, group.title)
 
 
