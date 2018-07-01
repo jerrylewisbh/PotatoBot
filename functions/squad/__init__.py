@@ -470,7 +470,6 @@ def call_squad(bot: Bot, update: Update, user: User):
     if squad is not None:
         users = Session.query(User).join(SquadMember).filter(User.id == SquadMember.user_id)\
             .filter(SquadMember.squad_id == squad.chat_id).all()
-        msg = MSG_SQUAD_CALL_HEADER
         all_users = []
         for user in users:
             if user.username is not None:
@@ -482,7 +481,9 @@ def call_squad(bot: Bot, update: Update, user: User):
             text = ""
             for user in batch:
                 text += "{} ".format(user)
-            send_async(bot, chat_id=update.message.chat.id, text=msg)
+            send_async(bot, chat_id=update.message.chat.id, text=text)
+        if len(notify_users) > 0:
+            send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_CALL_HEADER)
 
 @command_handler(
     min_permission=AdminType.GROUP
