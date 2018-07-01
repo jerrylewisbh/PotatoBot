@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 from datetime import datetime
@@ -159,23 +160,16 @@ def send_graph(bot: Bot, user: User):
 
     plot.text(-2, -16, MSG_GAME_TIMES, family='monospace')
 
-    # add some text for labels, title and axes ticks
-
-
-    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
-    with open(filename, 'wb') as file:
-        plot.savefig(file, format='png')
-
-    with open(filename, 'rb') as file:
-        bot.sendPhoto(
-            user.id,
-            file,
-            MSG_FORAY_INTRO,
+    with io.BytesIO() as f:
+        plot.savefig(f, format='png')
+        f.seek(0)
+        bot.send_photo(
+            chat_id=user.id,
+            photo=f,
+            caption=MSG_FORAY_INTRO,
             parse_mode=ParseMode.MARKDOWN,
         )
-
     plot.clf()
-    os.remove(filename)
 
 
 def __get_overall_successrate():

@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 from datetime import datetime, timedelta
@@ -319,15 +320,15 @@ def quest_statistic_old(bot: Bot, update: Update):
 
     #[autolabel(ax, bar) for bar in bars]
 
-    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
-    with open(filename, 'wb') as file:
-        plot.savefig(file, format='png')
-
-    with open(filename, 'rb') as file:
-        bot.sendPhoto(update.message.chat.id, file, "Forest!")
-
+    with io.BytesIO() as f:
+        plot.savefig(f, format='png')
+        f.seek(0)
+        bot.send_photo(
+            chat_id=update.message.chat.id,
+            photo=f,
+            caption="Forest!"
+        )
     plot.clf()
-    os.remove(filename)
 
 
 @command_handler()
@@ -403,15 +404,15 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
     )
     #[autolabel(ax, bar) for bar in bars]
 
-    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
-    with open(filename, 'wb') as file:
-        plot.savefig(file, format='png')
-
-    with open(filename, 'rb') as file:
-        bot.sendPhoto(update.message.chat.id, file, "Forest!")
-
+    with io.BytesIO() as f:
+        plot.savefig(f, format='png')
+        f.seek(0)
+        bot.send_photo(
+            chat_id=update.message.chat.id,
+            photo=f,
+            caption="Forest!"
+        )
     plot.clf()
-    os.remove(filename)
 
 
 @command_handler()
@@ -483,15 +484,15 @@ def quest_statistic_split(bot: Bot, update: Update):
     )
     [autolabel(ax, bar) for bar in bars]
 
-    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
-    with open(filename, 'wb') as file:
-        plot.savefig(file, format='png')
-
-    with open(filename, 'rb') as file:
-        bot.sendPhoto(update.message.chat.id, file, "Forest!")
-
+    with io.BytesIO() as f:
+        plot.savefig(f, format='png')
+        f.seek(0)
+        bot.send_photo(
+            chat_id=update.message.chat.id,
+            photo=f,
+            caption="Forest!"
+        )
     plot.clf()
-    os.remove(filename)
 
 
 @command_handler()
@@ -550,15 +551,15 @@ def quest_statistic_one(bot: Bot, update: Update):
     )
     [autolabel(ax, bar) for bar in bars]"""
 
-    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
-    with open(filename, 'wb') as file:
-        plot.savefig(file, format='png')
-
-    with open(filename, 'rb') as file:
-        bot.sendPhoto(update.message.chat.id, file, "Forest!")
-
+    with io.BytesIO() as f:
+        plot.savefig(f, format='png')
+        f.seek(0)
+        bot.send_photo(
+            chat_id=update.message.chat.id,
+            photo=f,
+            caption="Forest!"
+        )
     plot.clf()
-    os.remove(filename)
 
 
 def autolabel(ax, rects):
@@ -668,14 +669,17 @@ def skill_statistic(bot: Bot, update: Update, user: User):
 
     # Add legend
     plot.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
-    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
-    with open(filename, 'wb') as file:
-        plot.savefig(file, format='png')
 
-    with open(filename, 'rb') as file:
-        bot.sendPhoto(update.message.chat.id, file, MSG_PLOT_DESCRIPTION_SKILL)
+    with io.BytesIO() as f:
+        plot.savefig(f, format='png')
+        f.seek(0)
+        bot.send_photo(
+            chat_id=update.message.chat.id,
+            photo=f,
+            caption=MSG_PLOT_DESCRIPTION_SKILL
+        )
+
     plot.clf()
-    os.remove(filename)
 
 
 @command_handler()
@@ -692,9 +696,6 @@ def exp_statistic(bot: Bot, update: Update, user: User):
     y.append(y[-1])
     plot.plot(x, y)
     plot.gcf().autofmt_xdate()
-    filename = str(datetime.now()).replace(':', '').replace(' ', '').replace('-', '') + '.png'
-    with open(filename, 'wb') as file:
-        plot.savefig(file, format='png')
 
     now_date = x[-2]
     prev_date = x[0]
@@ -724,8 +725,14 @@ def exp_statistic(bot: Bot, update: Update, user: User):
 
         text = (MSG_DATE_FORMAT.format(delta_days, days_text))
 
-    with open(filename, 'rb') as file:
-        bot.sendPhoto(update.message.chat.id, file, MSG_PLOT_DESCRIPTION
-                      .format(int(day_exp), delta_exp, text))
+    with io.BytesIO() as f:
+        plot.savefig(f, format='png')
+        f.seek(0)
+        bot.send_photo(
+            chat_id=update.message.chat.id,
+            photo=f,
+            caption=MSG_PLOT_DESCRIPTION.format(int(day_exp), delta_exp, text)
+        )
+
     plot.clf()
-    os.remove(filename)
+
