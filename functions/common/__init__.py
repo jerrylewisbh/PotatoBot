@@ -41,12 +41,20 @@ def error_callback(bot: Bot, update, error, **kwargs):
                 Session.commit()
 
             # remove update.message.chat_id from conversation list
-            logging.warning(
-                "Unauthorized occurred: %s. We should probably remove user user_id='%s' from bot.",
-                error.message,
-                update.message.chat_id,
-                exc_info=True
-            )
+            user = Session.query(User).filter(User.id == update.message.chat_id).first()
+            if user:
+                logging.info(
+                    "Unauthorized for user_id='%s'. Disabling API settings so that we don't contact the user in the future",
+                    user.id
+                )
+                __disable_api_functions(user)
+            else:
+                logging.warning(
+                    "Unauthorized occurred: %s. We should probably remove user chat_id='%s' from bot.",
+                    error.message,
+                    update.message.chat_id,
+                    exc_info=True
+                )
     except BadRequest:
         # handle malformed requests - read more below!
         logging.error("BadRequest occurred: %s", error.message, exc_info=True)
@@ -195,7 +203,6 @@ def stock_split(old_stock, new_stock):
 
 def __get_item(item_name):
     return Session.query(Item).filter(func.lower(Item.name) == item_name.lower()).first()
-
 
 def stock_compare_text(old_stock, new_stock):
     """ Compare stock... """
