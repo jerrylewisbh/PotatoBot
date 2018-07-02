@@ -279,6 +279,7 @@ def create_user_report(user: User) -> Optional[str]:
             logging.debug("Report does not exist yet. Creating preliminary Report.")
             r = Report()
             r.user_id = user.id
+
             r.name = user.character.name
             r.date = datetime.now()
             r.level = user.character.level

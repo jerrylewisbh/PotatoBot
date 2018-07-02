@@ -1,5 +1,5 @@
 from telegram import Bot, Update
-from telegram.error import BadRequest
+from telegram.error import BadRequest, TimedOut
 
 from config import FWD_CHANNEL
 from core.decorators import command_handler
@@ -64,5 +64,7 @@ def fwd_report(bot: Bot, update: Update):
             )
         except BadRequest:
             logging.warning("BadRequest raised for fwd to '%s/%s'", group.id, group.title)
+        except TimedOut:
+            logging.warning("TimedOut raised for fwd to '%s/%s'", group.id, group.title)
 
 

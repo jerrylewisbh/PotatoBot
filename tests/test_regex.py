@@ -18,7 +18,7 @@ Your result on the battlefield:
 💰Gold: 456"""
 
         parsed_data = parse_report_text(test)
-        self.assertNotEquals(parsed_data, None)
+        self.assertNotEqual(parsed_data, None)
 
         self.assertEqual(parsed_data['castle'], "🥔")
         self.assertEqual(parsed_data['name'], "[GO]Kroket van Potet")
@@ -39,7 +39,7 @@ Your result on the battlefield:
 💰Gold: 456"""
 
         parsed_data = parse_report_text(test)
-        self.assertNotEquals(parsed_data, None)
+        self.assertNotEqual(parsed_data, None)
 
         self.assertEqual(parsed_data['castle'], "🥔")
         self.assertEqual(parsed_data['name'], "[GO]Kroket van Potet")
@@ -60,7 +60,7 @@ Your result on the battlefield:
 💰Gold: 456"""
 
         parsed_data = parse_report_text(test)
-        self.assertNotEquals(parsed_data, None)
+        self.assertNotEqual(parsed_data, None)
 
         self.assertEqual(parsed_data['castle'], "🥔")
         self.assertEqual(parsed_data['name'], "Kroket van Potet")
@@ -81,7 +81,7 @@ Your result on the battlefield:
 💰Gold: 456"""
 
         parsed_data = parse_report_text(test)
-        self.assertNotEquals(parsed_data, None)
+        self.assertNotEqual(parsed_data, None)
 
         self.assertEqual(parsed_data['castle'], "🥔")
         self.assertEqual(parsed_data['name'], "Kroket van Potet")
@@ -95,7 +95,7 @@ Your result on the battlefield:
         self.assertEqual(parsed_data['stock'], 0)
 
     def test_hero_parsing_ribbon(self):
-        test = """🥔🎗Fozzie of Potato Castle
+        test = """🥔🎗Fozzie
 🏅Level: 23
 ⚔Atk: 73 🛡Def: 64
 🔥Exp: 11451/13123
@@ -119,7 +119,7 @@ Royal Guard Cape +1⚔ +1🛡
 📦Warehouse: 635 /stock"""
 
         parsed_data = parse_hero_text(test)
-        self.assertNotEquals(parsed_data, None)
+        self.assertNotEqual(parsed_data, None)
 
         self.assertEqual(parsed_data['castle'], "🥔")
         self.assertEqual(parsed_data['castle_name'], "Potato")
@@ -140,7 +140,7 @@ Royal Guard Cape +1⚔ +1🛡
         self.assertIsNotNone(parsed_data['equipment'])
 
     def test_hero_parsing_missings(self):
-        test = """🥔Fozzie of Potato Castle
+        test = """🥔Fozzie
 🏅Level: 23
 ⚔Atk: 73 🛡Def: 64
 🔥Exp: 11451/13123
@@ -164,7 +164,7 @@ Royal Guard Cape +1⚔ +1🛡
 📦Warehouse: 635 /stock"""
 
         parsed_data = parse_hero_text(test)
-        self.assertNotEquals(parsed_data, None)
+        self.assertNotEqual(parsed_data, None)
 
         self.assertEqual(parsed_data['castle'], "🥔")
         self.assertEqual(parsed_data['castle_name'], "Potato")
@@ -185,7 +185,7 @@ Royal Guard Cape +1⚔ +1🛡
         self.assertIsNotNone(parsed_data['equipment'])
 
     def test_hero_parsing_full(self):
-        test = """🥔Fozzie of Potato Castle
+        test = """🥔Fozzie
 🏅Level: 23
 ⚔Atk: 73 🛡Def: 64
 🔥Exp: 11451/13123
@@ -209,7 +209,7 @@ Royal Guard Cape +1⚔ +1🛡
 📦Warehouse: 635 /stock"""
 
         parsed_data = parse_hero_text(test)
-        self.assertNotEquals(parsed_data, None)
+        self.assertNotEqual(parsed_data, None)
 
         self.assertEqual(parsed_data['castle'], "🥔")
         self.assertEqual(parsed_data['castle_name'], "Potato")
@@ -227,6 +227,51 @@ Royal Guard Cape +1⚔ +1🛡
         self.assertEqual(parsed_data['exp_needed'], 13123)
         #self.assertEqual(parsed_data['expertise'], "📕")
         self.assertEqual(parsed_data['diamonds'], 12)
+        self.assertIsNotNone(parsed_data['equipment'])
+
+
+    def test_hero_parsing_next(self):
+        test = """🥔[AVE]Lauri van Potet
+🏅Level: 36
+⚔️Atk: 154 🛡Def: 91
+🔥Exp: 121913/122982
+🔋Stamina: 0/16
+💰36 👝301
+📚Expertise: 📕📗📘
+🏛Class info: /class
+
+
+🎽Equipment +59⚔️+50🛡
+Champion Sword +31⚔️
+Hunter dagger +10⚔️
+Hunter Helmet +5⚔️ +11🛡
+Order Gauntlets +2⚔️ +10🛡
+Hunter Armor +8⚔️ +18🛡
+Order Boots +2⚔️ +10🛡
+Royal Guard Cape +1⚔️ +1🛡
+
+🎒Bag: 14/15 /inv
+📦Warehouse: 163 /stock"""
+
+        parsed_data = parse_hero_text(test)
+        self.assertNotEqual(parsed_data, None)
+
+        self.assertEqual(parsed_data['castle'], "🥔")
+        self.assertEqual(parsed_data['castle_name'], "Potato")
+        self.assertEqual(parsed_data['name'], "[AVE]Lauri van Potet")
+        self.assertEqual(parsed_data['attack'], 154)
+        self.assertEqual(parsed_data['guild'], "[AVE]")
+        self.assertEqual(parsed_data['ribbon'], None)
+        self.assertEqual(parsed_data['defence'], 91)
+        self.assertEqual(parsed_data['level'], 36)
+        self.assertEqual(parsed_data['exp'], 121913)
+        self.assertEqual(parsed_data['gold'], 36)
+        self.assertEqual(parsed_data['stamina'], 0)
+        self.assertEqual(parsed_data['max_stamina'], 16)
+        self.assertEqual(parsed_data['pouches'], 301)
+        self.assertEqual(parsed_data['exp_needed'], 122982)
+        #self.assertEqual(parsed_data['expertise'], "📕")
+        self.assertEqual(parsed_data['diamonds'], 0)
         self.assertIsNotNone(parsed_data['equipment'])
 
 
