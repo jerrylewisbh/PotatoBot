@@ -97,7 +97,7 @@ def admin_panel(bot: Bot, update: Update, user: User):
 
 
 @command_handler(
-    min_permission=AdminType.NOT_ADMIN,
+    min_permission=AdminType.FULL,
     allow_private=False,
     allow_group=True
 )
