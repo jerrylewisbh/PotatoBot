@@ -56,10 +56,19 @@ def generate_user_markup(user_id: int = None):
 
 
 def generate_top_markup():
-    buttons = [[KeyboardButton(TOP_COMMAND_ATTACK), KeyboardButton(TOP_COMMAND_DEFENCE),
-                KeyboardButton(TOP_COMMAND_EXP),
-                KeyboardButton(TOP_COMMAND_BATTLES)],
-               [KeyboardButton(USER_COMMAND_BACK)]]
+    row1 = [
+        KeyboardButton(TOP_COMMAND_ATTACK), KeyboardButton(TOP_COMMAND_DEFENCE),
+        KeyboardButton(TOP_COMMAND_EXP),
+        KeyboardButton(TOP_COMMAND_BATTLES)
+    ]
+    row2 = [
+        #KeyboardButton(TOP_COMMAND_CLASS)
+    ]
+    row3 = [
+        KeyboardButton(USER_COMMAND_BACK)
+    ]
+    buttons = [row1, row3]
+
     return ReplyKeyboardMarkup(buttons, True)
 
 
@@ -86,9 +95,20 @@ def generate_squad_markup(is_group_admin=False, in_squad=False):
     if is_group_admin:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ATTENDANCE), KeyboardButton(ADMIN_COMMAND_REPORTS)])
         buttons.append([KeyboardButton(ADMIN_COMMAND_SQUAD_LIST), KeyboardButton(ADMIN_COMMAND_RECRUIT)])
-        buttons.append([KeyboardButton(ADMIN_COMMAND_FIRE_UP), KeyboardButton(USER_COMMAND_SQUAD_LEAVE)])
+        buttons.append(
+            [
+                KeyboardButton(ADMIN_COMMAND_FIRE_UP),
+                KeyboardButton(USER_COMMAND_SQUAD_LEAVE),
+                KeyboardButton(TOP_COMMAND_SQUAD),
+            ]
+        )
     elif in_squad:
-        buttons = [[KeyboardButton(USER_COMMAND_SQUAD_LEAVE)]]
+        buttons = [
+            [
+                KeyboardButton(USER_COMMAND_SQUAD_LEAVE),
+                KeyboardButton(TOP_COMMAND_SQUAD),
+            ]
+        ]
     else:
         buttons = [[KeyboardButton(USER_COMMAND_SQUAD_REQUEST)]]
     buttons.append([KeyboardButton(USER_COMMAND_BACK)])

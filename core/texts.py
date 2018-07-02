@@ -403,6 +403,7 @@ MSG_TOP_GLOBAL_BUILDERS = '⚒Top Builders:\n'
 MSG_TOP_WEEK_BUILDERS = '👷Top builders of the week:\n'
 MSG_TOP_WEEK_WARRIORS = '⛳️Top battle attendance:\n\n'
 MSG_TOP_WEEK_WARRIORS_SQUAD = '⛳️Reports sent on the past 7 days for {}:\n\n'
+MSG_TOP_SQUAD = '<b>Squad TOP:</b>\n'
 
 MSG_UPDATE_PROFILE = 'Send me a new profile (🏅 command "/hero"), or you might be kicked off.'
 MSG_SQUAD_DELETE_OUTDATED = 'You were kicked from the squad for not updating your profile for a long time.'

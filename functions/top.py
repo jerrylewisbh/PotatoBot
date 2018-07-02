@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime, timedelta
 
-from sqlalchemy import func, tuple_, collate
+from sqlalchemy import func, tuple_, collate, outerjoin
 from sqlalchemy import text as text_
-from telegram import Bot, Update
+from telegram import Bot, Update, ParseMode
 
 from config import CASTLE
 from core.decorators import command_handler
@@ -30,37 +30,38 @@ def top_about(bot: Bot, update: Update, user: User):
     )
 
 
-def get_top(condition, header, field_name, icon, user_id, additional_filter=text_('')):
+def get_top(condition, header, field_name, icon, user, filter_by_squad=False):
     newest_profiles = Session.query(
         Character.user_id,
         func.max(Character.date)
     ).group_by(Character.user_id).all()
 
-    if CASTLE:
-        # Remove all accounts where we have one non ptt castle occurence...
-        logging.debug("get_top: Filter by castle")
+    # Remove all accounts where we have one non ptt castle occurence...
+    logging.debug("get_top: Filter by castle")
+    if filter_by_squad:
         characters = Session.query(Character).filter(
             tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
             Character.date > datetime.now() - timedelta(days=7),
             Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
-            additional_filter
-        ).order_by(condition).all()
+            Squad.chat_id == user.member.squad.chat_id,
+            SquadMember.approved == True
+        ).join(User).join(SquadMember).join(Squad).order_by(condition).all()
     else:
         characters = Session.query(Character).filter(
             tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
             Character.date > datetime.now() - timedelta(days=7),
-            additional_filter
-        ).order_by(condition).all()
+            Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci')
+        ).join(User).order_by(condition).all()
 
     text = header
     str_format = MSG_TOP_FORMAT
     for i in range(min(10, len(characters))):
         text += str_format.format(i + 1, characters[i].name, characters[i].level,
                                   getattr(characters[i], field_name), icon)
-    if user_id in [character.user_id for character in characters]:
-        if user_id not in [character.user_id for character in characters[:10]]:
+    if user.id in [character.user_id for character in characters]:
+        if user.id not in [character.user_id for character in characters[:10]]:
             for i in range(10, len(characters)):
-                if characters[i].user_id == user_id:
+                if characters[i].user_id == user.id:
                     text += '...\n'
                     text += str_format.format(i, characters[i - 1].name, characters[i - 1].level,
                                               getattr(characters[i - 1], field_name), icon)
@@ -72,10 +73,61 @@ def get_top(condition, header, field_name, icon, user_id, additional_filter=text
                     break
     return text
 
+@command_handler()
+def squad_top(bot: Bot, update: Update, user: User):
+    text_atk = get_top(
+        Character.attack.desc(),
+        MSG_TOP_ATTACK,
+        'attack',
+        '⚔',
+        user,
+        filter_by_squad=True
+    )
+    text_def  = get_top(
+        Character.defence.desc(),
+        MSG_TOP_DEFENCE,
+        'defence',
+        '🛡',
+        user,
+        filter_by_squad=True,
+    )
+    text_exp = get_top(
+        Character.exp.desc(),
+        MSG_TOP_EXPERIENCE,
+        'exp',
+        '🔥',
+        user,
+        filter_by_squad=True,
+    )
+
+    # Battle stats for squad
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
+        group_by(Character.user_id)
+    actual_profiles = actual_profiles.all()
+    today = datetime.today().date()
+    battles = Session.query(Character, func.count(Report.user_id)).filter(
+        tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in actual_profiles]),
+        Character.date > datetime.now() - timedelta(days=7),
+        Squad.chat_id == user.member.squad.chat_id,
+        SquadMember.approved == True
+    ).outerjoin(Report, Report.user_id == Character.user_id).join(User).join(SquadMember).filter(
+        Report.date > today - timedelta(days=today.weekday())
+    ).filter(Report.earned_exp > 0).group_by(Character).order_by(func.count(Report.user_id).desc())
+
+    battles = battles.filter(Character.castle == CASTLE).all()
+    user_id = user.id
+    text_battle = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⛳️')
+
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=MSG_TOP_SQUAD + "\n" + text_atk + "\n" + text_def + "\n" + text_exp + "\n" + text_battle,
+        parse_mode=ParseMode.HTML,
+    )
 
 @command_handler()
 def attack_top(bot: Bot, update: Update, user: User):
-    text = get_top(Character.attack.desc(), MSG_TOP_ATTACK, 'attack', '⚔', update.message.from_user.id)
+    text = get_top(Character.attack.desc(), MSG_TOP_ATTACK, 'attack', '⚔', user)
     send_async(
         bot,
         chat_id=update.message.chat.id,
@@ -85,7 +137,7 @@ def attack_top(bot: Bot, update: Update, user: User):
 
 @command_handler()
 def def_top(bot: Bot, update: Update, user: User):
-    text = get_top(Character.defence.desc(), MSG_TOP_DEFENCE, 'defence', '🛡', update.message.from_user.id)
+    text = get_top(Character.defence.desc(), MSG_TOP_DEFENCE, 'defence', '🛡', user)
     send_async(
         bot,
         chat_id=update.message.chat.id,
@@ -95,7 +147,7 @@ def def_top(bot: Bot, update: Update, user: User):
 
 @command_handler()
 def exp_top(bot: Bot, update: Update, user: User):
-    text = get_top(Character.exp.desc(), MSG_TOP_EXPERIENCE, 'exp', '🔥', update.message.from_user.id)
+    text = get_top(Character.exp.desc(), MSG_TOP_EXPERIENCE, 'exp', '🔥', user)
     send_async(
         bot,
         chat_id=update.message.chat.id,
@@ -290,6 +342,7 @@ def week_battle_top(bot: Bot, update: Update, user: User):
     elif update.callback_query:
         bot.editMessageText(text, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                             reply_markup=markup)
+
 
 
 @command_handler()
