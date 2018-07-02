@@ -11,7 +11,7 @@ from telegram.error import Unauthorized
 from telegram.ext import messagequeue as mq
 
 from core.types import Session, User
-from functions.common import disable_api_functions
+from functions.user import disable_api_functions
 
 
 class MQBot(telegram.bot.Bot):

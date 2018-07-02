@@ -1,10 +1,7 @@
-import telegram
-from telegram import Bot
-from telegram.error import TelegramError
 from telegram.ext.dispatcher import run_async
 
 from core.bot import MQBot
-from core.types import Group, Session, User
+from core.types import Group, Session
 
 Session()
 
@@ -12,39 +9,6 @@ Session()
 @run_async
 def send_async(bot: MQBot, *args, **kwargs):
     return bot.send_message(*args, **kwargs)
-
-def create_or_update_user(telegram_user: telegram.User) -> User:
-    """
-
-    :type telegram_user: object
-    :rtype: User
-    """
-    if not telegram_user:
-        return None
-    user = Session.query(User).filter_by(id=telegram_user.id).first()
-    if not user:
-        user = User(
-            id=telegram_user.id,
-            username=telegram_user.username or '',
-            first_name=telegram_user.first_name or '',
-            last_name=telegram_user.last_name or ''
-        )
-        Session.add(user)
-    else:
-        updated = False
-        if user.username != telegram_user.username:
-            user.username = telegram_user.username
-            updated = True
-        if user.first_name != telegram_user.first_name:
-            user.first_name = telegram_user.first_name
-            updated = True
-        if user.last_name != telegram_user.last_name:
-            user.last_name = telegram_user.last_name
-            updated = True
-        if updated:
-            Session.add(user)
-    Session.commit()
-    return user
 
 
 def update_group(grp):

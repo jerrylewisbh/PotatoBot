@@ -9,6 +9,7 @@ from functions.common import stock_compare_text, stock_split, __ban_traitor
 from functions.profile.util import *
 from functions.profile.util import __send_user_with_settings
 from functions.reply_markup import generate_user_markup
+from functions.user import send_settings
 
 p = Publisher()
 

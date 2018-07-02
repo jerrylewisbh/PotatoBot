@@ -13,11 +13,10 @@ from core.state import GameState, get_game_state
 from core.texts import *
 from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_YOU_BANNED, MSG_BAN_COMPLETE, \
     MSG_USER_UNKNOWN, MSG_REASON_TRAITOR, MSG_YOU_UNBANNED, MSG_USER_UNBANNED, MSG_USER_NOT_BANNED
-from core.types import Admin, AdminType, Stock, User, Session, Item, Ban, SquadMember, Squad, UserExchangeOrder, \
-    UserStockHideSetting, Group, new_item
+from core.types import Admin, AdminType, Stock, User, Session, Item, Ban, SquadMember, Squad, Group, new_item
 from core.utils import send_async
+from functions.user import disable_api_functions
 from functions.reply_markup import (generate_admin_markup)
-from functions.triggers import trigger_decorator
 
 Session()
 
@@ -382,20 +381,6 @@ def __ban_traitor(bot: Bot, user_id: int):
         squads = Session.query(Squad).all()
 
         #send_async(bot, chat_id=GOVERNMENT_CHAT, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
-
-
-def disable_api_functions(user):
-    logging.info("Disabling API functions for user_id='%s'", user.id)
-    # Disable API settings but keep his api credentials until user revokes them herself/himself.
-    user.setting_automated_sniping = False
-    user.setting_automated_hiding = False
-    user.setting_automated_report = False
-    user.setting_automated_deal_report = False
-    # Remove all his settings...
-    Session.query(UserExchangeOrder).filter(UserExchangeOrder.user_id == user.id).delete()
-    Session.query(UserStockHideSetting).filter(UserStockHideSetting.user_id == user.id).delete()
-    Session.add(user)
-    Session.commit()
 
 
 @command_handler(

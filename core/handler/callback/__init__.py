@@ -6,7 +6,7 @@ from telegram.ext import run_async, JobQueue
 from core.decorators import command_handler
 from core.texts import MSG_TOP_GENERATING
 from core.types import User
-from core.utils import update_group, create_or_update_user
+from core.utils import update_group
 from functions.admins import delete_admin
 from functions.inline_markup import QueryType
 from functions.order_groups import group_info, order_group, order_group_manage, order_group_tirgger_chat, \
@@ -20,7 +20,8 @@ from functions.squad import group_list, inline_list_squad_members, squad_leave, 
     inline_squad_delete, other_report, leave_squad, squad_leave_no
 from functions.top import global_build_top, week_build_top, global_squad_build_top, week_squad_build_top, \
     global_battle_top, week_battle_top
-from functions.user import disable_api, toggle_report, toggle_deal_report, toggle_gold_hiding, toggle_sniping
+from functions.user import disable_api, toggle_report, toggle_deal_report, toggle_gold_hiding, toggle_sniping, \
+    create_or_update_user
 
 
 @run_async

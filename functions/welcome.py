@@ -8,7 +8,8 @@ from core.decorators import command_handler
 from core.template import fill_template
 from core.texts import *
 from core.types import Admin, AdminType, Session, WelcomeMsg, Wellcomed, User
-from core.utils import create_or_update_user, send_async, update_group
+from core.utils import send_async, update_group
+from functions.user import create_or_update_user
 
 last_welcome = 0
 

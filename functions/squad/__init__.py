@@ -17,7 +17,7 @@ from core.texts import MSG_GO_AWAY, MSG_SQUAD_REQUEST_DECLINED, MSG_SQUAD_ADD_AC
 from core.types import (Admin, AdminType, Character, Group, Report, Session,
                         Squad, SquadMember, User)
 from core.utils import send_async
-from functions.common import disable_api_functions
+from functions.user import disable_api_functions
 from functions.inline_markup import generate_squad_list, generate_leave_squad, generate_squad_request, generate_yes_no, \
     generate_fire_up, generate_other_reports, generate_squad_request_answer, generate_squad_invite_answer, QueryType, \
     generate_squad_members

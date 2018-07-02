@@ -2,7 +2,7 @@ import logging
 
 from telegram.ext import CommandHandler, Dispatcher
 
-from core.battle import call_ready_to_battle_result
+from functions.battle import call_ready_to_battle_result
 from functions.admins import (del_admin, del_global_admin, get_log,
                               list_admins, set_admin, set_global_admin,
                               set_super_admin)

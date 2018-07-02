@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from telegram import Bot, Update
 
 from core.types import AdminType, Session, check_admin, check_ban, log
-from core.utils import create_or_update_user
+from functions.user import create_or_update_user
 
 Session()
 

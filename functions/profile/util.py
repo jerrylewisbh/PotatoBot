@@ -15,8 +15,7 @@ from core.types import (BuildReport, Character, Equip, Item, Profession,
                         Report, Session, Stock, User, new_item)
 from core.utils import send_async
 from functions.common import StockType, __ban_traitor, __get_item_worth
-from functions.inline_markup import (generate_profile_buttons,
-                                     generate_settings_buttons)
+from functions.inline_markup import (generate_profile_buttons)
 
 
 class BuildType(Enum):
@@ -329,49 +328,6 @@ def __send_user_with_settings(bot: Bot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
 
 
-def send_settings(bot, update, user):
-    automated_report = MSG_NEEDS_API_ACCESS
-    if user.api_token and user.is_api_profile_allowed:
-        automated_report = user.setting_automated_report
-
-    automated_deal_report = MSG_NEEDS_API_ACCESS
-    if user.api_token and user.is_api_stock_allowed:
-        automated_deal_report = user.setting_automated_deal_report
-
-    automated_sniping = MSG_NEEDS_TRADE_ACCESS
-    if user.api_token and user.is_api_trade_allowed:
-        automated_sniping =  user.setting_automated_sniping
-
-    automated_hiding = MSG_NEEDS_TRADE_ACCESS
-    if user.api_token and user.is_api_trade_allowed:
-        automated_hiding = user.setting_automated_hiding
-
-    msg = MSG_SETTINGS_INFO.format(
-        automated_report,
-        automated_deal_report,
-        automated_sniping,
-        automated_hiding,
-        user.stock.date if user.stock else "Unknown",
-        user.character.date if user.character else "Unknown",
-    )
-
-    if update.callback_query:
-        bot.editMessageText(
-            text=msg,
-            chat_id=user.id,
-            message_id=update.callback_query.message.message_id,
-            reply_markup=generate_settings_buttons(user),
-            parse_mode=ParseMode.HTML
-        )
-    else:
-        bot.send_message(
-            text=msg,
-            chat_id=user.id,
-            reply_markup=generate_settings_buttons(user),
-            parse_mode=ParseMode.HTML
-        )
-
-
 def format_report(report: Report) -> str:
     """ Return a formatted battle report. """
 
@@ -463,4 +419,5 @@ def annotate_stock_with_price(bot: Bot, stock: str):
     stock_text += MSG_STOCK_OVERALL_PRICE.format(overall_worth)
 
     return stock_text
+
 

@@ -6,7 +6,7 @@ from sqlalchemy import or_
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from functions.common import disable_api_functions
+from functions.user import disable_api_functions
 from core.types import Ban, Session, User, SquadMember
 
 Session()

@@ -12,8 +12,8 @@ from telegram.ext import MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
 from telegram.utils.request import Request
 
-from config import DEBUG, LOGFILE, TOKEN, FWD_CHANNEL, CWBOT_ID, LOG_GROUP_LEVEL, LOG_GROUP, LOG_LEVEL
-from core.battle import report_after_battle, ready_to_battle_result, refresh_api_users, fresh_profiles, ready_to_battle
+from config import DEBUG, LOGFILE, TOKEN, CWBOT_ID, LOG_GROUP_LEVEL, LOG_GROUP, LOG_LEVEL
+from functions.battle import report_after_battle, ready_to_battle_result, refresh_api_users, fresh_profiles, ready_to_battle
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler import buttons, chats
@@ -28,7 +28,6 @@ from core.texts import *
 from core.logging import TelegramHandler, HtmlFormatter
 from core.state import GameState, get_game_state
 from core.types import Admin, Session, Squad, User
-from core.utils import create_or_update_user
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler
 from cwmq.handler.digest import digest_handler
