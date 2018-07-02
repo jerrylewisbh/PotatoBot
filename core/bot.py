@@ -10,6 +10,9 @@ import telegram.bot
 from telegram.error import Unauthorized
 from telegram.ext import messagequeue as mq
 
+from core.types import Session, User
+from functions.common import disable_api_functions
+
 
 class MQBot(telegram.bot.Bot):
     '''A subclass of Bot which delegates send method handling to MQ'''
@@ -40,8 +43,16 @@ class MQBot(telegram.bot.Bot):
             return super(MQBot, self).send_message(*args, **kwargs)
         except Unauthorized as ex:
             if "chat_id" in kwargs:
-                logging.warning(
-                    "Unauthorized occurred: %s. We should probably remove user user_id='%s' from bot.",
+                user = Session.query(User).filter(User.id == kwargs['chat_id']).first()
+                if user:
+                    logging.info(
+                        "Unauthorized for user_id='%s'. Disabling API settings so that we don't contact the user in the future",
+                        user.id
+                    )
+                    disable_api_functions(user)
+                else:
+                    logging.warning(
+                    "Unauthorized occurred: %s. We should probably chat_id='%s' from bot.",
                     ex.message,
                     kwargs['chat_id'],
                     exc_info=True

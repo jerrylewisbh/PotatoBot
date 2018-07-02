@@ -47,7 +47,7 @@ def error_callback(bot: Bot, update, error, **kwargs):
                     "Unauthorized for user_id='%s'. Disabling API settings so that we don't contact the user in the future",
                     user.id
                 )
-                __disable_api_functions(user)
+                disable_api_functions(user)
             else:
                 logging.warning(
                     "Unauthorized occurred: %s. We should probably remove user chat_id='%s' from bot.",
@@ -370,7 +370,7 @@ def __ban_traitor(bot: Bot, user_id: int):
             except TelegramError as err:
                 bot.logger.error(err.message)
 
-        __disable_api_functions(user)
+        disable_api_functions(user)
 
         admins = Session.query(Admin).filter_by(user_id=user.id).all()
         # for admin in admins:
@@ -384,7 +384,7 @@ def __ban_traitor(bot: Bot, user_id: int):
         #send_async(bot, chat_id=GOVERNMENT_CHAT, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
 
 
-def __disable_api_functions(user):
+def disable_api_functions(user):
     logging.info("Disabling API functions for user_id='%s'", user.id)
     # Disable API settings but keep his api credentials until user revokes them herself/himself.
     user.setting_automated_sniping = False
