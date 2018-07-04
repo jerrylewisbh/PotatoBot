@@ -7,7 +7,7 @@ from sqlalchemy import func
 from telegram import Bot, ParseMode, Update, TelegramError
 from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated
 
-from config import CWBOT_ID, REDIS_SERVER, REDIS_PORT
+from config import CWBOT_ID, REDIS_SERVER, REDIS_PORT, LOG_ALLOWED_RECIPIENTS, LOGFILE
 from core.decorators import command_handler
 from core.state import GameState, get_game_state
 from core.texts import *
@@ -15,7 +15,7 @@ from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_Y
     MSG_USER_UNKNOWN, MSG_REASON_TRAITOR, MSG_YOU_UNBANNED, MSG_USER_UNBANNED, MSG_USER_NOT_BANNED
 from core.types import Admin, AdminType, Stock, User, Session, Item, Ban, SquadMember, Squad, Group, new_item
 from core.utils import send_async
-from functions.user import disable_api_functions
+from functions.user.util import disable_api_functions
 from functions.reply_markup import (generate_admin_markup)
 
 Session()
@@ -197,7 +197,7 @@ def stock_split(old_stock, new_stock):
         resource[1] = resource[1][:-1]
         resources_new[resource[0]] = int(resource[1])
 
-    return (resources_old, resources_new)
+    return resources_old, resources_new
 
 
 def __get_item(item_name):
@@ -219,7 +219,7 @@ def stock_compare_text(old_stock, new_stock):
                     hits += 1
                     if item.tradable and gain_worth:
                         running_total += (gain_worth * val)
-                        msg += MSG_STOCK_COMPARE_W_PRICE.format(key, gain_worth, val, (gain_worth * val))
+                        msg += MSG_STOCK_COMPARE_W_PRICE.format(key, val, gain_worth, (gain_worth * val))
                     else:
                         msg += MSG_STOCK_COMPARE_WO_PRICE.format(key, val)
         if hits == 0:
@@ -235,7 +235,7 @@ def stock_compare_text(old_stock, new_stock):
                     loss_worth = __get_item_worth(item.name)
                     if item.tradable and loss_worth:
                         running_total += (loss_worth * val)
-                        msg += MSG_STOCK_COMPARE_W_PRICE.format(key, loss_worth, val, (loss_worth * val))
+                        msg += MSG_STOCK_COMPARE_W_PRICE.format(key, val, loss_worth, (loss_worth * val))
                     else:
                         msg += MSG_STOCK_COMPARE_WO_PRICE.format(key, val)
         if hits == 0:
@@ -410,3 +410,19 @@ def __get_item_worth(item_name):
     if item_prices:
         return int(min(item_prices))
     return None
+
+
+@command_handler()
+def get_log(bot: Bot, update: Update, user: User):
+    if update.message.from_user.id not in LOG_ALLOWED_RECIPIENTS:
+        logging.warning("User %s tried to request logs and is not allowed to!", update.message.from_user.id)
+        return
+
+    logging.info("User %s requrested logs", update.message.from_user.id)
+    if update.message.chat.type == 'private':
+        with open(LOGFILE, 'rb') as file:
+            bot.send_document(
+                chat_id=update.message.chat.id,
+                document=file,
+                timeout=120 # Logs can be big, so use a bigger timeout...
+            )

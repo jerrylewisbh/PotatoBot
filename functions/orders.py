@@ -1,19 +1,22 @@
+import json
 import logging
 from datetime import datetime, timedelta
 from json import loads
 
-from telegram import Bot, Update, TelegramError, ReplyMarkup
+from telegram import Bot, Update, TelegramError, ReplyMarkup, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import run_async, JobQueue, Job
 
+from config import CASTLE
 from core.decorators import command_handler
 from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Icons, Castle
 from core.texts import *
 from core.texts import MSG_ORDER_CLEARED_BY_HEADER, MSG_EMPTY, MSG_ORDER_SENT, MSG_ORDER_SEND_HEADER, MSG_ORDER_CLEARED, \
-    MSG_ORDER_CLEARED_ERROR
+    MSG_ORDER_CLEARED_ERROR, MSG_ORDER_ACCEPT, MSG_ORDER_FORWARD, MSG_ORDER_PIN, MSG_ORDER_NO_PIN, MSG_ORDER_BUTTON, \
+    MSG_ORDER_NO_BUTTON
 from core.types import Admin, AdminType, MessageType, Session, User, Order, OrderGroup, Squad, SquadMember, OrderCleared
 from core.utils import send_async
-from functions.inline_markup import generate_order_groups_markup, generate_flag_orders, generate_ok_markup, \
-    generate_forward_markup, generate_order_chats_markup
+from functions.inline_markup import QueryType
+from functions.order_groups import generate_order_groups_markup
 
 Session()
 
@@ -379,3 +382,96 @@ def update_confirmed(bot: Bot, job: Job):
     for confirm in confirmed:
         msg += str(confirm.user) + '\n'
     bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
+
+
+def generate_flag_orders():
+    flag_btns = [InlineKeyboardButton(Castle.BLACK.value, callback_data=json.dumps(
+        {'t': QueryType.OrderGroup.value, 'txt': Castle.BLACK.value})),
+        InlineKeyboardButton(Castle.WHITE.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.WHITE.value})),
+        InlineKeyboardButton(Castle.BLUE.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.BLUE.value})),
+        InlineKeyboardButton(Castle.YELLOW.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.YELLOW.value})),
+        InlineKeyboardButton(Castle.RED.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.RED.value})),
+        InlineKeyboardButton(Castle.DUSK.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.DUSK.value})),
+        InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
+            {'t': QueryType.OrderGroup.value, 'txt': Castle.MINT.value})),
+        # InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
+        #     {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
+        # InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
+        #     {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value})),
+        # InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
+        #     {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))
+    ]
+    btns = []
+    i = 0
+    for btn in flag_btns:
+        if CASTLE:
+            if btn.text == CASTLE:
+                continue
+        if i % 3 == 0:
+            btns.append([])
+        btns[-1].append(btn)
+        i += 1
+
+    if CASTLE:
+        btns.append([])
+        for btn in flag_btns:
+            if btn.text == CASTLE:
+                btns[-1].append(btn)
+
+    inline_markup = InlineKeyboardMarkup(btns)
+    return inline_markup
+
+
+def generate_ok_markup(order_id, count, forward=False, order=''):
+
+    buttons = [[InlineKeyboardButton(MSG_ORDER_ACCEPT.format(count),
+                                     callback_data=json.dumps(
+        {'t': QueryType.OrderOk.value, 'id': order_id}))]]
+    if forward:
+        buttons.append([InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order)])
+    inline_markup = InlineKeyboardMarkup(buttons)
+    return inline_markup
+
+
+def generate_forward_markup(order_id, count):
+    inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order_id)]])
+    return inline_markup
+
+
+def generate_order_chats_markup(pin=True, btn=True):
+    squads = Session.query(Squad).all()
+    inline_keys = []
+    for squad in squads:
+        inline_keys.append([
+            InlineKeyboardButton(
+                squad.squad_name,
+                callback_data=json.dumps(
+                    {'t': QueryType.Order.value, 'g': False, 'id': squad.chat_id}
+                ))
+        ])
+
+    inline_keys.append([
+        InlineKeyboardButton(
+            MSG_ORDER_PIN if pin else MSG_ORDER_NO_PIN,
+            callback_data=json.dumps(
+                {'t': QueryType.TriggerOrderPin.value, 'g': False}
+            )
+        )
+    ])
+
+    inline_keys.append([
+        InlineKeyboardButton(
+            MSG_ORDER_BUTTON if btn else MSG_ORDER_NO_BUTTON,
+            callback_data=json.dumps(
+                {'t': QueryType.TriggerOrderButton.value, 'g': False}
+            )
+        )
+    ])
+
+    inline_markup = InlineKeyboardMarkup(inline_keys)
+    return inline_markup

@@ -139,11 +139,11 @@ def __handle_snipes(user, data, channel, method, dispatcher):
         )
 
         # Send me copies for testing and debugging
-        DBG_PREPEND = "For '@{}': ".format(user.username or "<<emptyusername>>")
+        dbg_prepend = "For '@{}': ".format(user.username or "<<emptyusername>>")
         if CC_EXCHANGE_ORDERS:
             dispatcher.bot.send_message(
                 CC_EXCHANGE_ORDERS,
-                DBG_PREPEND + SNIPED_ITEM.format(data['item'],
+                dbg_prepend + SNIPED_ITEM.format(data['item'],
                                                  (data['price'] * data['qty']),
                                                  data['qty'],
                                                  data['price'],

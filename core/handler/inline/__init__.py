@@ -21,7 +21,7 @@ def inlinequery(bot, update):
                                                          or query.startswith(TACTICTS_COMMAND_PREFIX)
                                             else "ATTACK ") + query,
                                      input_message_content=InputTextMessageContent(query))]
-    elif query.startswith("withdraw ") or query.startswith ("deposit "):
+    elif query.startswith("withdraw ") or query.startswith("deposit "):
         withdraw_requests = generate_gstock_requests(query)
         if withdraw_requests:
             for entry in withdraw_requests:

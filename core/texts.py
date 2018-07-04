@@ -167,8 +167,6 @@ MSG_STOCK_COMPARE_WO_PRICE = '{} ({})\n'
 MSG_STOCK_COMPARE_WAIT = 'Waiting for data to compare...'
 MSG_STOCK_PRICE = "{} <i>({} x {} = {}💰)</i>\n"
 MSG_STOCK_OVERALL_PRICE = "\nEstimated overall worth: {}💰\n"
-MSG_STOCK_OVERALL_PRICE = "\nEstimated overall worth: {}💰\n"
-
 
 MSG_PERSONAL_SITE_LINK = 'Your personal link: {}'
 
@@ -326,7 +324,7 @@ MSG_SQUAD_SILENCE_DISABLED = 'Battle silence disabled'
 MSG_SQUAD_REMINDERS_ENABLED = 'This squad will automatically be reminded of battles and reports, lazy captain'
 MSG_SQUAD_REMINDERS_DISABLED = 'This squad will NOT be automatically reminded of battles and reports, do not let them forget 👀'
 
-MSG_SQUAD_ALREADY_DELETED = 'This user is already expelled from the squad, this button no longer works=('
+MSG_SQUAD_ALREADY_DELETED = 'This user is already expelled from the squad, this button no longer works.'
 MSG_SQUAD_LEVEL_TOO_LOW = 'This squad takes soldiers at level {} and above. Come back when you get pumped!'
 
 MSG_TRIGGER_NEW = 'The trigger for the phrase "{}" is set.'
@@ -363,10 +361,10 @@ MSG_WANTS_TO_JOIN = '\n\nWants to join {}'
 MSG_CLEARED = 'Done'
 
 MSG_SQUAD_LIST = 'List of your squads:'
-MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter this squad. \
+MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter a squad. \
 Exit the current squad or cancel the request to create a new one. '
 MSG_SQUAD_REQUEST = 'Here are the requests you have received:'
-MSG_SQUAD_LEAVED = '{} left the squad {} 😰'
+MSG_SQUAD_LEFT = '{} left the squad {} 😰'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
 MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. ' \
@@ -396,11 +394,19 @@ MSG_SQUAD_NONE = 'You are currently not a member of any squad. Select "⚜Join S
 
 MSG_TOP_FORMAT = '{}. {} (Level {}) - {}{}\n'
 MSG_SQUAD_TOP_FORMAT = '{}. {} ({}👥) - {}{} ({}{}/👤)\n'
-MSG_TOP_DEFENCE = '🛡Top Defenders:\n'
-MSG_TOP_ATTACK = '⚔Тop attackers:\n'
-MSG_TOP_EXPERIENCE = '🔥Top XP:\n'
-MSG_TOP_GLOBAL_BUILDERS = '⚒Top Builders:\n'
-MSG_TOP_WEEK_BUILDERS = '👷Top builders of the week:\n'
+
+MSG_TOP_DEFENCE = '🛡Top Defenders:\n\n'
+MSG_TOP_ATTACK = '⚔Тop Attackers:\n\n'
+MSG_TOP_EXPERIENCE = '🔥Top XP:\n\n'
+
+MSG_TOP_DEFENCE_CLASS = '🛡Top Defenders for class {}:\n\n'
+MSG_TOP_ATTACK_CLASS = '⚔Тop Attackers for class {}:\n\n'
+MSG_TOP_EXPERIENCE_CLASS = '🔥Top XP for class {}:\n\n'
+
+MSG_TOP_DEFENCE_SQUAD = '🛡Top Defenders for squad {}:\n\n'
+MSG_TOP_ATTACK_SQUAD = '⚔Тop Attackers for squad {}:\n\n'
+MSG_TOP_EXPERIENCE_SQUAD = '🔥Top XP for squad {}:\n\n'
+
 MSG_TOP_WEEK_WARRIORS = '⛳️Top battle attendance:\n\n'
 MSG_TOP_WEEK_WARRIORS_SQUAD = '⛳️Reports sent on the past 7 days for {}:\n\n'
 MSG_TOP_SQUAD = '<b>Squad TOP:</b>\n'
@@ -468,7 +474,7 @@ MSG_REPORT_SUMMARY_ROW_EMPTY = '<b>{}</b> (@{}) ❗\n'
 BTN_HERO = '🏅Hero'
 BTN_STOCK = '📦Stock'
 BTN_EQUIPMENT = '🎽Equipment'
-BTN_PROFESSIONS = '🏛Skills'
+BTN_SKILL = '🏛Skills'
 
 BTN_YES = '✅YES'
 BTN_NO = '❌NO'

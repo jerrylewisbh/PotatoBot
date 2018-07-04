@@ -1,12 +1,15 @@
-from telegram import Bot, Update
+import json
 
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from core.decorators import command_handler
 from core.enums import Icons, Castle
-from core.texts import MSG_ORDER_GROUP_LIST, MSG_ORDER_GROUP_NEW, MSG_ORDER_GROUP_CONFIG_HEADER, MSG_ORDER_SEND_HEADER
-from core.types import AdminType, OrderGroup, Session, User, OrderGroupItem, MessageType, Admin
+from core.texts import MSG_ORDER_GROUP_LIST, MSG_ORDER_GROUP_NEW, MSG_ORDER_GROUP_CONFIG_HEADER, MSG_ORDER_SEND_HEADER, \
+    MSG_GROUP_STATUS_ADMIN_FORMAT, MSG_GROUP_STATUS_DEL_ADMIN, MSG_GROUP_STATUS, MSG_ON, MSG_OFF, MSG_ORDER_GROUP_DEL, \
+    MSG_BACK, MSG_ORDER_PIN, MSG_ORDER_NO_PIN, MSG_ORDER_BUTTON, MSG_ORDER_NO_BUTTON, MSG_ORDER_TO_SQUADS, \
+    MSG_SYMBOL_ON, MSG_SYMBOL_OFF, MSG_ORDER_GROUP_ADD
+from core.types import AdminType, OrderGroup, Session, User, OrderGroupItem, MessageType, Admin, Group, Squad
 from core.utils import send_async
-from functions.inline_markup import generate_groups_manage, generate_group_manage, generate_order_groups_markup, \
-    generate_group_info
+from functions.inline_markup import QueryType
 
 Session()
 
@@ -111,3 +114,104 @@ def group_info(bot, update, user, data):
     msg, inline_markup = generate_group_info(data['id'])
     bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
                         reply_markup=inline_markup)
+
+
+def generate_group_info(group_id):
+    group = Session.query(Group).filter(Group.id == group_id).first()
+    admins = Session.query(Admin).filter(Admin.admin_group == group_id).all()
+    adm_msg = ''
+    adm_del_keys = []
+    for adm in admins:
+        user = Session.query(User).filter_by(id=adm.user_id).first()
+        adm_msg += MSG_GROUP_STATUS_ADMIN_FORMAT.\
+            format(user.id, user.username or '', user.first_name or '', user.last_name or '')
+        adm_del_keys.append([InlineKeyboardButton(MSG_GROUP_STATUS_DEL_ADMIN.
+                                                  format(user.first_name or '', user.last_name or ''),
+                                                  callback_data=json.dumps(
+                                                      {'t': QueryType.DelAdm.value, 'uid': user.id,
+                                                       'gid': group_id}))])
+    msg = MSG_GROUP_STATUS.format(group.title,
+                                  adm_msg,
+                                  MSG_ON if group.welcome_enabled else MSG_OFF,
+                                  MSG_ON if group.allow_trigger_all else MSG_OFF,
+                                  MSG_ON if len(group.squad) and group.squad[0].thorns_enabled else MSG_OFF)
+
+    adm_del_keys.append(
+        [InlineKeyboardButton(MSG_ORDER_GROUP_DEL, callback_data=json.dumps(
+        {'t': QueryType.GroupDelete.value, 'gid': group_id}))])
+
+    adm_del_keys.append(
+        [InlineKeyboardButton(MSG_BACK, callback_data=create_callback("foo"))]
+    )
+    inline_markup = InlineKeyboardMarkup(adm_del_keys)
+    return msg, inline_markup
+
+
+def generate_order_groups_markup(admin_user: list=None, pin: bool=True, btn=True):
+    if admin_user:
+        group_adm = True
+        for adm in admin_user:
+            if adm.admin_type < AdminType.GROUP.value:
+                group_adm = False
+                break
+        if group_adm:
+            inline_keys = []
+            for adm in admin_user:
+                group = Session.query(Group).filter_by(id=adm.admin_group, bot_in_group=True).first()
+                if group:
+                    inline_keys.append([InlineKeyboardButton(group.title, callback_data=json.dumps(
+                        {'t': QueryType.Order.value, 'g': False, 'id': group.id}))])
+            inline_keys.append(
+                [InlineKeyboardButton(MSG_ORDER_PIN if pin else MSG_ORDER_NO_PIN, callback_data=json.dumps(
+                    {'t': QueryType.TriggerOrderPin.value, 'g': True}))])
+            inline_keys.append(
+                [InlineKeyboardButton(MSG_ORDER_BUTTON if btn else MSG_ORDER_NO_BUTTON, callback_data=json.dumps(
+                    {'t': QueryType.TriggerOrderButton.value, 'g': True}))])
+            inline_markup = InlineKeyboardMarkup(inline_keys)
+            return inline_markup
+        else:
+            groups = Session.query(OrderGroup).all()
+            inline_keys = []
+            for group in groups:
+                inline_keys.append([InlineKeyboardButton(group.name, callback_data=json.dumps(
+                    {'t': QueryType.Order.value, 'g': True, 'id': group.id}))])
+            inline_keys.append([InlineKeyboardButton(MSG_ORDER_TO_SQUADS, callback_data=json.dumps(
+                {'t': QueryType.Orders.value}))])
+            inline_keys.append([InlineKeyboardButton(MSG_ORDER_PIN if pin else MSG_ORDER_NO_PIN,
+                                                     callback_data=json.dumps(
+                                                         {'t': QueryType.TriggerOrderPin.value, 'g': True}))])
+            inline_keys.append([InlineKeyboardButton(MSG_ORDER_BUTTON if btn else MSG_ORDER_NO_BUTTON,
+                                                     callback_data=json.dumps(
+                                                         {'t': QueryType.TriggerOrderButton.value, 'g': True}))])
+            inline_markup = InlineKeyboardMarkup(inline_keys)
+            return inline_markup
+
+
+def generate_group_manage(group_id):
+    squads = Session.query(Squad).all()
+    inline_keys = []
+    for squad in squads:
+        in_group = False
+        for item in squad.chat.group_items:
+            if item.group_id == group_id:
+                in_group = True
+                break
+        inline_keys.append([InlineKeyboardButton((MSG_SYMBOL_ON if in_group else MSG_SYMBOL_OFF) +
+                                                 squad.squad_name, callback_data=json.dumps(
+            {'t': QueryType.OrderGroupTriggerChat.value, 'id': group_id, 'c': squad.chat_id}))])
+    inline_keys.append([InlineKeyboardButton(MSG_ORDER_GROUP_DEL, callback_data=json.dumps(
+        {'t': QueryType.OrderGroupDelete.value, 'id': group_id}))])
+    inline_keys.append([InlineKeyboardButton(MSG_BACK, callback_data=json.dumps(
+        {'t': QueryType.OrderGroupList.value}))])
+    return InlineKeyboardMarkup(inline_keys)
+
+
+def generate_groups_manage():
+    groups = Session.query(OrderGroup).all()
+    inline_keys = []
+    for group in groups:
+        inline_keys.append([InlineKeyboardButton(group.name, callback_data=json.dumps(
+            {'t': QueryType.OrderGroupManage.value, 'id': group.id}))])
+    inline_keys.append([InlineKeyboardButton(MSG_ORDER_GROUP_ADD, callback_data=json.dumps(
+        {'t': QueryType.OrderGroupAdd.value}))])
+    return InlineKeyboardMarkup(inline_keys)

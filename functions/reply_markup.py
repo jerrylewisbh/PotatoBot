@@ -29,13 +29,10 @@ def generate_user_markup(user_id: int = None):
 
     if user and user.is_squadmember:
         # Squad only features....
-        user_menu = []
+        user_menu = [KeyboardButton(USER_COMMAND_EXCHANGE), KeyboardButton(USER_COMMAND_HIDE)]
 
         # Exchange stuff...
         # STILL IN TESTING
-        user_menu.append(KeyboardButton(USER_COMMAND_EXCHANGE))
-        user_menu.append(KeyboardButton(USER_COMMAND_HIDE))
-
 
         # Normal squad stuff...
         if not user or not user.api_token:
@@ -62,12 +59,14 @@ def generate_top_markup():
         KeyboardButton(TOP_COMMAND_BATTLES)
     ]
     row2 = [
-        #KeyboardButton(TOP_COMMAND_CLASS)
+        KeyboardButton(TOP_COMMAND_GLOBAL),
+        KeyboardButton(TOP_COMMAND_CLASS),
+        KeyboardButton(TOP_COMMAND_SQUAD),
     ]
     row3 = [
         KeyboardButton(USER_COMMAND_BACK)
     ]
-    buttons = [row1, row3]
+    buttons = [row1, row2, row3]
 
     return ReplyKeyboardMarkup(buttons, True)
 

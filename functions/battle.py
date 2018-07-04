@@ -1,33 +1,32 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
-from core.decorators import command_handler
-from functions.common import (get_weighted_diff, stock_compare_text,
-                                   stock_split)
-from functions.orders import send_order
-from functions.inline_markup import QueryType
 from sqlalchemy import and_, func, tuple_
 from sqlalchemy.exc import SQLAlchemyError
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
+from telegram import Bot, ParseMode, Update
 from telegram.error import TelegramError
 from telegram.ext import Job
 from telegram.ext.dispatcher import run_async
 
 from config import (CASTLE, DAYS_OLD_PROFILE_KICK, DAYS_PROFILE_REMIND,
                     GOVERNMENT_CHAT)
+from core.decorators import command_handler
 from core.state import get_last_battle
 from core.texts import *
 from core.types import (Admin, Character, Order, Report, Session, Squad,
                         SquadMember, User, MessageType, AdminType)
 from core.utils import send_async
 from cwmq import Publisher
+from functions.common import (get_weighted_diff, stock_compare_text,
+                              stock_split)
+from functions.orders import send_order
 from functions.profile import (format_report, get_latest_report,
                                get_stock_before_after_war)
 
 Session()
+
 
 def ready_to_battle(bot: Bot, job_queue: Job):
     try:
@@ -61,6 +60,7 @@ def ready_to_battle(bot: Bot, job_queue: Job):
 def call_ready_to_battle_result(bot: Bot, update: Update, user: User):
     ready_to_battle_result(bot, None)
 
+
 @run_async
 def ready_to_battle_result(bot: Bot, job_queue: Job):
     if not GOVERNMENT_CHAT:
@@ -82,7 +82,7 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
     try:
         squads = Session.query(Squad).all()
         now = datetime.now()
-        if (now.hour < 7):
+        if now.hour < 7:
             now = now - timedelta(days=1)
         time_from = now.replace(hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
         text = MSG_REPORT_SUMMARY_RATING.format(time_from.strftime('%d-%m-%Y %H:%M'))
@@ -236,7 +236,7 @@ def refresh_api_users(bot: Bot, job_queue: Job):
 
 def create_user_report(user: User) -> Optional[str]:
     if user.is_api_profile_allowed and user.is_api_stock_allowed and \
-            user.setting_automated_report and user.api_token:
+        user.setting_automated_report and user.api_token:
 
         logging.info("Processing report_after_battle for user_id='%s'", user.id)
 

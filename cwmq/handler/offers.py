@@ -84,9 +84,8 @@ def offers_handler(channel, method, properties, body, dispatcher):
             except BaseException:
                 pass
 
-            if data['qty'] >= order_limit:
-                quantity = order_limit
-            elif data['qty'] < order_limit:
+            quantity = order_limit
+            if data['qty'] < order_limit:
                 quantity = data['qty']
 
             # Let's try to fullfil this order

@@ -173,7 +173,7 @@ class Publisher(Thread, metaclass=Singleton):
         self.QUEUE = CW_OUT_Q
         self._url = CW_URL
 
-        #self._queue = queue.PriorityQueue()
+        # self._queue = queue.PriorityQueue()
         self._connection = None
         self._channel = None
 
@@ -264,7 +264,7 @@ class Publisher(Thread, metaclass=Singleton):
             except KeyboardInterrupt:
                 self.stop()
                 if (self._connection is not None and
-                        not self._connection.is_closed):
+                    not self._connection.is_closed):
                     # Finish closing
                     self._connection.ioloop.start()
 

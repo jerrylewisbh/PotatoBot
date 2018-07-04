@@ -93,9 +93,8 @@ def __handle_snipe_orders(digest_item, item: Item, order: UserExchangeOrder, red
         if price <= order.max_price:
             avail_qty += 1
 
-    if avail_qty >= order_limit:
-        quantity = order_limit
-    elif avail_qty < order_limit:
+    quantity = order_limit
+    if avail_qty < order_limit:
         quantity = avail_qty
 
     # Let's try to fullfil this order

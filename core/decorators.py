@@ -1,15 +1,17 @@
 import logging
 from functools import wraps
 
+import telegram
 from sqlalchemy.exc import SQLAlchemyError
 from telegram import Bot, Update
 
-from core.types import AdminType, Session, check_admin, check_ban, log
-from functions.user import create_or_update_user
+from core.types import AdminType, Session, check_admin, check_ban, log, User
 
 Session()
 
 # TODO: A lot of this can be moved out here in favor of python-telegram-command handlers and filters!
+
+# noinspection PyNestedDecorators
 def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_private: bool = True,
                     allow_group: bool = False, allow_channel: bool = False,
                     allow_banned: bool = False, squad_only: bool = False, testing_only: bool = False,
@@ -135,3 +137,37 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
             return func(bot, update, user, **kwargs)
         return wrapper
     return real_decorator
+
+
+def create_or_update_user(telegram_user: telegram.User) -> User:
+    """
+
+    :type telegram_user: object
+    :rtype: User
+    """
+    if not telegram_user:
+        return None
+    user = Session.query(User).filter_by(id=telegram_user.id).first()
+    if not user:
+        user = User(
+            id=telegram_user.id,
+            username=telegram_user.username or '',
+            first_name=telegram_user.first_name or '',
+            last_name=telegram_user.last_name or ''
+        )
+        Session.add(user)
+    else:
+        updated = False
+        if user.username != telegram_user.username:
+            user.username = telegram_user.username
+            updated = True
+        if user.first_name != telegram_user.first_name:
+            user.first_name = telegram_user.first_name
+            updated = True
+        if user.last_name != telegram_user.last_name:
+            user.last_name = telegram_user.last_name
+            updated = True
+        if updated:
+            Session.add(user)
+    Session.commit()
+    return user

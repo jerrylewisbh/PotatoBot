@@ -5,97 +5,36 @@ from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
 from ratelimitingfilter import RateLimitingFilter
-from telegram import Bot, Update
 from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
                           MessageQueue, Updater)
 from telegram.ext import MessageHandler, Filters
-from telegram.ext.dispatcher import run_async
 from telegram.utils.request import Request
 
-from config import DEBUG, LOGFILE, TOKEN, CWBOT_ID, LOG_GROUP_LEVEL, LOG_GROUP, LOG_LEVEL
-from functions.battle import report_after_battle, ready_to_battle_result, refresh_api_users, fresh_profiles, ready_to_battle
+from config import DEBUG, LOGFILE, TOKEN, LOG_GROUP_LEVEL, LOG_GROUP, LOG_LEVEL
 from core.bot import MQBot
-from core.decorators import command_handler
-from core.handler import buttons, chats
+from core.handler import buttons, chats, manage_all
 from core.handler import commands
 from core.handler.callback import callback_query
-from core.handler.inline.__init__ import (inlinequery)
+from core.handler.inline import inlinequery
+
 from core.jobs.job_queue import (add_after_war_messages,
                                  add_battle_report_messages,
                                  add_pre_war_messages,
                                  add_war_warning_messages)
-from core.texts import *
 from core.logging import TelegramHandler, HtmlFormatter
-from core.state import GameState, get_game_state
-from core.types import Admin, Session, Squad, User
+from core.texts import *
+from core.types import Session
 from cwmq import Consumer, Publisher
 from cwmq.handler.deals import deals_handler
 from cwmq.handler.digest import digest_handler
 from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
+from functions.battle import report_after_battle, ready_to_battle_result, refresh_api_users, fresh_profiles, \
+    ready_to_battle
 from functions.common import error_callback
-from functions.order_groups import add_group
-from functions.orders import order
-from functions.profile import user_panel
-from functions.quest import parse_quest
-from functions.report import fwd_report
-from functions.triggers import trigger_show
 from functions.welcome import (welcome)
 
 Session()
-
-@run_async
-@command_handler(
-    allow_channel=True,
-    allow_group=True,
-    allow_private=True
-)
-def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):#
-    if update.effective_message.chat.type == "channel":
-        fwd_report(bot, update)
-    elif update.effective_message.chat.type in ['group', 'supergroup']:
-        squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-
-        admin = Session.query(Admin).filter(
-            Admin.user_id == update.message.from_user.id and
-            Admin.admin_group in [update.message.chat.id, 0]).first()
-
-        logging.debug("SILENCE STATE: State: {}, Squad: {}, Admin: {}".format(
-            get_game_state(),
-            squad.squad_name if squad else 'NO SQUAD',
-            admin,
-        ))
-
-        if squad and squad.silence_enabled and not admin and GameState.BATTLE_SILENCE in get_game_state():
-            bot.delete_message(
-                update.message.chat.id,
-                update.message.message_id
-            )
-
-        if update.message.text:
-            trigger_show(bot, update)
-
-    elif update.effective_message.chat.type == 'private':
-        admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
-        is_admin = False
-        for _ in admin:
-            is_admin = True
-            break
-        if 'order_wait' in chat_data and chat_data['order_wait']:
-            order(bot, update, user, chat_data=chat_data)
-        elif update.message.text:
-            if update.message.forward_from and update.message.forward_from.id == CWBOT_ID:
-                parse_quest(bot, update, user)
-            elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
-                add_group(bot, update, user, chat_data=chat_data)
-            elif not is_admin:
-                user_panel(bot, update)
-            else:
-                order(bot, update, user, chat_data=chat_data)
-        elif not is_admin:
-            user_panel(bot, update)
-        else:
-            order(bot, update, user, chat_data=chat_data)
 
 def main():
     # Logging!

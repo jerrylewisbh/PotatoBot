@@ -3,11 +3,10 @@
 
 import os
 import sys
-
 import time
-from telethon import events, TelegramClient
-from telethon.tl.types import InputPeerChat, PeerChannel, InputPeerUser
-from telethon.utils import get_input_peer
+
+# noinspection PyPackageRequirements
+from telethon import TelegramClient
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 

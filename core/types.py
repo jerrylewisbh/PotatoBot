@@ -541,11 +541,11 @@ def check_admin(update, adm_type, allowed_types=()):
     if adm_type == AdminType.NOT_ADMIN:
         allowed = True
     else:
-        admins = Session().query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        admins = Session().query(Admin).filter_by(user_id=update.effective_user.id).all()
         for adm in admins:
             if (AdminType(adm.admin_type) in allowed_types or adm.admin_type <= adm_type.value) and \
-                    (adm.admin_group in [0, update.message.chat.id] or
-                     update.message.chat.id == update.message.from_user.id):
+                    (adm.admin_group in [0, update.effective_message.chat.id] or
+                     update.effective_message.chat.id == update.effective_user.id):
                 if adm.admin_group != 0:
                     group = Session().query(Group).filter_by(id=adm.admin_group).first()
                     if group and group.bot_in_group:

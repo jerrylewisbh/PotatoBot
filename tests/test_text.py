@@ -3,6 +3,7 @@ import sys
 import unittest
 from xml.parsers import expat
 
+# noinspection PyPackageRequirements
 from markdown import markdown
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

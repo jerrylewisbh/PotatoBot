@@ -4,12 +4,11 @@ from time import time
 from telegram import Bot, Update
 
 from config import ACADEM_CHAT_ID, CASTLE, CASTLE_CHAT_ID
-from core.decorators import command_handler
+from core.decorators import command_handler, create_or_update_user
 from core.template import fill_template
 from core.texts import *
 from core.types import Admin, AdminType, Session, WelcomeMsg, Wellcomed, User
 from core.utils import send_async, update_group
-from functions.user import create_or_update_user
 
 last_welcome = 0
 
@@ -42,7 +41,7 @@ def welcome(bot: Bot, update: Update):
                     welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
                     send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
 
-            elif (user is None or user.character is None or user.character.castle != CASTLE or user.member is None and not allow_anywhere and user.id != bot.id):
+            elif user is None or user.character is None or user.character.castle != CASTLE or user.member is None and not allow_anywhere and user.id != bot.id:
                 send_async(bot, chat_id=update.message.chat.id, vtext=MSG_THORNS.format("SPY"))
                 bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
                 bot.kickChatMember(update.message.chat.id, new_chat_member.id)

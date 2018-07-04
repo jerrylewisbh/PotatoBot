@@ -1,15 +1,16 @@
-from telegram.ext import Dispatcher, RegexHandler, MessageHandler
+from telegram.ext import Dispatcher, RegexHandler
 
 from core.regexp import *
 from functions.activity import *
-from functions.admins import *
 from functions.common import *
 from functions.common.pin import *
 from functions.guild.stock import withdraw
 from functions.profile import *
 from functions.report import *
-from functions.squad import *
+from functions.squad.admin import call_squad
+from functions.squad.admin.commands import open_hiring, close_hiring
 from functions.triggers import *
+from functions.user import list_admins, admins_for_users
 from functions.welcome import *
 
 CC_SET_WELCOME = 'welcome:'

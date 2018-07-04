@@ -1,21 +1,25 @@
+import json
 import logging
 import re
 from datetime import datetime, timedelta
 from enum import Enum
 
-from telegram import Bot, ParseMode, Update
+from telegram import Bot, ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import CASTLE
 from core.enums import CASTLE_MAP
+from core.handler.callback import CallbackAction
+from core.handler.callback.util import create_callback
 from core.regexp import BUILD_REPORT, HERO, PROFESSION, REPAIR_REPORT, REPORT
 from core.state import get_last_battle
 from core.template import fill_char_template
 from core.texts import *
+from core.texts import BTN_HERO, BTN_STOCK, BTN_EQUIPMENT, BTN_SKILL, MSG_BACK
 from core.types import (BuildReport, Character, Equip, Item, Profession,
                         Report, Session, Stock, User, new_item)
 from core.utils import send_async
 from functions.common import StockType, __ban_traitor, __get_item_worth
-from functions.inline_markup import (generate_profile_buttons)
+from functions.inline_markup import QueryType
 
 
 class BuildType(Enum):
@@ -316,7 +320,7 @@ def __send_user_with_settings(bot: Bot, update: Update, user: User):
             bool(user.setting_automated_sniping),
             "Temp. Suspended" if user.sniping_suspended else ""
         )
-        btns = generate_profile_buttons(user)
+        btns = __get_keyboard_profile(user)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -359,7 +363,7 @@ def format_report(report: Report) -> str:
 def get_latest_report(user_id) -> Report:
     logging.debug("get_latest_report for '%s'", user_id)
     now = datetime.now()
-    if (now.hour < 7):
+    if now.hour < 7:
         now = now - timedelta(days=1)
     time_from = now.replace(hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0, microsecond=0)
     existing_report = Session.query(Report).filter(Report.user_id == user_id, Report.date > time_from).first()
@@ -384,7 +388,7 @@ def get_stock_before_after_war(user: User) -> tuple:
         Stock.date > last_battle
     ).order_by(Stock.date.asc()).first()
 
-    return (before_battle, after_battle)
+    return before_battle, after_battle
 
 
 def annotate_stock_with_price(bot: Bot, stock: str):
@@ -421,3 +425,59 @@ def annotate_stock_with_price(bot: Bot, stock: str):
     return stock_text
 
 
+def __get_keyboard_profile(user: User, for_user: User, back_button=None):
+    inline_keys = [
+        [
+            InlineKeyboardButton(
+                BTN_HERO,
+                callback_data=create_callback(
+                    CallbackAction.HERO,
+                    user.id,
+                    profile_id=for_user.id,
+                    back_button=back_button
+                )
+            )
+        ]
+    ]
+    if for_user.stock:
+        inline_keys.append([
+            InlineKeyboardButton(
+                BTN_STOCK,
+                callback_data=create_callback(
+                    CallbackAction.HERO_STOCK,
+                    user.id,
+                    profile_id=for_user.id,
+                    back_button=back_button
+                )
+            )
+        ])
+    if for_user.equip:
+        inline_keys.append([
+            InlineKeyboardButton(
+                BTN_EQUIPMENT,
+                callback_data=create_callback(
+                    CallbackAction.HERO_EQUIP,
+                    user.id,
+                    profile_id=for_user.id,
+                    back_button=back_button
+                )
+            )
+        ])
+    if for_user.profession:
+        inline_keys.append([
+            InlineKeyboardButton(
+                BTN_SKILL,
+                callback_data=create_callback(
+                    CallbackAction.HERO_SKILL,
+                    user.id,
+                    profile_id=for_user.id,
+                    back_button=back_button
+                )
+            )
+        ])
+    if back_button:
+        inline_keys.append([
+            back_button
+        ])
+
+    return InlineKeyboardMarkup(inline_keys)

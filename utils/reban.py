@@ -4,7 +4,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from functions.user import disable_api_functions
+from functions.user.util import disable_api_functions
 from core.types import Ban, Session
 
 Session()

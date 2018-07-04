@@ -1,4 +1,4 @@
-from telegram import Bot, Update
+from telegram import Update
 from telegram.error import BadRequest, TimedOut
 
 from config import FWD_CHANNEL

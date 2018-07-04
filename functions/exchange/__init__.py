@@ -1,10 +1,7 @@
-import logging
-
 from sqlalchemy import func
 from telegram import Bot, Update, ParseMode
 
 from core.decorators import command_handler
-from core.texts import *
 from core.types import Session, Item, User
 from core.utils import send_async, pad_string
 

@@ -38,12 +38,6 @@ def update_group(grp):
     return None
 
 
-# Not used?
-# def chunks(l, n):
-#    n = max(1, n)
-#    return (l[i:i + n] for i in range(0, len(l), n))
-
-
 def pad_string(text, padding):
     """ Add whitespaces to a string to make different texts the same length for pre-formatted texts """
     if not text:

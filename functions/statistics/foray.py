@@ -1,7 +1,5 @@
 import io
 import logging
-import os
-from datetime import datetime
 
 import matplotlib.pyplot as plot
 import numpy

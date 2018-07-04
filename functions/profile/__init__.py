@@ -1,5 +1,7 @@
 from config import CWBOT_ID, EXT_ID
+from core.bot import MQBot
 from core.decorators import command_handler
+from core.handler.callback import get_callback_action
 from core.regexp import ACCESS_CODE
 from core.state import get_game_state, GameState
 from core.types import AdminType, Admin
@@ -7,9 +9,9 @@ from cwmq import Publisher, wrapper
 from functions.common import stock_compare_text, stock_split, __ban_traitor
 
 from functions.profile.util import *
-from functions.profile.util import __send_user_with_settings
+from functions.profile.util import __send_user_with_settings, __get_keyboard_profile
 from functions.reply_markup import generate_user_markup
-from functions.user import send_settings
+from functions.user.util import send_settings
 
 p = Publisher()
 
@@ -67,8 +69,8 @@ def repair_report_received(bot: Bot, update: Update, user: User):
     allow_private=True
 )
 def report_received(bot: Bot, update: Update, user: User):
-    #logging.info("Handling report for %s", user.id)
-    #if datetime.now() - update.message.forward_date > timedelta(minutes=1):
+    # logging.info("Handling report for %s", user.id)
+    # if datetime.now() - update.message.forward_date > timedelta(minutes=1):
     #    send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
     #    return
 
@@ -85,18 +87,18 @@ def report_received(bot: Bot, update: Update, user: User):
     parsed_report = parse_report_text(update.message.text)
     if parsed_report and user.character and parsed_report['name'] == user.character.name:
         date = update.message.forward_date
-        if (update.message.forward_date.hour < 7):
+        if update.message.forward_date.hour < 7:
             date = update.message.forward_date - timedelta(days=1)
 
         time_from = date.replace(hour=(int((update.message.forward_date.hour + 1) / 8)
                                        * 8 - 1 + 24) % 24, minute=0, second=0)
 
         date = update.message.forward_date
-        if (update.message.forward_date.hour == 23):
+        if update.message.forward_date.hour == 23:
             date = update.message.forward_date + timedelta(days=1)
 
         time_to = date.replace(hour=(int((update.message.forward_date.hour + 1) / 8 + 1) * 8 - 1) %
-                               24, minute=0, second=0)
+                                    24, minute=0, second=0)
 
         report = Session.query(Report).filter(
             Report.date > time_from,
@@ -184,6 +186,8 @@ def profession_update(bot: Bot, update: Update, user: User):
 
 @command_handler()
 def show_char(bot: Bot, update: Update, user: User):
+    # This is the entry point for the users Profile. Not used for character-display in squads!
+    # Refresh API if possible/configured
     if user.is_api_profile_allowed and user.is_api_stock_allowed:
         try:
             wrapper.update_stock(user)
@@ -202,20 +206,18 @@ def show_char(bot: Bot, update: Update, user: User):
     if user.character:
         char = user.character
         profession = user.profession
-        if CASTLE:
-            if char.castle == CASTLE or user.id == EXT_ID:
-                char.castle = CASTLE
-                text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
-                btns = generate_profile_buttons(user)
-                send_async(bot, chat_id=update.message.chat.id, text=text,
-                           reply_markup=btns, parse_mode=ParseMode.HTML)
-        else:
-            text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
-            btns = generate_profile_buttons(user)
-            send_async(bot, chat_id=update.message.chat.id, text=text, reply_markup=btns, parse_mode=ParseMode.HTML)
+        text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
+        btns = __get_keyboard_profile(user, user)
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            reply_markup=btns,
+            parse_mode=ParseMode.HTML
+        )
     else:
         text = MSG_NO_PROFILE_IN_BOT
-        btns = generate_profile_buttons(user)
+        btns = __get_keyboard_profile(user, user)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -476,15 +478,22 @@ def find_by_id(bot: Bot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
 
 
-def show_hero(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
-    update.callback_query.answer(text=MSG_CLEARED)
-    back = data['b'] if 'b' in data else False
+@command_handler()
+def inline_show_char(bot: MQBot, update: Update, user: User):
+    back = None
+    if not update.callback_query:
+        user_id = user.id
+    else:
+        action = get_callback_action(update.callback_query.data, user.id)
+        user_id = action.data['profile_id']
+        back = action.data['back_button'] if "back_button" in action.data else None
+
+    show_user = Session.query(User).filter_by(id=user_id).first()
 
     # We need a profile first!
-    if not user.character:
+    if not show_user.character:
         text = MSG_NO_PROFILE_IN_BOT
-        if user.api_token:
+        if show_user.api_token:
             text = MSG_API_TRY_AGAIN
 
         send_async(
@@ -498,62 +507,90 @@ def show_hero(bot, update, user, data):
     bot.editMessageText(
         fill_char_template(
             MSG_PROFILE_SHOW_FORMAT,
-            user,
-            user.character,
-            user.profession
+            show_user,
+            show_user.character,
+            show_user.profession
         ),
         update.callback_query.message.chat.id,
         update.callback_query.message.message_id,
-        reply_markup=generate_profile_buttons(user, back)
+        reply_markup=__get_keyboard_profile(user, show_user, back)
     )
 
 
-def show_skills(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
+@command_handler()
+def show_skills(bot: MQBot, update: Update, user: User):
+    back = None
+    if not update.callback_query:
+        user_id = user.id
+    else:
+        action = get_callback_action(update.callback_query.data, user.id)
+        user_id = action.data['profile_id']
+        back = action.data['back_button'] if "back_button" in action.data else None
+
+    show_user = Session.query(User).filter_by(id=user_id).first()
     update.callback_query.answer(text=MSG_CLEARED)
-    back = data['b'] if 'b' in data else False
-    bot.editMessageText('{}\n{} {}'.format(user.profession.skillList, MSG_LAST_UPDATE, user.profession.date),
-                        update.callback_query.message.chat.id,
-                        update.callback_query.message.message_id,
-                        reply_markup=generate_profile_buttons(user, back)
-                        )
+
+    bot.editMessageText(
+        '{}\n{} {}'.format(show_user.profession.skillList, MSG_LAST_UPDATE, show_user.profession.date),
+        update.callback_query.message.chat.id,
+        update.callback_query.message.message_id,
+        reply_markup=__get_keyboard_profile(user, show_user, back)
+    )
 
 
-def show_equip(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
+def show_equip(bot: MQBot, update: Update, user: User):
+    back = None
+    if not update.callback_query:
+        user_id = user.id
+    else:
+        action = get_callback_action(update.callback_query.data, user.id)
+        user_id = action.data['profile_id']
+        back = action.data['back_button'] if "back_button" in action.data else None
+
+    show_user = Session.query(User).filter_by(id=user_id).first()
     update.callback_query.answer(text=MSG_CLEARED)
-    back = data['b'] if 'b' in data else False
-    bot.editMessageText('{}\n\n{} {}'.format(user.equip.equip, MSG_LAST_UPDATE, user.equip.date),
-                        update.callback_query.message.chat.id,
-                        update.callback_query.message.message_id,
-                        reply_markup=generate_profile_buttons(user, back)
-                        )
+
+    bot.editMessageText(
+        '{}\n\n{} {}'.format(show_user.equip.equip, MSG_LAST_UPDATE, show_user.equip.date),
+        update.callback_query.message.chat.id,
+        update.callback_query.message.message_id,
+        reply_markup=__get_keyboard_profile(user, show_user, back)
+    )
 
 
-def show_stock(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
+@command_handler()
+def inline_show_stock(bot, update, user):
+    back = None
+    if not update.callback_query:
+        user_id = user.id
+    else:
+        action = get_callback_action(update.callback_query.data, user.id)
+        user_id = action.data['profile_id']
+        back = action.data['back_button'] if "back_button" in action.data else None
+
+    show_user = Session.query(User).filter_by(id=user_id).first()
     update.callback_query.answer(text=MSG_CLEARED)
-    back = data['b'] if 'b' in data else False
+
     second_newest = Session.query(Stock).filter_by(
         user_id=update.callback_query.message.chat.id,
         stock_type=StockType.Stock.value
     ).order_by(Stock.date.desc()).limit(1).offset(1).one()
-    stock_diff = stock_compare_text(second_newest.stock, user.stock.stock)
+    stock_diff = stock_compare_text(second_newest.stock, show_user.stock.stock)
 
-    stock = annotate_stock_with_price(bot, user.stock.stock)
+    stock = annotate_stock_with_price(bot, show_user.stock.stock)
 
     stock_text = "{}\n{}\n{}\n <i>{}: {}</i>".format(
         stock,
         MSG_CHANGES_SINCE_LAST_UPDATE,
         stock_diff,
         MSG_LAST_UPDATE,
-        user.stock.date.strftime("%Y-%m-%d %H:%M:%S")
+        show_user.stock.date.strftime("%Y-%m-%d %H:%M:%S")
     )
 
     bot.editMessageText(
         stock_text,
         update.callback_query.message.chat.id,
         update.callback_query.message.message_id,
-        reply_markup=generate_profile_buttons(user, back),
+        reply_markup=__get_keyboard_profile(user, show_user, back),
         parse_mode=ParseMode.HTML
     )

@@ -1,28 +1,25 @@
 import io
-import logging
-import os
-from datetime import datetime, timedelta
-from math import pi
+import pandas
+from datetime import timedelta
 
-import matplotlib.pyplot as plot
 import numpy
-import pandas as pd
+import matplotlib.pyplot as plot
 from sqlalchemy import func, tuple_
-from sqlalchemy.sql.functions import count
-from telegram import Bot, ParseMode, Update
+from telegram import Update, ParseMode
 
-from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
+from config import QUEST_LOCATION_ARENA_ID, QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID
 from core.decorators import command_handler
 from core.state import GameState
 from core.texts import *
-from core.types import (Character, Location, Profession, Session, User,
-                        UserQuest, UserQuestItem, Item)
+from core.types import *
 from core.utils import send_async
 from functions.reply_markup import generate_statistics_markup
 
 Session()
 
 plot.ioff()
+
+
 @command_handler()
 def statistic_about(bot: Bot, update: Update, user: User):
     markup = generate_statistics_markup()
@@ -32,6 +29,7 @@ def statistic_about(bot: Bot, update: Update, user: User):
         text=MSG_STATISTICS_ABOUT,
         reply_markup=markup
     )
+
 
 def get_relative_details_for_location(user: User, from_date: datetime, location: Location):
     text = ""
@@ -170,8 +168,6 @@ def __get_additional_stats_basic(from_date, location, user):
     return MSG_QUEST_BASIC_STAT.format(success_rate)
 
 
-
-
 @command_handler()
 def quest_statistic(bot: Bot, update: Update, user: User):
     logging.info("User '%s' called quest_statistic", user.id)
@@ -187,6 +183,7 @@ def quest_statistic(bot: Bot, update: Update, user: User):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=generate_statistics_markup(),
     )
+
 
 def __get_item_statistics_by_location(location: Location):
     text = "*{}:*".format(location.name)
@@ -237,8 +234,6 @@ Average loot: {:.2f}
             UserQuestItem.item_id == item.id
         ).join(UserQuestItem).group_by(UserQuest.daytime).all()
 
-
-
         for daytime in daytimes:
             text += "{}:\n".format(daytime.name)
 
@@ -285,7 +280,7 @@ def quest_statistic_old(bot: Bot, update: Update):
     stddev = []
     for stat in stats:
         while len(values) < stat[0]:
-            #logging.warning("Filling up list...")
+            # logging.warning("Filling up list...")
             values.append(float('nan'))
             stddev.append(float('nan'))
         values.append(int(stat[1]))
@@ -318,7 +313,7 @@ def quest_statistic_old(bot: Bot, update: Update):
     ax.set_xticks(ind + (width * 4) / 2)
     ax.set_xticklabels(range(1, max_level[0] + 1))
 
-    #[autolabel(ax, bar) for bar in bars]
+    # [autolabel(ax, bar) for bar in bars]
 
     with io.BytesIO() as f:
         plot.savefig(f, format='png')
@@ -365,7 +360,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
         stddev = []
         for stat in stats:
             while len(values) < stat[0]:
-                #logging.warning("Filling up list...")
+                # logging.warning("Filling up list...")
                 values.append(float('nan'))
                 stddev.append(float('nan'))
             values.append(int(stat[1]))
@@ -402,7 +397,7 @@ def quest_statistic_line_one(bot: Bot, update: Update, session):
         [rect for rect in bars],
         [daytime[1] for daytime in times],
     )
-    #[autolabel(ax, bar) for bar in bars]
+    # [autolabel(ax, bar) for bar in bars]
 
     with io.BytesIO() as f:
         plot.savefig(f, format='png')
@@ -449,7 +444,7 @@ def quest_statistic_split(bot: Bot, update: Update):
         stddev = []
         for stat in stats:
             while len(values) < stat[0]:
-                #logging.warning("Filling up list...")
+                # logging.warning("Filling up list...")
                 values.append(0)
                 stddev.append(0)
             values.append(int(stat[1]))
@@ -517,7 +512,7 @@ def quest_statistic_one(bot: Bot, update: Update):
     stddev = []
     for stat in stats:
         while len(values) < stat[0]:
-            #logging.warning("Filling up list...")
+            # logging.warning("Filling up list...")
             values.append(0)
             stddev.append(0)
         values.append(int(stat[1]))
@@ -532,7 +527,7 @@ def quest_statistic_one(bot: Bot, update: Update):
     logging.warning(len(stddev))
 
     b = ax.bar(
-        ind + (width),
+        ind + width,
         tuple(values),
         width,
         color='gold',
@@ -586,9 +581,9 @@ def skill_statistic(bot: Bot, update: Update, user: User):
     recent_classes = Session.query(Profession.user_id, func.max(Profession.date)). \
         group_by(Profession.user_id)
 
-    classes = Session.query(Profession).filter(tuple_(Profession.user_id, Profession.date)
-                                               .in_([(a[0], a[1]) for a in recent_classes]))\
-
+    classes = Session.query(Profession).filter(
+        tuple_(Profession.user_id, Profession.date).in_([(a[0], a[1]) for a in recent_classes])
+    )
     recent_classes = recent_classes.all()
 
     classes = classes.all()
@@ -624,18 +619,18 @@ def skill_statistic(bot: Bot, update: Update, user: User):
         del my_skills[skill][3]
 
     # Set data
-    df = pd.DataFrame(my_skills)
+    df = pandas.DataFrame(my_skills)
     categories = list(df)
     N = len(categories)
     # What will be the angle of each axis in the plot? (we divide the plot / number of variable)
-    angles = [n / float(N) * 2 * pi for n in range(N)]
-    #angles += angles[:1]
+    angles = [n / float(N) * 2 * numpy.pi for n in range(N)]
+    # angles += angles[:1]
 
     # Initialise the spider plot
     ax = plot.subplot(111, polar=True)
 
     # If you want the first axis to be on top:
-    ax.set_theta_offset(pi / 2)
+    ax.set_theta_offset(numpy.pi / 2)
     ax.set_theta_direction(-1)
 
     # Draw one axe per variable + add labels labels yet
@@ -684,7 +679,7 @@ def skill_statistic(bot: Bot, update: Update, user: User):
 
 @command_handler()
 def exp_statistic(bot: Bot, update: Update, user: User):
-    profiles = Session.query(Character).filter_by(user_id=update.message.from_user.id)\
+    profiles = Session.query(Character).filter_by(user_id=update.message.from_user.id) \
         .order_by(Character.date).all()
     plot.switch_backend('ps')
     plot.xlabel(PLOT_X_LABEL)
@@ -735,4 +730,3 @@ def exp_statistic(bot: Bot, update: Update, user: User):
         )
 
     plot.clf()
-

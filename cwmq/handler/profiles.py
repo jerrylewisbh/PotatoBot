@@ -157,9 +157,9 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c = Character()
                 c.user_id = user.id
                 c.date = datetime.datetime.now()
-                guildTag = "[" + data['payload']['profile']['guild_tag'] + "]" if 'guild_tag' in data['payload'][
+                guild_tag = "[" + data['payload']['profile']['guild_tag'] + "]" if 'guild_tag' in data['payload'][
                     'profile'] and data['payload']['profile']['guild_tag'] else ''
-                c.name = guildTag + data['payload']['profile']['userName']
+                c.name = guild_tag + data['payload']['profile']['userName']
                 c.prof = CASTLE_MAP[data['payload']['profile']['castle']]
                 c.characterClass = CLASS_MAP.get(data['payload']['profile']['class'], "Unknown class")
                 c.pet = None

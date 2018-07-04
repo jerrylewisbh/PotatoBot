@@ -1,162 +1,289 @@
-import logging
+from telegram import Bot, Update
 
-import telegram
-from telegram import ParseMode
+from config import SUPER_ADMIN_ID
+from core.decorators import command_handler
 
-from core.texts import MSG_NEEDS_API_ACCESS, MSG_NEEDS_TRADE_ACCESS, MSG_SETTINGS_INFO
-from core.types import Session, User, UserExchangeOrder, UserStockHideSetting
-from functions.inline_markup import generate_settings_buttons
+from core.texts import MSG_USER_UNKNOWN, MSG_NEW_GROUP_ADMIN, \
+    MSG_NEW_GROUP_ADMIN_EXISTS, MSG_LIST_ADMINS_HEADER, \
+    MSG_LIST_ADMINS_FORMAT, MSG_EMPTY, MSG_LIST_ADMINS_USER_FORMAT, MSG_NEW_GLOBAL_ADMIN, MSG_NEW_GLOBAL_ADMIN_EXISTS, \
+    MSG_NEW_SUPER_ADMIN_EXISTS, MSG_NEW_SUPER_ADMIN, MSG_DEL_GLOBAL_ADMIN_NOT_EXIST, MSG_DEL_GLOBAL_ADMIN, \
+    MSG_DEL_GROUP_ADMIN, MSG_DEL_GROUP_ADMIN_NOT_EXIST
+from core.types import Session, User, AdminType, Admin
+from core.utils import send_async
 
 
-def toggle_sniping(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
-    if user.setting_automated_sniping:
-        user.setting_automated_sniping = False
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def set_admin(bot: Bot, update: Update, user: User):
+    msg = update.message.text.split(' ', 1)[1]
+    msg = msg.replace('@', '')
+    if msg != '':
+        user = Session.query(User).filter_by(username=msg).first()
+        if user is None:
+            send_async(
+                bot,
+                chat_id=update.message.chat.id,
+                text=MSG_USER_UNKNOWN
+            )
+
+        else:
+            adm = Session.query(Admin).filter_by(user_id=user.id,
+                                                 admin_group=update.message.chat.id).first()
+
+            if adm is None:
+                new_group_admin = Admin(user_id=user.id,
+                                        admin_type=AdminType.GROUP.value,
+                                        admin_group=update.message.chat.id)
+
+                Session.add(new_group_admin)
+                Session.commit()
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_NEW_GROUP_ADMIN.format(user.username))
+
+            else:
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_NEW_GROUP_ADMIN_EXISTS.format(user.username))
+
+
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def del_admin(bot: Bot, update: Update, user: User):
+    msg = update.message.text.split(' ', 1)[1]
+    if msg.find('@') != -1:
+        msg = msg.replace('@', '')
+        if msg != '':
+            user = Session.query(User).filter_by(username=msg).first()
+            if user is None:
+                send_async(
+                    bot,
+                    chat_id=update.message.chat.id,
+                    text=MSG_USER_UNKNOWN
+                )
+
+            else:
+                adm = Session.query(Admin).filter_by(
+                    user_id=user.id,
+                    admin_group=update.message.chat.id
+                ).first()
+
+                if adm is None:
+                    send_async(
+                        bot,
+                        chat_id=update.message.chat.id,
+                        text=MSG_DEL_GROUP_ADMIN_NOT_EXIST.format(user.username)
+                    )
+
+                else:
+                    Session.delete(adm)
+                    Session.commit()
+                    send_async(
+                        bot,
+                        chat_id=update.message.chat.id,
+                        text=MSG_DEL_GROUP_ADMIN.format(user.username)
+                    )
     else:
-        user.setting_automated_sniping = True
-    Session.add(user)
-    Session.commit()
-    send_settings(bot, update, user)
+        user = Session.query(User).filter_by(id=msg).first()
+        if user is None:
+            send_async(
+                bot,
+                chat_id=update.message.chat.id,
+                text=MSG_USER_UNKNOWN
+            )
+
+        else:
+            adm = Session.query(Admin).filter_by(
+                user_id=user.id,
+                admin_group=update.message.chat.id
+            ).first()
+
+            if adm is None:
+                send_async(
+                    bot,
+                    chat_id=update.message.chat.id,
+                    text=MSG_DEL_GROUP_ADMIN_NOT_EXIST.format(user.username)
+                )
+
+            else:
+                Session.delete(adm)
+                Session.commit()
+                send_async(
+                    bot,
+                    chat_id=update.message.chat.id,
+                    text=MSG_DEL_GROUP_ADMIN.format(user.username)
+                )
 
 
-def toggle_gold_hiding(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
-    if user.setting_automated_hiding:
-        user.setting_automated_hiding = False
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def list_admins(bot: Bot, update: Update, user: User):
+    admins = Session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
+    users = []
+    for admin_user in admins:
+        users.append(Session.query(User).filter_by(id=admin_user.user_id).first())
+    msg = MSG_LIST_ADMINS_HEADER
+    for user in users:
+        msg += MSG_LIST_ADMINS_FORMAT.format(user.id,
+                                             user.username,
+                                             user.first_name,
+                                             user.last_name)
+
+    send_async(bot, chat_id=update.message.chat.id, text=msg)
+
+
+@command_handler(
+    allow_group=True
+)
+def admins_for_users(bot: Bot, update: Update, user: User):
+    admins = Session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
+    users = []
+    for admin_user in admins:
+        users.append(Session.query(User).filter_by(id=admin_user.user_id).first())
+    msg = MSG_LIST_ADMINS_HEADER
+    if users is None:
+        msg += MSG_EMPTY
     else:
-        user.setting_automated_hiding = True
-    Session.add(user)
-    Session.commit()
-    send_settings(bot, update, user)
+        for user in users:
+            msg += MSG_LIST_ADMINS_USER_FORMAT.format(user.username or '',
+                                                      user.first_name or '',
+                                                      user.last_name or '')
+
+    send_async(bot, chat_id=update.message.chat.id, text=msg)
 
 
-def toggle_deal_report(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
-    if user.setting_automated_deal_report:
-        user.setting_automated_deal_report = False
+@command_handler(
+    min_permission=AdminType.SUPER,
+)
+def set_global_admin(bot: Bot, update: Update, user: User):
+    msg = update.message.text.split(' ', 1)[1]
+    msg = msg.replace('@', '')
+    if msg != '':
+        user = Session.query(User).filter_by(username=msg).first()
+        if user is None:
+            send_async(bot,
+                       chat_id=update.message.chat.id,
+                       text=MSG_USER_UNKNOWN)
+
+        else:
+            adm = Session.query(Admin).filter_by(user_id=user.id,
+                                                 admin_type=AdminType.FULL.value).first()
+
+            if adm is None:
+                new_group_admin = Admin(user_id=user.id,
+                                        admin_type=AdminType.FULL.value,
+                                        admin_group=0)
+                Session.add(new_group_admin)
+                Session.commit()
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_NEW_GLOBAL_ADMIN.format(user.username))
+
+            else:
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_NEW_GLOBAL_ADMIN_EXISTS.format(user.username))
+
+
+@command_handler(
+    min_permission=AdminType.SUPER,
+)
+def set_super_admin(bot: Bot, update: Update, user: User):
+    msg = update.message.text.split(' ', 1)[1]
+    msg = msg.replace('@', '')
+    if msg != '':
+        user = Session.query(User).filter_by(username=msg).first()
+        if user is None:
+            send_async(bot,
+                       chat_id=update.message.chat.id,
+                       text=MSG_USER_UNKNOWN)
+
+        else:
+            if user.id == SUPER_ADMIN_ID and update.message.from_user.id == SUPER_ADMIN_ID:
+                adm = Session.query(Admin).filter_by(user_id=user.id, admin_group=0).first()
+                if adm is not None:
+                    if adm.admin_type == AdminType.SUPER.value:
+                        send_async(bot,
+                                   chat_id=update.message.chat.id,
+                                   text=MSG_NEW_SUPER_ADMIN_EXISTS.format(user.username))
+
+                    else:
+                        adm.admin_type = AdminType.SUPER.value
+                        Session.add(adm)
+                        Session.commit()
+                        send_async(bot,
+                                   chat_id=update.message.chat.id,
+                                   text=MSG_NEW_SUPER_ADMIN.format(user.username))
+
+                else:
+                    new_super_admin = Admin(user_id=user.id,
+                                            admin_type=AdminType.SUPER.value,
+                                            admin_group=0)
+
+                    Session.add(new_super_admin)
+                    Session.commit()
+                    send_async(bot,
+                               chat_id=update.message.chat.id,
+                               text=MSG_NEW_SUPER_ADMIN.format(user.username))
+
+
+@command_handler(
+    min_permission=AdminType.SUPER,
+)
+def del_global_admin(bot: Bot, update: Update, user: User):
+    msg = update.message.text.split(' ', 1)[1]
+    if msg.find('@') != -1:
+        msg = msg.replace('@', '')
+        if msg != '':
+            user = Session.query(User).filter_by(username=msg).first()
+            if user is None:
+                send_async(bot,
+                           chat_id=update.message.chat.id,
+                           text=MSG_USER_UNKNOWN)
+
+            else:
+                adm = Session.query(Admin).filter_by(user_id=user.id,
+                                                     admin_type=AdminType.FULL.value).first()
+
+                if adm is None:
+                    send_async(bot,
+                               chat_id=update.message.chat.id,
+                               text=MSG_DEL_GLOBAL_ADMIN_NOT_EXIST.format(user.username))
+
+                else:
+                    Session.delete(adm)
+                    Session.commit()
+                    send_async(bot,
+                               chat_id=update.message.chat.id,
+                               text=MSG_DEL_GLOBAL_ADMIN.format(user.username))
     else:
-        user.setting_automated_deal_report = True
-    Session.add(user)
-    Session.commit()
-    send_settings(bot, update, user)
+        user = Session.query(User).filter_by(id=msg).first()
+        if user is None:
+            send_async(
+                bot,
+                chat_id=update.message.chat.id,
+                text=MSG_USER_UNKNOWN
+            )
+
+        else:
+            adm = Session.query(Admin).filter_by(user_id=user.id,
+                                                 admin_type=AdminType.FULL.value).first()
+            if adm is None:
+                send_async(
+                    bot,
+                    chat_id=update.message.chat.id,
+                    text=MSG_DEL_GLOBAL_ADMIN_NOT_EXIST.format(user.username)
+                )
+            else:
+                Session.delete(adm)
+                Session.commit()
+                send_async(
+                    bot,
+                    chat_id=update.message.chat.id,
+                    text=MSG_DEL_GLOBAL_ADMIN.format(user.username)
+                )
 
 
-def toggle_report(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
-    if user.setting_automated_report:
-        user.setting_automated_report = False
-    else:
-        user.setting_automated_report = True
-    Session.add(user)
-    Session.commit()
-    send_settings(bot, update, user)
-
-
-def disable_api(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
-    if user.api_token:
-        user.api_token = None
-
-        user.is_api_profile_allowed = False
-        user.is_api_stock_allowed = False
-        user.is_api_trade_allowed = False
-
-        user.api_request_id = None
-        user.api_grant_operation = None
-
-        # TODO: Do we need to reset settings?
-
-        Session.add(user)
-        Session.commit()
-    send_settings(bot, update, user)
-
-
-def disable_api_functions(user):
-    logging.info("Disabling API functions for user_id='%s'", user.id)
-    # Disable API settings but keep his api credentials until user revokes them herself/himself.
-    user.setting_automated_sniping = False
-    user.setting_automated_hiding = False
-    user.setting_automated_report = False
-    user.setting_automated_deal_report = False
-    # Remove all his settings...
-    Session.query(UserExchangeOrder).filter(UserExchangeOrder.user_id == user.id).delete()
-    Session.query(UserStockHideSetting).filter(UserStockHideSetting.user_id == user.id).delete()
-    Session.add(user)
-    Session.commit()
-
-
-def create_or_update_user(telegram_user: telegram.User) -> User:
-    """
-
-    :type telegram_user: object
-    :rtype: User
-    """
-    if not telegram_user:
-        return None
-    user = Session.query(User).filter_by(id=telegram_user.id).first()
-    if not user:
-        user = User(
-            id=telegram_user.id,
-            username=telegram_user.username or '',
-            first_name=telegram_user.first_name or '',
-            last_name=telegram_user.last_name or ''
-        )
-        Session.add(user)
-    else:
-        updated = False
-        if user.username != telegram_user.username:
-            user.username = telegram_user.username
-            updated = True
-        if user.first_name != telegram_user.first_name:
-            user.first_name = telegram_user.first_name
-            updated = True
-        if user.last_name != telegram_user.last_name:
-            user.last_name = telegram_user.last_name
-            updated = True
-        if updated:
-            Session.add(user)
-    Session.commit()
-    return user
-
-
-def send_settings(bot, update, user):
-    automated_report = MSG_NEEDS_API_ACCESS
-    if user.api_token and user.is_api_profile_allowed:
-        automated_report = user.setting_automated_report
-
-    automated_deal_report = MSG_NEEDS_API_ACCESS
-    if user.api_token and user.is_api_stock_allowed:
-        automated_deal_report = user.setting_automated_deal_report
-
-    automated_sniping = MSG_NEEDS_TRADE_ACCESS
-    if user.api_token and user.is_api_trade_allowed:
-        automated_sniping =  user.setting_automated_sniping
-
-    automated_hiding = MSG_NEEDS_TRADE_ACCESS
-    if user.api_token and user.is_api_trade_allowed:
-        automated_hiding = user.setting_automated_hiding
-
-    msg = MSG_SETTINGS_INFO.format(
-        automated_report,
-        automated_deal_report,
-        automated_sniping,
-        automated_hiding,
-        user.stock.date if user.stock else "Unknown",
-        user.character.date if user.character else "Unknown",
-    )
-
-    if update.callback_query:
-        bot.editMessageText(
-            text=msg,
-            chat_id=user.id,
-            message_id=update.callback_query.message.message_id,
-            reply_markup=generate_settings_buttons(user),
-            parse_mode=ParseMode.HTML
-        )
-    else:
-        bot.send_message(
-            text=msg,
-            chat_id=user.id,
-            reply_markup=generate_settings_buttons(user),
-            parse_mode=ParseMode.HTML
-        )

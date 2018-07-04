@@ -84,7 +84,7 @@ class HtmlFormatter(TelegramFormatter):
         self.use_emoji = kwargs.pop('use_emoji', False)
         super(HtmlFormatter, self).__init__(*args, **kwargs)
 
-    def format(self, record):
+    def format(self, record: object) -> object:
         """
         :param logging.LogRecord record:
         """

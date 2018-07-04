@@ -1,14 +1,11 @@
 import logging
-
-import re
-
 import math
-
-from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
+import re
 
 import redis
 from telegram import Bot, ParseMode, Update
 
+from config import REDIS_PORT, REDIS_SERVER
 from core.decorators import command_handler
 from core.texts import *
 from core.types import Session, User, UserStockHideSetting, new_item, Item
