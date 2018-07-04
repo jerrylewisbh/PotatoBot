@@ -3,12 +3,11 @@ import logging
 from telegram.ext import Dispatcher, RegexHandler
 
 from core.commands import *
-from functions import orders
+from functions import order
 from functions.common import admin_panel
 from functions.exchange.hide import hide_gold_info
 from functions.exchange.snipe import sniping_info
-from functions.order_groups import group_list
-from functions.orders import orders
+from functions.order.groups import list
 from functions.profile import user_panel, show_char, grant_access, settings
 from functions.squad import (leave_squad_request, squad_about, join_squad_request)
 from functions.squad.admin import list_squad_requests, battle_attendance_show, \
@@ -33,9 +32,9 @@ def add_handler(disp: Dispatcher):
     # on different commands - answer in Telegram
     disp.add_handler(RegexHandler(to_re(USER_COMMAND_BACK), user_panel))
 
-    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_ORDER), orders, pass_chat_data=True))
+    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_ORDER), order, pass_chat_data=True))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_STATUS), send_status))
-    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_GROUPS), group_list))
+    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_GROUPS), list))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_RECRUIT), list_squad_requests))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_FIRE_UP), remove_from_squad))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_SQUAD_LIST), list_squads))

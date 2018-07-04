@@ -7,8 +7,8 @@ from config import CWBOT_ID
 from core.decorators import command_handler
 from core.state import get_game_state, GameState
 from core.types import User, Session, Squad, Admin
-from functions.order_groups import add_group
-from functions.orders import order
+from functions.order.groups import add
+from functions.order import order
 from functions.profile import user_panel
 from functions.quest import parse_quest
 from functions.report import fwd_report
@@ -22,7 +22,7 @@ from functions.triggers import trigger_show
     allow_group=True,
     allow_private=True
 )
-def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):#
+def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
     if update.effective_message.chat.type == "channel":
         fwd_report(bot, update)
     elif update.effective_message.chat.type in ['group', 'supergroup']:
@@ -59,7 +59,7 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):#
             if update.message.forward_from and update.message.forward_from.id == CWBOT_ID:
                 parse_quest(bot, update, user)
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
-                add_group(bot, update, user, chat_data=chat_data)
+                add(bot, update, user, chat_data=chat_data)
             elif not is_admin:
                 user_panel(bot, update)
             else:
