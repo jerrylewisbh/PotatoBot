@@ -208,7 +208,7 @@ MSG_ORDER_SEND_HEADER = 'Where to send?\n\nImportant: Do not use \"Button\" for 
 
 MSG_ORDER_GROUP_CONFIG_HEADER = 'Group settings: {}'
 MSG_ORDER_GROUP_NEW = 'Send me the name of a new group of squads'
-MSG_ORDER_GROUP_LIST = 'List groups'
+MSG_ORDER_GROUP_LIST = 'These are the existing groups:'
 MSG_ORDER_GROUP_ADD = '➕Add group'
 MSG_ORDER_GROUP_DEL = '🔥🚨Delete group🚨🔥'
 
