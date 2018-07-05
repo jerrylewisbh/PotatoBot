@@ -6,15 +6,15 @@ from telegram.ext import run_async, JobQueue
 
 from core.decorators import command_handler, create_or_update_user
 from core.handler.callback.util import get_callback_action, Action, CallbackAction
-from core.texts import MSG_TOP_GENERATING
 from core.types import User
 from core.utils import update_group
 
 from functions.inline_markup import QueryType
-from functions import order_groups
-from functions import orders
+from functions.order import groups
+from functions import order
 from functions import profile
 from functions import quest
+from functions import user as user_functions
 
 from functions import squad
 from functions.squad import admin as squad_admin
@@ -23,8 +23,7 @@ from functions.top import overall
 from functions.top import squad as top_squad
 from functions.top import classes as top_class
 
-from functions.user.util import toggle_sniping, toggle_gold_hiding, toggle_deal_report, toggle_report, disable_api, \
-    delete_admin
+from functions.user.util import delete_admin
 
 @run_async
 @command_handler()
@@ -72,8 +71,22 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
                     profile.inline_show_stock(bot, update, user)
                 elif CallbackAction.HERO in action.action:
                     profile.inline_show_char(bot, update, user)
-                else:
-                    logging.warning("Unknown callback?")
+                elif CallbackAction.SETTING in action.action:
+                    user_functions.settings(bot, update, user)
+                elif CallbackAction.ORDER_GROUP in action.action:
+                    groups.list(bot, update, user)
+                #elif CallbackAction.ORDER_GROUP_ADD in action.action:
+                    #groups.manage(bot, udpate, user)
+                """elif data['t'] == QueryType.OrderGroup.value:
+                    groups.order_group(bot, update, user, data, chat_data)
+                elif data['t'] == QueryType.OrderGroupManage.value:
+                    groups.order_group_manage(bot, update, user, data)
+                elif data['t'] == QueryType.OrderGroupTriggerChat.value:
+                    groups.order_group_tirgger_chat(bot, update, user, data)
+                elif data['t'] == QueryType.OrderGroupAdd.value:
+                    groups.order_group_add(bot, update, user, data, chat_data)
+                elif data['t'] == QueryType.OrderGroupDelete.value:
+                    groups.order_group_delete(bot, update, user, data)"""
             else:
                 logging.warning("Action is not a valid action!")
                 bot.edit_message_text(
@@ -93,27 +106,17 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
         if data['t'] == QueryType.GroupList.value:
             functions.squad.admin.group_list(bot, update, user, data)
         elif data['t'] == QueryType.GroupInfo.value:
-            order_groups.group_info(bot, update, user, data)
+            groups.group_info(bot, update, user, data)
         elif data['t'] == QueryType.DelAdm.value:
             delete_admin(bot, update, user, data)
         elif data['t'] == QueryType.Order.value:
-            orders.order_button(bot, update, user, data, chat_data)
+            order.order_button(bot, update, user, data, chat_data)
         elif data['t'] == QueryType.OrderOk.value:
-            orders.inline_order_confirmed(bot, update, user, data, job_queue)
+            order.inline_order_confirmed(bot, update, user, data, job_queue)
         elif data['t'] == QueryType.Orders.value:
-            orders.inline_orders(bot, update, user, data, chat_data)
-        elif data['t'] == QueryType.OrderGroup.value:
-            order_groups.order_group(bot, update, user, data, chat_data)
-        elif data['t'] == QueryType.OrderGroupManage.value:
-            order_groups.order_group_manage(bot, update, user, data)
-        elif data['t'] == QueryType.OrderGroupTriggerChat.value:
-            order_groups.order_group_tirgger_chat(bot, update, user, data)
-        elif data['t'] == QueryType.OrderGroupAdd.value:
-            order_groups.order_group_add(bot, update, user, data, chat_data)
-        elif data['t'] == QueryType.OrderGroupDelete.value:
-            order_groups.order_group_delete(bot, update, user, data)
-        elif data['t'] == QueryType.OrderGroupList.value:
-            order_groups.order_group_list(bot, update)
+            order.inline_orders(bot, update, user, data, chat_data)
+
+            groups.order_group_list(bot, update)
         elif data['t'] == QueryType.RequestSquadAccept.value:
             functions.squad.admin.squad_request_accept(bot, update, user, data)
         elif data['t'] == QueryType.RequestSquadDecline.value:
@@ -123,29 +126,13 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
         elif data['t'] == QueryType.InviteSquadDecline.value:
             functions.squad.admin.squad_invite_decline(bot, update, user, data)
         elif data['t'] == QueryType.TriggerOrderPin.value:
-            orders.trigger_order_pin(bot, update, user, data, chat_data)
+            order.trigger_order_pin(bot, update, user, data, chat_data)
         elif data['t'] == QueryType.TriggerOrderButton.value:
-            orders.trigger_order_button(bot, update, user, data, chat_data)
+            order.trigger_order_button(bot, update, user, data, chat_data)
         elif data['t'] == QueryType.GroupDelete.value:
             functions.squad.admin.inline_squad_delete(bot, update, user, data)
-        elif data['t'] == QueryType.DisableAPIAccess:
-            disable_api(bot, update, user, data)
-        elif data['t'] in [QueryType.EnableAutomatedReport, QueryType.DisableAutomatedReport]:
-            toggle_report(bot, update, user, data)
-        elif data['t'] in [QueryType.DisableDealReport, QueryType.EnableDealReport]:
-            toggle_deal_report(bot, update, user, data)
-        elif data['t'] in [QueryType.DisableHideGold, QueryType.EnableHideGold]:
-            toggle_gold_hiding(bot, update, user, data)
-        elif data['t'] in [QueryType.DisableSniping, QueryType.EnableSniping]:
-            toggle_sniping(bot, update, user, data)
         elif data['t'] == QueryType.OtherReport.value:
             functions.squad.admin.other_report(bot, update, user, data)
-        elif data['t'] == QueryType.BattleGlobalTop.value:
-            update.callback_query.answer(text=MSG_TOP_GENERATING)
-            #global_battle_top(bot, update)
-        elif data['t'] == QueryType.BattleWeekTop.value:
-            update.callback_query.answer(text=MSG_TOP_GENERATING)
-            #week_battle_top(bot, update)
 
     except TelegramError as e:
         # Ignore Message is not modified errors

@@ -21,7 +21,7 @@ from core.utils import send_async
 from cwmq import Publisher
 from functions.common import (get_weighted_diff, stock_compare_text,
                               stock_split)
-from functions.orders import send_order
+from functions.order import send_order
 from functions.profile import (format_report, get_latest_report,
                                get_stock_before_after_war)
 

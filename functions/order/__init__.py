@@ -10,13 +10,10 @@ from config import CASTLE
 from core.decorators import command_handler
 from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Icons, Castle
 from core.texts import *
-from core.texts import MSG_ORDER_CLEARED_BY_HEADER, MSG_EMPTY, MSG_ORDER_SENT, MSG_ORDER_SEND_HEADER, MSG_ORDER_CLEARED, \
-    MSG_ORDER_CLEARED_ERROR, MSG_ORDER_ACCEPT, MSG_ORDER_FORWARD, MSG_ORDER_PIN, MSG_ORDER_NO_PIN, MSG_ORDER_BUTTON, \
-    MSG_ORDER_NO_BUTTON
 from core.types import Admin, AdminType, MessageType, Session, User, Order, OrderGroup, Squad, SquadMember, OrderCleared
 from core.utils import send_async
 from functions.inline_markup import QueryType
-from functions.order_groups import generate_order_groups_markup
+from functions.order.groups import generate_order_groups_markup
 
 Session()
 

@@ -1,7 +1,10 @@
+import logging
+
 from telegram import Bot, Update
 
 from config import SUPER_ADMIN_ID
 from core.decorators import command_handler
+from core.handler.callback import get_callback_action
 
 from core.texts import MSG_USER_UNKNOWN, MSG_NEW_GROUP_ADMIN, \
     MSG_NEW_GROUP_ADMIN_EXISTS, MSG_LIST_ADMINS_HEADER, \
@@ -10,6 +13,8 @@ from core.texts import MSG_USER_UNKNOWN, MSG_NEW_GROUP_ADMIN, \
     MSG_DEL_GROUP_ADMIN, MSG_DEL_GROUP_ADMIN_NOT_EXIST
 from core.types import Session, User, AdminType, Admin
 from core.utils import send_async
+from functions.user.util import send_settings, __toggle_gold_hiding, __toggle_sniping, __toggle_deal_report, __toggle_report, \
+    __disable_api
 
 
 @command_handler(
@@ -286,4 +291,23 @@ def del_global_admin(bot: Bot, update: Update, user: User):
                     text=MSG_DEL_GLOBAL_ADMIN.format(user.username)
                 )
 
+
+@command_handler()
+def settings(bot: Bot, update: Update, user: User):
+    if not update.callback_query:
+        send_settings(bot, update, user)
+    else:
+        action = get_callback_action(update.callback_query.data, user.id)
+        if action.data["setting_action"] == "disable_api":
+            __disable_api(bot, update, user)
+        elif action.data["setting_action"] == "report":
+            __toggle_report(bot, update, user)
+        elif action.data["setting_action"] == "deal_report":
+            __toggle_deal_report(bot, update, user)
+        elif action.data["setting_action"] == "sniping":
+            __toggle_sniping(bot, update, user)
+        elif action.data["setting_action"] == "hiding":
+            __toggle_gold_hiding(bot, update, user)
+        else:
+            logging.warning("Unknown setting_action for settings")
 

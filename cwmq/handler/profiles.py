@@ -237,7 +237,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 # Don't suspend sniping if user is in "hide mode"
                 if get_hide_mode(user):
                     if not get_best_fulfillable_order(user):
-                        logger.info("[Hide] No more fulfillable orders for user_id='%s' - I think....", user.id)
+                        logger.info("[Hide] No more fulfillable order for user_id='%s' - I think....", user.id)
 
                         dispatcher.bot.send_message(
                             user.id,
@@ -263,7 +263,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                         reply_markup=generate_user_markup(user.id)
                     )
             elif data['result'] == "Ok":
-                # Do we need to track OK results for buy orders?
+                # Do we need to track OK results for buy order?
                 pass
 
         # We're done...

@@ -39,6 +39,14 @@ class CallbackAction(IntFlag):
     HERO_SKILL = auto()
     HERO_STOCK = auto()
 
+    # Settings
+    SETTING = auto()
+
+    # Orders
+    ORDER_GROUP = auto()
+    ORDER_GROUP_MANAGE = auto()
+    ORDER_GROUP_ADD = auto()
+
 
 class Action(object):
     def __init__(self, action, user_id, **kwargs):
