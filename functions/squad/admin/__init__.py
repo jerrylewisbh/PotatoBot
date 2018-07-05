@@ -405,21 +405,6 @@ def group_list(bot: MQBot, update: Update, user: User, data):
                           reply_markup=inline_markup)
 
 
-@command_handler(
-    min_permission=AdminType.FULL,
-)
-def send_status(bot: MQBot, update: Update, user: User):
-    msg = MSG_GROUP_STATUS_CHOOSE_CHAT
-    squads = Session.query(Squad).all()
-    inline_keys = []
-    for squad in squads:
-        inline_keys.append(InlineKeyboardButton(squad.squad_name,
-                                                callback_data=json.dumps({'t': QueryType.GroupInfo.value,
-                                                                          'id': squad.chat_id})))
-    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
-    send_async(bot, chat_id=update.message.chat.id, text=msg, reply_markup=inline_markup)
-
-
 def generate_fire_up(members):
     inline_keys = []
     inline_list = []

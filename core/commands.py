@@ -1,6 +1,6 @@
 ADMIN_COMMAND_ORDER = '⚔Orders'
-ADMIN_COMMAND_STATUS = '🔎Status'
-ADMIN_COMMAND_GROUPS = '👥Groups'
+ADMIN_COMMAND_STATUS = '🔎Chat Group Status'
+ADMIN_COMMAND_GROUPS = '👥Order Groups'
 ADMIN_COMMAND_RECRUIT = '📬Squad Requests'
 ADMIN_COMMAND_FIRE_UP = '⛏Harvest'
 ADMIN_COMMAND_SQUAD_LIST = '🗂Squad List'

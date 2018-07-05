@@ -32,6 +32,7 @@ class CallbackAction(IntFlag):
     SQUAD_JOIN = auto()
     SQUAD_LIST = auto()
     SQUAD_LIST_MEMBERS = auto()
+    SQUAD_MANAGE = auto()
 
     # Hero related
     HERO = auto()
@@ -46,6 +47,9 @@ class CallbackAction(IntFlag):
     ORDER_GROUP = auto()
     ORDER_GROUP_MANAGE = auto()
     ORDER_GROUP_ADD = auto()
+
+    # Groups
+    GROUP_INFO = auto()
 
 
 class Action(object):

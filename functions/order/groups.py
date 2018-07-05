@@ -1,6 +1,8 @@
 import json
+import logging
 
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
+
 from core.decorators import command_handler
 from core.enums import Icons, Castle
 from core.handler.callback.util import create_callback, CallbackAction, get_callback_action
@@ -22,6 +24,7 @@ def list(bot: Bot, update: Update, user: User):
             MSG_ORDER_GROUP_LIST,
             update.callback_query.message.chat.id,
             update.callback_query.message.message_id,
+            reply_markup=__get_group_list_keyboard(user)
         )
     else:
         send_async(
@@ -36,67 +39,75 @@ def list(bot: Bot, update: Update, user: User):
     min_permission=AdminType.FULL,
 )
 def add(bot: Bot, update: Update, user: User, chat_data):
-    chat_data['wait_group_name'] = False
-    group = OrderGroup()
-    group.name = update.message.text
-    Session.add(group)
-    Session.commit()
+    if "wait_group_name" in chat_data and chat_data["wait_group_name"] == False or "wait_group_name" not in chat_data:
+        chat_data["wait_group_name"] = True
+        send_async(
+            bot,
+            chat_id=user.id,
+            text=MSG_ORDER_GROUP_NEW,
+        )
+    elif "wait_group_name" in chat_data:
+        chat_data['wait_group_name'] = False
 
-    markup = __get_group_manage_memberships(user, group.id)
-    send_async(
-        bot,
-        chat_id=update.message.chat.id,
-        text=MSG_ORDER_GROUP_CONFIG_HEADER.format(group.name),
-        reply_markup=markup
-    )
+        group = OrderGroup()
+        group.name = update.message.text
+        Session.add(group)
+        Session.commit()
 
+        markup = __get_group_manage_keyboard(user, group.id)
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=MSG_ORDER_GROUP_CONFIG_HEADER.format(group.name),
+            reply_markup=markup
+        )
 
-def order_group_delete(bot, update, user, data):
-    group = Session.query(OrderGroup).filter_by(id=data['id']).first()
+def __delete(order_group_id):
+    group = Session.query(OrderGroup).filter_by(id=order_group_id).first()
     Session.delete(group)
     Session.commit()
-    bot.edit_message_text(
-        MSG_ORDER_GROUP_LIST,
-        update.callback_query.message.chat.id,
-        update.callback_query.message.message_id,
-        reply_markup=__get_group_list_keyboard(user)
-    )
 
+def __toggle_chat(chat_id, order_group_id):
+    group_item = Session.query(OrderGroupItem).filter(
+        OrderGroupItem.group_id == order_group_id,
+        OrderGroupItem.chat_id == chat_id
+    ).first()
 
-def order_group_add(bot: Bot, update: Update, user: User, data: dict, chat_data: dict):
-    chat_data['wait_group_name'] = True
-    send_async(bot, chat_id=update.callback_query.message.chat.id,
-               text=MSG_ORDER_GROUP_NEW)
-
-
-def order_group_tirgger_chat(bot, update, user, data):
-    group = Session.query(OrderGroup).filter_by(id=data['id']).first()
-    deleted = False
-    for item in group.items:
-        if item.chat_id == data['c']:
-            Session.delete(item)
-            Session.commit()
-            deleted = True
-    if not deleted:
+    if not group_item:
         item = OrderGroupItem()
-        item.group_id = group.id
-        item.chat_id = data['c']
+        item.group_id = order_group_id
+        item.chat_id = chat_id
         Session.add(item)
         Session.commit()
-    markup = __get_group_manage_memberships(user, data['id'])
-    bot.edit_message_text(MSG_ORDER_GROUP_CONFIG_HEADER.format(group.name),
-                        update.callback_query.message.chat.id,
-                        update.callback_query.message.message_id,
-                        reply_markup=markup)
+    else:
+        Session.delete(group_item)
+        Session.commit()
 
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def manage(bot, update, user):
+    if not update.callback_query:
+        logging.warning("group.manage was called without callback!")
+        return
+    action = get_callback_action(update.callback_query.data, update.effective_user.id)
+    group = Session.query(OrderGroup).filter_by(id=action.data['order_group_id']).first()
 
-def order_group_manage(bot, update, user, data):
-    group = Session.query(OrderGroup).filter_by(id=data['id']).first()
-    markup = __get_group_manage_memberships(user, data['id'])
-    bot.edit_message_text(MSG_ORDER_GROUP_CONFIG_HEADER.format(group.name),
-                        update.callback_query.message.chat.id,
-                        update.callback_query.message.message_id,
-                        reply_markup=markup)
+    if "sub_action" in action.data:
+        if action.data['sub_action'] == "toggle":
+            __toggle_chat(action.data['squad_chat_id'], action.data['order_group_id'])
+        elif action.data['sub_action'] == "delete":
+            __delete(action.data['order_group_id'])
+            list(bot, update, user)
+            return
+
+    markup = __get_group_manage_keyboard(user, action.data['order_group_id'])
+    bot.edit_message_text(
+        MSG_ORDER_GROUP_CONFIG_HEADER.format(group.name),
+        update.callback_query.message.chat.id,
+        update.callback_query.message.message_id,
+        reply_markup=markup
+    )
 
 
 def order_group(bot: Bot, update: Update, user: User, data: dict, chat_data: dict):
@@ -118,43 +129,6 @@ def order_group(bot: Bot, update: Update, user: User, data: dict, chat_data: dic
                         update.callback_query.message.chat.id,
                         update.callback_query.message.message_id,
                         reply_markup=markup)
-
-
-def group_info(bot, update, user, data):
-    msg, inline_markup = generate_group_info(data['id'])
-    bot.edit_message_text(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
-                        reply_markup=inline_markup)
-
-
-def generate_group_info(group_id):
-    group = Session.query(Group).filter(Group.id == group_id).first()
-    admins = Session.query(Admin).filter(Admin.admin_group == group_id).all()
-    adm_msg = ''
-    adm_del_keys = []
-    for adm in admins:
-        user = Session.query(User).filter_by(id=adm.user_id).first()
-        adm_msg += MSG_GROUP_STATUS_ADMIN_FORMAT.\
-            format(user.id, user.username or '', user.first_name or '', user.last_name or '')
-        adm_del_keys.append([InlineKeyboardButton(MSG_GROUP_STATUS_DEL_ADMIN.
-                                                  format(user.first_name or '', user.last_name or ''),
-                                                  callback_data=json.dumps(
-                                                      {'t': QueryType.DelAdm.value, 'uid': user.id,
-                                                       'gid': group_id}))])
-    msg = MSG_GROUP_STATUS.format(group.title,
-                                  adm_msg,
-                                  MSG_ON if group.welcome_enabled else MSG_OFF,
-                                  MSG_ON if group.allow_trigger_all else MSG_OFF,
-                                  MSG_ON if len(group.squad) and group.squad[0].thorns_enabled else MSG_OFF)
-
-    adm_del_keys.append(
-        [InlineKeyboardButton(MSG_ORDER_GROUP_DEL, callback_data=json.dumps(
-        {'t': QueryType.GroupDelete.value, 'gid': group_id}))])
-
-    adm_del_keys.append(
-        [InlineKeyboardButton(MSG_BACK, callback_data=create_callback("foo"))]
-    )
-    inline_markup = InlineKeyboardMarkup(adm_del_keys)
-    return msg, inline_markup
 
 
 def generate_order_groups_markup(admin_user: list=None, pin: bool=True, btn=True):
@@ -197,13 +171,13 @@ def generate_order_groups_markup(admin_user: list=None, pin: bool=True, btn=True
             return inline_markup
 
 
-def __get_group_manage_memberships(user: User, group_id):
+def __get_group_manage_keyboard(user: User, order_group_id):
     squads = Session.query(Squad).all()
     inline_keys = []
     for squad in squads:
         in_group = False
         for item in squad.chat.group_items:
-            if item.group_id == group_id:
+            if item.group_id == order_group_id:
                 in_group = True
                 break
         inline_keys.append([
@@ -212,8 +186,9 @@ def __get_group_manage_memberships(user: User, group_id):
                 callback_data=create_callback(
                     CallbackAction.ORDER_GROUP_MANAGE,
                     user.id,
-                    action="toggle",
-                    squad_id=squad.chat_id
+                    sub_action="toggle",
+                    squad_chat_id=squad.chat_id,
+                    order_group_id=order_group_id
                 )
             )
         ])
@@ -224,7 +199,8 @@ def __get_group_manage_memberships(user: User, group_id):
             callback_data=create_callback(
                 CallbackAction.ORDER_GROUP_MANAGE,
                 user.id,
-                action="delete"
+                sub_action="delete",
+                order_group_id=order_group_id
             )
         )
     ])
@@ -246,7 +222,7 @@ def __get_group_list_keyboard(user: User):
     for group in groups:
         inline_keys.append([
             InlineKeyboardButton(group.name, callback_data=create_callback(
-                CallbackAction.ORDER_GROUP,
+                CallbackAction.ORDER_GROUP_MANAGE,
                 user.id,
                 order_group_id=group.id)
             )

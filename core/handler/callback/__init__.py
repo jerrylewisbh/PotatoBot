@@ -10,7 +10,8 @@ from core.types import User
 from core.utils import update_group
 
 from functions.inline_markup import QueryType
-from functions.order import groups
+from functions.order import groups as order_group
+from functions import group
 from functions import order
 from functions import profile
 from functions import quest
@@ -74,7 +75,14 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
                 elif CallbackAction.SETTING in action.action:
                     user_functions.settings(bot, update, user)
                 elif CallbackAction.ORDER_GROUP in action.action:
-                    groups.list(bot, update, user)
+                    order_group.list(bot, update, user)
+                elif CallbackAction.ORDER_GROUP_ADD in action.action:
+                    order_group.add(bot, update, user, chat_data=chat_data)
+                elif CallbackAction.ORDER_GROUP_MANAGE in action.action:
+                    order_group.manage(bot, update, user)
+                elif CallbackAction.GROUP_INFO in action.action:
+                    group.info(bot, update, user)
+
                 #elif CallbackAction.ORDER_GROUP_ADD in action.action:
                     #groups.manage(bot, udpate, user)
                 """elif data['t'] == QueryType.OrderGroup.value:
@@ -105,8 +113,6 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
         data = json.loads(update.callback_query.data)
         if data['t'] == QueryType.GroupList.value:
             functions.squad.admin.group_list(bot, update, user, data)
-        elif data['t'] == QueryType.GroupInfo.value:
-            groups.group_info(bot, update, user, data)
         elif data['t'] == QueryType.DelAdm.value:
             delete_admin(bot, update, user, data)
         elif data['t'] == QueryType.Order.value:
@@ -115,7 +121,6 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
             order.inline_order_confirmed(bot, update, user, data, job_queue)
         elif data['t'] == QueryType.Orders.value:
             order.inline_orders(bot, update, user, data, chat_data)
-
             groups.order_group_list(bot, update)
         elif data['t'] == QueryType.RequestSquadAccept.value:
             functions.squad.admin.squad_request_accept(bot, update, user, data)

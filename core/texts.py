@@ -171,13 +171,27 @@ MSG_STOCK_OVERALL_PRICE = "\nEstimated overall worth: {}💰\n"
 MSG_PERSONAL_SITE_LINK = 'Your personal link: {}'
 
 MSG_GROUP_STATUS_CHOOSE_CHAT = 'Choose chat'
-MSG_GROUP_STATUS = """Group: {}
+MSG_GROUP_STATUS = """<b>Group: {}</b>
 
-Admins:
+<i>Admins:</i>
 {}
+
+<i>Settings:</i>
 Welcome: {}
 Trigger allowed: {}
-Thorns: {}"""
+FWD Minireport: {}"""
+
+MSG_GROUP_STATUS_SQUAD = """
+
+<b>This group is linked to a squad!</b>
+
+<i>Squad Settings:</i>
+Thorns: {}
+Silence: {}
+Reminders: {}
+Hiring: {}
+Testing Squad: {}"""
+
 
 MSG_GROUP_STATUS_ADMIN_FORMAT = '{} @{} {} {}\n'
 MSG_GROUP_STATUS_DEL_ADMIN = 'Demote {} {}'
@@ -207,7 +221,7 @@ MSG_ORDER_CLEARED_ERROR = 'STOP! You do not belong here!!!!'
 MSG_ORDER_SEND_HEADER = 'Where to send?\n\nImportant: Do not use \"Button\" for battle orders as this slows down the order process considerably!'
 
 MSG_ORDER_GROUP_CONFIG_HEADER = 'Group settings: {}'
-MSG_ORDER_GROUP_NEW = 'Send me the name of a new group of squads'
+MSG_ORDER_GROUP_NEW = 'Send me the name of a new group of squad'
 MSG_ORDER_GROUP_LIST = 'These are the existing groups:'
 MSG_ORDER_GROUP_ADD = '➕Add group'
 MSG_ORDER_GROUP_DEL = '🔥🚨Delete group🚨🔥'

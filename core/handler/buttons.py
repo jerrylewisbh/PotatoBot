@@ -11,7 +11,8 @@ from functions.order.groups import list
 from functions.profile import user_panel, show_char, grant_access, settings
 from functions.squad import (leave_squad_request, squad_about, join_squad_request)
 from functions.squad.admin import list_squad_requests, battle_attendance_show, \
-    battle_reports_show, send_status, remove_from_squad, list_squads
+    battle_reports_show, remove_from_squad, list_squads
+from functions.group import send_status
 from functions.statistics import statistic_about, exp_statistic, skill_statistic, quest_statistic, item_statistic
 from functions.statistics.foray import foray_statistic
 

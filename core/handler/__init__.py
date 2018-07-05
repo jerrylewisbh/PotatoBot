@@ -53,6 +53,9 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
         for _ in admin:
             is_admin = True
             break
+        print("++++++++")
+        print(chat_data)
+        print("++++++++")
         if 'order_wait' in chat_data and chat_data['order_wait']:
             order(bot, update, user, chat_data=chat_data)
         elif update.message.text:
