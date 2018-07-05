@@ -80,8 +80,10 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
                     order_group.add(bot, update, user, chat_data=chat_data)
                 elif CallbackAction.ORDER_GROUP_MANAGE in action.action:
                     order_group.manage(bot, update, user)
-                elif CallbackAction.GROUP_INFO in action.action:
+                elif CallbackAction.GROUP_MANAGE in action.action:
                     group.info(bot, update, user)
+                elif CallbackAction.GROUP in action.action:
+                    group.list(bot, update, user)
 
                 #elif CallbackAction.ORDER_GROUP_ADD in action.action:
                     #groups.manage(bot, udpate, user)

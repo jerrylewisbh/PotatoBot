@@ -12,7 +12,7 @@ from functions.profile import user_panel, show_char, grant_access, settings
 from functions.squad import (leave_squad_request, squad_about, join_squad_request)
 from functions.squad.admin import list_squad_requests, battle_attendance_show, \
     battle_reports_show, remove_from_squad, list_squads
-from functions.group import send_status
+from functions.group import list
 from functions.statistics import statistic_about, exp_statistic, skill_statistic, quest_statistic, item_statistic
 from functions.statistics.foray import foray_statistic
 
@@ -34,7 +34,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(to_re(USER_COMMAND_BACK), user_panel))
 
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_ORDER), order, pass_chat_data=True))
-    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_STATUS), send_status))
+    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_STATUS), list))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_GROUPS), list))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_RECRUIT), list_squad_requests))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_FIRE_UP), remove_from_squad))

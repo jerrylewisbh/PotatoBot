@@ -67,7 +67,7 @@ def info(bot: MQBot, update: Update, user: User):
         InlineKeyboardButton(
             MSG_ORDER_GROUP_DEL,
             callback_data=create_callback(
-                CallbackAction.SQUAD_MANAGE,
+                CallbackAction.GROUP_MANAGE,
                 user.id,
                 sub_action='delete',
                 group_id=group.id,
@@ -79,9 +79,8 @@ def info(bot: MQBot, update: Update, user: User):
         InlineKeyboardButton(
             MSG_BACK,
             callback_data=create_callback(
-                CallbackAction.ORDER_GROUP_MANAGE,
+                CallbackAction.GROUP,
                 user.id
-                # TODO
             )
         )
     ])
@@ -99,7 +98,7 @@ def info(bot: MQBot, update: Update, user: User):
 @command_handler(
     min_permission=AdminType.FULL,
 )
-def send_status(bot: MQBot, update: Update, user: User):
+def list(bot: MQBot, update: Update, user: User):
     msg = MSG_GROUP_STATUS_CHOOSE_CHAT
     groups = Session.query(Group).all()
     inline_keys = []
@@ -108,20 +107,32 @@ def send_status(bot: MQBot, update: Update, user: User):
             InlineKeyboardButton(
                 "{}{}".format(
                     '⚜' if group.squad else '🏘️',
-                    group.title
+                    group.title if not group.squad else '{} (Squad: {})'.format(
+                        group.title, group.squad[0].squad_name
+                    )
                 ),
                 callback_data=create_callback(
-                    CallbackAction.GROUP_INFO,
+                    CallbackAction.GROUP_MANAGE,
                     user.id,
                     group_id=group.id
                 )
             )
         )
     inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
-    send_async(
-        bot,
-        chat_id=update.message.chat.id,
-        text=msg,
-        reply_markup=inline_markup,
-        parse_mode=ParseMode.HTML,
-    )
+
+    if not update.callback_query:
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=msg,
+            reply_markup=inline_markup,
+            parse_mode=ParseMode.HTML,
+        )
+    else:
+        bot.edit_message_text(
+            chat_id=update.callback_query.message.chat.id,
+            message_id=update.callback_query.message.message_id,
+            text=msg,
+            reply_markup=inline_markup,
+            parse_mode=ParseMode.HTML,
+        )

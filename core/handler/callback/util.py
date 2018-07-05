@@ -49,7 +49,8 @@ class CallbackAction(IntFlag):
     ORDER_GROUP_ADD = auto()
 
     # Groups
-    GROUP_INFO = auto()
+    GROUP = auto()
+    GROUP_MANAGE = auto()
 
 
 class Action(object):
