@@ -3,14 +3,14 @@ import logging
 
 from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 
+from core.handler.callback.util import create_callback, CallbackAction
 from core.texts import *
 from core.types import Session, User, UserExchangeOrder, UserStockHideSetting, Admin, Group
 from core.utils import send_async
 from functions.inline_markup import QueryType
 
 
-def toggle_sniping(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
+def __toggle_sniping(bot, update, user):
     if user.setting_automated_sniping:
         user.setting_automated_sniping = False
     else:
@@ -20,8 +20,7 @@ def toggle_sniping(bot, update, user, data):
     send_settings(bot, update, user)
 
 
-def toggle_gold_hiding(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
+def __toggle_gold_hiding(bot, update, user, data):
     if user.setting_automated_hiding:
         user.setting_automated_hiding = False
     else:
@@ -31,8 +30,7 @@ def toggle_gold_hiding(bot, update, user, data):
     send_settings(bot, update, user)
 
 
-def toggle_deal_report(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
+def __toggle_deal_report(bot, update, user):
     if user.setting_automated_deal_report:
         user.setting_automated_deal_report = False
     else:
@@ -42,8 +40,7 @@ def toggle_deal_report(bot, update, user, data):
     send_settings(bot, update, user)
 
 
-def toggle_report(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
+def __toggle_report(bot, update, user):
     if user.setting_automated_report:
         user.setting_automated_report = False
     else:
@@ -53,7 +50,7 @@ def toggle_report(bot, update, user, data):
     send_settings(bot, update, user)
 
 
-def disable_api(bot, update, user, data):
+def __disable_api(bot, update, user, data):
     user = Session.query(User).filter_by(id=data['id']).first()
     if user.api_token:
         user.api_token = None
@@ -117,25 +114,27 @@ def send_settings(bot, update, user):
             text=msg,
             chat_id=user.id,
             message_id=update.callback_query.message.message_id,
-            reply_markup=generate_settings_buttons(user),
+            reply_markup=__generate_settings_keyboard(user),
             parse_mode=ParseMode.HTML
         )
     else:
         bot.send_message(
             text=msg,
             chat_id=user.id,
-            reply_markup=generate_settings_buttons(user),
+            reply_markup=__generate_settings_keyboard(user),
             parse_mode=ParseMode.HTML
         )
 
 
-def generate_settings_buttons(user, back_key=False):
+def __generate_settings_keyboard(user, back_key=False):
     inline_keys = []
     if user.api_token:
         inline_keys.append(
             [
-                InlineKeyboardButton(BTN_SETTING_API_DISABLE, callback_data=json.dumps(
-                    {'t': QueryType.DisableAPIAccess, 'id': user.id, 'b': back_key}
+                InlineKeyboardButton(BTN_SETTING_API_DISABLE, callback_data=create_callback(
+                    CallbackAction.SETTING,
+                    user.id,
+                    setting_action="disable_api",
                 ))
             ]
         )
@@ -143,32 +142,40 @@ def generate_settings_buttons(user, back_key=False):
         if user.setting_automated_report:
             inline_keys.append(
                 [
-                    InlineKeyboardButton(BTN_SETTING_DISABLE_REPORT, callback_data=json.dumps(
-                        {'t': QueryType.DisableAutomatedReport, 'id': user.id, 'b': back_key}
+                    InlineKeyboardButton(BTN_SETTING_DISABLE_REPORT, callback_data=create_callback(
+                        CallbackAction.SETTING,
+                        user.id,
+                        setting_action="report",
                     ))
                 ]
             )
         else:
             inline_keys.append(
                 [
-                    InlineKeyboardButton(BTN_SETTING_ENABLE_REPORT, callback_data=json.dumps(
-                        {'t': QueryType.EnableAutomatedReport, 'id': user.id, 'b': back_key}
+                    InlineKeyboardButton(BTN_SETTING_ENABLE_REPORT, callback_data=create_callback(
+                        CallbackAction.SETTING,
+                        user.id,
+                        setting_action="report",
                     ))
                 ]
             )
         if user.setting_automated_deal_report:
             inline_keys.append(
                 [
-                    InlineKeyboardButton(BTN_SETTING_DISABLE_DEAL_REPORT, callback_data=json.dumps(
-                        {'t': QueryType.DisableDealReport, 'id': user.id, 'b': back_key}
+                    InlineKeyboardButton(BTN_SETTING_DISABLE_DEAL_REPORT, callback_data=create_callback(
+                        CallbackAction.SETTING,
+                        user.id,
+                        setting_action="deal_report",
                     ))
                 ]
             )
         else:
             inline_keys.append(
                 [
-                    InlineKeyboardButton(BTN_SETTING_ENABLE_DEAL_REPORT, callback_data=json.dumps(
-                        {'t': QueryType.EnableDealReport, 'id': user.id, 'b': back_key}
+                    InlineKeyboardButton(BTN_SETTING_ENABLE_DEAL_REPORT, callback_data=create_callback(
+                        CallbackAction.SETTING,
+                        user.id,
+                        setting_action="deal_report",
                     ))
                 ]
             )
@@ -176,16 +183,20 @@ def generate_settings_buttons(user, back_key=False):
         if user.setting_automated_sniping:
             inline_keys.append(
                 [
-                    InlineKeyboardButton(BTN_SETTING_DISABLE_SNIPING, callback_data=json.dumps(
-                        {'t': QueryType.DisableSniping, 'id': user.id, 'b': back_key}
+                    InlineKeyboardButton(BTN_SETTING_DISABLE_SNIPING, callback_data=create_callback(
+                        CallbackAction.SETTING,
+                        user.id,
+                        setting_action="sniping",
                     ))
                 ]
             )
         else:
             inline_keys.append(
                 [
-                    InlineKeyboardButton(BTN_SETTING_ENABLE_SNIPING, callback_data=json.dumps(
-                        {'t': QueryType.EnableSniping, 'id': user.id, 'b': back_key}
+                    InlineKeyboardButton(BTN_SETTING_ENABLE_SNIPING, callback_data=create_callback(
+                        CallbackAction.SETTING,
+                        user.id,
+                        setting_action="sniping",
                     ))
                 ]
             )
@@ -193,16 +204,20 @@ def generate_settings_buttons(user, back_key=False):
         if user.setting_automated_hiding:
             inline_keys.append(
                 [
-                    InlineKeyboardButton(BTN_SETTING_DISABLE_HIDE_GOLD, callback_data=json.dumps(
-                        {'t': QueryType.DisableHideGold, 'id': user.id, 'b': back_key}
+                    InlineKeyboardButton(BTN_SETTING_DISABLE_HIDE_GOLD, callback_data=create_callback(
+                        CallbackAction.SETTING,
+                        user.id,
+                        setting_action="hiding",
                     ))
                 ]
             )
         else:
             inline_keys.append(
                 [
-                    InlineKeyboardButton(BTN_SETTING_ENABLE_HIDE_GOLD, callback_data=json.dumps(
-                        {'t': QueryType.EnableHideGold, 'id': user.id, 'b': back_key}
+                    InlineKeyboardButton(BTN_SETTING_ENABLE_HIDE_GOLD, callback_data=create_callback(
+                        CallbackAction.SETTING,
+                        user.id,
+                        setting_action="hiding",
                     ))
                 ]
             )
