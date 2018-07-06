@@ -257,18 +257,6 @@ def item_statistic(bot: Bot, update: Update, user: User):
     )
 
 
-def autolabel(ax, rects):
-    """
-    Attach a text label above each bar displaying its height
-    """
-    for rect in rects:
-        height = rect.get_height()
-        if int(height) > 0:
-            ax.text(rect.get_x() + rect.get_width() / 2., 1.05 * height,
-                    '%d' % int(height),
-                    ha='center', va='bottom')
-
-
 @command_handler()
 def skill_statistic(bot: Bot, update: Update, user: User):
     my_class = Session.query(Profession).filter_by(

@@ -144,32 +144,6 @@ def trigger_show(bot: Bot, update: Update, user: User):
 
 
 @command_handler(
-    min_permission=AdminType.GROUP,
-    allow_private=False,
-    allow_group=True
-)
-def enable_global_trigger_all(bot: Bot, update: Update, user: User):
-    group = update_group(update.message.chat)
-    group.allow_trigger_all = True
-    Session.add(group)
-    Session.commit()
-    send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_ALL_ENABLED)
-
-
-@command_handler(
-    min_permission=AdminType.GROUP,
-    allow_private=False,
-    allow_group=True
-)
-def disable_global_trigger_all(bot: Bot, update: Update, user: User):
-    group = update_group(update.message.chat)
-    group.allow_trigger_all = False
-    Session.add(group)
-    Session.commit()
-    send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_ALL_DISABLED)
-
-
-@command_handler(
     min_permission=AdminType.FULL,
     allow_private=False,
     allow_group=True

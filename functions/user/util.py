@@ -6,6 +6,8 @@ from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from core.handler.callback.util import create_callback, CallbackAction
 from core.texts import *
 from core.types import Session, User, UserExchangeOrder, UserStockHideSetting, Admin, Group
+from functions.user import __delete_group_admin
+
 
 def __toggle_sniping(bot, update, user):
     user.setting_automated_sniping = not user.setting_automated_sniping
@@ -213,7 +215,7 @@ def __generate_settings_keyboard(user, back_key=False):
 def delete_admin(bot, update, user, data):
     admin_user = Session.query(User).filter_by(id=data['uid']).first()
     if admin_user:
-        del_adm(bot, data['gid'], admin_user)
+        __delete_group_admin(bot, data['gid'], admin_user)
     msg, inline_markup = generate_group_info(data['gid'])
     bot.edit_message_text(
         msg,
