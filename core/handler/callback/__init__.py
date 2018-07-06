@@ -4,12 +4,12 @@ import logging
 from telegram import Bot, Update, TelegramError, ParseMode
 from telegram.ext import run_async, JobQueue
 
+from core.bot import MQBot
 from core.decorators import command_handler, create_or_update_user
 from core.handler.callback.util import get_callback_action, Action, CallbackAction
 from core.types import User
 from core.utils import update_group
 
-from functions.inline_markup import QueryType
 from functions.order import groups as order_group
 from functions import group
 from functions import order
@@ -19,6 +19,7 @@ from functions import user as user_functions
 
 from functions import squad
 from functions.squad import admin as squad_admin
+from functions.squad.admin import battle_reports_inline
 
 from functions.top import overall
 from functions.top import squad as top_squad
@@ -29,7 +30,7 @@ from functions.user.util import delete_admin
 
 @run_async
 @command_handler()
-def callback_query(bot: Bot, update: Update, user: User, chat_data: dict, job_queue: JobQueue):
+def callback_query(bot: MQBot, update: Update, user: User, chat_data: dict, job_queue: JobQueue):
     try:
         # Update data...
         update_group(update.callback_query.message.chat)
@@ -80,6 +81,8 @@ def callback_query(bot: Bot, update: Update, user: User, chat_data: dict, job_qu
                 squad_admin.list_squad_members(bot, update, user)
             elif CallbackAction.SQUAD_MANAGE in action.action:
                 squad_admin.manage(bot, update, user)
+            elif CallbackAction.REPORT in action.action:
+                battle_reports_inline(bot, update, user)
 
             # Profile
             elif CallbackAction.HERO_EQUIP in action.action:
@@ -116,8 +119,6 @@ def callback_query(bot: Bot, update: Update, user: User, chat_data: dict, job_qu
                 chat_id=update.effective_message.chat.id,
                 parse_mode=ParseMode.HTML,
             )
-        #if data['t'] == QueryType.OtherReport.value:
-        #    functions.squad.admin.other_report(bot, update, user, data)
     except TelegramError as e:
         # Ignore Message is not modified errors
         if str(e) != "Message is not modified":

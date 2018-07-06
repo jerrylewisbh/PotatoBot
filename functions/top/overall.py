@@ -13,7 +13,6 @@ from core.texts import MSG_TOP_WEEK_WARRIORS, MSG_TOP_ATTACK, MSG_TOP_DEFENCE, M
     BTN_WEEK, BTN_ALL_TIME
 from core.types import User, Session, Character, Report
 from core.utils import send_async
-from functions.inline_markup import QueryType
 from functions.top import get_top, gen_top_msg
 
 

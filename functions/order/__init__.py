@@ -16,7 +16,6 @@ from core.texts import *
 from core.types import Admin, AdminType, MessageType, Session, User, Order, OrderGroup, Squad, SquadMember, \
     OrderCleared, Group
 from core.utils import send_async
-from functions.inline_markup import QueryType
 from functions.order.groups import list
 from functions.order.util import OrderDraft, __send_order
 

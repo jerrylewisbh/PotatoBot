@@ -6,8 +6,6 @@ from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from core.handler.callback.util import create_callback, CallbackAction
 from core.texts import *
 from core.types import Session, User, UserExchangeOrder, UserStockHideSetting, Admin, Group
-from functions.inline_markup import QueryType
-
 
 def __toggle_sniping(bot, update, user):
     user.setting_automated_sniping = not user.setting_automated_sniping

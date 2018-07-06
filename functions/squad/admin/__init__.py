@@ -14,7 +14,6 @@ from core.texts import *
 from core.texts import MSG_SQUAD_CLEAN
 from core.types import AdminType, User, Session, Squad, Admin, SquadMember, Character, Report
 from core.utils import send_async
-from functions.inline_markup import QueryType
 from functions.reply_markup import generate_user_markup
 
 
@@ -136,10 +135,13 @@ def battle_attendance_show(bot: MQBot, update: Update, user: User):
 @command_handler(
     min_permission=AdminType.GROUP
 )
-def battle_reports_show(bot: MQBot, update: Update, user: User):
+def battle_reports(bot: MQBot, update: Update, user: User):
     logging.info("battle_reports_show")
-    admin = Session.query(Admin, Squad).filter(Admin.user_id == update.message.from_user.id,
-                                               Squad.chat_id == Admin.group_id).all()
+
+    admin = Session.query(Admin, Squad).filter(
+        Admin.user_id == update.message.from_user.id,
+        Squad.chat_id == Admin.group_id
+    ).all()
     group_admin = []
     for adm, squad in admin:
         if squad is not None:
@@ -151,10 +153,12 @@ def battle_reports_show(bot: MQBot, update: Update, user: User):
 
         time_from = now.replace(hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
 
-        reports = Session.query(User, Report) \
-            .join(SquadMember) \
-            .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from)) \
-            .filter(SquadMember.squad_id == adm.group_id).order_by(Report.date.desc()).all()
+        reports = Session.query(User, Report).join(SquadMember).outerjoin(
+            Report, and_(User.id == Report.user_id, Report.date > time_from)
+        ).filter(
+            SquadMember.squad_id == adm.group_id
+        ).order_by(Report.date.desc()).all()
+
         texts = []
         full_def = 0
         full_atk = 0
@@ -205,14 +209,13 @@ def battle_reports_show(bot: MQBot, update: Update, user: User):
             if count >= limit:
                 count = 0
                 text = template + repo_list
-                markup = generate_other_reports(time_from, squad.chat_id)
+                markup = __generate_report_paging(user, time_from, squad.chat_id)
                 bot.sendMessage(
                     chat_id=update.message.chat.id,
                     text=text,
                     parse_mode=ParseMode.HTML,
                     reply_markup=markup)
-                # send_async(bot, chat_id=update.message.chat.id, text=repo_list, parse_mode=ParseMode.HTML,
-                # reply_markup=markup)
+
                 repo_list = ''
 
 
@@ -318,16 +321,23 @@ def __request_accept(bot, update, user_id):
             text=MSG_SQUAD_REQUEST_ACCEPTED.format('@' + member.user.username)
         )
 
+@command_handler(
+    min_permission=AdminType.GROUP
+)
+def battle_reports_inline(bot: MQBot, update: Update, user: User):
+    if not update.callback_query:
+        logging.warning("squad_invite_answer without callback_query called")
+        return
+    action = get_callback_action(update.callback_query.data, user.id)
 
-def other_report(bot, update, user, data):
-    squad = Session.query(Squad).filter(Squad.chat_id == data['c']).first()
-    time_from = datetime.fromtimestamp(data['ts'])
+    squad = Session.query(Squad).filter(Squad.chat_id == action.data['squad_id']).first()
+    time_from = datetime.fromtimestamp(action.data['timestamp'])
     time_to = time_from + timedelta(hours=4)
 
     reports = Session.query(User, Report).join(SquadMember).outerjoin(
         Report, and_(User.id == Report.user_id, Report.date > time_from, Report.date < time_to)
     ).filter(
-        SquadMember.squad_id == data['c']
+        SquadMember.squad_id == action.data['squad_id']
     ).order_by(Report.date.desc()).all()
 
     texts = []
@@ -377,16 +387,20 @@ def other_report(bot, update, user, data):
         if count >= limit:
             count = 0
             text = template + repo_list
-            markup = generate_other_reports(time_from, squad.chat_id)
-            bot.sendMessage(
+            markup = __generate_report_paging(user, time_from, squad.chat_id)
+
+            bot.edit_message_text(
                 chat_id=update.callback_query.message.chat.id,
+                message_id=update.callback_query.message.message_id,
                 text=text,
                 parse_mode=ParseMode.HTML,
-                reply_markup=markup)
+                reply_markup=markup
+            )
+
             repo_list = ''
 
 
-def generate_fire_up(user: User, members):
+def __generate_fire_up(user: User, members):
     inline_keys = []
     inline_list = []
     limit = 50
@@ -490,19 +504,34 @@ def __generate_squad_member_list_keyboard_button(user: User, squad: Squad):
     return keyboards
 
 
-def generate_other_reports(time: datetime, squad_id):
-    inline_keys = [[InlineKeyboardButton('<< ' + (time - timedelta(hours=8)).strftime('%d-%m-%Y %H:%M'),
-                                         callback_data=json.dumps(
-                                             {'t': QueryType.OtherReport.value,
-                                              'ts': (time - timedelta(hours=8)).timestamp(),
-                                              'c': squad_id}))]]
+def __generate_report_paging(user: User, time: datetime, squad_id):
+    row1 = [InlineKeyboardButton(
+        '<< ' + (time - timedelta(hours=8)).strftime('%d-%m-%Y %H:%M'),
+        callback_data=create_callback(
+            CallbackAction.REPORT,
+            user.id,
+            squad_id=squad_id,
+            timestamp=(time + timedelta(hours=8)).timestamp(),
+        )
+    )]
+
     if time + timedelta(hours=4) < datetime.now():
-        inline_keys[0].append(InlineKeyboardButton((time + timedelta(hours=8)).strftime('%d-%m-%Y %H:%M') + ' >>',
-                                                   callback_data=json.dumps(
-                                                       {'t': QueryType.OtherReport.value,
-                                                        'ts': (time + timedelta(hours=8)).timestamp(),
-                                                        'c': squad_id})))
-    return InlineKeyboardMarkup(inline_keys)
+        row1.append(
+            InlineKeyboardButton(
+                '<< ' + (time - timedelta(hours=8)).strftime('%d-%m-%Y %H:%M'),
+                callback_data=create_callback(
+                    CallbackAction.REPORT,
+                    user.id,
+                    squad_id=squad_id,
+                    timestamp=(time + timedelta(hours=8)).timestamp(),
+                )
+            )
+        )
+        #'ts': (time + timedelta(hours=8)).timestamp(),
+
+    pagination = [row1]
+
+    return InlineKeyboardMarkup(pagination)
 
 
 def __generate_squad_list_keyboard_button(user: User, squad: Squad):
@@ -552,7 +581,7 @@ def remove_from_squad(bot: MQBot, update: Update, user: User):
             group_admin.append(adm)
     for adm in group_admin:
         members = Session.query(SquadMember).filter_by(squad_id=adm.group_id, approved=True).all()
-        markups = generate_fire_up(user, members)
+        markups = __generate_fire_up(user, members)
         squad = Session.query(Squad).filter_by(chat_id=adm.group_id).first()
         for markup in markups:
             send_async(

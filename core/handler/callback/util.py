@@ -36,6 +36,9 @@ class CallbackAction(IntFlag):
     SQUAD_LIST_MEMBERS = auto()
     SQUAD_MANAGE = auto()
 
+    # Report
+    REPORT = auto()
+
     # Hero related
     HERO = auto()
     HERO_EQUIP = auto()

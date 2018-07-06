@@ -19,7 +19,6 @@ from core.types import (BuildReport, Character, Equip, Item, Profession,
                         Report, Session, Stock, User, new_item)
 from core.utils import send_async
 from functions.common import StockType, __ban_traitor, __get_item_worth
-from functions.inline_markup import QueryType
 
 
 class BuildType(Enum):
