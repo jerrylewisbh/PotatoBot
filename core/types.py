@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from config import DB, SUPER_ADMIN_ID
 from datetime import datetime
 from enum import Enum, IntEnum
-
 from sqlalchemy import (BigInteger, Boolean, Column, DateTime, ForeignKey,
                         Integer, Text, UnicodeText, UniqueConstraint,
                         create_engine)
@@ -11,7 +9,8 @@ from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
-from telegram import Bot
+
+from config import DB
 
 
 class AdminType(Enum):

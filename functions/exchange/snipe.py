@@ -1,7 +1,6 @@
 import logging
-
 from sqlalchemy import func
-from telegram import Bot, ParseMode, Update
+from telegram import ParseMode, Update
 
 from core.bot import MQBot
 from core.decorators import command_handler

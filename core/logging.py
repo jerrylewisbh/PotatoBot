@@ -2,9 +2,7 @@ import logging
 from html import escape
 
 from telegram import Bot, ParseMode
-from telegram.error import NetworkError, BadRequest
-
-from core.utils import send_async
+from telegram.error import NetworkError
 
 # This code is based on python-telegram-handler from
 # from https://github.com/sashgorokhov/python-telegram-handler

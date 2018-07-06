@@ -2,6 +2,7 @@ import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 
 from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID, CWBOT_ID
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler.callback import CallbackAction
 from core.handler.callback.util import create_callback, get_callback_action

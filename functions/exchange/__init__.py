@@ -1,5 +1,5 @@
 from sqlalchemy import func
-from telegram import Bot, Update, ParseMode
+from telegram import Update, ParseMode
 
 from core.bot import MQBot
 from core.decorators import command_handler
@@ -17,9 +17,9 @@ def get_item_by_cw_id(cw_id):
     return item
 
 
-def __generate_itemlist(intro: str, footer: str, filter):
+def __generate_itemlist(intro: str, footer: str, item_filter):
     items = Session.query(Item).filter(
-        *filter
+        *item_filter
     ).order_by(func.length(Item.cw_id), Item.cw_id).all()
 
     text = intro

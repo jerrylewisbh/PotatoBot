@@ -310,9 +310,9 @@ def skill_statistic(bot: MQBot, update: Update, user: User):
     # Set data
     df = pandas.DataFrame(my_skills)
     categories = list(df)
-    N = len(categories)
+    number_of_occurences = len(categories)
     # What will be the angle of each axis in the plot? (we divide the plot / number of variable)
-    angles = [n / float(N) * 2 * numpy.pi for n in range(N)]
+    angles = [n / float(number_of_occurences) * 2 * numpy.pi for n in range(number_of_occurences)]
     # angles += angles[:1]
 
     # Initialise the spider plot

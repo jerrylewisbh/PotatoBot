@@ -251,7 +251,7 @@ def hide_list(bot: MQBot, update: Update, user: User):
                         )
                     item_list.append((worth, link))
 
-    for item in sorted(item_list, key=lambda x: x[0], reverse=True):
+    for item in sorted(item_list, key=lambda y: y[0], reverse=True):
         text += item[1]
 
     if not item_list:

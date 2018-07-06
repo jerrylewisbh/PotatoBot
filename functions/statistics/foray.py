@@ -1,11 +1,10 @@
 import io
 import logging
-
 import matplotlib.pyplot as plot
 import numpy
 from sqlalchemy import func, extract
 from sqlalchemy.sql.functions import count
-from telegram import Bot, ParseMode, Update
+from telegram import ParseMode, Update
 
 from config import QUEST_LOCATION_FORAY_ID
 from core.bot import MQBot

@@ -117,7 +117,7 @@ def join_squad_request(bot: MQBot, update: Update, user: User):
                 MSG_SQUAD_REQUEST_EXISTS,
                 update.callback_query.message.chat.id,
                 update.callback_query.message.message_id,
-                reply_markup=__get_keyboard_leave(user)
+                reply_markup=__get_keyboard_leave(user, user.id)
             )
             return
 
@@ -152,7 +152,7 @@ def join_squad_request(bot: MQBot, update: Update, user: User):
             return
         if user.is_squadmember or (user.member and not user.member.approved):
             send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_REQUEST_EXISTS,
-                       reply_markup=__get_keyboard_leave(user))
+                       reply_markup=__get_keyboard_leave(user, user.id))
             return
         if user.character.level < MINIMUM_SQUAD_MEMBER_LEVEL:
             send_async(

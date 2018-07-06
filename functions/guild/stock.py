@@ -1,5 +1,5 @@
 import re
-from telegram import Bot, Update, ParseMode
+from telegram import Update, ParseMode
 
 from config import CWBOT_ID
 from core.bot import MQBot

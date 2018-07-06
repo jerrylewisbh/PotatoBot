@@ -1,6 +1,5 @@
 import logging
-
-from telegram import Bot, Update
+from telegram import Update
 from telegram.ext import run_async
 
 from config import CWBOT_ID

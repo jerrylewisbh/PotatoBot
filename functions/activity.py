@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
-
-from telegram import Bot, Update
+from telegram import Update
 
 from core.bot import MQBot
 from core.decorators import command_handler

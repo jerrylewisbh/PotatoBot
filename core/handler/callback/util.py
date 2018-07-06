@@ -69,11 +69,11 @@ class Action(object):
         self.data = kwargs
 
 
-def get_callback_action(uuid, user_id, allow_all=False):
+def get_callback_action(uuid_key, user_id, allow_all=False):
     """ Save a simple callback to redis. This checks if the user using the keyboard is also the one we initially
     registered. This can be disabled with allow_all=True"""
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
-    action = r.get(uuid)
+    action = r.get(uuid_key)
     if action:
         action = pickle.loads(action)
         if user_id == action.user_id or allow_all:

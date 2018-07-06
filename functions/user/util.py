@@ -1,12 +1,9 @@
-import json
 import logging
-
 from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.handler.callback.util import create_callback, CallbackAction
 from core.texts import *
-from core.types import Session, User, UserExchangeOrder, UserStockHideSetting, Admin, Group
-from functions.user import __delete_group_admin
+from core.types import Session, UserExchangeOrder, UserStockHideSetting
 
 
 def __toggle_sniping(bot, update, user):

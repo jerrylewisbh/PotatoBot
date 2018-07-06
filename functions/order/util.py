@@ -1,7 +1,8 @@
 import logging
-from telegram import Bot, ReplyMarkup, TelegramError
+from telegram import ReplyMarkup, TelegramError
 from telegram.ext import run_async
 
+from core.bot import MQBot
 from core.types import MessageType
 
 

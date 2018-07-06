@@ -1,9 +1,8 @@
 import datetime
 import json
 import logging
-
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
-from telegram import Bot, ParseMode
+from telegram import ParseMode
 
 from config import BOT_ONE_STEP_API, LOG_LEVEL_MQ
 from core.bot import MQBot
