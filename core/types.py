@@ -569,7 +569,7 @@ def check_admin(update, adm_type, allowed_types=()):
 
 def check_ban(update):
     ban = Session().query(Ban).filter_by(user_id=update.message.from_user.id
-    if update.message else update.callback_query.from_user.id).first()
+                                         if update.message else update.callback_query.from_user.id).first()
     if ban is None or ban.to_date < datetime.now():
         return True
     else:

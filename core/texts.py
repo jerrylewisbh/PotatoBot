@@ -606,8 +606,8 @@ MSG_QUEST_STAT_LOCATION = "*{} ({})*: \n" \
                           "Avg: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n" \
                           "Ttl: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n"
 MSG_QUEST_STAT_NO_LOOT = "*{} ({})*: \n" \
-                          "Avg: {:.2f}🔥, {:.2f}💰\n" \
-                          "Ttl: {:.2f}🔥, {:.2f}💰\n"
+    "Avg: {:.2f}🔥, {:.2f}💰\n" \
+    "Ttl: {:.2f}🔥, {:.2f}💰\n"
 MSG_FORAY_INTRO = "Statistics for all forays I know. Forward them to me to get " \
                   "more detailed stats! This graph also contains /pledge rate for knights.\n\n" \
                   "_Tip: Your personal statistics can be found in 🗺Quests_"
