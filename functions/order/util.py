@@ -4,31 +4,38 @@ from telegram.ext import run_async
 
 from core.types import MessageType
 
+class OrderDraft(object):
+    def __init__(self):
+        self.type = MessageType.TEXT
+        self.order = None
+        self.pin = True
+        self.button = False
 
 @run_async
-def __send_order(bot: Bot, text: str, message_type: MessageType, chat_id: int, markup: ReplyMarkup, pin: bool = False):
+def __send_order(bot: Bot, order: OrderDraft, chat_id: int, markup: ReplyMarkup):
     logging.info(
         "send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
         bot,
-        text,
-        message_type,
+        order.order,
+        order.type,
         chat_id,
         markup,
-        pin
+        order.pin
     )
     try:
         msg_sent = None
-        if message_type == MessageType.AUDIO.value:
-            msg_sent = bot.send_audio(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.DOCUMENT.value:
-            msg_sent = bot.send_document(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.VOICE.value:
-            msg_sent = bot.send_voice(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.STICKER.value:
-            msg_sent = bot.send_sticker(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.CONTACT.value:
-            msg = text.replace('\'', '"')
-            contact = loads(msg)
+        if order.type == MessageType.AUDIO.value:
+            msg_sent = bot.send_audio(chat_id, order.order, reply_markup=markup)
+        elif order.type == MessageType.DOCUMENT.value:
+            msg_sent = bot.send_document(chat_id, order.order, reply_markup=markup)
+        elif order.type == MessageType.VOICE.value:
+            msg_sent = bot.send_voice(chat_id, order.order, reply_markup=markup)
+        elif order.type == MessageType.STICKER.value:
+            msg_sent = bot.send_sticker(chat_id, order.order, reply_markup=markup)
+        elif order.type == MessageType.CONTACT.value:
+            msg = order.order.replace('\'', '"')
+            logging.warning("TODO: SEND CONTACT")
+            return
             if 'phone_number' not in contact.keys():
                 contact['phone_number'] = None
             if 'first_name' not in contact.keys():
@@ -41,26 +48,28 @@ def __send_order(bot: Bot, text: str, message_type: MessageType, chat_id: int, m
                     contact['last_name'],
                     reply_markup=markup
                 )
-        elif message_type == MessageType.VIDEO.value:
-            msg_sent = bot.send_video(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.VIDEO_NOTE.value:
-            msg_sent = bot.send_video_note(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.LOCATION.value:
-            msg = text.replace('\'', '"')
-            location = loads(msg)
-            msg_sent = bot.send_location(chat_id, location['latitude'], location['longitude'], reply_markup=markup)
-        elif message_type == MessageType.PHOTO.value:
-            msg_sent = bot.send_photo(chat_id, text, reply_markup=markup)
+        elif order.type == MessageType.VIDEO.value:
+            msg_sent = bot.send_video(chat_id, order.order, reply_markup=markup)
+        elif order.type == MessageType.VIDEO_NOTE.value:
+            msg_sent = bot.send_video_note(chat_id, order.order, reply_markup=markup)
+        elif order.type == MessageType.LOCATION.value:
+            msg = order.order.replace('\'', '"')
+            #location = loads(msg)
+            logging.warning("TODO: SEND LOCATION")
+            return
+            #msg_sent = bot.send_location(chat_id, location['latitude'], location['longitude'], reply_markup=markup)
+        elif order.type == MessageType.PHOTO.value:
+            msg_sent = bot.send_photo(chat_id, order.order, reply_markup=markup)
         else:
             logging.info("SEND ORDER")
             msg_sent = bot.send_message(
                 chat_id=chat_id,
-                text=text,
+                text=order.order,
                 disable_web_page_preview=True,
                 reply_markup=markup
             )
 
-        if pin:
+        if order.pin:
             msg_result = msg_sent.result()
             logging.info("Pinning for message_id='%s'", msg_result.message_id)
             bot.pin_chat_message(
@@ -72,11 +81,11 @@ def __send_order(bot: Bot, text: str, message_type: MessageType, chat_id: int, m
         logging.info(
             "END send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
             bot,
-            text,
-            message_type,
+            order.order,
+            order.type,
             chat_id,
             markup,
-            pin
+            order.pin
         )
         return msg_sent
     except TelegramError as err:

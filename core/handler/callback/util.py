@@ -55,6 +55,7 @@ class CallbackAction(IntFlag):
     GROUP = auto()
     GROUP_INFO = auto()
     GROUP_MANAGE = auto()
+    ORDER_GIVE = auto()
 
 
 class Action(object):

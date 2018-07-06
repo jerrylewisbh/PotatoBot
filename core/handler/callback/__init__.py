@@ -43,11 +43,12 @@ def callback_query(bot: Bot, update: Update, user: User, chat_data: dict, job_qu
                 print(action)
                 print(action.action)
 
-                if CallbackAction.ORDER:
+                if CallbackAction.ORDER in action.action:
                     order.manage(bot, update, user, chat_data=chat_data)
-
+                elif CallbackAction.ORDER_GIVE in action.action:
+                    order.send_order(bot, update, user, chat_data=chat_data)
                 # Top
-                if CallbackAction.TOP in action.action:
+                elif CallbackAction.TOP in action.action:
                     # Top Lists....
                     if CallbackAction.TOP_FILTER_SQUAD in action.action:
                         logging.info("Inline Query: Calling squad.top")
@@ -121,19 +122,11 @@ def callback_query(bot: Bot, update: Update, user: User, chat_data: dict, job_qu
         return
 
         # OLD way...
-        data = json.loads(update.callback_query.data)
-        if data['t'] == QueryType.Order.value:
-            order.order_button(bot, update, user, data, chat_data)
-        elif data['t'] == QueryType.OrderOk.value:
+        if data['t'] == QueryType.OrderOk.value:
             order.inline_order_confirmed(bot, update, user, data, job_queue)
         elif data['t'] == QueryType.Orders.value:
             order.inline_orders(bot, update, user, data, chat_data)
             groups.order_group_list(bot, update)
-        elif data['t'] == QueryType.TriggerOrderPin.value:
-            order.trigger_order_pin(bot, update, user, data, chat_data)
-        elif data['t'] == QueryType.TriggerOrderButton.value:
-            order.trigger_order_button(bot, update, user, data, chat_data)
-
         # SQUAD
         elif data['t'] == QueryType.OtherReport.value:
             functions.squad.admin.other_report(bot, update, user, data)

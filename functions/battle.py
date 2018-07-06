@@ -21,7 +21,7 @@ from core.utils import send_async
 from cwmq import Publisher
 from functions.common import (get_weighted_diff, stock_compare_text,
                               stock_split)
-from functions.order import __send_order
+from functions.order import send_order, OrderDraft
 from functions.profile import (format_report, get_latest_report,
                                get_stock_before_after_war)
 
@@ -40,13 +40,19 @@ def ready_to_battle(bot: Bot, job_queue: Job):
             Session.add(new_order)
             Session.commit()
 
-            __send_order(
+            # Temporary object... TODO: Move this directly to DB?
+            o = OrderDraft()
+            o.pin = True
+            o.order = new_order.text
+            o.type = MessageType.TEXT
+            o.button = False
+
+
+            send_order(
                 bot=bot,
-                text=new_order.text,
-                message_type=MessageType.TEXT,
+                order=o,
                 chat_id=new_order.chat_id,
-                markup=None,
-                pin=True
+                markup=None
             )
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
