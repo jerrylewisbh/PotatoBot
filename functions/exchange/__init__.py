@@ -1,6 +1,7 @@
 from sqlalchemy import func
 from telegram import Bot, Update, ParseMode
 
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.types import Session, Item, User
 from core.utils import send_async, pad_string
@@ -31,7 +32,7 @@ def __generate_itemlist(intro: str, footer: str, filter):
     allow_group=True,
     allow_private=True,
 )
-def list_items(bot: Bot, update: Update, user: User):
+def list_items(bot: MQBot,update: Update, user: User):
     text = __generate_itemlist(
         "*Tradable items:*\n",
         "\nFor a list of additional items that can only be traded in via Auction see /items\_other",
@@ -48,7 +49,7 @@ def list_items(bot: Bot, update: Update, user: User):
     allow_group=True,
     allow_private=True,
 )
-def list_items_other(bot: Bot, update: Update, user: User):
+def list_items_other(bot: MQBot,update: Update, user: User):
     text = __generate_itemlist(
         "*Items not tradable via Exchange or new items:*\n",
         "\nFor a list of additional items that can be traded in the Exchange see /items",
@@ -62,7 +63,7 @@ def list_items_other(bot: Bot, update: Update, user: User):
     )
 
 @command_handler()
-def list_items_unknown(bot: Bot, update: Update, user: User):
+def list_items_unknown(bot: MQBot,update: Update, user: User):
     text = __generate_itemlist(
         "*Items missing a Chatwars Item ID:*\n",
         "",

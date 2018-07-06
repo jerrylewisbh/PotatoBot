@@ -4,7 +4,6 @@
 """
 MessageQueue usage example with @queuedmessage decorator.
 """
-import logging
 
 import telegram.bot
 from telegram.error import Unauthorized

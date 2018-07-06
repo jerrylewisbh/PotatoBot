@@ -1,7 +1,5 @@
 import logging
-from datetime import datetime
-
-from telegram import Bot, ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import WAITING_ROOM_LINK, MINIMUM_SQUAD_MEMBER_LEVEL
 from core.bot import MQBot
@@ -10,19 +8,18 @@ from core.handler.callback import CallbackAction
 from core.handler.callback.util import create_callback, get_callback_action
 from core.texts import *
 from core.texts import MSG_SQUAD_LEAVE_DECLINE, BTN_YES, BTN_NO, MSG_SQUAD_REQUESTED, MSG_SQUAD_REQUEST_NEW, \
-    MSG_SQUAD_REQUEST_EXISTS, MSG_GO_AWAY, MSG_SQUAD_REQUEST_DECLINED, MSG_SQUAD_ADD_ACCEPTED
+    MSG_SQUAD_REQUEST_EXISTS, MSG_GO_AWAY, MSG_SQUAD_ADD_ACCEPTED
 from core.types import (Admin, Session,
                         SquadMember, User, Squad)
 from core.utils import send_async
-
-from functions.squad.util import __remove
 from functions.reply_markup import generate_squad_markup
+from functions.squad.util import __remove
 
 Session()
 
 
 @command_handler()
-def squad_about(bot: Bot, update: Update, user: User):
+def squad_about(bot: MQBot,update: Update, user: User):
     admin = Session.query(Admin).filter(
         Admin.user_id == update.effective_user.id,
         Admin.group_id.isnot(None)
@@ -45,7 +42,7 @@ def squad_about(bot: Bot, update: Update, user: User):
 
 
 @command_handler()
-def leave_squad_request(bot: Bot, update: Update, user: User):
+def leave_squad_request(bot: MQBot,update: Update, user: User):
     if update.callback_query:
         action = get_callback_action(update.callback_query.data, update.effective_user.id)
         if 'leave' in action.data and action.data['leave']:
@@ -110,7 +107,7 @@ def __get_keyboard_leave(user, leave_user_id):
 
 
 @command_handler()
-def join_squad_request(bot: Bot, update: Update, user: User):
+def join_squad_request(bot: MQBot,update: Update, user: User):
     # Already a join in progress...
     if update.callback_query:
         action = get_callback_action(update.callback_query.data, update.effective_user.id)
@@ -204,7 +201,7 @@ def squad_invite(bot: MQBot, update: Update, user: User):
         __invite_accept(bot, update, invited_user, action.data['squad_id'])
 
 
-def __invite_decline(bot: Bot, update: Update, invited_user: User):
+def __invite_decline(bot: MQBot,update: Update, invited_user: User):
     bot.edit_message_text(
         MSG_SQUAD_ADD_DECLINED.format('@' + invited_user.username),
         update.callback_query.message.chat.id,
@@ -212,7 +209,7 @@ def __invite_decline(bot: Bot, update: Update, invited_user: User):
     )
 
 
-def __invite_accept(bot: Bot, update: Update, invited_user: User, squad_id: int):
+def __invite_accept(bot: MQBot,update: Update, invited_user: User, squad_id: int):
     member = Session.query(SquadMember).filter_by(user_id=invited_user.id).first()
     if not member:
         member = SquadMember()

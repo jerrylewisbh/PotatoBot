@@ -1,5 +1,6 @@
-from telegram import Bot, Update
+from telegram import Update
 
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.texts import *
 from core.types import AdminType, Session, check_admin
@@ -23,7 +24,7 @@ def pin_decorator(func):
 
 
 @pin_decorator
-def pin(bot: Bot, update: Update):
+def pin(bot: MQBot,update: Update):
     bot.request.post(bot.base_url + '/pinChatMessage',
                      {'chat_id': update.message.reply_to_message.chat.id,
                       'message_id': update.message.reply_to_message.message_id,
@@ -31,7 +32,7 @@ def pin(bot: Bot, update: Update):
 
 
 @pin_decorator
-def silent_pin(bot: Bot, update: Update):
+def silent_pin(bot: MQBot,update: Update):
     bot.request.post(bot.base_url + '/pinChatMessage',
                      {'chat_id': update.message.reply_to_message.chat.id,
                       'message_id': update.message.reply_to_message.message_id,
@@ -43,7 +44,7 @@ def silent_pin(bot: Bot, update: Update):
     allow_group=True,
     allow_private=False
 )
-def pin_all(bot: Bot, update: Update):
+def pin_all(bot: MQBot,update: Update):
     group = update_group(update.message.chat)
     if not group.allow_pin_all:
         group.allow_pin_all = True
@@ -57,7 +58,7 @@ def pin_all(bot: Bot, update: Update):
     allow_group=True,
     allow_private=False,
 )
-def not_pin_all(bot: Bot, update: Update):
+def not_pin_all(bot: MQBot,update: Update):
     group = update_group(update.message.chat)
     if group.allow_pin_all:
         group.allow_pin_all = False

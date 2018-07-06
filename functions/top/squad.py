@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
-
 from sqlalchemy import func, collate, tuple_
-from telegram import Bot, Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import CASTLE
+from core.bot import MQBot
 from core.commands import *
 from core.decorators import command_handler
 from core.handler.callback import CallbackAction, get_callback_action
@@ -80,7 +80,7 @@ def __get_top_attendance(user: User, date_filter):
 
 
 @command_handler()
-def top(bot: Bot, update: Update, user: User):
+def top(bot: MQBot,update: Update, user: User):
     text = ""
     keys = [
         [

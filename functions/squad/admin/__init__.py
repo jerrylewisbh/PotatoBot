@@ -1,7 +1,5 @@
-import json
 import logging
 from datetime import datetime, timedelta
-
 from sqlalchemy import func, tuple_, and_
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 

@@ -1,12 +1,11 @@
-import json
 import logging
 import re
 from datetime import datetime, timedelta
 from enum import Enum
-
-from telegram import Bot, ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import CASTLE
+from core.bot import MQBot
 from core.enums import CASTLE_MAP
 from core.handler.callback import CallbackAction
 from core.handler.callback.util import create_callback
@@ -14,7 +13,7 @@ from core.regexp import BUILD_REPORT, HERO, PROFESSION, REPAIR_REPORT, REPORT
 from core.state import get_last_battle
 from core.template import fill_char_template
 from core.texts import *
-from core.texts import BTN_HERO, BTN_STOCK, BTN_EQUIPMENT, BTN_SKILL, MSG_BACK
+from core.texts import BTN_HERO, BTN_STOCK, BTN_EQUIPMENT, BTN_SKILL
 from core.types import (BuildReport, Character, Equip, Item, Profession,
                         Report, Session, Stock, User, new_item)
 from core.utils import send_async
@@ -63,7 +62,7 @@ def parse_hero_text(report_text):
     # TODO: Should boosted def/atk be used?
 
 
-def parse_hero(bot: Bot, profile, user_id, date):
+def parse_hero(bot: MQBot,profile, user_id, date):
     """ Parse a forwarded hero """
     logging.info("parse_hero for user_id='%s'", user_id)
     char = Session.query(Character).filter_by(user_id=user_id, date=date).first()
@@ -299,7 +298,7 @@ def parse_repair_reports(report, user_id, date):
     return report
 
 
-def __send_user_with_settings(bot: Bot, update: Update, user: User):
+def __send_user_with_settings(bot: MQBot,update: Update, user: User):
     if user and user.character:
         char = user.character
         profession = user.profession
@@ -389,7 +388,7 @@ def get_stock_before_after_war(user: User) -> tuple:
     return before_battle, after_battle
 
 
-def annotate_stock_with_price(bot: Bot, stock: str):
+def annotate_stock_with_price(bot: MQBot,stock: str):
     stock_text = ""
     overall_worth = 0
     for line in stock.splitlines():

@@ -1,13 +1,13 @@
 import logging
+import redis
 from datetime import datetime
 from enum import Enum
-
-import redis
 from sqlalchemy import func
-from telegram import Bot, ParseMode, Update, TelegramError
+from telegram import ParseMode, Update, TelegramError
 from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated
 
 from config import CWBOT_ID, REDIS_SERVER, REDIS_PORT, LOG_ALLOWED_RECIPIENTS, LOGFILE
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.state import GameState, get_game_state
 from core.texts import *
@@ -15,8 +15,8 @@ from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_Y
     MSG_USER_UNKNOWN, MSG_REASON_TRAITOR, MSG_YOU_UNBANNED, MSG_USER_UNBANNED, MSG_USER_NOT_BANNED
 from core.types import Admin, AdminType, Stock, User, Session, Item, Ban, SquadMember, Squad, Group, new_item
 from core.utils import send_async
-from functions.user.util import disable_api_functions
 from functions.reply_markup import (generate_admin_markup)
+from functions.user.util import disable_api_functions
 
 Session()
 
@@ -26,7 +26,7 @@ class StockType(Enum):
     TradeBot = 1
 
 
-def error_callback(bot: Bot, update, error, **kwargs):
+def error_callback(bot: MQBot,update, error, **kwargs):
     """ Error handling """
     try:
         raise error
@@ -84,7 +84,7 @@ def error_callback(bot: Bot, update, error, **kwargs):
     min_permission=AdminType.GROUP,
     allow_private=True
 )
-def admin_panel(bot: Bot, update: Update, user: User):
+def admin_panel(bot: MQBot,update: Update, user: User):
     if update.message.chat.type == 'private':
         admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
         full_adm = False
@@ -100,12 +100,12 @@ def admin_panel(bot: Bot, update: Update, user: User):
     allow_private=False,
     allow_group=True
 )
-def kick(bot: Bot, update: Update, user: User):
+def kick(bot: MQBot,update: Update, user: User):
     bot.leave_chat(update.message.chat.id)
 
 
 @command_handler()
-def help_msg(bot: Bot, update, user: User):
+def help_msg(bot: MQBot,update, user: User):
     admin_user = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
     global_adm = False
     for adm in admin_user:
@@ -125,7 +125,7 @@ def help_msg(bot: Bot, update, user: User):
     allow_private=True,
     allow_group=True
 )
-def ping(bot: Bot, update: Update, user: User):
+def ping(bot: MQBot,update: Update, user: User):
     send_async(bot, chat_id=update.message.chat.id, text=MSG_PING.format(update.message.from_user.username))
 
 
@@ -273,7 +273,7 @@ def stock_compare(user_id, new_stock_text):
 @command_handler(
     forward_from=CWBOT_ID
 )
-def stock_compare_forwarded(bot: Bot, update: Update, user: User, chat_data: dict):
+def stock_compare_forwarded(bot: MQBot,update: Update, user: User, chat_data: dict):
     # If user-stock is automatically updated via API do not allow reports during SILENCE
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
 
@@ -299,7 +299,7 @@ def stock_compare_forwarded(bot: Bot, update: Update, user: User, chat_data: dic
     allow_private=False,
     allow_group=True
 )
-def delete_msg(bot: Bot, update: Update):
+def delete_msg(bot: MQBot,update: Update):
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.reply_to_message.message_id)
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.message_id)
 
@@ -309,7 +309,7 @@ def delete_msg(bot: Bot, update: Update):
     allow_private=False,
     allow_group=True
 )
-def delete_user(bot: Bot, update: Update, user: User):
+def delete_user(bot: MQBot,update: Update, user: User):
     bot.kickChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
     bot.unbanChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
 
@@ -317,7 +317,7 @@ def delete_user(bot: Bot, update: Update, user: User):
 @command_handler(
     min_permission=AdminType.FULL,
 )
-def ban(bot: Bot, update: Update, user: User):
+def ban(bot: MQBot,update: Update, user: User):
     username, reason = update.message.text.split(' ', 2)[1:]
     username = username.replace('@', '')
     user = Session.query(User).filter_by(username=username).first()
@@ -349,7 +349,7 @@ def ban(bot: Bot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
 
 
-def __ban_traitor(bot: Bot, user_id: int):
+def __ban_traitor(bot: MQBot,user_id: int):
     user = Session.query(User).filter(User.id == user_id).first()
     if user:
         logging.warning("Banning %s", user.id)
@@ -386,7 +386,7 @@ def __ban_traitor(bot: Bot, user_id: int):
 @command_handler(
     min_permission=AdminType.FULL
 )
-def unban(bot: Bot, update: Update, user: User):
+def unban(bot: MQBot,update: Update, user: User):
     username = update.message.text.split(' ', 1)[1]
     username = username.replace('@', '')
     user = Session.query(User).filter_by(username=username).first()
@@ -413,7 +413,7 @@ def __get_item_worth(item_name):
 
 
 @command_handler()
-def get_log(bot: Bot, update: Update, user: User):
+def get_log(bot: MQBot,update: Update, user: User):
     if update.message.from_user.id not in LOG_ALLOWED_RECIPIENTS:
         logging.warning("User %s tried to request logs and is not allowed to!", update.message.from_user.id)
         return

@@ -1,12 +1,11 @@
 import logging
 from datetime import datetime, timedelta
-
 from sqlalchemy import func, tuple_, collate
-from telegram import Bot, Update, ParseMode
+from telegram import Update, ParseMode
 
 from config import CASTLE
+from core.bot import MQBot
 from core.decorators import command_handler
-from core.texts import *
 from core.texts import *
 from core.texts import MSG_TOP_FORMAT
 from core.types import Character, Session, Squad, SquadMember, User, Report
@@ -17,7 +16,7 @@ Session()
 
 
 @command_handler()
-def top_about(bot: Bot, update: Update, user: User):
+def top_about(bot: MQBot,update: Update, user: User):
     markup = generate_top_markup()
     send_async(
         bot,
@@ -71,7 +70,7 @@ def get_top(condition, header, field_name, icon, user, filter_by_squad=False):
     return text
 
 
-def __get_attendence(bot: Bot, update: Update, user: User):
+def __get_attendence(bot: MQBot,update: Update, user: User):
     # Battle stats for squad
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)

@@ -1,12 +1,13 @@
-from telegram import Bot, ParseMode, TelegramError
+from telegram import ParseMode, TelegramError
 
+from core.bot import MQBot
 from core.texts import MSG_SQUAD_ALREADY_DELETED, MSG_SQUAD_LEFT
 from core.types import User, Session, Admin
 from core.utils import send_async
 from functions.user.util import disable_api_functions
 
 
-def __remove(bot: Bot, user: User, squad_user: User):
+def __remove(bot: MQBot,user: User, squad_user: User):
     """ Remove a given user from a squad if he is a member... """
 
     if not squad_user.member:

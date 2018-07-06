@@ -1,16 +1,14 @@
-import json
 from datetime import datetime, timedelta
-
 from sqlalchemy import func, tuple_, collate
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
 from config import CASTLE
+from core.bot import MQBot
 from core.commands import *
 from core.decorators import command_handler
 from core.handler.callback import CallbackAction, get_callback_action
 from core.handler.callback.util import create_callback
-from core.texts import MSG_TOP_WEEK_WARRIORS, MSG_TOP_ATTACK, MSG_TOP_DEFENCE, MSG_TOP_EXPERIENCE, \
-    BTN_WEEK, BTN_ALL_TIME
+from core.texts import MSG_TOP_WEEK_WARRIORS, MSG_TOP_ATTACK, MSG_TOP_DEFENCE, MSG_TOP_EXPERIENCE
 from core.types import User, Session, Character, Report
 from core.utils import send_async
 from functions.top import get_top, gen_top_msg
@@ -68,7 +66,7 @@ def __get_top_attendance(user: User, date_filter):
 
 
 @command_handler()
-def top(bot: Bot, update: Update, user: User):
+def top(bot: MQBot,update: Update, user: User):
     text = ""
     keys = [
         [

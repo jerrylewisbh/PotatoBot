@@ -2,6 +2,7 @@ import re
 from telegram import Bot, Update, ParseMode
 
 from config import CWBOT_ID
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.texts import GUILD_WITHDRAW, GUILD_DEPOSIT, GUILD_WITHDRAW_HELP
 from core.types import Session, Item, User, new_item
@@ -34,7 +35,7 @@ def generate_gstock_requests(query):
 
 
 @command_handler()
-def withdraw_help(bot: Bot, update: Update, user: User):
+def withdraw_help(bot: MQBot,update: Update, user: User):
     send_async(
         bot,
         chat_id=update.message.chat.id,
@@ -47,7 +48,7 @@ def withdraw_help(bot: Bot, update: Update, user: User):
 @command_handler(
     forward_from=CWBOT_ID
 )
-def withdraw(bot: Bot, update: Update, user: User):
+def withdraw(bot: MQBot,update: Update, user: User):
     text = GUILD_WITHDRAW
 
     for line in update.message.text.splitlines():
@@ -71,7 +72,7 @@ def withdraw(bot: Bot, update: Update, user: User):
 
 
 @command_handler()
-def deposit(bot: Bot, update: Update, user: User):
+def deposit(bot: MQBot,update: Update, user: User):
     text = GUILD_DEPOSIT
 
     for line in user.stock.stock.splitlines():

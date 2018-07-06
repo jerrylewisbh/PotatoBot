@@ -1,12 +1,10 @@
 import logging
-
-from telegram import Bot, Update
+from telegram import Update
 
 from config import SUPER_ADMIN_ID
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler.callback import get_callback_action
-
 from core.texts import MSG_USER_UNKNOWN, MSG_NEW_GROUP_ADMIN, \
     MSG_NEW_GROUP_ADMIN_EXISTS, MSG_LIST_ADMINS_HEADER, \
     MSG_LIST_ADMINS_FORMAT, MSG_EMPTY, MSG_LIST_ADMINS_USER_FORMAT, MSG_NEW_GLOBAL_ADMIN, MSG_NEW_GLOBAL_ADMIN_EXISTS, \
@@ -22,7 +20,7 @@ from functions.user.util import send_settings, __toggle_gold_hiding, __toggle_sn
 @command_handler(
     min_permission=AdminType.FULL,
 )
-def set_admin(bot: Bot, update: Update, user: User):
+def set_admin(bot: MQBot,update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
@@ -58,7 +56,7 @@ def set_admin(bot: Bot, update: Update, user: User):
 @command_handler(
     min_permission=AdminType.FULL,
 )
-def del_admin(bot: Bot, update: Update, user: User):
+def del_admin(bot: MQBot,update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     if msg.find('@') != -1:
         msg = msg.replace('@', '')
@@ -127,7 +125,7 @@ def del_admin(bot: Bot, update: Update, user: User):
 @command_handler(
     min_permission=AdminType.FULL,
 )
-def list_admins(bot: Bot, update: Update, user: User):
+def list_admins(bot: MQBot,update: Update, user: User):
     admins = Session.query(Admin).filter(Admin.group_id == update.message.chat.id).all()
     users = []
     for admin_user in admins:
@@ -145,7 +143,7 @@ def list_admins(bot: Bot, update: Update, user: User):
 @command_handler(
     allow_group=True
 )
-def admins_for_users(bot: Bot, update: Update, user: User):
+def admins_for_users(bot: MQBot,update: Update, user: User):
     admins = Session.query(Admin).filter(Admin.group_id == update.message.chat.id).all()
     users = []
     for admin_user in admins:
@@ -165,7 +163,7 @@ def admins_for_users(bot: Bot, update: Update, user: User):
 @command_handler(
     min_permission=AdminType.SUPER,
 )
-def set_global_admin(bot: Bot, update: Update, user: User):
+def set_global_admin(bot: MQBot,update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
@@ -198,7 +196,7 @@ def set_global_admin(bot: Bot, update: Update, user: User):
 @command_handler(
     min_permission=AdminType.SUPER,
 )
-def set_super_admin(bot: Bot, update: Update, user: User):
+def set_super_admin(bot: MQBot,update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     msg = msg.replace('@', '')
     if msg != '':
@@ -240,7 +238,7 @@ def set_super_admin(bot: Bot, update: Update, user: User):
 @command_handler(
     min_permission=AdminType.SUPER,
 )
-def del_global_admin(bot: Bot, update: Update, user: User):
+def del_global_admin(bot: MQBot,update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     if msg.find('@') != -1:
         msg = msg.replace('@', '')
@@ -295,7 +293,7 @@ def del_global_admin(bot: Bot, update: Update, user: User):
 
 
 @command_handler()
-def settings(bot: Bot, update: Update, user: User):
+def settings(bot: MQBot,update: Update, user: User):
     if not update.callback_query:
         send_settings(bot, update, user)
     else:

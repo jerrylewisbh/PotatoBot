@@ -1,7 +1,5 @@
-import json
 import logging
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update, Bot
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 
 from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID, CWBOT_ID
 from core.decorators import command_handler
@@ -79,7 +77,7 @@ def save_user_quest(user: User, update: Update, quest_data):
 @command_handler(
     forward_from=CWBOT_ID
 )
-def parse_quest(bot: Bot, update: Update, user: User):
+def parse_quest(bot: MQBot,update: Update, user: User):
     logging.info("Parsing quest for user_id='%s'", user.id)
     quest_data = analyze_text(update.message.text)
 

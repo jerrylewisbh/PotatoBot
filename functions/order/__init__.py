@@ -1,16 +1,12 @@
-import json
 import logging
-import telegram
 from datetime import datetime, timedelta
 from html import escape
-
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
-from telegram.ext import run_async, JobQueue, Job
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram.ext import JobQueue, Job
 
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX
-from core.handler.callback import CallbackAction
 from core.handler.callback.util import create_callback, CallbackAction, get_callback_action
 from core.texts import *
 from core.types import Admin, AdminType, MessageType, Session, User, Order, OrderGroup, Squad, SquadMember, \
@@ -26,7 +22,7 @@ order_updated = {}
 @command_handler(
     min_permission=AdminType.GROUP,
 )
-def manage(bot: Bot, update: Update, user: User, chat_data):
+def manage(bot: MQBot,update: Update, user: User, chat_data):
     if not update.callback_query:
         __handle_direct_message_order(bot, chat_data, update, user)
     else:
@@ -135,7 +131,7 @@ def __handle_direct_message_order(bot, chat_data, update, user):
 @command_handler(
     min_permission=AdminType.GROUP,
 )
-def select_orders(bot: Bot, update: Update, user: User, chat_data):
+def select_orders(bot: MQBot,update: Update, user: User, chat_data):
     markup = __get_castle_orders_keyboard(user)
     send_async(
         bot,
@@ -254,7 +250,7 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
     update.callback_query.answer(text=MSG_ORDER_SENT)
 
 # NOTE: Since every user can trigger this
-def inline_order_confirmed(bot: Bot, update: Update, user: User, job_queue: JobQueue):
+def inline_order_confirmed(bot: MQBot,update: Update, user: User, job_queue: JobQueue):
     if not update.callback_query:
         logging.warning("Tried to call inline_order_confirmed without callback_query")
         return
@@ -314,7 +310,7 @@ def inline_order_confirmed(bot: Bot, update: Update, user: User, job_queue: JobQ
             else:
                 update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
 
-def update_confirmed(bot: Bot, job: Job):
+def update_confirmed(bot: MQBot,job: Job):
     order = job.context
     confirmed = order.cleared
     msg = MSG_ORDER_CLEARED_BY_HEADER

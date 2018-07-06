@@ -12,7 +12,7 @@ class OrderDraft(object):
         self.button = False
 
 @run_async
-def __send_order(bot: Bot, order: OrderDraft, chat_id: int, markup: ReplyMarkup):
+def __send_order(bot: MQBot,order: OrderDraft, chat_id: int, markup: ReplyMarkup):
     logging.info(
         "send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
         bot,

@@ -1,7 +1,5 @@
-import json
 import logging
-
-from telegram import Bot, Update, TelegramError, ParseMode
+from telegram import Update, TelegramError, ParseMode
 from telegram.ext import run_async, JobQueue
 
 from core.bot import MQBot
@@ -9,23 +7,18 @@ from core.decorators import command_handler, create_or_update_user
 from core.handler.callback.util import get_callback_action, Action, CallbackAction
 from core.types import User
 from core.utils import update_group
-
-from functions.order import groups as order_group
 from functions import group
 from functions import order
 from functions import profile
 from functions import quest
-from functions import user as user_functions
-
 from functions import squad
+from functions import user as user_functions
+from functions.order import groups as order_group
 from functions.squad import admin as squad_admin
 from functions.squad.admin import battle_reports_inline
-
+from functions.top import classes as top_class
 from functions.top import overall
 from functions.top import squad as top_squad
-from functions.top import classes as top_class
-
-from functions.user.util import delete_admin
 
 
 @run_async

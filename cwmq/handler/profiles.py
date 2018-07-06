@@ -6,6 +6,7 @@ from sqlalchemy.exc import InterfaceError, InvalidRequestError
 from telegram import Bot, ParseMode
 
 from config import BOT_ONE_STEP_API, LOG_LEVEL_MQ
+from core.bot import MQBot
 from core.enums import CASTLE_MAP, CLASS_MAP
 from core.texts import *
 from core.types import Character, Session, User
@@ -284,7 +285,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
         logger.exception("Exception in MQ handler occured!")
 
 
-def api_access_revoked(bot: Bot, user):
+def api_access_revoked(bot: MQBot,user):
     if user:
         logger.info("Revoking settings for user %s and token %s", user.id, user.api_token)
         # We have to get the user from by token since userId is not published and user is None currently...
