@@ -369,8 +369,8 @@ class Character(Base):
     gold = Column(Integer, default=0)
     donateGold = Column(Integer, default=0)
 
-    #guild = Column(UnicodeText(250), nullable=True, default=None)
-    #guild_tag = Column(UnicodeText(250), nullable=True, default=None)
+    # guild = Column(UnicodeText(250), nullable=True, default=None)
+    # guild_tag = Column(UnicodeText(250), nullable=True, default=None)
 
     # Note: Technically this is also tracked in a characters profession-information. But this represents the
     # current state. Also this way we can display class info without having a users /class information which is not
@@ -554,8 +554,8 @@ def check_admin(update, adm_type, allowed_types=()):
         admins = Session().query(Admin).filter_by(user_id=update.effective_user.id).all()
         for adm in admins:
             if (AdminType(adm.admin_type) in allowed_types or adm.admin_type <= adm_type.value) and \
-                    (adm.group in [None, update.effective_message.chat.id] or
-                     update.effective_message.chat.id == update.effective_user.id):
+                (adm.group in [None, update.effective_message.chat.id] or
+                 update.effective_message.chat.id == update.effective_user.id):
                 if adm.group_id:
                     group = Session().query(Group).filter_by(id=adm.group_id).first()
                     if group and group.bot_in_group:
@@ -569,7 +569,7 @@ def check_admin(update, adm_type, allowed_types=()):
 
 def check_ban(update):
     ban = Session().query(Ban).filter_by(user_id=update.message.from_user.id
-                                         if update.message else update.callback_query.from_user.id).first()
+    if update.message else update.callback_query.from_user.id).first()
     if ban is None or ban.to_date < datetime.now():
         return True
     else:

@@ -17,6 +17,7 @@ p = Publisher()
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL_MQ)
 
+
 def digest_handler(channel, method, properties, body, dispatcher):
     logger.debug('New message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)

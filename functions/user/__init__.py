@@ -14,7 +14,8 @@ from core.texts import MSG_USER_UNKNOWN, MSG_NEW_GROUP_ADMIN, \
     MSG_DEL_GROUP_ADMIN, MSG_DEL_GROUP_ADMIN_NOT_EXIST
 from core.types import Session, User, AdminType, Admin
 from core.utils import send_async
-from functions.user.util import send_settings, __toggle_gold_hiding, __toggle_sniping, __toggle_deal_report, __toggle_report, \
+from functions.user.util import send_settings, __toggle_gold_hiding, __toggle_sniping, __toggle_deal_report, \
+    __toggle_report, \
     __disable_api
 
 
@@ -311,6 +312,7 @@ def settings(bot: Bot, update: Update, user: User):
             __toggle_gold_hiding(bot, update, user)
         else:
             logging.warning("Unknown setting_action for settings")
+
 
 def __delete_group_admin(bot: MQBot, user: User, chat_id):
     adm = Session.query(Admin).filter(User.id == user.id, Admin.group_id == chat_id).first()

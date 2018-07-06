@@ -16,7 +16,7 @@ Session()
 
 
 def welcome(bot: Bot, update: Update):
-    #newbie(bot, update)
+    # newbie(bot, update)
     global last_welcome
     logging.debug("Welcome")
     if update.message.chat.type in ['group', 'supergroup']:
@@ -46,7 +46,7 @@ def welcome(bot: Bot, update: Update):
                 bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
                 bot.kickChatMember(update.message.chat.id, new_chat_member.id)
             elif len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != bot.id and \
-                    (user.member and user.member not in group.squad[0].members) and not allow_anywhere:
+                (user.member and user.member not in group.squad[0].members) and not allow_anywhere:
                 send_async(bot, chat_id=update.message.chat.id,
                            text=MSG_THORNS.format(str(user)))
                 bot.restrictChatMember(update.message.chat.id, new_chat_member.id)

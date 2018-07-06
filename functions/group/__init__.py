@@ -42,9 +42,9 @@ def info(bot: MQBot, update: Update, user: User):
                 callback_data=create_callback(
                     CallbackAction.GROUP_MANAGE,
                     user.id,
-                    sub_action = 'demote',
-                    group_id = group.id,
-                    admin_user_id = user.id,
+                    sub_action='demote',
+                    group_id=group.id,
+                    admin_user_id=user.id,
                 )
             )
         ])
@@ -138,6 +138,7 @@ def list(bot: MQBot, update: Update, user: User):
             reply_markup=inline_markup,
             parse_mode=ParseMode.HTML,
         )
+
 
 @command_handler(
     min_permission=AdminType.FULL,

@@ -4,6 +4,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# noinspection PyPep8
 from functions.user.util import disable_api_functions
 from core.types import Ban, Session
 

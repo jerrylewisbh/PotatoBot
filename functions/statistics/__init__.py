@@ -99,7 +99,7 @@ def __get_additional_stats_foray(from_date, location, text, user):
         func.count(UserQuest.id).label("count"),
         func.sum(UserQuest.pledge).label("pledges")
     ).filter(
-        UserQuest.successful == True,
+        UserQuest.successful.is_(True),
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
@@ -108,7 +108,7 @@ def __get_additional_stats_foray(from_date, location, text, user):
         UserQuest.successful,
         func.count(UserQuest.id).label("count"),
     ).filter(
-        UserQuest.successful == False,
+        UserQuest.successful.is_(False),
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
@@ -139,7 +139,7 @@ def __get_additional_stats_basic(from_date, location, user):
         UserQuest.successful,
         func.count(UserQuest.id).label("count"),
     ).filter(
-        UserQuest.successful == True,
+        UserQuest.successful.is_(True),
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
@@ -148,7 +148,7 @@ def __get_additional_stats_basic(from_date, location, user):
         UserQuest.successful,
         func.count(UserQuest.id).label("count"),
     ).filter(
-        UserQuest.successful == False,
+        UserQuest.successful._is(False),
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
@@ -255,6 +255,7 @@ def item_statistic(bot: Bot, update: Update, user: User):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=generate_statistics_markup(),
     )
+
 
 def autolabel(ax, rects):
     """

@@ -4,6 +4,7 @@ from core.types import (Session)
 
 Session()
 
+
 class QueryType(IntFlag):
     GroupList = auto()
     GroupInfo = auto()
@@ -74,8 +75,3 @@ class QueryType(IntFlag):
     TopDefClass = auto()
     TopExpClass = auto()
     TopAttClass = auto()
-
-
-
-
-

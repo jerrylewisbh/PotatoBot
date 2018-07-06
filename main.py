@@ -36,6 +36,7 @@ from functions.welcome import (welcome)
 
 Session()
 
+
 def main():
     # Logging!
     logger = logging.getLogger()

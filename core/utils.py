@@ -41,7 +41,7 @@ def update_group(grp):
 def pad_string(text, padding):
     """ Add whitespaces to a string to make different texts the same length for pre-formatted texts """
     if not text:
-        text = '\u00A0' * padding # Format with hard spaces...
+        text = '\u00A0' * padding  # Format with hard spaces...
 
     while len(text) <= padding:
         text += " "

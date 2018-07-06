@@ -18,6 +18,7 @@ p = Publisher()
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL_MQ)
 
+
 def deals_handler(channel, method, properties, body, dispatcher):
     logger.debug('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
@@ -102,7 +103,7 @@ def __handle_snipes(user, data, channel, method, dispatcher):
 
         if data['price'] > order.max_price:
             logger.info("[Snipe] Price does not match price of order! Order Price=%s, Price=%s, User=%s",
-                            order.max_price, data['price'], user.id)
+                        order.max_price, data['price'], user.id)
             return
 
         outstanding_count = order.outstanding_order - data['qty']
@@ -112,15 +113,15 @@ def __handle_snipes(user, data, channel, method, dispatcher):
         if outstanding_count == 0:
             # Order is completed!
             logger.info("[Snipe] Order for %s from %s and price %s is completed!", order.item.name, user.id,
-                            order.max_price)
+                        order.max_price)
             logger.info("[Snipe] Deleting %s", order)
             Session.delete(order)
             Session.commit()
         elif outstanding_count > 0:
             order.outstanding_order = outstanding_count
             logger.info("[Snipe] Order for %s from %s and price %s now only needs %s items!", order.item.name,
-                            user.id,
-                            order.max_price, order.outstanding_order)
+                        user.id,
+                        order.max_price, order.outstanding_order)
             Session.add(order)
             Session.commit()
 

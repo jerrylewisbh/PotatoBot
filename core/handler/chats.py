@@ -49,6 +49,7 @@ def to_re(string, case_insensitive=True):
     else:
         return re.compile("^{}".format(string))
 
+
 def add_handler(disp: Dispatcher):
     # NOTE: Use the @command_handler decorator for the functions registered here! This will provide you with the User
     # object and additionally filters by chat-type (private, group, etc.)

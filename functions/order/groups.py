@@ -62,10 +62,12 @@ def add(bot: Bot, update: Update, user: User, chat_data):
             reply_markup=markup
         )
 
+
 def __delete(order_group_id):
     group = Session.query(OrderGroup).filter_by(id=order_group_id).first()
     Session.delete(group)
     Session.commit()
+
 
 def __toggle_chat(chat_id, order_group_id):
     group_item = Session.query(OrderGroupItem).filter(
@@ -82,6 +84,7 @@ def __toggle_chat(chat_id, order_group_id):
     else:
         Session.delete(group_item)
         Session.commit()
+
 
 @command_handler(
     min_permission=AdminType.FULL,
@@ -126,12 +129,12 @@ def order_group(bot: Bot, update: Update, user: User, data: dict, chat_data: dic
     markup = generate_order_groups_markup(admin_user, chat_data['pin'] if 'pin' in chat_data else True,
                                           chat_data['btn'] if 'btn' in chat_data else True)
     bot.edit_message_text(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
-                        update.callback_query.message.chat.id,
-                        update.callback_query.message.message_id,
-                        reply_markup=markup)
+                          update.callback_query.message.chat.id,
+                          update.callback_query.message.message_id,
+                          reply_markup=markup)
 
 
-def generate_order_groups_markup(admin_user: list=None, pin: bool=True, btn=True):
+def generate_order_groups_markup(admin_user: list = None, pin: bool = True, btn=True):
     if admin_user:
         group_adm = True
         for adm in admin_user:
@@ -225,12 +228,12 @@ def __get_group_list_keyboard(user: User):
                 CallbackAction.ORDER_GROUP_MANAGE,
                 user.id,
                 order_group_id=group.id)
-            )
+                                 )
         ])
     inline_keys.append([
         InlineKeyboardButton(MSG_ORDER_GROUP_ADD, callback_data=create_callback(
             CallbackAction.ORDER_GROUP_ADD,
             user.id)
-        )
+                             )
     ])
     return InlineKeyboardMarkup(inline_keys)

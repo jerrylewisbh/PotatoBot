@@ -94,7 +94,7 @@ def send_settings(bot, update, user):
 
     automated_sniping = MSG_NEEDS_TRADE_ACCESS
     if user.api_token and user.is_api_trade_allowed:
-        automated_sniping =  user.setting_automated_sniping
+        automated_sniping = user.setting_automated_sniping
 
     automated_hiding = MSG_NEEDS_TRADE_ACCESS
     if user.api_token and user.is_api_trade_allowed:
@@ -242,7 +242,7 @@ def generate_group_info(group_id):
     adm_del_keys = []
     for adm in admins:
         user = Session.query(User).filter_by(id=adm.user_id).first()
-        adm_msg += MSG_GROUP_STATUS_ADMIN_FORMAT.\
+        adm_msg += MSG_GROUP_STATUS_ADMIN_FORMAT. \
             format(user.id, user.username or '', user.first_name or '', user.last_name or '')
         adm_del_keys.append([InlineKeyboardButton(MSG_GROUP_STATUS_DEL_ADMIN.
                                                   format(user.first_name or '', user.last_name or ''),
@@ -257,11 +257,11 @@ def generate_group_info(group_id):
 
     adm_del_keys.append(
         [InlineKeyboardButton(MSG_ORDER_GROUP_DEL, callback_data=json.dumps(
-        {'t': QueryType.GroupDelete.value, 'gid': group_id}))])
+            {'t': QueryType.GroupDelete.value, 'gid': group_id}))])
 
-    #adm_del_keys.append(
+    # adm_del_keys.append(
     #    [InlineKeyboardButton(MSG_BACK, callback_data=create_callback(group_list))]
-    #)
+    # )
     logging.warning("TODO - Missing BACK BUTTON")
     inline_markup = InlineKeyboardMarkup(adm_del_keys)
     return msg, inline_markup

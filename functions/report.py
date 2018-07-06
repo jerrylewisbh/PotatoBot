@@ -9,6 +9,7 @@ from core.utils import update_group, send_async
 
 Session()
 
+
 @command_handler(
     allow_group=True,
     min_permission=AdminType.GROUP
@@ -20,6 +21,7 @@ def enable_report_fwd(bot: Bot, update: Update, user: User):
         Session.add(group)
         Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_MINI_REPORT_FWD_ENABLED)
+
 
 @command_handler(
     allow_group=True,
@@ -66,5 +68,3 @@ def fwd_report(bot: Bot, update: Update):
             logging.warning("BadRequest raised for fwd to '%s/%s'", group.id, group.title)
         except TimedOut:
             logging.warning("TimedOut raised for fwd to '%s/%s'", group.id, group.title)
-
-

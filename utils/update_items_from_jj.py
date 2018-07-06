@@ -6,6 +6,7 @@ import urllib.request
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# noinspection PyPep8
 from core.types import *
 
 Session()
@@ -25,4 +26,3 @@ with urllib.request.urlopen(the_url) as url:
             item.cw_id = line['id']
             Session.add(item)
             Session.commit()
-

@@ -263,8 +263,7 @@ class Publisher(Thread, metaclass=Singleton):
                 self._connection.ioloop.start()
             except KeyboardInterrupt:
                 self.stop()
-                if (self._connection is not None and
-                    not self._connection.is_closed):
+                if (self._connection is not None and not self._connection.is_closed):
                     # Finish closing
                     self._connection.ioloop.start()
 

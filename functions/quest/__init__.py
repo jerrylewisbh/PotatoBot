@@ -105,7 +105,7 @@ def parse_quest(bot: Bot, update: Update, user: User):
         uq = save_user_quest(user, update, quest_data)
 
         inline_keys = []
-        for location in Session.query(Location).filter(Location.selectable == True).all():
+        for location in Session.query(Location).filter(Location.selectable.is_(True)).all():
             inline_keys.append(
                 [
                     InlineKeyboardButton(

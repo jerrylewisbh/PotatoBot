@@ -33,10 +33,6 @@ class MQBot(telegram.bot.Bot):
     def send_message(self, *args, **kwargs):
         """Wrapped method would accept new `queued` and `isgroup`
         OPTIONAL arguments"""
-        #if "text" in kwargs:
-        #    print("---------------")
-        #    print(kwargs['text'])
-        #    print("---------------")
 
         try:
             return super(MQBot, self).send_message(*args, **kwargs)
@@ -61,8 +57,8 @@ class MQBot(telegram.bot.Bot):
                     Session.commit()
                 else:
                     logging.warning(
-                    "Unauthorized occurred: %s. We should probably chat_id='%s' from bot.",
-                    ex.message,
-                    kwargs['chat_id'],
-                    exc_info=True
-                )
+                        "Unauthorized occurred: %s. We should probably chat_id='%s' from bot.",
+                        ex.message,
+                        kwargs['chat_id'],
+                        exc_info=True
+                    )

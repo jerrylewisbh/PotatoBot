@@ -25,7 +25,7 @@ Session()
 def squad_about(bot: Bot, update: Update, user: User):
     admin = Session.query(Admin).filter(
         Admin.user_id == update.effective_user.id,
-        Admin.group_id != None
+        Admin.group_id.isnot(None)
     ).first()
 
     markup = generate_squad_markup(is_group_admin=admin is not None, in_squad=True if user.is_squadmember else False)
@@ -163,7 +163,7 @@ def join_squad_request(bot: Bot, update: Update, user: User):
 
         # OK, lets do this....
         inline_keys = []
-        for squad in Session.query(Squad).filter(Squad.hiring == True).all():
+        for squad in Session.query(Squad).filter(Squad.hiring.is_(True)).all():
             inline_keys.append([InlineKeyboardButton(
                 squad.squad_name,
                 callback_data=create_callback(

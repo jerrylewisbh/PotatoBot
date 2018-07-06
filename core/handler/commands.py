@@ -72,7 +72,6 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("add", add_to_squad))
     disp.add_handler(CommandHandler("forceadd", force_add_to_squad))
 
-
     disp.add_handler(CommandHandler("find", find_by_username))
     disp.add_handler(CommandHandler("findc", find_by_character))
     disp.add_handler(CommandHandler("findi", find_by_id))

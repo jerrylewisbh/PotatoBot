@@ -13,7 +13,7 @@ from core.utils import send_async
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-__all__ = ['TelegramHandler']
+__all__ = ['TelegramHandler', 'HtmlFormatter']
 
 
 class TelegramHandler(logging.Handler):

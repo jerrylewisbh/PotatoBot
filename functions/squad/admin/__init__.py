@@ -17,6 +17,7 @@ from core.utils import send_async
 from functions.inline_markup import QueryType
 from functions.reply_markup import generate_user_markup
 
+
 @command_handler(
     min_permission=AdminType.GROUP
 )
@@ -42,15 +43,15 @@ def list_requests(bot: MQBot, update: Update, user: User):
                         applicant_id=member.user_id
                     )
                 ),
-                InlineKeyboardButton(
-                    BTN_DECLINE,
-                    callback_data=create_callback(
-                        CallbackAction.SQUAD_MANAGE,
-                        user.id,
-                        sub_action='decline_application',
-                        applicant_id=member.user_id
-                    )
-                )]
+                    InlineKeyboardButton(
+                        BTN_DECLINE,
+                        callback_data=create_callback(
+                            CallbackAction.SQUAD_MANAGE,
+                            user.id,
+                            sub_action='decline_application',
+                            applicant_id=member.user_id
+                        )
+                    )]
             ]
 
             send_async(
@@ -246,6 +247,7 @@ def list_squads(bot: MQBot, update: Update, user: User):
         reply_markup=InlineKeyboardMarkup(inline_keys)
     )
 
+
 @command_handler(
     min_permission=AdminType.GROUP
 )
@@ -265,6 +267,7 @@ def list_squad_members(bot: MQBot, update: Update, user: User):
             reply_markup=markup,
             parse_mode=ParseMode.HTML
         )
+
 
 def __request_decline(bot, update, user_id):
     member = Session.query(SquadMember).filter_by(user_id=user_id, approved=False).first()
@@ -491,6 +494,7 @@ def __generate_squad_member_list_keyboard_button(user: User, squad: Squad):
         keyboards.append(InlineKeyboardMarkup(markup_block))
 
     return keyboards
+
 
 def generate_leave_squad(user_id):
     inline_keys = [[InlineKeyboardButton(BTN_LEAVE,

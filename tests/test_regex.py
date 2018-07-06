@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from functions.profile import parse_hero_text, parse_report_text
 
 
-
 class TestRegex(unittest.TestCase):
     def test_report_parsing(self):
         """ Test if Report can be parsed """
@@ -135,7 +134,7 @@ Royal Guard Cape +1⚔ +1🛡
         self.assertEqual(parsed_data['max_stamina'], 6)
         self.assertEqual(parsed_data['pouches'], 2)
         self.assertEqual(parsed_data['exp_needed'], 13123)
-        #self.assertEqual(parsed_data['expertise'], "📕")
+        # self.assertEqual(parsed_data['expertise'], "📕")
         self.assertEqual(parsed_data['diamonds'], 12)
         self.assertIsNotNone(parsed_data['equipment'])
 
@@ -180,7 +179,7 @@ Royal Guard Cape +1⚔ +1🛡
         self.assertEqual(parsed_data['max_stamina'], 6)
         self.assertEqual(parsed_data['pouches'], 0)
         self.assertEqual(parsed_data['exp_needed'], 13123)
-        #self.assertEqual(parsed_data['expertise'], "📕")
+        # self.assertEqual(parsed_data['expertise'], "📕")
         self.assertEqual(parsed_data['diamonds'], 0)
         self.assertIsNotNone(parsed_data['equipment'])
 
@@ -225,10 +224,9 @@ Royal Guard Cape +1⚔ +1🛡
         self.assertEqual(parsed_data['max_stamina'], 6)
         self.assertEqual(parsed_data['pouches'], 2)
         self.assertEqual(parsed_data['exp_needed'], 13123)
-        #self.assertEqual(parsed_data['expertise'], "📕")
+        # self.assertEqual(parsed_data['expertise'], "📕")
         self.assertEqual(parsed_data['diamonds'], 12)
         self.assertIsNotNone(parsed_data['equipment'])
-
 
     def test_hero_parsing_next(self):
         test = """🥔[AVE]Lauri van Potet
@@ -270,7 +268,7 @@ Royal Guard Cape +1⚔️ +1🛡
         self.assertEqual(parsed_data['max_stamina'], 16)
         self.assertEqual(parsed_data['pouches'], 301)
         self.assertEqual(parsed_data['exp_needed'], 122982)
-        #self.assertEqual(parsed_data['expertise'], "📕")
+        # self.assertEqual(parsed_data['expertise'], "📕")
         self.assertEqual(parsed_data['diamonds'], 0)
         self.assertIsNotNone(parsed_data['equipment'])
 
@@ -278,6 +276,7 @@ Royal Guard Cape +1⚔️ +1🛡
 if __name__ == '__main__':
     # Force TZ!
     import os
+
     os.environ['TZ'] = 'UTC'
 
     unittest.main()

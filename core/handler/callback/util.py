@@ -8,17 +8,18 @@ import uuid
 
 from config import REDIS_SERVER, REDIS_PORT
 
+
 class CallbackAction(IntFlag):
     """ CAREFUL! Do NOT add someting in between lightly as this will invalidate existing IDs in REDIS!"""
 
     # TOP related stuff...
     TOP = auto()  # General Toplist
-    TOP_ATK = auto() # Attack
+    TOP_ATK = auto()  # Attack
     TOP_DEF = auto()  # Defense
     TOP_EXP = auto()  # Experience
     TOP_ATT = auto()  # Battle attendance
-    TOP_FILTER_CLASS = auto() # Filter by class
-    TOP_FILTER_SQUAD = auto() # Filter by squad
+    TOP_FILTER_CLASS = auto()  # Filter by class
+    TOP_FILTER_SQUAD = auto()  # Filter by squad
     TOP_FILTER_WEEK = auto()  # Filter by week
     TOP_FILTER_MONTH = auto()  # Filter by month
     TOP_FILTER_ALL = auto()  # Filter by all dates
@@ -61,6 +62,7 @@ class Action(object):
         self.user_id = user_id
         self.data = kwargs
 
+
 def get_callback_action(uuid, user_id):
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
     action = r.get(uuid)
@@ -73,6 +75,7 @@ def get_callback_action(uuid, user_id):
             return None
     return None
 
+
 def create_callback(action, user_id, **kwargs):
     """ Callback data for Telegram is limited to a few bytes. To be more flexible we create a UUID and store the
     actual callback-data in Redis. Keys are stored for up to one day and then get removed."""
@@ -81,5 +84,5 @@ def create_callback(action, user_id, **kwargs):
 
     a = Action(action, user_id, **kwargs)
     callback_id = str(uuid.uuid1())
-    r.set(callback_id, pickle.dumps(a), ex=3600*30) # Age out data after 180 days...
+    r.set(callback_id, pickle.dumps(a), ex=3600 * 30)  # Age out data after 180 days...
     return callback_id

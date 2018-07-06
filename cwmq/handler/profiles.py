@@ -21,6 +21,7 @@ p = Publisher()
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL_MQ)
 
+
 def profile_handler(channel, method, properties, body, dispatcher):
     logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
     data = json.loads(body)
@@ -84,7 +85,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
             #    "payload": {
             #        "operation": "GetUserProfile",
             #    }
-            #}
+            # }
             # p.publish(grant_req)
         elif data['action'] == "grantAdditionalOperation" and data['result'] == "Ok":
             logger.info("grantAdditionalOperation was successful!")
@@ -133,7 +134,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 reply_markup=generate_user_markup(user.id)
             )
 
-         # Profile requests...
+        # Profile requests...
         elif data['action'] == "requestProfile":
             if data['result'] == "InvalidToken":
                 # Revoked token?
@@ -172,8 +173,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c.castle = data['payload']['profile']['castle']
                 c.gold = data['payload']['profile']['gold']
                 c.donateGold = data['payload']['profile']['pouches'] if 'pouches' in data['payload']['profile'] else 0
-                #c.guild = data['payload']['profile']['guild'] if 'guild' in data['payload']['guild'] else None
-                #c.guild_tag = data['payload']['profile']['guild_tag'] if 'guild_tag' in data['payload']['guild_tag'] else None
+                # c.guild = data['payload']['profile']['guild'] if 'guild' in data['payload']['guild'] else None
+                # c.guild_tag = data['payload']['profile']['guild_tag'] if 'guild_tag' in data['payload']['guild_tag'] else None
                 Session.add(c)
                 Session.commit()
 
@@ -222,7 +223,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 #    stock_info,
                 #    parse_mode=ParseMode.HTML,
                 #    reply_markup=generate_user_markup(user.id)
-                #)
+                # )
         elif data['action'] == "wantToBuy":
             if data['result'] == "InvalidToken":
                 # Revoked token?

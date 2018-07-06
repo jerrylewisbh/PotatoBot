@@ -41,7 +41,7 @@ def get_top(condition, header, field_name, icon, user, filter_by_squad=False):
             Character.date > datetime.now() - timedelta(days=7),
             Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
             Squad.chat_id == user.member.squad.chat_id,
-            SquadMember.approved == True
+            SquadMember.approved.is_(True)
         ).join(User).join(SquadMember).join(Squad).order_by(condition).all()
     else:
         characters = Session.query(Character).filter(
@@ -81,7 +81,7 @@ def __get_attendence(bot: Bot, update: Update, user: User):
         tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in actual_profiles]),
         Character.date > datetime.now() - timedelta(days=7),
         Squad.chat_id == user.member.squad.chat_id,
-        SquadMember.approved == True
+        SquadMember.approved.is_(True)
     ).outerjoin(Report, Report.user_id == Character.user_id).join(User).join(SquadMember).filter(
         Report.date > today - timedelta(days=today.weekday())
     ).filter(Report.earned_exp > 0).group_by(Character).order_by(func.count(Report.user_id).desc())

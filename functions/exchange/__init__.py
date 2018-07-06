@@ -35,7 +35,7 @@ def list_items(bot: Bot, update: Update, user: User):
     text = __generate_itemlist(
         "*Tradable items:*\n",
         "\nFor a list of additional items that can only be traded in via Auction see /items\_other",
-        (Item.tradable == True, Item.cw_id != None)
+        (Item.tradable.is_(True), Item.cw_id.isnot(None))
     )
     send_async(
         bot,
@@ -52,7 +52,7 @@ def list_items_other(bot: Bot, update: Update, user: User):
     text = __generate_itemlist(
         "*Items not tradable via Exchange or new items:*\n",
         "\nFor a list of additional items that can be traded in the Exchange see /items",
-        (Item.tradable == False, Item.cw_id != None)
+        (Item.tradable.is_(False), Item.cw_id.isnot(None))
     )
     send_async(
         bot,
@@ -66,7 +66,7 @@ def list_items_unknown(bot: Bot, update: Update, user: User):
     text = __generate_itemlist(
         "*Items missing a Chatwars Item ID:*\n",
         "",
-        (Item.cw_id == None,)
+        (Item.cw_id.is_(None),)
     )
     send_async(
         bot,

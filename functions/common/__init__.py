@@ -203,6 +203,7 @@ def stock_split(old_stock, new_stock):
 def __get_item(item_name):
     return Session.query(Item).filter(func.lower(Item.name) == item_name.lower()).first()
 
+
 def stock_compare_text(old_stock, new_stock):
     """ Compare stock... """
     if old_stock:
@@ -240,7 +241,6 @@ def stock_compare_text(old_stock, new_stock):
                         msg += MSG_STOCK_COMPARE_WO_PRICE.format(key, val)
         if hits == 0:
             msg += MSG_EMPTY
-
 
         if running_total != 0:
             msg += MSG_STOCK_OVERALL_CHANGE.format(running_total)
@@ -380,7 +380,7 @@ def __ban_traitor(bot: Bot, user_id: int):
         Session.commit()
         squads = Session.query(Squad).all()
 
-        #send_async(bot, chat_id=GOVERNMENT_CHAT, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
+        # send_async(bot, chat_id=GOVERNMENT_CHAT, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
 
 
 @command_handler(
@@ -424,5 +424,5 @@ def get_log(bot: Bot, update: Update, user: User):
             bot.send_document(
                 chat_id=update.message.chat.id,
                 document=file,
-                timeout=120 # Logs can be big, so use a bigger timeout...
+                timeout=120  # Logs can be big, so use a bigger timeout...
             )

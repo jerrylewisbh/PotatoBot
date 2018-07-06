@@ -32,6 +32,7 @@ def generate_gstock_requests(query):
 
         return results
 
+
 @command_handler()
 def withdraw_help(bot: Bot, update: Update, user: User):
     send_async(
@@ -41,6 +42,7 @@ def withdraw_help(bot: Bot, update: Update, user: User):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=generate_user_markup(user_id=update.message.from_user.id)
     )
+
 
 @command_handler(
     forward_from=CWBOT_ID
