@@ -2,10 +2,9 @@ import logging
 from functools import wraps
 
 import telegram
-from sqlalchemy.exc import SQLAlchemyError
 from telegram import Bot, Update
 
-from core.types import AdminType, Session, check_admin, check_ban, log, User
+from core.types import AdminType, Session, check_admin, User
 
 Session()
 

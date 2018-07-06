@@ -323,10 +323,13 @@ def other_report(bot, update, user, data):
     squad = Session.query(Squad).filter(Squad.chat_id == data['c']).first()
     time_from = datetime.fromtimestamp(data['ts'])
     time_to = time_from + timedelta(hours=4)
-    reports = Session.query(User, Report) \
-        .join(SquadMember) \
-        .outerjoin(Report, and_(User.id == Report.user_id, Report.date > time_from, Report.date < time_to)) \
-        .filter(SquadMember.squad_id == data['c']).order_by(Report.date.desc()).all()
+
+    reports = Session.query(User, Report).join(SquadMember).outerjoin(
+        Report, and_(User.id == Report.user_id, Report.date > time_from, Report.date < time_to)
+    ).filter(
+        SquadMember.squad_id == data['c']
+    ).order_by(Report.date.desc()).all()
+
     texts = []
     full_def = 0
     full_atk = 0
