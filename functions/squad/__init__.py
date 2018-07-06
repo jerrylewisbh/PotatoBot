@@ -49,9 +49,10 @@ def leave_squad_request(bot: Bot, update: Update, user: User):
     if update.callback_query:
         action = get_callback_action(update.callback_query.data, update.effective_user.id)
         if 'leave' in action.data and action.data['leave']:
-            old_squad_name = __remove(bot, user)
+            remove_user = Session.query(User).filter(User.id == action.data['leave_user_id']).first()
+            old_squad_name = __remove(bot, user, remove_user)
             bot.edit_message_text(
-                MSG_SQUAD_LEFT.format(user.character.name, old_squad_name),
+                MSG_SQUAD_LEFT.format(remove_user.character.name, old_squad_name),
                 update.callback_query.message.chat.id,
                 update.callback_query.message.message_id,
             )
@@ -83,7 +84,7 @@ def leave_squad_request(bot: Bot, update: Update, user: User):
             )
 
 
-def __get_keyboard_leave(user):
+def __get_keyboard_leave(user, leave_user_id):
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
@@ -91,7 +92,8 @@ def __get_keyboard_leave(user):
                 callback_data=create_callback(
                     CallbackAction.SQUAD_LEAVE,
                     user.id,
-                    leave=True
+                    leave=True,
+                    leave_user_id=leave_user_id
                 )
             ),
             InlineKeyboardButton(
@@ -99,7 +101,8 @@ def __get_keyboard_leave(user):
                 callback_data=create_callback(
                     CallbackAction.SQUAD_LEAVE,
                     user.id,
-                    leave=False
+                    leave=False,
+                    leave_user_id=leave_user_id
                 )
             )
         ]

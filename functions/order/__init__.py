@@ -28,7 +28,6 @@ order_updated = {}
     min_permission=AdminType.GROUP,
 )
 def manage(bot: Bot, update: Update, user: User, chat_data):
-    chat_data['order_wait'] = False
     if not update.callback_query:
         __handle_direct_message_order(bot, chat_data, update, user)
     else:
@@ -139,7 +138,6 @@ def __handle_direct_message_order(bot, chat_data, update, user):
 )
 def select_orders(bot: Bot, update: Update, user: User, chat_data):
     markup = __get_castle_orders_keyboard(user)
-    chat_data['order_wait'] = True
     send_async(
         bot,
         chat_id=update.message.chat.id,
@@ -186,7 +184,8 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
             Session.add(order)
             Session.commit()
 
-            markup = generate_ok_markup(
+            markup = __get_confirm_keyboard(
+                user,
                 order.id,
                 0,
                 o.order in CASTLE_LIST or o.order.startswith(TACTICTS_COMMAND_PREFIX),
@@ -201,7 +200,7 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
         else:
             markup = None
             if o.order in CASTLE_LIST or o.order.startswith(TACTICTS_COMMAND_PREFIX):
-                markup = generate_forward_markup(o.order, 0)
+                markup = __get_forward_keyboard(o.order, 0)
 
             __send_order(
                 bot=bot,
@@ -228,7 +227,8 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
                     order.confirmed_msg = 0
                 Session.add(order)
                 Session.commit()
-                markup = generate_ok_markup(
+                markup = __get_confirm_keyboard(
+                    user,
                     order.id,
                     0,
                     o.order in CASTLE_LIST or o.order.startswith(TACTICTS_COMMAND_PREFIX),
@@ -243,7 +243,7 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
             else:
                 markup = None
                 if o.order in CASTLE_LIST or o.order.startswith(TACTICTS_COMMAND_PREFIX):
-                    markup = generate_forward_markup(o.order, 0)
+                    markup = __get_forward_keyboard(o.order, 0)
 
                 __send_order(
                     bot=bot,
@@ -254,20 +254,33 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
 
     update.callback_query.answer(text=MSG_ORDER_SENT)
 
-def inline_order_confirmed(bot: Bot, update: Update, user: User, data: dict, job_queue: JobQueue):
-    order = Session.query(Order).filter_by(id=data['id']).first()
+# NOTE: Since every user can trigger this
+def inline_order_confirmed(bot: Bot, update: Update, user: User, job_queue: JobQueue):
+    if not update.callback_query:
+        logging.warning("Tried to call inline_order_confirmed without callback_query")
+        return
+
+    logging.info("inline_order_confirmed called by user_id='%s'", user.id)
+    action = get_callback_action(update.callback_query.data, user.id)
+
+    order = Session.query(Order).filter_by(id=action.data['order_id']).first()
     if order is not None:
         squad = Session.query(Squad).filter_by(chat_id=order.chat_id).first()
         if squad is not None:
-            squad_member = Session.query(SquadMember).filter_by(squad_id=squad.chat_id,
-                                                                user_id=update.callback_query.from_user.id,
-                                                                approved=True).first()
-            if squad_member is not None:
-                order_ok = Session.query(OrderCleared).filter_by(order_id=data['id'],
-                                                                 user_id=squad_member.user_id).first()
-                if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
+            squad_member = Session.query(SquadMember).filter_by(
+                squad_id=squad.chat_id,
+                user_id=update.callback_query.from_user.id,
+                approved=True
+            ).first()
+
+            if squad_member:
+                order_ok = Session.query(OrderCleared).filter_by(
+                    order_id=action.data['order_id'],
+                    user_id=squad_member.user_id
+                ).first()
+                if not order_ok and datetime.now() - order.date < timedelta(minutes=10):
                     order_ok = OrderCleared()
-                    order_ok.order_id = data['id']
+                    order_ok.order_id = action.data['order_id']
                     order_ok.user_id = update.callback_query.from_user.id
                     Session.add(order_ok)
                     Session.commit()
@@ -282,11 +295,14 @@ def inline_order_confirmed(bot: Bot, update: Update, user: User, data: dict, job
             else:
                 update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
         else:
-            order_ok = Session.query(OrderCleared).filter_by(order_id=data['id'],
-                                                             user_id=update.callback_query.from_user.id).first()
+            order_ok = Session.query(OrderCleared).filter_by(
+                order_id=action.data['order_id'],
+                user_id=update.callback_query.from_user.id
+            ).first()
+
             if order_ok is None and datetime.now() - order.date < timedelta(minutes=10):
                 order_ok = OrderCleared()
-                order_ok.order_id = data['id']
+                order_ok.order_id = action.data['order_id']
                 order_ok.user_id = update.callback_query.from_user.id
                 Session.add(order_ok)
                 Session.commit()
@@ -299,26 +315,13 @@ def inline_order_confirmed(bot: Bot, update: Update, user: User, data: dict, job
             else:
                 update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
 
-
-def inline_orders(bot: Bot, update: Update, user: User, data: dict, chat_data: dict):
-    chat_data['order_wait'] = False
-    if 'txt' in data and len(data['txt']):
-            chat_data['order'] = data['txt']
-    markup = __get_select_chat_for_orders_keyboard(chat_data['pin'] if 'pin' in chat_data else True,
-                                                   chat_data['btn'] if 'btn' in chat_data else True)
-    bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
-                        update.callback_query.message.chat.id,
-                        update.callback_query.message.message_id,
-                        reply_markup=markup)
-
-
 def update_confirmed(bot: Bot, job: Job):
     order = job.context
     confirmed = order.cleared
     msg = MSG_ORDER_CLEARED_BY_HEADER
     for confirm in confirmed:
         msg += str(confirm.user) + '\n'
-    bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
+    bot.edit_message_text(msg, order.chat_id, order.confirmed_msg)
 
 
 def __get_castle_orders_keyboard(user: User):
@@ -339,23 +342,31 @@ def __get_castle_orders_keyboard(user: User):
                 )
             )
         buttons.append(button_row)
-    import pprint
-    pprint.pprint(buttons)
     return InlineKeyboardMarkup(buttons)
 
 
-def generate_ok_markup(order_id, count, forward=False, order=''):
-
-    buttons = [[InlineKeyboardButton(MSG_ORDER_ACCEPT.format(count),
-                                     callback_data=json.dumps(
-        {'t': QueryType.OrderOk.value, 'id': order_id}))]]
+def __get_confirm_keyboard(user: User, order_id, count, forward=False, order=''):
+    buttons = [
+        [InlineKeyboardButton(
+            MSG_ORDER_ACCEPT.format(count),
+            callback_data=create_callback(
+                CallbackAction.ORDER_CONFIRM,
+                user.id,
+                order_id=order_id
+            )
+        )]
+    ]
     if forward:
-        buttons.append([InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order)])
+        buttons.append(
+            [
+                InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order)
+            ]
+        )
     inline_markup = InlineKeyboardMarkup(buttons)
     return inline_markup
 
 
-def generate_forward_markup(order_id, count):
+def __get_forward_keyboard(order_id, count):
     inline_markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=MSG_ORDER_FORWARD, switch_inline_query=order_id)]])
     return inline_markup
 

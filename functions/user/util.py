@@ -6,45 +6,32 @@ from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from core.handler.callback.util import create_callback, CallbackAction
 from core.texts import *
 from core.types import Session, User, UserExchangeOrder, UserStockHideSetting, Admin, Group
-from core.utils import send_async
 from functions.inline_markup import QueryType
 
 
 def __toggle_sniping(bot, update, user):
-    if user.setting_automated_sniping:
-        user.setting_automated_sniping = False
-    else:
-        user.setting_automated_sniping = True
+    user.setting_automated_sniping = not user.setting_automated_sniping
     Session.add(user)
     Session.commit()
     send_settings(bot, update, user)
 
 
 def __toggle_gold_hiding(bot, update, user):
-    if user.setting_automated_hiding:
-        user.setting_automated_hiding = False
-    else:
-        user.setting_automated_hiding = True
+    user.setting_automated_hiding = not user.setting_automated_hiding
     Session.add(user)
     Session.commit()
     send_settings(bot, update, user)
 
 
 def __toggle_deal_report(bot, update, user):
-    if user.setting_automated_deal_report:
-        user.setting_automated_deal_report = False
-    else:
-        user.setting_automated_deal_report = True
+    user.setting_automated_deal_report = not user.setting_automated_deal_report
     Session.add(user)
     Session.commit()
     send_settings(bot, update, user)
 
 
 def __toggle_report(bot, update, user):
-    if user.setting_automated_report:
-        user.setting_automated_report = False
-    else:
-        user.setting_automated_report = True
+    user.setting_automated_report = not user.setting_automated_report
     Session.add(user)
     Session.commit()
     send_settings(bot, update, user)
@@ -230,8 +217,12 @@ def delete_admin(bot, update, user, data):
     if admin_user:
         del_adm(bot, data['gid'], admin_user)
     msg, inline_markup = generate_group_info(data['gid'])
-    bot.editMessageText(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
-                        reply_markup=inline_markup)
+    bot.edit_message_text(
+        msg,
+        update.callback_query.message.chat.id,
+        update.callback_query.message.message_id,
+        reply_markup=inline_markup
+    )
 
 
 def generate_group_info(group_id):
@@ -241,13 +232,18 @@ def generate_group_info(group_id):
     adm_del_keys = []
     for adm in admins:
         user = Session.query(User).filter_by(id=adm.user_id).first()
-        adm_msg += MSG_GROUP_STATUS_ADMIN_FORMAT. \
-            format(user.id, user.username or '', user.first_name or '', user.last_name or '')
-        adm_del_keys.append([InlineKeyboardButton(MSG_GROUP_STATUS_DEL_ADMIN.
-                                                  format(user.first_name or '', user.last_name or ''),
-                                                  callback_data=json.dumps(
-                                                      {'t': QueryType.DelAdm.value, 'uid': user.id,
-                                                       'gid': group_id}))])
+        adm_msg += MSG_GROUP_STATUS_ADMIN_FORMAT.format(
+            user.id, user.username or '',
+            user.first_name or '',
+            user.last_name or ''
+        )
+        adm_del_keys.append([InlineKeyboardButton(
+            MSG_GROUP_STATUS_DEL_ADMIN.format(user.first_name or '', user.last_name or ''),
+            callback_data=json.dumps(
+                {'t': QueryType.DelAdm.value, 'uid': user.id,
+                'gid': group_id})
+             )
+        ])
     msg = MSG_GROUP_STATUS.format(group.title,
                                   adm_msg,
                                   MSG_ON if group.welcome_enabled else MSG_OFF,

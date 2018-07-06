@@ -386,20 +386,7 @@ def other_report(bot, update, user, data):
             repo_list = ''
 
 
-def group_list(bot: MQBot, update: Update, user: User, data):
-    msg = MSG_GROUP_STATUS_CHOOSE_CHAT
-    squads = Session.query(Squad).all()
-    inline_keys = []
-    for squad in squads:
-        inline_keys.append(InlineKeyboardButton(squad.squad_name,
-                                                callback_data=json.dumps({'t': QueryType.GroupInfo.value,
-                                                                          'id': squad.chat_id})))
-    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
-    bot.edit_message_text(msg, update.callback_query.message.chat.id, update.callback_query.message.message_id,
-                          reply_markup=inline_markup)
-
-
-def generate_fire_up(members):
+def generate_fire_up(user: User, members):
     inline_keys = []
     inline_list = []
     limit = 50
@@ -416,8 +403,11 @@ def generate_fire_up(members):
                     member.user.character.attack,
                     member.user.character.defence
                 ),
-                callback_data=json.dumps(
-                    {'t': QueryType.LeaveSquad.value, 'id': member.user_id}
+                callback_data=create_callback(
+                    CallbackAction.SQUAD_LEAVE,
+                    user.id,
+                    leave=True,
+                    leave_user_id=member.user.id
                 )
             )
         ])
@@ -485,8 +475,9 @@ def __generate_squad_member_list_keyboard_button(user: User, squad: Squad):
 
     back_button = [InlineKeyboardButton(
         MSG_BACK,
-        callback_data=json.dumps(
-            {'t': QueryType.SquadList.value}
+        callback_data=create_callback(
+            CallbackAction.SQUAD_LIST,
+            user.id,
         )
     )]
 
@@ -497,13 +488,6 @@ def __generate_squad_member_list_keyboard_button(user: User, squad: Squad):
         keyboards.append(InlineKeyboardMarkup(markup_block))
 
     return keyboards
-
-
-def generate_leave_squad(user_id):
-    inline_keys = [[InlineKeyboardButton(BTN_LEAVE,
-                                         callback_data=json.dumps({'t': QueryType.LeaveSquad.value,
-                                                                   'id': user_id}))]]
-    return InlineKeyboardMarkup(inline_keys)
 
 
 def generate_other_reports(time: datetime, squad_id):
@@ -568,7 +552,7 @@ def remove_from_squad(bot: MQBot, update: Update, user: User):
             group_admin.append(adm)
     for adm in group_admin:
         members = Session.query(SquadMember).filter_by(squad_id=adm.group_id, approved=True).all()
-        markups = generate_fire_up(members)
+        markups = generate_fire_up(user, members)
         squad = Session.query(Squad).filter_by(chat_id=adm.group_id).first()
         for markup in markups:
             send_async(

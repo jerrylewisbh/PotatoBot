@@ -7,7 +7,7 @@ from functions import order
 from functions.common import admin_panel
 from functions.exchange.hide import hide_gold_info
 from functions.exchange.snipe import sniping_info
-from functions.order.groups import list
+from functions.order import groups
 from functions.profile import user_panel, show_char, grant_access, settings
 from functions.squad import (leave_squad_request, squad_about, join_squad_request)
 from functions.squad.admin import list_requests, battle_attendance_show, \
@@ -35,7 +35,7 @@ def add_handler(disp: Dispatcher):
 
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_ORDER), order.select_orders, pass_chat_data=True))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_STATUS), list))
-    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_GROUPS), list))
+    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_GROUPS), groups.list))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_RECRUIT), list_requests))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_FIRE_UP), remove_from_squad))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_SQUAD_LIST), list_squads))
