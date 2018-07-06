@@ -1,158 +1,109 @@
 import json
 import logging
+import telegram
 from datetime import datetime, timedelta
-from json import loads
+from html import escape
 
-from telegram import Bot, Update, TelegramError, ReplyMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import run_async, JobQueue, Job
 
-from config import CASTLE
 from core.decorators import command_handler
-from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Icons, Castle
+from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX
+from core.handler.callback.util import create_callback, CallbackAction, get_callback_action
 from core.texts import *
+from core.texts import MSG_ORDER_SEND_HEADER
 from core.types import Admin, AdminType, MessageType, Session, User, Order, OrderGroup, Squad, SquadMember, OrderCleared
 from core.utils import send_async
 from functions.inline_markup import QueryType
 from functions.order.groups import generate_order_groups_markup
+from functions.order.util import __send_order
 
 Session()
 
 order_updated = {}
 
+@command_handler(
+    min_permission=AdminType.GROUP,
+)
+def manage(bot: Bot, update: Update, user: User, chat_data):
+    chat_data['order_wait'] = False
+    if not update.callback_query:
+        # Order was sent/forwarded to Botato
+        admin_user = Session.query(Admin).filter(Admin.user_id == update.effective_user.id).all()
+
+        msg = update.message
+        if msg.audio:
+            chat_data['order'] = msg.audio.file_id
+            chat_data['order_type'] = MessageType.AUDIO
+        elif msg.document:
+            chat_data['order'] = msg.document.file_id
+            chat_data['order_type'] = MessageType.DOCUMENT
+        elif msg.voice:
+            chat_data['order'] = msg.voice.file_id
+            chat_data['order_type'] = MessageType.VOICE
+        elif msg.sticker:
+            chat_data['order'] = msg.sticker.file_id
+            chat_data['order_type'] = MessageType.STICKER
+        elif msg.contact:
+            chat_data['order'] = str(msg.contact)
+            chat_data['order_type'] = MessageType.CONTACT
+        elif msg.video:
+            chat_data['order'] = msg.video.file_id
+            chat_data['order_type'] = MessageType.VIDEO
+        elif msg.video_note:
+            chat_data['order'] = msg.video_note.file_id
+            chat_data['order_type'] = MessageType.VIDEO_NOTE
+        elif msg.location:
+            chat_data['order'] = str(msg.location)
+            chat_data['order_type'] = MessageType.LOCATION
+        elif msg.photo:
+            chat_data['order'] = msg.photo[-1].file_id
+            chat_data['order_type'] = MessageType.PHOTO
+        else:
+            chat_data['order'] = msg.text
+            chat_data['order_type'] = MessageType.TEXT
+
+    else:
+        # Order was initiated by inline buttons
+        admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
+        action = get_callback_action(update.callback_query.data, user.id)
+
+        chat_data['order_type'] = MessageType.TEXT
+        chat_data['order'] = action.data['text']
+
+    markup = generate_order_groups_markup(
+        user,
+        admin_user,
+        chat_data['pin'] if 'pin' in chat_data else False,
+        chat_data['btn'] if 'btn' in chat_data else True
+    )
+
+    if chat_data['order_type'] == MessageType.TEXT:
+        text = MSG_ORDER_SEND_HEADER.format(escape(chat_data['order']))
+    else:
+        text = MSG_ORDER_SEND_HEADER.format(chat_data['order_type'])
+
+    bot.edit_message_text(
+        text,
+        update.callback_query.message.chat.id,
+        update.callback_query.message.message_id,
+        reply_markup=markup,
+        parse_mode=ParseMode.HTML
+    )
+
 
 @command_handler(
     min_permission=AdminType.GROUP,
 )
-def order(bot: Bot, update: Update, user: User, chat_data):
-    chat_data['order_wait'] = False
-    admin_user = Session.query(Admin).filter(Admin.user_id == update.message.from_user.id).all()
-    markup = generate_order_groups_markup(admin_user, chat_data['pin'] if 'pin' in chat_data else True,
-                                          chat_data['btn'] if 'btn' in chat_data else True)
-    msg = update.message
-    if msg.audio:
-        chat_data['order'] = msg.audio.file_id
-        chat_data['order_type'] = MessageType.AUDIO.value
-    elif msg.document:
-        chat_data['order'] = msg.document.file_id
-        chat_data['order_type'] = MessageType.DOCUMENT.value
-    elif msg.voice:
-        chat_data['order'] = msg.voice.file_id
-        chat_data['order_type'] = MessageType.VOICE.value
-    elif msg.sticker:
-        chat_data['order'] = msg.sticker.file_id
-        chat_data['order_type'] = MessageType.STICKER.value
-    elif msg.contact:
-        chat_data['order'] = str(msg.contact)
-        chat_data['order_type'] = MessageType.CONTACT.value
-    elif msg.video:
-        chat_data['order'] = msg.video.file_id
-        chat_data['order_type'] = MessageType.VIDEO.value
-    elif msg.video_note:
-        chat_data['order'] = msg.video_note.file_id
-        chat_data['order_type'] = MessageType.VIDEO_NOTE.value
-    elif msg.location:
-        chat_data['order'] = str(msg.location)
-        chat_data['order_type'] = MessageType.LOCATION.value
-    elif msg.photo:
-        chat_data['order'] = msg.photo[-1].file_id
-        chat_data['order_type'] = MessageType.PHOTO.value
-    else:
-        chat_data['order'] = msg.text
-        chat_data['order_type'] = MessageType.TEXT.value
-
+def select_orders(bot: Bot, update: Update, user: User, chat_data):
+    markup = __get_castle_orders_keyboard(user)
+    chat_data['order_wait'] = True
     send_async(
         bot,
         chat_id=update.message.chat.id,
-        text=MSG_ORDER_SEND_HEADER,
+        text=MSG_FLAG_CHOOSE_HEADER,
         reply_markup=markup
     )
-
-
-@command_handler(
-    min_permission=AdminType.GROUP,
-)
-def orders(bot: Bot, update: Update, user: User, chat_data):
-    markup = generate_flag_orders()
-    chat_data['order_wait'] = True
-    send_async(bot, chat_id=update.message.chat.id, text=MSG_FLAG_CHOOSE_HEADER, reply_markup=markup)
-
-
-@run_async
-def send_order(bot: Bot, text: str, message_type: MessageType, chat_id: int, markup: ReplyMarkup, pin: bool = False):
-    logging.info(
-        "send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
-        bot,
-        text,
-        message_type,
-        chat_id,
-        markup,
-        pin
-    )
-    try:
-        msg_sent = None
-        if message_type == MessageType.AUDIO.value:
-            msg_sent = bot.send_audio(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.DOCUMENT.value:
-            msg_sent = bot.send_document(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.VOICE.value:
-            msg_sent = bot.send_voice(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.STICKER.value:
-            msg_sent = bot.send_sticker(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.CONTACT.value:
-            msg = text.replace('\'', '"')
-            contact = loads(msg)
-            if 'phone_number' not in contact.keys():
-                contact['phone_number'] = None
-            if 'first_name' not in contact.keys():
-                contact['first_name'] = None
-            if 'last_name' not in contact.keys():
-                contact['last_name'] = None
-                msg_sent = bot.send_contact(chat_id,
-                                            contact['phone_number'],
-                                            contact['first_name'],
-                                            contact['last_name'],
-                                            reply_markup=markup)
-        elif message_type == MessageType.VIDEO.value:
-            msg_sent = bot.send_video(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.VIDEO_NOTE.value:
-            msg_sent = bot.send_video_note(chat_id, text, reply_markup=markup)
-        elif message_type == MessageType.LOCATION.value:
-            msg = text.replace('\'', '"')
-            location = loads(msg)
-            msg_sent = bot.send_location(chat_id, location['latitude'], location['longitude'], reply_markup=markup)
-        elif message_type == MessageType.PHOTO.value:
-            msg_sent = bot.send_photo(chat_id, text, reply_markup=markup)
-        else:
-            logging.info("SEND ORDER")
-            msg_sent = bot.send_message(
-                chat_id=chat_id,
-                text=text,
-                disable_web_page_preview=True,
-                reply_markup=markup
-            )
-
-        if pin:
-            msg_result = msg_sent.result()
-            logging.info("Pinning for message_id='%s'", msg_result.message_id)
-            bot.pin_chat_message(
-                chat_id=chat_id,
-                message_id=msg_result.message_id,
-                disable_notification=False,
-            )
-
-        logging.info(
-            "END send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
-            bot,
-            text,
-            message_type,
-            chat_id,
-            markup,
-            pin
-        )
-        return msg_sent
-    except TelegramError as err:
-        bot.logger.error(err.message)
-        return None
 
 
 @run_async
@@ -189,7 +140,7 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                 order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
                 order_text
             )
-            send_order(
+            __send_order(
                 bot=bot,
                 text=order.text,
                 message_type=order_type,
@@ -201,7 +152,7 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
             markup = None
             if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
                 markup = generate_forward_markup(order_text, 0)
-            send_order(
+            __send_order(
                 bot=bot,
                 text=order_text,
                 message_type=order_type,
@@ -234,7 +185,7 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                     order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX),
                     order_text
                 )
-                send_order(
+                __send_order(
                     bot=bot,
                     text=order.text,
                     message_type=order_type,
@@ -247,7 +198,7 @@ def order_button(bot: Bot, update: Update, user: User, data, chat_data):
                 if order_text in CASTLE_LIST or order_text.startswith(TACTICTS_COMMAND_PREFIX):
                     markup = generate_forward_markup(order_text, 0)
 
-                send_order(
+                __send_order(
                     bot=bot,
                     text=order_text,
                     message_type=order_type,
@@ -267,9 +218,11 @@ def trigger_order_button(bot: Bot, update: Update, user: User, data: dict, chat_
     if data['g']:
         admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
         markup = generate_order_groups_markup(
+            user,
             admin_user,
-            chat_data['pin'] if 'pin' in chat_data else True,
-            chat_data['btn'] if 'btn' in chat_data else True)
+            chat_data['pin'] if 'pin' in chat_data else False,
+            chat_data['btn'] if 'btn' in chat_data else True
+        )
         bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
@@ -291,9 +244,11 @@ def trigger_order_pin(bot: Bot, update: Update, user: User, data: dict, chat_dat
     if data['g']:
         admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
         markup = generate_order_groups_markup(
+            user,
             admin_user,
-            chat_data['pin'] if 'pin' in chat_data else True,
-            chat_data['btn'] if 'btn' in chat_data else True)
+            chat_data['pin'] if 'pin' in chat_data else False,
+            chat_data['btn'] if 'btn' in chat_data else True
+        )
         bot.editMessageText(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
                             update.callback_query.message.chat.id,
                             update.callback_query.message.message_id,
@@ -356,13 +311,6 @@ def inline_order_confirmed(bot: Bot, update: Update, user: User, data: dict, job
 def inline_orders(bot: Bot, update: Update, user: User, data: dict, chat_data: dict):
     chat_data['order_wait'] = False
     if 'txt' in data and len(data['txt']):
-        if data['txt'] == Icons.LES.value:
-            chat_data['order'] = Castle.LES.value
-        elif data['txt'] == Icons.GORY.value:
-            chat_data['order'] = Castle.GORY.value
-        elif data['txt'] == Icons.SEA.value:
-            chat_data['order'] = Castle.SEA.value
-        else:
             chat_data['order'] = data['txt']
     markup = generate_order_chats_markup(chat_data['pin'] if 'pin' in chat_data else True,
                                          chat_data['btn'] if 'btn' in chat_data else True)
@@ -381,47 +329,27 @@ def update_confirmed(bot: Bot, job: Job):
     bot.editMessageText(msg, order.chat_id, order.confirmed_msg)
 
 
-def generate_flag_orders():
-    flag_btns = [InlineKeyboardButton(Castle.BLACK.value, callback_data=json.dumps(
-        {'t': QueryType.OrderGroup.value, 'txt': Castle.BLACK.value})),
-        InlineKeyboardButton(Castle.WHITE.value, callback_data=json.dumps(
-            {'t': QueryType.OrderGroup.value, 'txt': Castle.WHITE.value})),
-        InlineKeyboardButton(Castle.BLUE.value, callback_data=json.dumps(
-            {'t': QueryType.OrderGroup.value, 'txt': Castle.BLUE.value})),
-        InlineKeyboardButton(Castle.YELLOW.value, callback_data=json.dumps(
-            {'t': QueryType.OrderGroup.value, 'txt': Castle.YELLOW.value})),
-        InlineKeyboardButton(Castle.RED.value, callback_data=json.dumps(
-            {'t': QueryType.OrderGroup.value, 'txt': Castle.RED.value})),
-        InlineKeyboardButton(Castle.DUSK.value, callback_data=json.dumps(
-            {'t': QueryType.OrderGroup.value, 'txt': Castle.DUSK.value})),
-        InlineKeyboardButton(Castle.MINT.value, callback_data=json.dumps(
-            {'t': QueryType.OrderGroup.value, 'txt': Castle.MINT.value})),
-        # InlineKeyboardButton(Castle.GORY.value, callback_data=json.dumps(
-        #     {'t': QueryType.OrderGroup.value, 'txt': Icons.GORY.value})),
-        # InlineKeyboardButton(Castle.LES.value, callback_data=json.dumps(
-        #     {'t': QueryType.OrderGroup.value, 'txt': Icons.LES.value})),
-        # InlineKeyboardButton(Castle.SEA.value, callback_data=json.dumps(
-        #     {'t': QueryType.OrderGroup.value, 'txt': Icons.SEA.value}))
-    ]
-    btns = []
-    i = 0
-    for btn in flag_btns:
-        if CASTLE:
-            if btn.text == CASTLE:
-                continue
-        if i % 3 == 0:
-            btns.append([])
-        btns[-1].append(btn)
-        i += 1
+def __get_castle_orders_keyboard(user: User):
+    buttons = []
 
-    if CASTLE:
-        btns.append([])
-        for btn in flag_btns:
-            if btn.text == CASTLE:
-                btns[-1].append(btn)
-
-    inline_markup = InlineKeyboardMarkup(btns)
-    return inline_markup
+    split = [CASTLE_LIST[x:x + 3] for x in range(0, len(CASTLE_LIST), 3)]
+    for row in split:
+        button_row = []
+        for button in row:
+            button_row.append(
+                InlineKeyboardButton(
+                    button,
+                    callback_data=create_callback(
+                        CallbackAction.ORDER,
+                        user.id,
+                        text=button
+                    )
+                )
+            )
+        buttons.append(button_row)
+    import pprint
+    pprint.pprint(buttons)
+    return InlineKeyboardMarkup(buttons)
 
 
 def generate_ok_markup(order_id, count, forward=False, order=''):

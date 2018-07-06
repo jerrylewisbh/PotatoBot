@@ -43,6 +43,9 @@ def callback_query(bot: Bot, update: Update, user: User, chat_data: dict, job_qu
                 print(action)
                 print(action.action)
 
+                if CallbackAction.ORDER:
+                    order.manage(bot, update, user, chat_data=chat_data)
+
                 # Top
                 if CallbackAction.TOP in action.action:
                     # Top Lists....

@@ -1,15 +1,12 @@
-import json
 import logging
 
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.decorators import command_handler
-from core.enums import Icons, Castle
 from core.handler.callback.util import create_callback, CallbackAction, get_callback_action
 from core.texts import *
-from core.types import AdminType, OrderGroup, Session, User, OrderGroupItem, MessageType, Admin, Group, Squad
+from core.types import AdminType, OrderGroup, Session, User, OrderGroupItem, Group, Squad
 from core.utils import send_async
-from functions.inline_markup import QueryType
 
 Session()
 
@@ -113,28 +110,7 @@ def manage(bot, update, user):
     )
 
 
-def order_group(bot: Bot, update: Update, user: User, data: dict, chat_data: dict):
-    chat_data['order_wait'] = False
-    if 'txt' in data and len(data['txt']):
-        chat_data['order_type'] = MessageType.TEXT
-        if data['txt'] == Icons.LES.value:
-            chat_data['order'] = Castle.LES.value
-        elif data['txt'] == Icons.GORY.value:
-            chat_data['order'] = Castle.GORY.value
-        elif data['txt'] == Icons.SEA.value:
-            chat_data['order'] = Castle.SEA.value
-        else:
-            chat_data['order'] = data['txt']
-    admin_user = Session.query(Admin).filter(Admin.user_id == update.callback_query.from_user.id).all()
-    markup = generate_order_groups_markup(admin_user, chat_data['pin'] if 'pin' in chat_data else True,
-                                          chat_data['btn'] if 'btn' in chat_data else True)
-    bot.edit_message_text(MSG_ORDER_SEND_HEADER.format(chat_data['order']),
-                          update.callback_query.message.chat.id,
-                          update.callback_query.message.message_id,
-                          reply_markup=markup)
-
-
-def generate_order_groups_markup(admin_user: list = None, pin: bool = True, btn=True):
+def generate_order_groups_markup(user, admin_user: list = None, pin: bool = True, btn=True):
     if admin_user:
         group_adm = True
         for adm in admin_user:
@@ -146,32 +122,82 @@ def generate_order_groups_markup(admin_user: list = None, pin: bool = True, btn=
             for adm in admin_user:
                 group = Session.query(Group).filter_by(id=adm.group_id, bot_in_group=True).first()
                 if group:
-                    inline_keys.append([InlineKeyboardButton(group.title, callback_data=json.dumps(
-                        {'t': QueryType.Order.value, 'g': False, 'id': group.id}))])
-            inline_keys.append(
-                [InlineKeyboardButton(MSG_ORDER_PIN if pin else MSG_ORDER_NO_PIN, callback_data=json.dumps(
-                    {'t': QueryType.TriggerOrderPin.value, 'g': True}))])
-            inline_keys.append(
-                [InlineKeyboardButton(MSG_ORDER_BUTTON if btn else MSG_ORDER_NO_BUTTON, callback_data=json.dumps(
-                    {'t': QueryType.TriggerOrderButton.value, 'g': True}))])
-            inline_markup = InlineKeyboardMarkup(inline_keys)
-            return inline_markup
+                    inline_keys.append([
+                        InlineKeyboardButton(
+                            group.title,
+                            callback_data=create_callback(
+                                CallbackAction.ORDER,
+                                user.id,
+                                group_id=group.id
+                            )
+                        )
+                    ])
+
+            inline_keys.append([
+                InlineKeyboardButton(
+                    MSG_ORDER_PIN if pin else MSG_ORDER_NO_PIN,
+                    callback_data=create_callback(
+                        CallbackAction.ORDER,
+                        user.id,
+                    )
+                )
+            ])
+            inline_keys.append([
+                InlineKeyboardButton(
+                    MSG_ORDER_BUTTON if btn else MSG_ORDER_NO_BUTTON,
+                    callback_data=create_callback(
+                        CallbackAction.ORDER,
+                        user.id,
+                    )
+                )
+            ])
         else:
-            groups = Session.query(OrderGroup).all()
+            order_groups = Session.query(OrderGroup).all()
             inline_keys = []
-            for group in groups:
-                inline_keys.append([InlineKeyboardButton(group.name, callback_data=json.dumps(
-                    {'t': QueryType.Order.value, 'g': True, 'id': group.id}))])
-            inline_keys.append([InlineKeyboardButton(MSG_ORDER_TO_SQUADS, callback_data=json.dumps(
-                {'t': QueryType.Orders.value}))])
-            inline_keys.append([InlineKeyboardButton(MSG_ORDER_PIN if pin else MSG_ORDER_NO_PIN,
-                                                     callback_data=json.dumps(
-                                                         {'t': QueryType.TriggerOrderPin.value, 'g': True}))])
-            inline_keys.append([InlineKeyboardButton(MSG_ORDER_BUTTON if btn else MSG_ORDER_NO_BUTTON,
-                                                     callback_data=json.dumps(
-                                                         {'t': QueryType.TriggerOrderButton.value, 'g': True}))])
-            inline_markup = InlineKeyboardMarkup(inline_keys)
-            return inline_markup
+            for order_group in order_groups:
+                inline_keys.append([
+                    InlineKeyboardButton(
+                        order_group.name,
+                        callback_data=create_callback(
+                            CallbackAction.ORDER,
+                            user.id,
+                            order_group_id=order_group.id
+                        )
+                    )
+                ])
+
+            inline_keys.append([
+                InlineKeyboardButton(
+                    MSG_ORDER_TO_SQUADS,
+                    callback_data=create_callback(
+                        CallbackAction.ORDER,
+                        user.id,
+                        order_group_id=order_group.id
+                    )
+                )
+            ])
+
+            inline_keys.append([
+                InlineKeyboardButton(
+                    MSG_ORDER_PIN if pin else MSG_ORDER_NO_PIN,
+                    callback_data=create_callback(
+                        CallbackAction.ORDER,
+                        user.id,
+                    )
+                )
+            ])
+            inline_keys.append([
+                InlineKeyboardButton(
+                    MSG_ORDER_BUTTON if btn else MSG_ORDER_NO_BUTTON,
+                    callback_data=create_callback(
+                        CallbackAction.ORDER,
+                        user.id,
+                    )
+                )
+            ])
+
+        inline_markup = InlineKeyboardMarkup(inline_keys)
+        return inline_markup
 
 
 def __get_group_manage_keyboard(user: User, order_group_id):

@@ -46,6 +46,7 @@ class CallbackAction(IntFlag):
     SETTING = auto()
 
     # Orders
+    ORDER = auto()
     ORDER_GROUP = auto()
     ORDER_GROUP_MANAGE = auto()
     ORDER_GROUP_ADD = auto()

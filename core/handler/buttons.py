@@ -33,7 +33,7 @@ def add_handler(disp: Dispatcher):
     # on different commands - answer in Telegram
     disp.add_handler(RegexHandler(to_re(USER_COMMAND_BACK), user_panel))
 
-    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_ORDER), order, pass_chat_data=True))
+    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_ORDER), order.select_orders, pass_chat_data=True))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_STATUS), list))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_GROUPS), list))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_RECRUIT), list_requests))

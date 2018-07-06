@@ -220,7 +220,12 @@ MSG_ORDER_CLEARED = 'Recorded, soldier!'
 
 
 MSG_ORDER_CLEARED_ERROR = 'STOP! You do not belong here!!!!'
-MSG_ORDER_SEND_HEADER = 'Where to send?\n\nImportant: Do not use \"Button\" for battle orders as this slows down the order process considerably!'
+MSG_ORDER_SEND_HEADER = """<b>Where to send this order?</b>
+
+<b>Order:</b>
+{}
+
+<i>Important: Do not use "Button" for battle orders as this slows down the order process considerably!</i>"""
 
 MSG_ORDER_GROUP_CONFIG_HEADER = 'Group settings: {}'
 MSG_ORDER_GROUP_NEW = 'Send me the name of a new group of squad'

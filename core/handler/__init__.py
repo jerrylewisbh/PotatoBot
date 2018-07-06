@@ -7,8 +7,8 @@ from config import CWBOT_ID
 from core.decorators import command_handler
 from core.state import get_game_state, GameState
 from core.types import User, Session, Squad, Admin
+from functions import order
 from functions.order.groups import add
-from functions.order import order
 from functions.profile import user_panel
 from functions.quest import parse_quest
 from functions.report import fwd_report
@@ -55,7 +55,7 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
             break
 
         if 'order_wait' in chat_data and chat_data['order_wait']:
-            order(bot, update, user, chat_data=chat_data)
+            order.manage(bot, update, user, chat_data=chat_data)
         elif update.message.text:
             if update.message.forward_from and update.message.forward_from.id == CWBOT_ID:
                 parse_quest(bot, update, user)
@@ -64,8 +64,8 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
             elif not is_admin:
                 user_panel(bot, update)
             else:
-                order(bot, update, user, chat_data=chat_data)
+                order.manage(bot, update, user, chat_data=chat_data)
         elif not is_admin:
             user_panel(bot, update)
         else:
-            order(bot, update, user, chat_data=chat_data)
+            order.manage(bot, update, user, chat_data=chat_data)
