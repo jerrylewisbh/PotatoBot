@@ -66,7 +66,7 @@ def __get_top_attendance(user: User, date_filter):
 
 
 @command_handler()
-def top(bot: MQBot,update: Update, user: User):
+def top(bot: MQBot, update: Update, user: User):
     text = ""
     keys = [
         [

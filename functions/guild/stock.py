@@ -35,7 +35,7 @@ def generate_gstock_requests(query):
 
 
 @command_handler()
-def withdraw_help(bot: MQBot,update: Update, user: User):
+def withdraw_help(bot: MQBot, update: Update, user: User):
     send_async(
         bot,
         chat_id=update.message.chat.id,
@@ -48,7 +48,7 @@ def withdraw_help(bot: MQBot,update: Update, user: User):
 @command_handler(
     forward_from=CWBOT_ID
 )
-def withdraw(bot: MQBot,update: Update, user: User):
+def withdraw(bot: MQBot, update: Update, user: User):
     text = GUILD_WITHDRAW
 
     for line in update.message.text.splitlines():
@@ -72,7 +72,7 @@ def withdraw(bot: MQBot,update: Update, user: User):
 
 
 @command_handler()
-def deposit(bot: MQBot,update: Update, user: User):
+def deposit(bot: MQBot, update: Update, user: User):
     text = GUILD_DEPOSIT
 
     for line in user.stock.stock.splitlines():

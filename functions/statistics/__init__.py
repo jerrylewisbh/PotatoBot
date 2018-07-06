@@ -22,7 +22,7 @@ plot.ioff()
 
 
 @command_handler()
-def statistic_about(bot: MQBot,update: Update, user: User):
+def statistic_about(bot: MQBot, update: Update, user: User):
     markup = generate_statistics_markup()
     send_async(
         bot,
@@ -170,7 +170,7 @@ def __get_additional_stats_basic(from_date, location, user):
 
 
 @command_handler()
-def quest_statistic(bot: MQBot,update: Update, user: User):
+def quest_statistic(bot: MQBot, update: Update, user: User):
     logging.info("User '%s' called quest_statistic", user.id)
 
     text = MSG_QUEST_7_DAYS
@@ -242,7 +242,7 @@ Average loot: {:.2f}
 
 
 @command_handler()
-def item_statistic(bot: MQBot,update: Update, user: User):
+def item_statistic(bot: MQBot, update: Update, user: User):
     logging.info("User '%s' called item_statistic", user.id)
 
     text = MSG_ITEM_STAT
@@ -259,7 +259,7 @@ def item_statistic(bot: MQBot,update: Update, user: User):
 
 
 @command_handler()
-def skill_statistic(bot: MQBot,update: Update, user: User):
+def skill_statistic(bot: MQBot, update: Update, user: User):
     my_class = Session.query(Profession).filter_by(
         user_id=update.message.from_user.id).order_by(
         Profession.date.desc()).first()
@@ -367,7 +367,7 @@ def skill_statistic(bot: MQBot,update: Update, user: User):
 
 
 @command_handler()
-def exp_statistic(bot: MQBot,update: Update, user: User):
+def exp_statistic(bot: MQBot, update: Update, user: User):
     profiles = Session.query(Character).filter_by(user_id=update.message.from_user.id) \
         .order_by(Character.date).all()
     plot.switch_backend('ps')

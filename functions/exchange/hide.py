@@ -119,7 +119,7 @@ profile.py
 @command_handler(
     squad_only=True
 )
-def hide_gold_info(bot: MQBot,update: Update, user: User):
+def hide_gold_info(bot: MQBot, update: Update, user: User):
     logging.info("hide_gold_info called by %s", update.message.chat.id)
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
@@ -157,7 +157,7 @@ def hide_gold_info(bot: MQBot,update: Update, user: User):
 @command_handler(
     squad_only=True
 )
-def hide_items(bot: MQBot,update: Update, user: User, **kwargs):
+def hide_items(bot: MQBot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
@@ -180,7 +180,7 @@ def hide_items(bot: MQBot,update: Update, user: User, **kwargs):
 
 
 @command_handler()
-def hide_list(bot: MQBot,update: Update, user: User):
+def hide_list(bot: MQBot, update: Update, user: User):
     logging.info("hide_list called by user_id='%s'", user.id)
     """ Generate a forwardable list of items to hide... """
     if user.is_api_stock_allowed:
@@ -315,7 +315,7 @@ def get_hide_result(user):
 @command_handler(
     squad_only=True
 )
-def auto_hide(bot: MQBot,update: Update, user: User, **kwargs):
+def auto_hide(bot: MQBot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]

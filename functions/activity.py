@@ -36,7 +36,7 @@ def activity(squad, days=0, hours=0):
     allow_group=True,
     allow_private=False
 )
-def day_activity(bot: MQBot,update: Update, user: User):
+def day_activity(bot: MQBot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         msg = activity(squad, days=1)
@@ -48,7 +48,7 @@ def day_activity(bot: MQBot,update: Update, user: User):
     allow_group=True,
     allow_private=False
 )
-def week_activity(bot: MQBot,update: Update, user: User):
+def week_activity(bot: MQBot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         msg = activity(squad, days=7)
@@ -60,7 +60,7 @@ def week_activity(bot: MQBot,update: Update, user: User):
     allow_group=True,
     allow_private=False
 )
-def battle_activity(bot: MQBot,update: Update, user: User):
+def battle_activity(bot: MQBot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
     if squad is not None:
         msg = activity(squad, hours=4)

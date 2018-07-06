@@ -22,7 +22,7 @@ from functions.triggers import trigger_show
     allow_group=True,
     allow_private=True
 )
-def manage_all(bot: MQBot,update: Update, user: User, chat_data, job_queue):
+def manage_all(bot: MQBot, update: Update, user: User, chat_data, job_queue):
     if update.effective_message.chat.type == "channel":
         fwd_report(bot, update)
     elif update.effective_message.chat.type in ['group', 'supergroup']:

@@ -88,7 +88,7 @@ def want_to_buy(user: User, item_code, quantity, price, exact_price=True):
     p.publish(wtb_req)
 
 
-def request_trade_terminal_access(bot: MQBot,user: User):
+def request_trade_terminal_access(bot: MQBot, user: User):
     if not user:
         return
 
@@ -108,7 +108,7 @@ def request_trade_terminal_access(bot: MQBot,user: User):
     p.publish(grant_req)
 
 
-def request_stock_access(bot: MQBot,user: User):
+def request_stock_access(bot: MQBot, user: User):
     if not user:
         return
 
@@ -128,7 +128,7 @@ def request_stock_access(bot: MQBot,user: User):
     p.publish(grant_req)
 
 
-def request_profile_access(bot: MQBot,user: User):
+def request_profile_access(bot: MQBot, user: User):
     if not user:
         return
 

@@ -19,10 +19,11 @@ Session()
 
 order_updated = {}
 
+
 @command_handler(
     min_permission=AdminType.GROUP,
 )
-def manage(bot: MQBot,update: Update, user: User, chat_data):
+def manage(bot: MQBot, update: Update, user: User, chat_data):
     if not update.callback_query:
         __handle_direct_message_order(bot, chat_data, update, user)
     else:
@@ -131,7 +132,7 @@ def __handle_direct_message_order(bot, chat_data, update, user):
 @command_handler(
     min_permission=AdminType.GROUP,
 )
-def select_orders(bot: MQBot,update: Update, user: User, chat_data):
+def select_orders(bot: MQBot, update: Update, user: User, chat_data):
     markup = __get_castle_orders_keyboard(user)
     send_async(
         bot,
@@ -139,6 +140,7 @@ def select_orders(bot: MQBot,update: Update, user: User, chat_data):
         text=MSG_FLAG_CHOOSE_HEADER,
         reply_markup=markup
     )
+
 
 @command_handler(
     min_permission=AdminType.GROUP,
@@ -250,7 +252,9 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
     update.callback_query.answer(text=MSG_ORDER_SENT)
 
 # NOTE: Since every user can trigger this
-def inline_order_confirmed(bot: MQBot,update: Update, user: User, job_queue: JobQueue):
+
+
+def inline_order_confirmed(bot: MQBot, update: Update, user: User, job_queue: JobQueue):
     if not update.callback_query:
         logging.warning("Tried to call inline_order_confirmed without callback_query")
         return
@@ -281,7 +285,7 @@ def inline_order_confirmed(bot: MQBot,update: Update, user: User, job_queue: Job
                     Session.commit()
                     if order.confirmed_msg != 0:
                         if order.id not in order_updated or \
-                                    datetime.now() - order_updated[order.id] > timedelta(seconds=4):
+                                datetime.now() - order_updated[order.id] > timedelta(seconds=4):
                             order_updated[order.id] = datetime.now()
                             job_queue.run_once(update_confirmed, 5, order)
                     update.callback_query.answer(text=MSG_ORDER_CLEARED)
@@ -310,7 +314,8 @@ def inline_order_confirmed(bot: MQBot,update: Update, user: User, job_queue: Job
             else:
                 update.callback_query.answer(text=MSG_ORDER_CLEARED_ERROR)
 
-def update_confirmed(bot: MQBot,job: Job):
+
+def update_confirmed(bot: MQBot, job: Job):
     order = job.context
     confirmed = order.cleared
     msg = MSG_ORDER_CLEARED_BY_HEADER

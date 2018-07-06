@@ -102,8 +102,7 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                 if user.is_banned and not allow_banned:
                     logging.info(
                         "Message received from banned user '%s' but this is not an allowed function for a banned account.",
-                        user.id
-                    )
+                        user.id)
                     return
 
                 if squad_only and not user.is_squadmember:

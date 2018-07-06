@@ -48,7 +48,7 @@ def list_requests(bot: MQBot, update: Update, user: User):
                             sub_action='decline_application',
                             applicant_id=member.user_id
                         )
-                    )]
+                )]
             ]
 
             send_async(
@@ -318,6 +318,7 @@ def __request_accept(bot, update, user_id):
             chat_id=member.squad_id,
             text=MSG_SQUAD_REQUEST_ACCEPTED.format('@' + member.user.username)
         )
+
 
 @command_handler(
     min_permission=AdminType.GROUP

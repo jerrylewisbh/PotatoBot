@@ -12,7 +12,7 @@ Session()
 
 
 @command_handler()
-def newbie(bot: MQBot,update: Update, user: User):
+def newbie(bot: MQBot, update: Update, user: User):
     if ACADEM_CHAT_ID and CASTLE_CHAT_ID:
         if update.message.chat.id in [CASTLE_CHAT_ID]:
             for new_chat_member in update.message.new_chat_members:

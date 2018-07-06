@@ -16,6 +16,7 @@ def get_item_by_cw_id(cw_id):
     item = Session.query(Item).filter(Item.cw_id == cw_id).first()
     return item
 
+
 def __generate_itemlist(intro: str, footer: str, filter):
     items = Session.query(Item).filter(
         *filter
@@ -28,11 +29,12 @@ def __generate_itemlist(intro: str, footer: str, filter):
 
     return text
 
+
 @command_handler(
     allow_group=True,
     allow_private=True,
 )
-def list_items(bot: MQBot,update: Update, user: User):
+def list_items(bot: MQBot, update: Update, user: User):
     text = __generate_itemlist(
         "*Tradable items:*\n",
         "\nFor a list of additional items that can only be traded in via Auction see /items\_other",
@@ -45,11 +47,12 @@ def list_items(bot: MQBot,update: Update, user: User):
         parse_mode=ParseMode.MARKDOWN,
     )
 
+
 @command_handler(
     allow_group=True,
     allow_private=True,
 )
-def list_items_other(bot: MQBot,update: Update, user: User):
+def list_items_other(bot: MQBot, update: Update, user: User):
     text = __generate_itemlist(
         "*Items not tradable via Exchange or new items:*\n",
         "\nFor a list of additional items that can be traded in the Exchange see /items",
@@ -62,8 +65,9 @@ def list_items_other(bot: MQBot,update: Update, user: User):
         parse_mode=ParseMode.MARKDOWN,
     )
 
+
 @command_handler()
-def list_items_unknown(bot: MQBot,update: Update, user: User):
+def list_items_unknown(bot: MQBot, update: Update, user: User):
     text = __generate_itemlist(
         "*Items missing a Chatwars Item ID:*\n",
         "",

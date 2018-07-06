@@ -37,7 +37,7 @@ def __get_snipe_settings(user: User):
 @command_handler(
     squad_only=True
 )
-def sniping_info(bot: MQBot,update: Update, user: User, **kwargs):
+def sniping_info(bot: MQBot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
@@ -79,7 +79,7 @@ def sniping_info(bot: MQBot,update: Update, user: User, **kwargs):
 @command_handler(
     squad_only=True
 )
-def sniping_remove(bot: MQBot,update: Update, user: User, **kwargs):
+def sniping_remove(bot: MQBot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
@@ -135,7 +135,7 @@ def sniping_remove(bot: MQBot,update: Update, user: User, **kwargs):
 @command_handler(
     squad_only=True
 )
-def sniping_resume(bot: MQBot,update: Update, user: User):
+def sniping_resume(bot: MQBot, update: Update, user: User):
     logging.info("sniping_resume called by %s", update.message.chat.id)
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
 
@@ -171,7 +171,7 @@ def sniping_resume(bot: MQBot,update: Update, user: User):
 @command_handler(
     squad_only=True
 )
-def sniping(bot: MQBot,update: Update, user: User, **kwargs):
+def sniping(bot: MQBot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]

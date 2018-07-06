@@ -4,6 +4,7 @@ from telegram.ext import run_async
 
 from core.types import MessageType
 
+
 class OrderDraft(object):
     def __init__(self):
         self.type = MessageType.TEXT
@@ -11,8 +12,9 @@ class OrderDraft(object):
         self.pin = True
         self.button = False
 
+
 @run_async
-def __send_order(bot: MQBot,order: OrderDraft, chat_id: int, markup: ReplyMarkup):
+def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarkup):
     logging.info(
         "send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
         bot,

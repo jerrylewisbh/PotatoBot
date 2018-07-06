@@ -20,7 +20,7 @@ Session()
 @command_handler(
     forward_from=CWBOT_ID,
 )
-def build_report_received(bot: MQBot,update: Update, user: User):
+def build_report_received(bot: MQBot, update: Update, user: User):
     if datetime.now() - update.message.forward_date > timedelta(minutes=10):
         send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_TOO_OLD)
         return
@@ -42,7 +42,7 @@ def build_report_received(bot: MQBot,update: Update, user: User):
 @command_handler(
     forward_from=CWBOT_ID,
 )
-def repair_report_received(bot: MQBot,update: Update, user: User):
+def repair_report_received(bot: MQBot, update: Update, user: User):
     if datetime.now() - update.message.forward_date > timedelta(minutes=10):
         send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_TOO_OLD)
         return
@@ -67,7 +67,7 @@ def repair_report_received(bot: MQBot,update: Update, user: User):
     allow_group=True,
     allow_private=True
 )
-def report_received(bot: MQBot,update: Update, user: User):
+def report_received(bot: MQBot, update: Update, user: User):
     # logging.info("Handling report for %s", user.id)
     # if datetime.now() - update.message.forward_date > timedelta(minutes=1):
     #    send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
@@ -97,7 +97,7 @@ def report_received(bot: MQBot,update: Update, user: User):
             date = update.message.forward_date + timedelta(days=1)
 
         time_to = date.replace(hour=(int((update.message.forward_date.hour + 1) / 8 + 1) * 8 - 1) %
-                                    24, minute=0, second=0)
+                               24, minute=0, second=0)
 
         report = Session.query(Report).filter(
             Report.date > time_from,
@@ -121,7 +121,7 @@ def report_received(bot: MQBot,update: Update, user: User):
 @command_handler(
     forward_from=CWBOT_ID,
 )
-def char_update(bot: MQBot,update: Update, user: User):
+def char_update(bot: MQBot, update: Update, user: User):
     logging.debug("Beginning char update")
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
@@ -164,7 +164,7 @@ def char_update(bot: MQBot,update: Update, user: User):
 @command_handler(
     forward_from=CWBOT_ID,
 )
-def profession_update(bot: MQBot,update: Update, user: User):
+def profession_update(bot: MQBot, update: Update, user: User):
     if update.message.date - update.message.forward_date > timedelta(minutes=1):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_OLD)
     else:
@@ -184,7 +184,7 @@ def profession_update(bot: MQBot,update: Update, user: User):
 
 
 @command_handler()
-def show_char(bot: MQBot,update: Update, user: User):
+def show_char(bot: MQBot, update: Update, user: User):
     # This is the entry point for the users Profile. Not used for character-display in squads!
     # Refresh API if possible/configured
     if user.is_api_profile_allowed and user.is_api_stock_allowed:
@@ -227,7 +227,7 @@ def show_char(bot: MQBot,update: Update, user: User):
 
 
 @command_handler()
-def show_report(bot: MQBot,update: Update, user: User):
+def show_report(bot: MQBot, update: Update, user: User):
     existing_report = get_latest_report(user.id)
 
     # Nothing to show
@@ -276,7 +276,7 @@ def show_report(bot: MQBot,update: Update, user: User):
 
 
 @command_handler()
-def revoke(bot: MQBot,update: Update, user: User):
+def revoke(bot: MQBot, update: Update, user: User):
     user.api_token = None
     user.is_api_profile_allowed = False
     user.is_api_stock_allowed = False
@@ -296,7 +296,7 @@ def revoke(bot: MQBot,update: Update, user: User):
 @command_handler(
     squad_only=True
 )
-def grant_access(bot: MQBot,update: Update, user: User):
+def grant_access(bot: MQBot, update: Update, user: User):
     reg_req = {
         "action": "createAuthCode",
         "payload": {
@@ -313,7 +313,7 @@ def grant_access(bot: MQBot,update: Update, user: User):
 
 
 @command_handler()
-def handle_access_token(bot: MQBot,update: Update, user: User):
+def handle_access_token(bot: MQBot, update: Update, user: User):
     """ Handle a forwarded access code to authorize API access by bot.
     Note: We do not send back a confirmation at this point. User should be notified after async answer from APMQ
     TODO: Maybe add some kind of timeout if API is not availiable? """
@@ -348,7 +348,7 @@ def handle_access_token(bot: MQBot,update: Update, user: User):
 
 
 @command_handler()
-def user_panel(bot: MQBot,update: Update, user: User):
+def user_panel(bot: MQBot, update: Update, user: User):
     user = Session.query(User).filter_by(id=update.message.from_user.id).first()
 
     welcome_text = MSG_START_KNOWN
@@ -373,14 +373,14 @@ def user_panel(bot: MQBot,update: Update, user: User):
 
 
 @command_handler()
-def settings(bot: MQBot,update: Update, user: User):
+def settings(bot: MQBot, update: Update, user: User):
     send_settings(bot, update, user)
 
 
 @command_handler(
     min_permission=AdminType.GROUP,
 )
-def find_by_username(bot: MQBot,update: Update, user: User):
+def find_by_username(bot: MQBot, update: Update, user: User):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
@@ -413,7 +413,7 @@ def find_by_username(bot: MQBot,update: Update, user: User):
 @command_handler(
     min_permission=AdminType.GROUP,
 )
-def find_by_character(bot: MQBot,update: Update, user: User):
+def find_by_character(bot: MQBot, update: Update, user: User):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
@@ -447,7 +447,7 @@ def find_by_character(bot: MQBot,update: Update, user: User):
 @command_handler(
     min_permission=AdminType.GROUP,
 )
-def find_by_id(bot: MQBot,update: Update, user: User):
+def find_by_id(bot: MQBot, update: Update, user: User):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')

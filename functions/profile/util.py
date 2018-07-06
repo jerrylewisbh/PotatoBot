@@ -62,7 +62,7 @@ def parse_hero_text(report_text):
     # TODO: Should boosted def/atk be used?
 
 
-def parse_hero(bot: MQBot,profile, user_id, date):
+def parse_hero(bot: MQBot, profile, user_id, date):
     """ Parse a forwarded hero """
     logging.info("parse_hero for user_id='%s'", user_id)
     char = Session.query(Character).filter_by(user_id=user_id, date=date).first()
@@ -298,7 +298,7 @@ def parse_repair_reports(report, user_id, date):
     return report
 
 
-def __send_user_with_settings(bot: MQBot,update: Update, user: User):
+def __send_user_with_settings(bot: MQBot, update: Update, user: User):
     if user and user.character:
         char = user.character
         profession = user.profession
@@ -388,7 +388,7 @@ def get_stock_before_after_war(user: User) -> tuple:
     return before_battle, after_battle
 
 
-def annotate_stock_with_price(bot: MQBot,stock: str):
+def annotate_stock_with_price(bot: MQBot, stock: str):
     stock_text = ""
     overall_worth = 0
     for line in stock.splitlines():

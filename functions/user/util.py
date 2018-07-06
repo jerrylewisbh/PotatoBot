@@ -241,8 +241,8 @@ def generate_group_info(group_id):
             MSG_GROUP_STATUS_DEL_ADMIN.format(user.first_name or '', user.last_name or ''),
             callback_data=json.dumps(
                 {'t': QueryType.DelAdm.value, 'uid': user.id,
-                'gid': group_id})
-             )
+                 'gid': group_id})
+        )
         ])
     msg = MSG_GROUP_STATUS.format(group.title,
                                   adm_msg,

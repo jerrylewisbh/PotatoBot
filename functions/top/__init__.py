@@ -16,7 +16,7 @@ Session()
 
 
 @command_handler()
-def top_about(bot: MQBot,update: Update, user: User):
+def top_about(bot: MQBot, update: Update, user: User):
     markup = generate_top_markup()
     send_async(
         bot,
@@ -70,7 +70,7 @@ def get_top(condition, header, field_name, icon, user, filter_by_squad=False):
     return text
 
 
-def __get_attendence(bot: MQBot,update: Update, user: User):
+def __get_attendence(bot: MQBot, update: Update, user: User):
     # Battle stats for squad
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
         group_by(Character.user_id)

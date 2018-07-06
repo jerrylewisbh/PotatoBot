@@ -28,7 +28,7 @@ from functions.profile import (format_report, get_latest_report,
 Session()
 
 
-def ready_to_battle(bot: MQBot,job_queue: Job):
+def ready_to_battle(bot: MQBot, job_queue: Job):
     try:
         group = Session.query(Squad).filter(Squad.reminders_enabled == True).all()
         for item in group:
@@ -47,7 +47,6 @@ def ready_to_battle(bot: MQBot,job_queue: Job):
             o.type = MessageType.TEXT
             o.button = False
 
-
             send_order(
                 bot=bot,
                 order=o,
@@ -63,12 +62,12 @@ def ready_to_battle(bot: MQBot,job_queue: Job):
     min_permission=AdminType.FULL,
     allow_private=True
 )
-def call_ready_to_battle_result(bot: MQBot,update: Update, user: User):
+def call_ready_to_battle_result(bot: MQBot, update: Update, user: User):
     ready_to_battle_result(bot, None)
 
 
 @run_async
-def ready_to_battle_result(bot: MQBot,job_queue: Job):
+def ready_to_battle_result(bot: MQBot, job_queue: Job):
     if not GOVERNMENT_CHAT:
         return
     logging.info("Generating ready_to_battle_result")
@@ -163,7 +162,7 @@ def ready_to_battle_result(bot: MQBot,job_queue: Job):
 
 
 @run_async
-def fresh_profiles(bot: MQBot,job_queue: Job):
+def fresh_profiles(bot: MQBot, job_queue: Job):
     try:
         actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
             group_by(Character.user_id)
@@ -218,7 +217,7 @@ def fresh_profiles(bot: MQBot,job_queue: Job):
 
 
 @run_async
-def refresh_api_users(bot: MQBot,job_queue: Job):
+def refresh_api_users(bot: MQBot, job_queue: Job):
     logging.info("Running refresh_api_users")
     try:
         p = Publisher()
@@ -242,7 +241,7 @@ def refresh_api_users(bot: MQBot,job_queue: Job):
 
 def create_user_report(user: User) -> Optional[str]:
     if user.is_api_profile_allowed and user.is_api_stock_allowed and \
-        user.setting_automated_report and user.api_token:
+            user.setting_automated_report and user.api_token:
 
         logging.info("Processing report_after_battle for user_id='%s'", user.id)
 
@@ -319,7 +318,7 @@ def create_user_report(user: User) -> Optional[str]:
 
 
 @run_async
-def report_after_battle(bot: MQBot,job_queue: Job):
+def report_after_battle(bot: MQBot, job_queue: Job):
     logging.info("report_after_battle - Running")
     try:
         api_users = Session.query(User).join(SquadMember).join(Squad).join(Character).filter(

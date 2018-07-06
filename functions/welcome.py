@@ -16,7 +16,7 @@ last_welcome = 0
 Session()
 
 
-def welcome(bot: MQBot,update: Update):
+def welcome(bot: MQBot, update: Update):
     # newbie(bot, update)
     global last_welcome
     logging.debug("Welcome")
@@ -47,7 +47,7 @@ def welcome(bot: MQBot,update: Update):
                 bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
                 bot.kickChatMember(update.message.chat.id, new_chat_member.id)
             elif len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != bot.id and \
-                (user.member and user.member not in group.squad[0].members) and not allow_anywhere:
+                    (user.member and user.member not in group.squad[0].members) and not allow_anywhere:
                 send_async(bot, chat_id=update.message.chat.id,
                            text=MSG_THORNS.format(str(user)))
                 bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
@@ -75,7 +75,7 @@ def welcome(bot: MQBot,update: Update):
     allow_group=True,
     min_permission=AdminType.GROUP
 )
-def set_welcome(bot: MQBot,update: Update, user: User):
+def set_welcome(bot: MQBot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
@@ -92,7 +92,7 @@ def set_welcome(bot: MQBot,update: Update, user: User):
     allow_group=True,
     min_permission=AdminType.GROUP
 )
-def enable_welcome(bot: MQBot,update: Update, user: User):
+def enable_welcome(bot: MQBot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         group.welcome_enabled = True
@@ -105,7 +105,7 @@ def enable_welcome(bot: MQBot,update: Update, user: User):
     allow_group=True,
     min_permission=AdminType.GROUP
 )
-def disable_welcome(bot: MQBot,update: Update, user: User):
+def disable_welcome(bot: MQBot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         group.welcome_enabled = False
@@ -118,7 +118,7 @@ def disable_welcome(bot: MQBot,update: Update, user: User):
     allow_group=True,
     min_permission=AdminType.GROUP
 )
-def show_welcome(bot: MQBot,update: Update, user: User):
+def show_welcome(bot: MQBot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()

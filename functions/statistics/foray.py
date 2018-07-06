@@ -110,7 +110,7 @@ def __get_knight_pledgerate():
     return x, y
 
 
-def send_graph(bot: MQBot,user: User):
+def send_graph(bot: MQBot, user: User):
     logging.debug("Quest statistics.py")
 
     fig, ax = plot.subplots(figsize=(20, 15))
@@ -204,6 +204,6 @@ def __get_overall_successrate():
 
 
 @command_handler()
-def foray_statistic(bot: MQBot,update: Update, user: User):
+def foray_statistic(bot: MQBot, update: Update, user: User):
     logging.info("User '%s' called quest_statistic", user.id)
     send_graph(bot, user)

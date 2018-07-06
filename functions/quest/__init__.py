@@ -77,7 +77,7 @@ def save_user_quest(user: User, update: Update, quest_data):
 @command_handler(
     forward_from=CWBOT_ID
 )
-def parse_quest(bot: MQBot,update: Update, user: User):
+def parse_quest(bot: MQBot, update: Update, user: User):
     logging.info("Parsing quest for user_id='%s'", user.id)
     quest_data = analyze_text(update.message.text)
 

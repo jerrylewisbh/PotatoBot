@@ -10,10 +10,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from core import texts
 
-""" 
-Test the HTML and Markdown Texsts if they are valid to avoid regressions... 
-Texsts are currently mixed. So we test everything as HTML and Markdown. Markdown-Texsts using <commandParameter> as 
-text parts will be blacklisted 
+"""
+Test the HTML and Markdown Texsts if they are valid to avoid regressions...
+Texsts are currently mixed. So we test everything as HTML and Markdown. Markdown-Texsts using <commandParameter> as
+text parts will be blacklisted
 """
 
 # Blacklist of texts containing placeholders

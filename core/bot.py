@@ -41,8 +41,7 @@ class MQBot(telegram.bot.Bot):
                 if user:
                     logging.info(
                         "Unauthorized for user_id='%s'. Disabling API settings so that we don't contact the user in the future",
-                        user.id
-                    )
+                        user.id)
                     # This is a clone of another function but we have to avoid import-loops
                     # Disable API settings but keep his api credentials until user revokes them herself/himself.
                     user.setting_automated_sniping = False

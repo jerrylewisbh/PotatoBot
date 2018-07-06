@@ -15,7 +15,7 @@ Session()
     allow_group=True,
     min_permission=AdminType.GROUP
 )
-def enable_report_fwd(bot: MQBot,update: Update, user: User):
+def enable_report_fwd(bot: MQBot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         group.fwd_minireport = True
@@ -28,7 +28,7 @@ def enable_report_fwd(bot: MQBot,update: Update, user: User):
     allow_group=True,
     min_permission=AdminType.GROUP
 )
-def disable_report_fwd(bot: MQBot,update: Update, user: User):
+def disable_report_fwd(bot: MQBot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         group.fwd_minireport = False
@@ -37,7 +37,7 @@ def disable_report_fwd(bot: MQBot,update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_MINI_REPORT_FWD_DISABLED)
 
 
-def fwd_report(bot: MQBot,update: Update):
+def fwd_report(bot: MQBot, update: Update):
     logging.info("fwd_report called")
     if not update.channel_post or (update.effective_chat and update.effective_chat.id != FWD_CHANNEL):
         # No channel post or wrong channel: Done!
