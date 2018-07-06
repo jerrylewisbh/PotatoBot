@@ -31,7 +31,6 @@ def parse_hero_text(report_text):
     if not report_text:
         return None
 
-
     parsed = re.search(HERO, report_text, flags=re.UNICODE)
     if not parsed:
         return None
@@ -143,7 +142,6 @@ def parse_report_text(report_text):
 
 
 def save_report(report_text, user_id, date):
-
     logging.info("Report: report_text='%s', user_id='%s', date='%s'", report_text, user_id, date)
     existing_report = get_latest_report(user_id)
     # New one or update to preliminary
@@ -320,7 +318,7 @@ def __send_user_with_settings(bot: Bot, update: Update, user: User):
             bool(user.setting_automated_sniping),
             "Temp. Suspended" if user.sniping_suspended else ""
         )
-        btns = __get_keyboard_profile(user)
+        btns = __get_keyboard_profile(user, user)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -356,6 +354,7 @@ def format_report(report: Report) -> str:
         )
 
     return text
+
 
 # TODO: Review. Can't this be moved directly into User class and a getter?
 

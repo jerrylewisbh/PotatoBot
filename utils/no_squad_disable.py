@@ -31,7 +31,7 @@ non_squad_members_with_settings = Session.query(User).filter(
         User.setting_automated_report.is_(True),
         User.setting_automated_deal_report.is_(True),
     ),
-    SquadMember.approved == False,
+    SquadMember.approved.is_(False),
 ).join(SquadMember).all()
 for user in non_squad_members_with_settings:
     print("Disable squad only functions for unapproved squad member: user_id={}".format(user.id))

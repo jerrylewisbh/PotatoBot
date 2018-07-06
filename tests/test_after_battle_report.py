@@ -18,7 +18,7 @@ logger.addHandler(ch)
 
 api_users = Session.query(User).join(SquadMember).join(Squad).join(Character).filter(
     User.api_token is not None,
-    SquadMember.approved == True,
+    SquadMember.approved.is_(True),
 ).all()
 
 for user in api_users:

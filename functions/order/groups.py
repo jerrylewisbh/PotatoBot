@@ -39,7 +39,7 @@ def list(bot: Bot, update: Update, user: User):
     min_permission=AdminType.FULL,
 )
 def add(bot: Bot, update: Update, user: User, chat_data):
-    if "wait_group_name" in chat_data and chat_data["wait_group_name"] == False or "wait_group_name" not in chat_data:
+    if "wait_group_name" in chat_data and not chat_data["wait_group_name"] or "wait_group_name" not in chat_data:
         chat_data["wait_group_name"] = True
         send_async(
             bot,

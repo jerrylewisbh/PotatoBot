@@ -20,7 +20,7 @@ def __toggle_sniping(bot, update, user):
     send_settings(bot, update, user)
 
 
-def __toggle_gold_hiding(bot, update, user, data):
+def __toggle_gold_hiding(bot, update, user):
     if user.setting_automated_hiding:
         user.setting_automated_hiding = False
     else:
@@ -50,8 +50,7 @@ def __toggle_report(bot, update, user):
     send_settings(bot, update, user)
 
 
-def __disable_api(bot, update, user, data):
-    user = Session.query(User).filter_by(id=data['id']).first()
+def __disable_api(bot, update, user):
     if user.api_token:
         user.api_token = None
 

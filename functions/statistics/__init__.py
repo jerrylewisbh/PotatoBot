@@ -148,7 +148,7 @@ def __get_additional_stats_basic(from_date, location, user):
         UserQuest.successful,
         func.count(UserQuest.id).label("count"),
     ).filter(
-        UserQuest.successful._is(False),
+        UserQuest.successful.is_(False),
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date

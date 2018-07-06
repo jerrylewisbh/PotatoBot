@@ -18,7 +18,7 @@ with urllib.request.urlopen(the_url) as url:
     for line in csv.DictReader(the_file):
         item = Session.query(Item).filter(
             Item.name == line['name'],
-            Item.cw_id == None
+            Item.cw_id.is_(None)
         ).first()
 
         if item:

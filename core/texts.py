@@ -582,8 +582,6 @@ MSG_NO_REPORT_PHASE_AFTER_BATTLE = "War is over but I don't accept reports just 
 
 MSG_DEAL_SOLD = "⚖️You sold <b>{}</b> for {}💰 ({} x {}💰)\nBuyer: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"
 
-#text += "\n\n<b>Please do not forget to forward me your /report command!</b>"
-
 MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"

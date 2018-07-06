@@ -46,8 +46,8 @@ def fwd_report(bot: Bot, update: Update):
         return
 
     fwd_group = Session.query(Group).filter(
-        Group.fwd_minireport == True,
-        Group.bot_in_group == True,
+        Group.fwd_minireport.is_(True),
+        Group.bot_in_group.is_(True),
         Group.id != FWD_CHANNEL
     ).all()
 
