@@ -27,6 +27,7 @@ def gen_squad_top_msg(data, counts, header, icon):
                                   data[i][1], icon, round(data[i][1] / squad_count, 2), icon)
     return text
 
+
 def __get_top_attendance(user: User, date_filter):
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)).group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
@@ -50,7 +51,6 @@ def __get_top_attendance(user: User, date_filter):
     ).filter(
         Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci')
     ).all()
-
 
     text = gen_top_msg(battles, user.id, MSG_TOP_ATTACK_SQUAD.format(user.member.squad.squad_name), '⛳️')
     additional_markup = [

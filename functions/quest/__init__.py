@@ -207,6 +207,7 @@ def parse_quest(bot: Bot, update: Update, user: User):
             parse_mode=ParseMode.HTML,
         )
 
+
 @command_handler()
 def set_user_quest_location(bot, update, user):
     action = get_callback_action(update.callback_query.data, user.id)
@@ -226,6 +227,7 @@ def set_user_quest_location(bot, update, user):
             update.callback_query.message.chat.id,
             update.callback_query.message.message_id
         )
+
 
 @command_handler()
 def set_user_foray_pledge(bot, update, user):

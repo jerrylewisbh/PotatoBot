@@ -1,8 +1,7 @@
 DEBUG = False
 
 TOKEN = '<SOME_TOKEN>'
-DB = 'mysql+pymysql://<username>:<password>@<host>/<dbname>?charset=utf8mb4' # Строчка подключения к базе данных (поддерживается только MySql, о формате можно прочитать тут http://docs.sqlalchemy.org/en/latest/dialects/mysql.html)
-API_PORT = 88
+DB = 'mysql+pymysql://<username>:<password>@<host>/<dbname>?charset=utf8mb4'
 
 GOVERNMENT_CHAT = -1001149271906
 SUPER_ADMIN_ID = 0
@@ -15,7 +14,6 @@ CASTLE_CHAT_ID = None
 ACADEM_CHAT_ID = None
 CASTLE = None
 EXT_ID = None
-WEB_LINK = 'Please change it. {}'
 
 CWBOT_ID = 408101137
 

@@ -15,6 +15,7 @@ logger.addHandler(logging.NullHandler())
 
 __all__ = ['TelegramHandler']
 
+
 class TelegramHandler(logging.Handler):
     last_response = None
 
@@ -44,10 +45,9 @@ class TelegramHandler(logging.Handler):
                 parse_mode=ParseMode.HTML,
                 disable_web_page_preview=True,
                 disable_notification=True,
-             )
+            )
         except NetworkError as ex:
             logging.warning("Log was not send to telegram due to NetworkError Exception: %s", ex)
-
 
     def emit(self, record):
         text = self.format(record)
@@ -67,6 +67,7 @@ class TelegramFormatter(logging.Formatter):
 
     def __init__(self, fmt=None, *args, **kwargs):
         super(TelegramFormatter, self).__init__(fmt or self.fmt, *args, **kwargs)
+
 
 class EMOJI:
     WHITE_CIRCLE = '⚪'

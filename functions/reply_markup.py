@@ -24,7 +24,7 @@ def generate_user_markup(user_id: int = None):
     buttons = [
         [KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)],
         [KeyboardButton(USER_COMMAND_SQUAD), KeyboardButton(USER_COMMAND_STATISTICS)],
-        #[KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)]
+        # [KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)]
     ]
 
     if user and user.is_squadmember:
@@ -78,10 +78,10 @@ def generate_statistics_markup():
             KeyboardButton(STATISTICS_COMMAND_SKILLS),
             KeyboardButton(STATISTICS_COMMAND_QUESTS),
             KeyboardButton(STATISTICS_COMMAND_FORAY),
-        ], #[
-            #KeyboardButton(STATISTICS_COMMAND_QUESTS_ALL),
-            #KeyboardButton(STATISTICS_COMMAND_ITEMS_ALL),
-        #],
+        ],  # [
+        # KeyboardButton(STATISTICS_COMMAND_QUESTS_ALL),
+        # KeyboardButton(STATISTICS_COMMAND_ITEMS_ALL),
+        # ],
         [
             KeyboardButton(USER_COMMAND_BACK)
         ]

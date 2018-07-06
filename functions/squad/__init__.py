@@ -179,6 +179,7 @@ def join_squad_request(bot: Bot, update: Update, user: User):
             reply_markup=InlineKeyboardMarkup(inline_keys)
         )
 
+
 @command_handler(
     allow_private=False,
     allow_group=True

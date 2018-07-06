@@ -25,7 +25,6 @@ for item in dir(commands):
         client.send_message('@KartoffelTheTestBot', getattr(commands, item))
         time.sleep(1)
 
-
 for item in dir(chats):
     if item.startswith("CC_"):
         print(item)

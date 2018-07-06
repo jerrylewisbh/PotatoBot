@@ -41,7 +41,6 @@ def __get_top_attendance(user: User, date_filter):
         Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci')
     ).all()
 
-
     text = gen_top_msg(battles, user.id, MSG_TOP_WEEK_WARRIORS, '⛳️')
     additional_markup = [
         InlineKeyboardButton(

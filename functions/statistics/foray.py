@@ -16,6 +16,7 @@ from core.types import (Character, Location, Session, User,
 plot.ioff()
 Session()
 
+
 def __get_additional_stats_foray(from_date, location, text, user):
     foray_stats_success = Session.query(
         UserQuest.successful,
@@ -106,7 +107,6 @@ def __get_knight_pledgerate():
         y.append(100 / values['all'] * values['pledges'] if values['pledges'] else 0)
 
     return x, y
-
 
 
 def send_graph(bot: Bot, user: User):

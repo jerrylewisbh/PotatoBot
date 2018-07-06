@@ -9,6 +9,7 @@ from core.types import AdminType, Session, check_admin, check_ban, log, User
 
 Session()
 
+
 # TODO: A lot of this can be moved out here in favor of python-telegram-command handlers and filters!
 
 # noinspection PyNestedDecorators
@@ -73,7 +74,7 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
 
             bot = args[0]
             update = args[1]
-            #args = kwargs['args'] if kwargs and 'args' in kwargs else None
+            # args = kwargs['args'] if kwargs and 'args' in kwargs else None
 
             if update.message and not update.callback_query:
                 if update.message.chat.type == 'channel' and not allow_channel:
@@ -135,7 +136,9 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                 logging.info("User '%s' has called: '%s'", user.id, func.__name__)
 
             return func(bot, update, user, **kwargs)
+
         return wrapper
+
     return real_decorator
 
 

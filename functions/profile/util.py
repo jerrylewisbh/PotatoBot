@@ -186,10 +186,10 @@ def parse_profession(prof, user_id, date):
         profession.date = date
         profession.name = str(parsed_data.group(1))
         strings = prof.splitlines()
-        skillList = ""
+        skill_list = ""
         for string in strings[2:]:
-            skillList += string.split("/")[0] + "\n"
-        profession.skillList = skillList
+            skill_list += string.split("/")[0] + "\n"
+        profession.skillList = skill_list
         Session.add(profession)
         Session.commit()
     return profession
