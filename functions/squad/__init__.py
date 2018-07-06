@@ -64,10 +64,10 @@ def leave_squad_request(bot: Bot, update: Update, user: User):
                 update.callback_query.message.message_id
             )
     else:
-        member = Session.query(SquadMember).filter_by(user_id=update.message.from_user.id).first()
+        member = user.member
         if member:
             squad = member.squad
-            markup = __get_keyboard_leave(user)
+            markup = __get_keyboard_leave(user, user.id)
             send_async(
                 bot,
                 chat_id=member.user_id,
