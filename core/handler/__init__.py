@@ -3,6 +3,7 @@ from telegram import Update
 from telegram.ext import run_async
 
 from config import CWBOT_ID
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.state import get_game_state, GameState
 from core.types import User, Session, Squad, Admin
