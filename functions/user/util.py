@@ -237,7 +237,7 @@ def delete_admin(bot, update, user, data):
 
 def generate_group_info(group_id):
     group = Session.query(Group).filter(Group.id == group_id).first()
-    admins = Session.query(Admin).filter(Admin.admin_group == group_id).all()
+    admins = Session.query(Admin).filter(Admin.group_id == group_id).all()
     adm_msg = ''
     adm_del_keys = []
     for adm in admins:

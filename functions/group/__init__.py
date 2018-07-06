@@ -1,15 +1,15 @@
 import logging
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, TelegramError
 
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler.callback import get_callback_action, CallbackAction
 from core.handler.callback.util import create_callback
-from core.texts import MSG_GROUP_STATUS_ADMIN_FORMAT, MSG_GROUP_STATUS_DEL_ADMIN, MSG_GROUP_STATUS, MSG_ON, MSG_OFF, \
-    MSG_ORDER_GROUP_DEL, MSG_BACK, MSG_GROUP_STATUS_SQUAD, MSG_GROUP_STATUS_CHOOSE_CHAT
+from core.texts import *
 from core.types import AdminType, User, Session, Group, Admin, Squad
 from core.utils import send_async
+from functions.user import __delete_group_admin
 
 
 @command_handler(
@@ -23,7 +23,7 @@ def info(bot: MQBot, update: Update, user: User):
     action = get_callback_action(update.callback_query.data, update.effective_user.id)
 
     group = Session.query(Group).filter(Group.id == action.data['group_id']).first()
-    admins = Session.query(Admin).filter(Admin.admin_group == action.data['group_id']).all()
+    admins = Session.query(Admin).filter(Admin.group_id == action.data['group_id']).all()
 
     adm_msg = ''
     adm_del_keys = []
@@ -40,9 +40,11 @@ def info(bot: MQBot, update: Update, user: User):
             InlineKeyboardButton(
                 MSG_GROUP_STATUS_DEL_ADMIN.format(user.first_name or '', user.last_name or ''),
                 callback_data=create_callback(
-                    CallbackAction.ORDER_GROUP_MANAGE,
-                    user.id
-                    # TODO
+                    CallbackAction.GROUP_MANAGE,
+                    user.id,
+                    sub_action = 'demote',
+                    group_id = group.id,
+                    admin_user_id = user.id,
                 )
             )
         ])
@@ -112,7 +114,7 @@ def list(bot: MQBot, update: Update, user: User):
                     )
                 ),
                 callback_data=create_callback(
-                    CallbackAction.GROUP_MANAGE,
+                    CallbackAction.GROUP_INFO,
                     user.id,
                     group_id=group.id
                 )
@@ -136,3 +138,43 @@ def list(bot: MQBot, update: Update, user: User):
             reply_markup=inline_markup,
             parse_mode=ParseMode.HTML,
         )
+
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def manage(bot: MQBot, update: Update, user: User):
+    if not update.callback_query:
+        logging.warning("method was called without callback_query!")
+        return
+
+    action = get_callback_action(update.callback_query.data, update.effective_user.id)
+
+    if action.data['sub_action'] == "delete":
+        # Delete the group, if a squad is associated delete this as well
+        squad = Session.query(Squad).filter_by(chat_id=action.data['group_id']).first()
+        if squad is not None:
+            logging.warning("Deleting squad %s", squad.squad_name)
+            bot.send_message(chat_id=action.data['group_id'], text=MSG_SQUAD_DELETE)
+            for member in squad.members:
+                Session.delete(member)
+            Session.delete(squad)
+            Session.commit()
+
+        # Now delete the group
+        group = Session.query(Group).filter(Group.id == action.data['group_id']).first()
+        logging.warning("Deleting group %s", group.title)
+
+        try:
+            bot.leave_chat(chat_id=action.data['group_id'])
+        except TelegramError:
+            pass
+
+        if group:
+            Session.delete(group)
+            Session.commit()
+    elif action.data['sub_action'] == "demote":
+        admin_user = Session.query(User).filter(User.id == action.data['admin_user_id']).first()
+        if admin_user:
+            __delete_group_admin(bot, admin_user, action.data['group_id'])
+
+    list(bot, update, user)

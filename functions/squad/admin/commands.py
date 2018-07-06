@@ -1,14 +1,11 @@
-from telegram import Update, ParseMode, TelegramError
+from telegram import Update, ParseMode, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton
 
 from core.bot import MQBot
 from core.decorators import command_handler
-from core.texts import MSG_SQUAD_THORNS_ENABLED, MSG_SQUAD_REMINDERS_ENABLED, MSG_SQUAD_SILENCE_ENABLED, \
-    MSG_SQUAD_THORNS_DISABLED, MSG_SQUAD_SILENCE_DISABLED, MSG_SQUAD_REMINDERS_DISABLED, MSG_SQUAD_RECRUITING_ENABLED, \
-    MSG_SQUAD_RECRUITING_DISABLED, MSG_SQUAD_NEW, MSG_SQUAD_LINK_SAVED, MSG_SQUAD_RENAMED, MSG_SQUAD_DELETE, \
-    MSG_SQUAD_NO_PROFILE, MSG_SQUAD_ADD_IN_SQUAD, MSG_SQUAD_ADD_FORCED, MSG_SQUAD_ADD
+from core.handler.callback.util import create_callback, CallbackAction
+from core.texts import *
 from core.types import AdminType, User, Session, Group, Squad, SquadMember
 from core.utils import send_async
-from functions.squad import generate_squad_invite_answer
 
 
 @command_handler(
@@ -246,19 +243,50 @@ def force_add_to_squad(bot: MQBot, update: Update, user: User):
 )
 def add_to_squad(bot: MQBot, update: Update, user: User):
     squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
-    if squad is not None:
+    if squad:
         username = update.message.text.split(' ', 1)
         if len(username) == 2:
             username = username[1].replace('@', '')
-            user = Session.query(User).filter_by(username=username).first()
-            if user is not None:
-                if user.character is None:
-                    send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_NO_PROFILE)
-                elif user.member is not None:
-                    send_async(bot, chat_id=update.message.chat.id,
-                               text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
+            invited_user = Session.query(User).filter_by(username=username).first()
+            if invited_user is not None:
+                if invited_user.character is None:
+                    send_async(
+                        bot,
+                        chat_id=update.message.chat.id,
+                        text=MSG_SQUAD_NO_PROFILE
+                    )
+                elif invited_user.member is not None:
+                    send_async(
+                        bot,
+                        chat_id=update.message.chat.id,
+                        text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username)
+                    )
                 else:
-                    markup = generate_squad_invite_answer(user.id)
-                    send_async(bot, chat_id=update.message.chat.id,
-                               text=MSG_SQUAD_ADD.format('@' + username),
-                               reply_markup=markup)
+                    inline_keys = [
+                        InlineKeyboardButton(
+                            MSG_SQUAD_GREEN_INLINE_BUTTON,
+                            callback_data=create_callback(
+                                CallbackAction.SQUAD_INVITE,
+                                user.id,
+                                invited_user_id=invited_user.id,
+                                squad_id=squad.chat_id,
+                                sub_action='invite_accept',
+                            )
+                        ),
+                        InlineKeyboardButton(
+                            MSG_SQUAD_RED_INLINE_BUTTON,
+                            callback_data=create_callback(
+                                CallbackAction.SQUAD_INVITE,
+                                user.id,
+                                sub_action='invite_decline',
+                                squad_id=squad.chat_id,
+                                invited_user_id=invited_user.id
+                            )
+                        )
+                    ]
+                    send_async(
+                        bot,
+                        chat_id=update.message.chat.id,
+                        text=MSG_SQUAD_ADD.format('@' + username),
+                        reply_markup=InlineKeyboardMarkup([inline_keys])
+                    )

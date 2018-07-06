@@ -185,7 +185,7 @@ def fresh_profiles(bot: Bot, job_queue: Job):
             .join(User, User.id == SquadMember.user_id).all()
         for member, user in members:
             Session.delete(member)
-            admins = Session.query(Admin).filter_by(admin_group=member.squad_id).all()
+            admins = Session.query(Admin).filter_by(group_id=member.squad_id).all()
             try:
                 bot.restrictChatMember(member.squad_id, member.user_id)
                 bot.kick_chat_member(member.squad_id, member.user_id)

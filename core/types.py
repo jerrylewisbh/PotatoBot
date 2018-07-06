@@ -71,9 +71,11 @@ class Group(Base):
 
     fwd_minireport = Column(Boolean, default=False)
 
-    group_items = relationship('OrderGroupItem', back_populates='chat')
+    group_items = relationship(
+        'OrderGroupItem', back_populates='chat', cascade="save-update, merge, delete, delete-orphan"
+    )
     squad = relationship('Squad', back_populates='chat')
-    orders = relationship('Order', back_populates='chat')
+    orders = relationship('Order', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
 
 
 class User(Base):
@@ -266,11 +268,19 @@ class Trigger(Base):
 class Admin(Base):
     __tablename__ = 'admins'
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
     user = relationship(User, back_populates='permission')
 
     admin_type = Column(Integer)
-    admin_group = Column(BigInteger, primary_key=True, default=0)
+
+    group_id = Column(BigInteger, ForeignKey(Group.id), nullable=True)
+    group = relationship(Group)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'group_id', name='uc_usr_group'),
+    )
 
 
 class OrderGroup(Base):
@@ -544,10 +554,10 @@ def check_admin(update, adm_type, allowed_types=()):
         admins = Session().query(Admin).filter_by(user_id=update.effective_user.id).all()
         for adm in admins:
             if (AdminType(adm.admin_type) in allowed_types or adm.admin_type <= adm_type.value) and \
-                    (adm.admin_group in [0, update.effective_message.chat.id] or
+                    (adm.group in [None, update.effective_message.chat.id] or
                      update.effective_message.chat.id == update.effective_user.id):
-                if adm.admin_group != 0:
-                    group = Session().query(Group).filter_by(id=adm.admin_group).first()
+                if adm.group_id:
+                    group = Session().query(Group).filter_by(id=adm.group_id).first()
                     if group and group.bot_in_group:
                         allowed = True
                         break

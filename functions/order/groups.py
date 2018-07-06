@@ -141,7 +141,7 @@ def generate_order_groups_markup(admin_user: list=None, pin: bool=True, btn=True
         if group_adm:
             inline_keys = []
             for adm in admin_user:
-                group = Session.query(Group).filter_by(id=adm.admin_group, bot_in_group=True).first()
+                group = Session.query(Group).filter_by(id=adm.group_id, bot_in_group=True).first()
                 if group:
                     inline_keys.append([InlineKeyboardButton(group.title, callback_data=json.dumps(
                         {'t': QueryType.Order.value, 'g': False, 'id': group.id}))])

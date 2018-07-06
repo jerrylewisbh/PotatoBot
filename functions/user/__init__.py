@@ -3,6 +3,7 @@ import logging
 from telegram import Bot, Update
 
 from config import SUPER_ADMIN_ID
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler.callback import get_callback_action
 
@@ -34,12 +35,12 @@ def set_admin(bot: Bot, update: Update, user: User):
 
         else:
             adm = Session.query(Admin).filter_by(user_id=user.id,
-                                                 admin_group=update.message.chat.id).first()
+                                                 group_id=update.message.chat.id).first()
 
             if adm is None:
                 new_group_admin = Admin(user_id=user.id,
                                         admin_type=AdminType.GROUP.value,
-                                        admin_group=update.message.chat.id)
+                                        group_id=update.message.chat.id)
 
                 Session.add(new_group_admin)
                 Session.commit()
@@ -72,7 +73,7 @@ def del_admin(bot: Bot, update: Update, user: User):
             else:
                 adm = Session.query(Admin).filter_by(
                     user_id=user.id,
-                    admin_group=update.message.chat.id
+                    group_id=update.message.chat.id
                 ).first()
 
                 if adm is None:
@@ -102,7 +103,7 @@ def del_admin(bot: Bot, update: Update, user: User):
         else:
             adm = Session.query(Admin).filter_by(
                 user_id=user.id,
-                admin_group=update.message.chat.id
+                group_id=update.message.chat.id
             ).first()
 
             if adm is None:
@@ -126,7 +127,7 @@ def del_admin(bot: Bot, update: Update, user: User):
     min_permission=AdminType.FULL,
 )
 def list_admins(bot: Bot, update: Update, user: User):
-    admins = Session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
+    admins = Session.query(Admin).filter(Admin.group_id == update.message.chat.id).all()
     users = []
     for admin_user in admins:
         users.append(Session.query(User).filter_by(id=admin_user.user_id).first())
@@ -144,7 +145,7 @@ def list_admins(bot: Bot, update: Update, user: User):
     allow_group=True
 )
 def admins_for_users(bot: Bot, update: Update, user: User):
-    admins = Session.query(Admin).filter(Admin.admin_group == update.message.chat.id).all()
+    admins = Session.query(Admin).filter(Admin.group_id == update.message.chat.id).all()
     users = []
     for admin_user in admins:
         users.append(Session.query(User).filter_by(id=admin_user.user_id).first())
@@ -180,7 +181,7 @@ def set_global_admin(bot: Bot, update: Update, user: User):
             if adm is None:
                 new_group_admin = Admin(user_id=user.id,
                                         admin_type=AdminType.FULL.value,
-                                        admin_group=0)
+                                        group_id=None)
                 Session.add(new_group_admin)
                 Session.commit()
                 send_async(bot,
@@ -208,7 +209,7 @@ def set_super_admin(bot: Bot, update: Update, user: User):
 
         else:
             if user.id == SUPER_ADMIN_ID and update.message.from_user.id == SUPER_ADMIN_ID:
-                adm = Session.query(Admin).filter_by(user_id=user.id, admin_group=0).first()
+                adm = Session.query(Admin).filter_by(user_id=user.id, group_id=None).first()
                 if adm is not None:
                     if adm.admin_type == AdminType.SUPER.value:
                         send_async(bot,
@@ -226,7 +227,7 @@ def set_super_admin(bot: Bot, update: Update, user: User):
                 else:
                     new_super_admin = Admin(user_id=user.id,
                                             admin_type=AdminType.SUPER.value,
-                                            admin_group=0)
+                                            group_id=None)
 
                     Session.add(new_super_admin)
                     Session.commit()
@@ -311,3 +312,21 @@ def settings(bot: Bot, update: Update, user: User):
         else:
             logging.warning("Unknown setting_action for settings")
 
+def __delete_group_admin(bot: MQBot, user: User, chat_id):
+    adm = Session.query(Admin).filter(User.id == user.id, Admin.group_id == chat_id).first()
+
+    if adm is None:
+        send_async(
+            bot,
+            chat_id=chat_id,
+            text=MSG_DEL_GROUP_ADMIN_NOT_EXIST.format(user.username)
+        )
+
+    else:
+        Session.delete(adm)
+        Session.commit()
+        send_async(
+            bot,
+            chat_id=chat_id,
+            text=MSG_DEL_GROUP_ADMIN.format(user.username)
+        )

@@ -402,7 +402,7 @@ def find_by_username(bot: Bot, update: Update, user: User):
                 else:
                     group_ids = []
                     for adm in admin:
-                        group_ids.append(adm.admin_group)
+                        group_ids.append(adm.group_id)
 
                     if account.member.squad.chat_id in group_ids:
                         __send_user_with_settings(bot, update, account)
@@ -436,7 +436,7 @@ def find_by_character(bot: Bot, update: Update, user: User):
                 else:
                     group_ids = []
                     for adm in admin:
-                        group_ids.append(adm.admin_group)
+                        group_ids.append(adm.group_id)
 
                     if account.member.squad.chat_id in group_ids:
                         __send_user_with_settings(bot, update, account)
@@ -469,7 +469,7 @@ def find_by_id(bot: Bot, update: Update, user: User):
                 else:
                     group_ids = []
                     for adm in admin:
-                        group_ids.append(adm.admin_group)
+                        group_ids.append(adm.group_id)
 
                     if account.member.squad.chat_id in group_ids:
                         __send_user_with_settings(bot, update, account)

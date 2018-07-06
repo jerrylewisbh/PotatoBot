@@ -41,7 +41,7 @@ def __remove(bot: Bot, squad_user: User):
 
     # Inform ppl...
     if squad_user.member.approved:
-        admins = Session.query(Admin).filter_by(admin_group=squad_user.member.squad.chat_id).all()
+        admins = Session.query(Admin).filter_by(group_id=squad_user.member.squad.chat_id).all()
         print(squad_user.character.name, squad_user.member.squad.squad_name)
         for adm in admins:
             if adm.user_id != squad_user.id:

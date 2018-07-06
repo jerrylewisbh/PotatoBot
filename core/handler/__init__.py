@@ -30,7 +30,7 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
 
         admin = Session.query(Admin).filter(
             Admin.user_id == update.message.from_user.id and
-            Admin.admin_group in [update.message.chat.id, 0]).first()
+            Admin.group_id in [update.message.chat.id, None]).first()
 
         logging.debug("SILENCE STATE: State: {}, Squad: {}, Admin: {}".format(
             get_game_state(),
@@ -53,9 +53,7 @@ def manage_all(bot: Bot, update: Update, user: User, chat_data, job_queue):
         for _ in admin:
             is_admin = True
             break
-        print("++++++++")
-        print(chat_data)
-        print("++++++++")
+
         if 'order_wait' in chat_data and chat_data['order_wait']:
             order(bot, update, user, chat_data=chat_data)
         elif update.message.text:

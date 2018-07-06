@@ -30,6 +30,7 @@ class CallbackAction(IntFlag):
     # Squad related
     SQUAD_LEAVE = auto()
     SQUAD_JOIN = auto()
+    SQUAD_INVITE = auto()
     SQUAD_LIST = auto()
     SQUAD_LIST_MEMBERS = auto()
     SQUAD_MANAGE = auto()
@@ -50,6 +51,7 @@ class CallbackAction(IntFlag):
 
     # Groups
     GROUP = auto()
+    GROUP_INFO = auto()
     GROUP_MANAGE = auto()
 
 

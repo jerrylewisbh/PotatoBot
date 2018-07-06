@@ -41,6 +41,8 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
             if action and isinstance(action, Action):
                 print(action)
                 print(action.action)
+
+                # Top
                 if CallbackAction.TOP in action.action:
                     # Top Lists....
                     if CallbackAction.TOP_FILTER_SQUAD in action.action:
@@ -52,10 +54,16 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
                     else:
                         logging.info("Inline Query: Calling top.top")
                         overall.top(bot, update, user)
+
+                # Quest
                 elif CallbackAction.QUEST_LOCATION in action.action:
                     quest.set_user_quest_location(bot, update, user)
                 elif CallbackAction.FORAY_PLEDGE in action.action:
                     quest.set_user_foray_pledge(bot, update, user)
+
+                # Squad...
+                elif CallbackAction.SQUAD_INVITE in action.action:
+                    squad.squad_invite(bot, update, user)
                 elif CallbackAction.SQUAD_JOIN in action.action:
                     squad.join_squad_request(bot, update, user)
                 elif CallbackAction.SQUAD_LEAVE in action.action:
@@ -64,6 +72,10 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
                     squad_admin.list_squads(bot, update, user)
                 elif CallbackAction.SQUAD_LIST_MEMBERS in action.action:
                     squad_admin.list_squad_members(bot, update, user)
+                elif CallbackAction.SQUAD_MANAGE in action.action:
+                    squad_admin.manage(bot, update, user)
+
+                # Profile
                 elif CallbackAction.HERO_EQUIP in action.action:
                     profile.show_equip(bot, update, user)
                 elif CallbackAction.HERO_SKILL in action.action:
@@ -74,29 +86,22 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
                     profile.inline_show_char(bot, update, user)
                 elif CallbackAction.SETTING in action.action:
                     user_functions.settings(bot, update, user)
+
+                # Order Groups
                 elif CallbackAction.ORDER_GROUP in action.action:
                     order_group.list(bot, update, user)
                 elif CallbackAction.ORDER_GROUP_ADD in action.action:
                     order_group.add(bot, update, user, chat_data=chat_data)
                 elif CallbackAction.ORDER_GROUP_MANAGE in action.action:
                     order_group.manage(bot, update, user)
-                elif CallbackAction.GROUP_MANAGE in action.action:
-                    group.info(bot, update, user)
+
+                # Groups
                 elif CallbackAction.GROUP in action.action:
                     group.list(bot, update, user)
-
-                #elif CallbackAction.ORDER_GROUP_ADD in action.action:
-                    #groups.manage(bot, udpate, user)
-                """elif data['t'] == QueryType.OrderGroup.value:
-                    groups.order_group(bot, update, user, data, chat_data)
-                elif data['t'] == QueryType.OrderGroupManage.value:
-                    groups.order_group_manage(bot, update, user, data)
-                elif data['t'] == QueryType.OrderGroupTriggerChat.value:
-                    groups.order_group_tirgger_chat(bot, update, user, data)
-                elif data['t'] == QueryType.OrderGroupAdd.value:
-                    groups.order_group_add(bot, update, user, data, chat_data)
-                elif data['t'] == QueryType.OrderGroupDelete.value:
-                    groups.order_group_delete(bot, update, user, data)"""
+                elif CallbackAction.GROUP_INFO in action.action:
+                    group.info(bot, update, user)
+                elif CallbackAction.GROUP_MANAGE in action.action:
+                    group.manage(bot, update, user)
             else:
                 logging.warning("Action is not a valid action!")
                 bot.edit_message_text(
@@ -113,31 +118,19 @@ def callback_query(bot: Bot, update: Update, user:User, chat_data: dict, job_que
 
         # OLD way...
         data = json.loads(update.callback_query.data)
-        if data['t'] == QueryType.GroupList.value:
-            functions.squad.admin.group_list(bot, update, user, data)
-        elif data['t'] == QueryType.DelAdm.value:
-            delete_admin(bot, update, user, data)
-        elif data['t'] == QueryType.Order.value:
+        if data['t'] == QueryType.Order.value:
             order.order_button(bot, update, user, data, chat_data)
         elif data['t'] == QueryType.OrderOk.value:
             order.inline_order_confirmed(bot, update, user, data, job_queue)
         elif data['t'] == QueryType.Orders.value:
             order.inline_orders(bot, update, user, data, chat_data)
             groups.order_group_list(bot, update)
-        elif data['t'] == QueryType.RequestSquadAccept.value:
-            functions.squad.admin.squad_request_accept(bot, update, user, data)
-        elif data['t'] == QueryType.RequestSquadDecline.value:
-            functions.squad.admin.squad_request_decline(bot, update, user, data)
-        elif data['t'] == QueryType.InviteSquadAccept.value:
-            functions.squad.admin.squad_invite_accept(bot, update, user, data)
-        elif data['t'] == QueryType.InviteSquadDecline.value:
-            functions.squad.admin.squad_invite_decline(bot, update, user, data)
         elif data['t'] == QueryType.TriggerOrderPin.value:
             order.trigger_order_pin(bot, update, user, data, chat_data)
         elif data['t'] == QueryType.TriggerOrderButton.value:
             order.trigger_order_button(bot, update, user, data, chat_data)
-        elif data['t'] == QueryType.GroupDelete.value:
-            functions.squad.admin.inline_squad_delete(bot, update, user, data)
+
+        # SQUAD
         elif data['t'] == QueryType.OtherReport.value:
             functions.squad.admin.other_report(bot, update, user, data)
 
