@@ -14,6 +14,8 @@ Session()
 
 @command_handler(
     min_permission=AdminType.FULL,
+    allow_group=True,
+    allow_private=False,
 )
 def set_admin(bot: Bot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
@@ -65,6 +67,8 @@ def del_adm(bot, chat_id, user):
 
 @command_handler(
     min_permission=AdminType.FULL,
+    allow_group=True,
+    allow_private=False,
 )
 def del_admin(bot: Bot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]

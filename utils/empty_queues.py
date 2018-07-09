@@ -11,7 +11,7 @@ from cwmq import Consumer
 
 def clear_handler(channel, method, properties, body, dispatcher):
     print("Cleared {}".format(method.delivery_tag))
-    time.sleep(0.01)
+    #time.sleep(0.01)
     channel.basic_ack(method.delivery_tag)
 
 

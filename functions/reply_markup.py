@@ -99,14 +99,14 @@ def generate_squad_markup(is_group_admin=False, in_squad=False):
             [
                 KeyboardButton(ADMIN_COMMAND_FIRE_UP),
                 KeyboardButton(USER_COMMAND_SQUAD_LEAVE),
-                KeyboardButton(TOP_COMMAND_SQUAD),
+                #KeyboardButton(TOP_COMMAND_SQUAD),
             ]
         )
     elif in_squad:
         buttons = [
             [
                 KeyboardButton(USER_COMMAND_SQUAD_LEAVE),
-                KeyboardButton(TOP_COMMAND_SQUAD),
+                #KeyboardButton(TOP_COMMAND_SQUAD),
             ]
         ]
     else:
