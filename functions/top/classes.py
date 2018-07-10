@@ -11,7 +11,7 @@ from core.handler.callback.util import create_callback
 from core.texts import *
 from core.types import User, Character, Session, Report
 from core.utils import send_async
-from functions.top import get_top, gen_top_msg
+from functions.top import get_top, __gen_top_msg
 
 
 def gen_class_top_msg(data, counts, header, icon):
@@ -52,26 +52,26 @@ def __get_top_attendance(user: User, date_filter):
         Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci')
     ).all()
 
-    text = gen_top_msg(battles, user.id, MSG_TOP_ATTACK_CLASS.format(user.member.squad.squad_name), '⛳️')
+    text = __gen_top_msg(battles, user.id, MSG_TOP_ATTACK_CLASS.format(user.member.squad.squad_name), '⛳️')
     additional_markup = [
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_WEEK,
             callback_data=create_callback(
-                CallbackAction.TOP | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_WEEK,
+                CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_WEEK,
                 user.id
             )
         ),
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_MONTH,
             callback_data=create_callback(
-                CallbackAction.TOP | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_MONTH,
+                CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_MONTH,
                 user.id
             )
         ),
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_ALL,
             callback_data=create_callback(
-                CallbackAction.TOP | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_ALL,
+                CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_ALL,
                 user.id
             )
         ),
@@ -123,7 +123,7 @@ def top(bot: MQBot, update: Update, user: User):
             'attack',
             '⚔',
             user,
-            filter_by_squad=True
+            filter_by_squad=False
         )
 
         class_buttons = []
@@ -141,7 +141,7 @@ def top(bot: MQBot, update: Update, user: User):
                 callback_data=create_callback(
                     CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
                     user.id,
-                    class_name="Knight"
+                    class_name="Sentinel"
                 )
             ),
             InlineKeyboardButton(
@@ -149,7 +149,7 @@ def top(bot: MQBot, update: Update, user: User):
                 callback_data=create_callback(
                     CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
                     user.id,
-                    class_name="Knight"
+                    class_name="Ranger"
                 )
             )
         ]
@@ -159,7 +159,7 @@ def top(bot: MQBot, update: Update, user: User):
                 callback_data=create_callback(
                     CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
                     user.id,
-                    class_name="Knight"
+                    class_name="️Alchemist"
                 )
             ),
             InlineKeyboardButton(
@@ -167,7 +167,7 @@ def top(bot: MQBot, update: Update, user: User):
                 callback_data=create_callback(
                     CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
                     user.id,
-                    class_name="Knight"
+                    class_name="️Blacksmith"
                 )
             ),
             InlineKeyboardButton(
@@ -175,7 +175,7 @@ def top(bot: MQBot, update: Update, user: User):
                 callback_data=create_callback(
                     CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
                     user.id,
-                    class_name="Knight"
+                    class_name="Collector"
                 )
             )
         ]
@@ -185,7 +185,7 @@ def top(bot: MQBot, update: Update, user: User):
                 callback_data=create_callback(
                     CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
                     user.id,
-                    class_name="Knight"
+                    class_name="Esquire / Master"
                 )
             ),
         ]
@@ -203,7 +203,8 @@ def top(bot: MQBot, update: Update, user: User):
     else:
         # Call with callback_query
         action = get_callback_action(update.callback_query.data, user.id)
-
+        print(action.action)
+        print(action.data)
         class_name = 'Knight'
         if "class_name" in action.data:
             class_name = action.data["class_name"]
@@ -215,7 +216,7 @@ def top(bot: MQBot, update: Update, user: User):
                 'attack',
                 '⚔',
                 user,
-                filter_by_squad=True
+                filter_by_squad=False
             )
         elif CallbackAction.TOP_DEF in action.action:
             text = get_top(
@@ -224,7 +225,7 @@ def top(bot: MQBot, update: Update, user: User):
                 'defence',
                 '🛡',
                 user,
-                filter_by_squad=True)
+                filter_by_squad=False)
         elif CallbackAction.TOP_EXP in action.action:
             text = get_top(
                 Character.exp.desc(),
@@ -232,7 +233,7 @@ def top(bot: MQBot, update: Update, user: User):
                 'exp',
                 '🔥',
                 user,
-                filter_by_squad=True)
+                filter_by_squad=False)
         elif CallbackAction.TOP_ATT in action.action:
             if CallbackAction.TOP_FILTER_MONTH in action.action:
                 text, additional_keyboard = __get_top_attendance(

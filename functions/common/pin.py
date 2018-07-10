@@ -13,7 +13,7 @@ Session()
     allow_group=True,
     allow_private=False,
 )
-def pin(bot: Bot, update: Update, user: User):
+def pin(bot: MQBot, update: Update, user: User):
     bot.pin_chat_message(
         chat_id=update.message.reply_to_message.chat.id,
         message_id=update.message.reply_to_message.message_id,
@@ -26,7 +26,7 @@ def pin(bot: Bot, update: Update, user: User):
     allow_group=True,
     allow_private=False,
 )
-def silent_pin(bot: Bot, update: Update, user: User):
+def silent_pin(bot: MQBot, update: Update, user: User):
     bot.pin_chat_message(
         chat_id=update.message.reply_to_message.chat.id,
         message_id=update.message.reply_to_message.message_id,
@@ -39,7 +39,7 @@ def silent_pin(bot: Bot, update: Update, user: User):
     allow_group=True,
     allow_private=False
 )
-def pin_all(bot: Bot, update: Update, user: User):
+def pin_all(bot: MQBot, update: Update, user: User):
     group = update_group(update.message.chat)
     if not group.allow_pin_all:
         group.allow_pin_all = True
@@ -53,7 +53,7 @@ def pin_all(bot: Bot, update: Update, user: User):
     allow_group=True,
     allow_private=False,
 )
-def not_pin_all(bot: Bot, update: Update, user: User):
+def not_pin_all(bot: MQBot, update: Update, user: User):
     group = update_group(update.message.chat)
     if group.allow_pin_all:
         group.allow_pin_all = False

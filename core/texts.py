@@ -414,6 +414,7 @@ MSG_SQUAD_ABOUT = 'You are a member of the Squad "{}"'
 MSG_SQUAD_NONE = 'You are currently not a member of any squad. Select "⚜Join Squad" to join one!'
 
 MSG_TOP_FORMAT = '{}. {} (Level {}) - {}{}\n'
+MSG_TOP_FORMAT_REDUCED = '{}. {} (Level {})\n'
 MSG_SQUAD_TOP_FORMAT = '{}. {} ({}👥) - {}{} ({}{}/👤)\n'
 
 MSG_TOP_DEFENCE = '🛡Top Defenders:\n\n'

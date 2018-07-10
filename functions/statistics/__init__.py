@@ -22,7 +22,7 @@ plot.ioff()
 
 
 @command_handler()
-def statistic_about(bot: MQBot, update: Update, user: User):
+def statistic_about(bot: MQBot, update: Update, _user: User):
     markup = generate_statistics_markup()
     send_async(
         bot,

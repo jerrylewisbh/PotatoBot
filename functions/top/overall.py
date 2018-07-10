@@ -11,7 +11,7 @@ from core.handler.callback.util import create_callback
 from core.texts import MSG_TOP_WEEK_WARRIORS, MSG_TOP_ATTACK, MSG_TOP_DEFENCE, MSG_TOP_EXPERIENCE
 from core.types import User, Session, Character, Report
 from core.utils import send_async
-from functions.top import get_top, gen_top_msg
+from functions.top import get_top, __gen_top_msg
 
 
 def __get_top_attendance(user: User, date_filter):
@@ -38,7 +38,7 @@ def __get_top_attendance(user: User, date_filter):
         Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci')
     ).all()
 
-    text = gen_top_msg(battles, user.id, MSG_TOP_WEEK_WARRIORS, '⛳️')
+    text = __gen_top_msg(battles, user.id, MSG_TOP_WEEK_WARRIORS, '⛳️')
     additional_markup = [
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_WEEK,

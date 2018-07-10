@@ -4,7 +4,7 @@ from telegram.ext import CommandHandler, Dispatcher
 
 from functions.battle import call_ready_to_battle_result
 from functions.user import set_admin, del_admin, list_admins, set_global_admin, set_super_admin, del_global_admin
-from functions.common import admin_panel, ban, help_msg, kick, ping, unban, get_log
+from functions.common import admin_panel, ban, help_msg, ping, unban, get_log, force_kick_botato, kick_from_chat
 from functions.exchange import list_items, list_items_other, list_items_unknown
 from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume

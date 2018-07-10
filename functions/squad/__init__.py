@@ -184,7 +184,7 @@ def join_squad_request(bot: MQBot, update: Update, user: User):
     allow_private=False,
     allow_group=True
 )
-def squad_invite(bot: MQBot, update: Update, user: User):
+def squad_invite(bot: MQBot, update: Update, _user: User):
     if not update.callback_query:
         logging.warning("squad_invite_answer without callback_query called")
         return

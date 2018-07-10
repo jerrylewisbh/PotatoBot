@@ -11,7 +11,7 @@ from core.handler.callback.util import create_callback
 from core.texts import *
 from core.types import User, Character, Session, Report
 from core.utils import send_async
-from functions.top import get_top, gen_top_msg
+from functions.top import get_top, __gen_top_msg
 
 
 def gen_squad_top_msg(data, counts, header, icon):
@@ -52,26 +52,26 @@ def __get_top_attendance(user: User, date_filter):
         Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci')
     ).all()
 
-    text = gen_top_msg(battles, user.id, MSG_TOP_ATTACK_SQUAD.format(user.member.squad.squad_name), '⛳️')
+    text = __gen_top_msg(battles, user.id, MSG_TOP_ATTACK_SQUAD.format(user.member.squad.squad_name), '⛳️')
     additional_markup = [
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_WEEK,
             callback_data=create_callback(
-                CallbackAction.TOP | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_WEEK,
+                CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_WEEK,
                 user.id
             )
         ),
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_MONTH,
             callback_data=create_callback(
-                CallbackAction.TOP | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_MONTH,
+                CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_MONTH,
                 user.id
             )
         ),
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_ALL,
             callback_data=create_callback(
-                CallbackAction.TOP | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_ALL,
+                CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_ALL,
                 user.id
             )
         ),

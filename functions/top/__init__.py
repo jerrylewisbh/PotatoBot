@@ -26,7 +26,7 @@ def top_about(bot: MQBot, update: Update, user: User):
     )
 
 
-def get_top(condition, header, field_name, icon, user, filter_by_squad=False):
+def get_top(condition, header, field_name, icon, user, character_class='%', filter_by_squad=False):
     newest_profiles = Session.query(
         Character.user_id,
         func.max(Character.date)
@@ -40,23 +40,26 @@ def get_top(condition, header, field_name, icon, user, filter_by_squad=False):
             Character.date > datetime.now() - timedelta(days=7),
             Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
             Squad.chat_id == user.member.squad.chat_id,
-            SquadMember.approved.is_(True)
+            SquadMember.approved.is_(True),
+            Character.characterClass.ilike(character_class)
         ).join(User).join(SquadMember).join(Squad).order_by(condition).all()
     else:
         characters = Session.query(Character).filter(
             tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
             Character.date > datetime.now() - timedelta(days=7),
-            Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci')
+            Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
+            Character.characterClass.ilike(character_class)
         ).join(User).order_by(condition).all()
 
-    text = "<b>" + header + "</b>"
+    text = "<b> YYY" + header + "</b>"
     str_format = MSG_TOP_FORMAT
-    for i in range(min(10, len(characters))):
-        text += str_format.format(i + 1, characters[i].name, characters[i].level,
+    str_format_reduced = MSG_TOP_FORMAT_REDUCED
+    for i in range(min(3, len(characters))):
+        text += str_format_reduced.format(i + 1, characters[i].name, characters[i].level,
                                   getattr(characters[i], field_name), icon)
     if user.id in [character.user_id for character in characters]:
-        if user.id not in [character.user_id for character in characters[:10]]:
-            for i in range(10, len(characters)):
+        if user.id not in [character.user_id for character in characters[:3]]:
+            for i in range(3, len(characters)):
                 if characters[i].user_id == user.id:
                     text += '...\n'
                     text += str_format.format(i, characters[i - 1].name, characters[i - 1].level,
@@ -87,7 +90,7 @@ def __get_attendence(bot: MQBot, update: Update, user: User):
 
     battles = battles.filter(Character.castle == CASTLE).all()
     user_id = user.id
-    text_battle = gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⛳️')
+    text_battle = __gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⛳️')
 
     send_async(
         bot,
@@ -97,23 +100,20 @@ def __get_attendence(bot: MQBot, update: Update, user: User):
     )
 
 
-def gen_top_msg(data, user_id, header, icon):
-    text = "<b>" + header + "</b>"
+def __gen_top_msg(data, user_id, header, icon):
+    text = "<b> XXX" + header + "</b>"
     str_format = MSG_TOP_FORMAT
-    for i in range(min(10, len(data))):
-        text += str_format.format(i + 1, data[i][0].name, data[i][0].level,
-                                  data[i][1], icon)
+    for i in range(min(3, len(data))):
+        text += str_format.format(i + 1, data[i][0].name, data[i][0].level, data[i][1], icon)
+
     if len(data) and hasattr(data[0][0], 'user_id') and user_id in [build[0].user_id for build in data]:
-        if user_id not in [build[0].user_id for build in data[:10]]:
-            for i in range(10, len(data)):
+        if user_id not in [build[0].user_id for build in data[:3]]:
+            for i in range(3, len(data)):
                 if data[i][0].user_id == user_id:
                     text += '...\n'
-                    text += str_format.format(i, data[i - 1][0].name, data[i - 1][0].level,
-                                              data[i - 1][1], icon)
-                    text += str_format.format(i + 1, data[i][0].name, data[i][0].level,
-                                              data[i][1], icon)
+                    text += str_format.format(i, data[i - 1][0].name, data[i - 1][0].level, data[i - 1][1], icon)
+                    text += str_format.format(i + 1, data[i][0].name, data[i][0].level, data[i][1], icon)
                     if i != len(data) - 1:
-                        text += str_format.format(i + 2, data[i + 1][0].name, data[i + 1][0].level,
-                                                  data[i + 1][1], icon)
+                        text += str_format.format(i + 2, data[i + 1][0].name, data[i + 1][0].level, data[i + 1][1], icon)
                     break
     return text

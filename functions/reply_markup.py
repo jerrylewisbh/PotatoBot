@@ -24,7 +24,6 @@ def generate_user_markup(user_id: int = None):
     buttons = [
         [KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)],
         [KeyboardButton(USER_COMMAND_SQUAD), KeyboardButton(USER_COMMAND_STATISTICS)],
-        # [KeyboardButton(USER_COMMAND_BUILD), KeyboardButton(USER_COMMAND_CONTACTS)]
     ]
 
     if user and user.is_squadmember:
@@ -98,14 +97,14 @@ def generate_squad_markup(is_group_admin=False, in_squad=False):
             [
                 KeyboardButton(ADMIN_COMMAND_FIRE_UP),
                 KeyboardButton(USER_COMMAND_SQUAD_LEAVE),
-                #KeyboardButton(TOP_COMMAND_SQUAD),
+                KeyboardButton(TOP_COMMAND_SQUAD),
             ]
         )
     elif in_squad:
         buttons = [
             [
                 KeyboardButton(USER_COMMAND_SQUAD_LEAVE),
-                #KeyboardButton(TOP_COMMAND_SQUAD),
+                KeyboardButton(TOP_COMMAND_SQUAD),
             ]
         ]
     else:
