@@ -100,7 +100,7 @@ def admin_panel(bot: Bot, update: Update, user: User):
     allow_private=False,
     allow_group=True
 )
-def kick(bot: Bot, update: Update, user: User):
+def force_kick_botato(bot: Bot, update: Update, user: User):
     bot.leave_chat(update.message.chat.id)
 
 
@@ -309,7 +309,7 @@ def delete_msg(bot: Bot, update: Update):
     allow_private=False,
     allow_group=True
 )
-def delete_user(bot: Bot, update: Update, user: User):
+def kick_from_chat(bot: Bot, update: Update, user: User):
     bot.kickChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
     bot.unbanChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
 

@@ -83,7 +83,6 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(to_re(CC_PIN), pin))
     disp.add_handler(RegexHandler(to_re(CC_SILENT_PIN), silent_pin))
     disp.add_handler(RegexHandler(to_re(CC_DELETE), delete_msg))
-    disp.add_handler(RegexHandler(to_re(CC_KICK), delete_user))
 
     disp.add_handler(RegexHandler(HERO, char_update))
     disp.add_handler(RegexHandler(REPORT, report_received))

@@ -6,7 +6,7 @@ from functions.battle import call_ready_to_battle_result
 from functions.admins import (del_admin, del_global_admin, get_log,
                               list_admins, set_admin, set_global_admin,
                               set_super_admin)
-from functions.common import admin_panel, ban, help_msg, kick, ping, unban
+from functions.common import admin_panel, ban, help_msg, force_kick_botato, ping, unban, kick_from_chat
 from functions.exchange import list_items, list_items_other, list_items_unknown
 from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume
@@ -58,7 +58,10 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("add_super_admin", set_super_admin))
     disp.add_handler(CommandHandler("del_admin", del_admin))
     disp.add_handler(CommandHandler("list_admins", list_admins))
-    disp.add_handler(CommandHandler("kick", kick))
+
+    disp.add_handler(CommandHandler("force_kick_botato", force_kick_botato))  # Force Botato to remove himself from chat.
+    disp.add_handler(CommandHandler("kick", kick_from_chat))  # Force Botato to remove himself from chat.
+
     disp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     disp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
     disp.add_handler(CommandHandler("grant_access", grant_access))

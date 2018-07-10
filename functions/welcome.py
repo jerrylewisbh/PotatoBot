@@ -43,15 +43,34 @@ def welcome(bot: Bot, update: Update):
                     send_async(bot, chat_id=update.message.chat.id, text=fill_template(welcome_msg.message, user))
 
             elif (user is None or user.character is None or user.character.castle != CASTLE or user.member is None and not allow_anywhere and user.id != bot.id):
-                send_async(bot, chat_id=update.message.chat.id, vtext=MSG_THORNS.format("SPY"))
-                bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
-                bot.kickChatMember(update.message.chat.id, new_chat_member.id)
+                send_async(
+                    bot,
+                    chat_id=update.message.chat.id,
+                    text=MSG_THORNS.format("SPY 👀")
+                )
+                bot.restrict_chat_member(
+                    update.message.chat.id,
+                    new_chat_member.id
+                )
+                bot.kick_chat_member(
+                    update.message.chat.id,
+                    new_chat_member.id
+                )
             elif len(group.squad) == 1 and group.squad[0].thorns_enabled and user.id != bot.id and \
                     (user.member and user.member not in group.squad[0].members) and not allow_anywhere:
-                send_async(bot, chat_id=update.message.chat.id,
-                           text=MSG_THORNS.format(str(user)))
-                bot.restrictChatMember(update.message.chat.id, new_chat_member.id)
-                bot.kickChatMember(update.message.chat.id, new_chat_member.id)
+                send_async(
+                    bot,
+                    chat_id=update.message.chat.id,
+                    text=MSG_THORNS.format(str(user))
+                )
+                bot.restrict_chat_member(
+                    update.message.chat.id,
+                    new_chat_member.id
+                )
+                bot.kick_chat_member(
+                    update.message.chat.id,
+                    new_chat_member.id
+                )
             else:
                 if group.welcome_enabled:
                     welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
