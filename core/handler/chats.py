@@ -39,7 +39,6 @@ CC_CLOSE_HIRING = 'close admissions'
 CC_PIN = 'pin and notify'
 CC_SILENT_PIN = 'pin'
 CC_DELETE = 'delete'
-CC_KICK = 'kick'
 
 
 def to_re(string, case_insensitive=True):

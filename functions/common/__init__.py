@@ -406,6 +406,7 @@ def unban(bot: Bot, update: Update, user: User):
 def __get_item_worth(item_name):
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
     item_prices = r.lrange(item_name, 0, -1)
+    item_prices = list(map(int, item_prices))
 
     if item_prices:
         return int(min(item_prices))
