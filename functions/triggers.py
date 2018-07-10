@@ -1,8 +1,8 @@
 from html import escape
 from json import loads
+from telegram import Message, ParseMode, Update
 
-from telegram import Bot, Message, ParseMode, Update
-
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.texts import *
 from core.types import (AdminType, LocalTrigger, MessageType, Session, Trigger,
@@ -71,7 +71,7 @@ def add_global_trigger_db(msg: Message, trigger_text: str):
     allow_private=False,
     allow_group=True,
 )
-def set_global_trigger(bot: Bot, update: Update, user: User):
+def set_global_trigger(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger = msg[1].strip()
@@ -87,7 +87,7 @@ def set_global_trigger(bot: Bot, update: Update, user: User):
     allow_private=False,
     allow_group=True,
 )
-def add_global_trigger(bot: Bot, update: Update, user: User):
+def add_global_trigger(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger_text = msg[1].strip()
@@ -103,7 +103,7 @@ def add_global_trigger(bot: Bot, update: Update, user: User):
 
 
 @trigger_decorator
-def trigger_show(bot: Bot, update: Update, user: User):
+def trigger_show(bot: MQBot, update: Update, user: User):
     trigger = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id, trigger=update.message.text).first()
     if trigger is None:
         trigger = Session.query(Trigger).filter_by(trigger=update.message.text).first()
@@ -144,37 +144,11 @@ def trigger_show(bot: Bot, update: Update, user: User):
 
 
 @command_handler(
-    min_permission=AdminType.GROUP,
-    allow_private=False,
-    allow_group=True
-)
-def enable_global_trigger_all(bot: Bot, update: Update, user: User):
-    group = update_group(update.message.chat)
-    group.allow_trigger_all = True
-    Session.add(group)
-    Session.commit()
-    send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_ALL_ENABLED)
-
-
-@command_handler(
-    min_permission=AdminType.GROUP,
-    allow_private=False,
-    allow_group=True
-)
-def disable_global_trigger_all(bot: Bot, update: Update, user: User):
-    group = update_group(update.message.chat)
-    group.allow_trigger_all = False
-    Session.add(group)
-    Session.commit()
-    send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_ALL_DISABLED)
-
-
-@command_handler(
     min_permission=AdminType.FULL,
     allow_private=False,
     allow_group=True
 )
-def del_global_trigger(bot: Bot, update: Update, user: User):
+def del_global_trigger(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     trigger = Session.query(Trigger).filter_by(trigger=msg).first()
     if trigger is not None:
@@ -186,7 +160,7 @@ def del_global_trigger(bot: Bot, update: Update, user: User):
 
 
 @trigger_decorator
-def list_triggers(bot: Bot, update: Update, user: User):
+def list_triggers(bot: MQBot, update: Update, user: User):
     triggers = Session.query(Trigger).all()
     local_triggers = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id).all()
     msg = MSG_TRIGGER_LIST_HEADER + \
@@ -240,7 +214,7 @@ def add_trigger_db(msg: Message, chat, trigger_text: str):
     allow_private=False,
     allow_group=True
 )
-def set_trigger(bot: Bot, update: Update, user: User):
+def set_trigger(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger = msg[1].strip()
@@ -256,7 +230,7 @@ def set_trigger(bot: Bot, update: Update, user: User):
     allow_private=False,
     allow_group=True
 )
-def add_trigger(bot: Bot, update: Update, user: User):
+def add_trigger(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger_text = msg[1].strip()
@@ -276,7 +250,7 @@ def add_trigger(bot: Bot, update: Update, user: User):
     allow_private=False,
     allow_group=True
 )
-def enable_trigger_all(bot: Bot, update: Update, user: User):
+def enable_trigger_all(bot: MQBot, update: Update, user: User):
     group = update_group(update.message.chat)
     group.allow_trigger_all = True
     Session.add(group)
@@ -289,7 +263,7 @@ def enable_trigger_all(bot: Bot, update: Update, user: User):
     allow_private=False,
     allow_group=True
 )
-def disable_trigger_all(bot: Bot, update: Update, user: User):
+def disable_trigger_all(bot: MQBot, update: Update, user: User):
     group = update_group(update.message.chat)
     group.allow_trigger_all = False
     Session.add(group)
@@ -302,7 +276,7 @@ def disable_trigger_all(bot: Bot, update: Update, user: User):
     allow_private=False,
     allow_group=True
 )
-def del_trigger(bot: Bot, update: Update, user: User):
+def del_trigger(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
     trigger = Session.query(LocalTrigger).filter_by(trigger=msg).first()
     if trigger is not None:

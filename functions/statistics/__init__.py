@@ -1,30 +1,28 @@
 import io
-import logging
-import os
-from datetime import datetime, timedelta
-from math import pi
+import pandas
+from datetime import timedelta
 
-import matplotlib.pyplot as plot
 import numpy
-import pandas as pd
+import matplotlib.pyplot as plot
 from sqlalchemy import func, tuple_
-from sqlalchemy.sql.functions import count
-from telegram import Bot, ParseMode, Update
+from telegram import Update, ParseMode
 
-from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID
+from config import QUEST_LOCATION_ARENA_ID, QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.state import GameState
 from core.texts import *
-from core.types import (Character, Location, Profession, Session, User,
-                        UserQuest, UserQuestItem, Item)
+from core.types import *
 from core.utils import send_async
 from functions.reply_markup import generate_statistics_markup
 
 Session()
 
 plot.ioff()
+
+
 @command_handler()
-def statistic_about(bot: Bot, update: Update, user: User):
+def statistic_about(bot: MQBot, update: Update, user: User):
     markup = generate_statistics_markup()
     send_async(
         bot,
@@ -32,6 +30,7 @@ def statistic_about(bot: Bot, update: Update, user: User):
         text=MSG_STATISTICS_ABOUT,
         reply_markup=markup
     )
+
 
 def get_relative_details_for_location(user: User, from_date: datetime, location: Location):
     text = ""
@@ -101,7 +100,7 @@ def __get_additional_stats_foray(from_date, location, text, user):
         func.count(UserQuest.id).label("count"),
         func.sum(UserQuest.pledge).label("pledges")
     ).filter(
-        UserQuest.successful == True,
+        UserQuest.successful.is_(True),
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
@@ -110,7 +109,7 @@ def __get_additional_stats_foray(from_date, location, text, user):
         UserQuest.successful,
         func.count(UserQuest.id).label("count"),
     ).filter(
-        UserQuest.successful == False,
+        UserQuest.successful.is_(False),
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
@@ -141,7 +140,7 @@ def __get_additional_stats_basic(from_date, location, user):
         UserQuest.successful,
         func.count(UserQuest.id).label("count"),
     ).filter(
-        UserQuest.successful == True,
+        UserQuest.successful.is_(True),
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
@@ -150,7 +149,7 @@ def __get_additional_stats_basic(from_date, location, user):
         UserQuest.successful,
         func.count(UserQuest.id).label("count"),
     ).filter(
-        UserQuest.successful == False,
+        UserQuest.successful.is_(False),
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
@@ -170,10 +169,8 @@ def __get_additional_stats_basic(from_date, location, user):
     return MSG_QUEST_BASIC_STAT.format(success_rate)
 
 
-
-
 @command_handler()
-def quest_statistic(bot: Bot, update: Update, user: User):
+def quest_statistic(bot: MQBot, update: Update, user: User):
     logging.info("User '%s' called quest_statistic", user.id)
 
     text = MSG_QUEST_7_DAYS
@@ -187,6 +184,7 @@ def quest_statistic(bot: Bot, update: Update, user: User):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=generate_statistics_markup(),
     )
+
 
 def __get_item_statistics_by_location(location: Location):
     text = "*{}:*".format(location.name)
@@ -237,8 +235,6 @@ Average loot: {:.2f}
             UserQuestItem.item_id == item.id
         ).join(UserQuestItem).group_by(UserQuest.daytime).all()
 
-
-
         for daytime in daytimes:
             text += "{}:\n".format(daytime.name)
 
@@ -246,7 +242,7 @@ Average loot: {:.2f}
 
 
 @command_handler()
-def item_statistic(bot: Bot, update: Update, user: User):
+def item_statistic(bot: MQBot, update: Update, user: User):
     logging.info("User '%s' called item_statistic", user.id)
 
     text = MSG_ITEM_STAT
@@ -263,319 +259,7 @@ def item_statistic(bot: Bot, update: Update, user: User):
 
 
 @command_handler()
-def quest_statistic_old(bot: Bot, update: Update):
-    logging.debug("Quest statistics.py")
-
-    # Render for every level we know...
-    max_level = Session.query(func.max(UserQuest.level)).first()
-    if not max_level:
-        return
-
-    fig, ax = plot.subplots(figsize=(20, 15))
-    ind = numpy.arange(max_level[0] + 1)
-    width = 0.25
-
-    bars = []
-    logging.warning("Getting stats for")
-    stats = Session.query(
-        UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
-    ).join(Location).filter(UserQuest.location_id == 13).order_by(UserQuest.level).group_by(UserQuest.level).all()
-
-    values = []
-    stddev = []
-    for stat in stats:
-        while len(values) < stat[0]:
-            #logging.warning("Filling up list...")
-            values.append(float('nan'))
-            stddev.append(float('nan'))
-        values.append(int(stat[1]))
-        stddev.append(int(stat[2]))
-    while len(values) <= max_level[0]:
-        values.append(float('nan'))
-        stddev.append(float('nan'))
-
-    values = numpy.array(values).astype(numpy.double)
-    mask = numpy.isfinite(tuple(values))
-
-    logging.warning(values)
-    logging.warning(len(values))
-    logging.warning(stddev)
-    logging.warning(len(stddev))
-
-    b = ax.plot(
-        ind[mask],
-        values[mask],
-        width,
-        color='gold',
-        linestyle='-', marker='o'
-        # yerr=tuple(stddev)
-    )
-    bars.append(b)
-
-    # add some text for labels, title and axes ticks
-    ax.set_ylabel('XP')
-    ax.set_title('Experience in Forest')
-    ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0] + 1))
-
-    #[autolabel(ax, bar) for bar in bars]
-
-    with io.BytesIO() as f:
-        plot.savefig(f, format='png')
-        f.seek(0)
-        bot.send_photo(
-            chat_id=update.message.chat.id,
-            photo=f,
-            caption="Forest!"
-        )
-    plot.clf()
-
-
-@command_handler()
-def quest_statistic_line_one(bot: Bot, update: Update, session):
-    logging.debug("Quest statistics.py")
-
-    # Render for every level we know...
-    max_level = Session.query(func.max(UserQuest.level)).first()
-    if not max_level:
-        return
-
-    times = (
-        (2, 'Morning', 'gold'),
-        (4, 'Day', 'goldenrod'),
-        (8, 'Evening', 'orange'),
-        (16, 'Night', 'silver'),
-    )
-
-    fig, ax = plot.subplots(figsize=(20, 15))
-    ind = numpy.arange(max_level[0] + 1)
-    width = 0.25
-
-    bars = []
-    for counter, daytime in enumerate(times, start=1):
-        logging.warning("Getting stats for %s", daytime)
-        stats = Session.query(
-            UserQuest.level, func.avg(UserQuest.exp),
-            func.stddev(UserQuest.exp)).join(Location).filter(
-            UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(
-            UserQuest.level).group_by(
-            UserQuest.level).all()
-
-        values = []
-        stddev = []
-        for stat in stats:
-            while len(values) < stat[0]:
-                #logging.warning("Filling up list...")
-                values.append(float('nan'))
-                stddev.append(float('nan'))
-            values.append(int(stat[1]))
-            stddev.append(int(stat[2]))
-        while len(values) <= max_level[0]:
-            values.append(float('nan'))
-            stddev.append(float('nan'))
-
-        values = numpy.array(values).astype(numpy.double)
-        mask = numpy.isfinite(tuple(values))
-
-        logging.warning(values)
-        logging.warning(len(values))
-        logging.warning(stddev)
-        logging.warning(len(stddev))
-
-        b = ax.plot(
-            ind[mask],
-            values[mask],
-            width,
-            color=daytime[2],
-            linestyle='-', marker='o'
-            # yerr=tuple(stddev)
-        )
-        bars.append(b)
-
-    # add some text for labels, title and axes ticks
-    ax.set_ylabel('XP')
-    ax.set_title('Experience in Forest')
-    ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0] + 1))
-
-    ax.legend(
-        [rect for rect in bars],
-        [daytime[1] for daytime in times],
-    )
-    #[autolabel(ax, bar) for bar in bars]
-
-    with io.BytesIO() as f:
-        plot.savefig(f, format='png')
-        f.seek(0)
-        bot.send_photo(
-            chat_id=update.message.chat.id,
-            photo=f,
-            caption="Forest!"
-        )
-    plot.clf()
-
-
-@command_handler()
-def quest_statistic_split(bot: Bot, update: Update):
-    logging.debug("Quest statistics.py")
-
-    # Render for every level we know...
-    max_level = Session.query(func.max(UserQuest.level)).first()
-    if not max_level:
-        return
-
-    times = (
-        (2, 'Morning', 'gold'),
-        (4, 'Day', 'goldenrod'),
-        (8, 'Evening', 'orange'),
-        (16, 'Night', 'silver'),
-    )
-
-    fig, ax = plot.subplots(figsize=(20, 15))
-    ind = numpy.arange(max_level[0] + 1)
-    width = 0.25
-
-    bars = []
-    for counter, daytime in enumerate(times, start=1):
-        logging.warning("Getting stats for %s", daytime)
-        stats = Session.query(
-            UserQuest.level, func.avg(UserQuest.exp),
-            func.stddev(UserQuest.exp)).join(Location).filter(
-            UserQuest.location_id == 13, UserQuest.daytime == daytime[0]).order_by(
-            UserQuest.level).group_by(
-            UserQuest.level).all()
-
-        values = []
-        stddev = []
-        for stat in stats:
-            while len(values) < stat[0]:
-                #logging.warning("Filling up list...")
-                values.append(0)
-                stddev.append(0)
-            values.append(int(stat[1]))
-            stddev.append(int(stat[2]))
-        while len(values) <= max_level[0]:
-            values.append(0)
-            stddev.append(0)
-
-        logging.warning(values)
-        logging.warning(len(values))
-        logging.warning(stddev)
-        logging.warning(len(stddev))
-
-        b = ax.bar(
-            ind + (width * counter),
-            tuple(values),
-            width,
-            color=daytime[2],
-            yerr=tuple(stddev)
-        )
-        bars.append(b)
-
-    # add some text for labels, title and axes ticks
-    ax.set_ylabel('XP')
-    ax.set_title('Experience in Forest')
-    ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0] + 1))
-
-    ax.legend(
-        [rect for rect in bars],
-        [daytime[1] for daytime in times],
-    )
-    [autolabel(ax, bar) for bar in bars]
-
-    with io.BytesIO() as f:
-        plot.savefig(f, format='png')
-        f.seek(0)
-        bot.send_photo(
-            chat_id=update.message.chat.id,
-            photo=f,
-            caption="Forest!"
-        )
-    plot.clf()
-
-
-@command_handler()
-def quest_statistic_one(bot: Bot, update: Update):
-    logging.debug("Quest statistics.py")
-
-    # Render for every level we know...
-    max_level = Session.query(func.max(UserQuest.level)).first()
-    if not max_level:
-        return
-
-    fig, ax = plot.subplots(figsize=(20, 15))
-    ind = numpy.arange(max_level[0] + 1)
-    width = 0.5
-
-    logging.warning("Getting stats")
-    stats = Session.query(
-        UserQuest.level, func.avg(UserQuest.exp), func.stddev(UserQuest.exp)
-    ).join(Location).filter(UserQuest.location_id == 13).order_by(UserQuest.level).group_by(UserQuest.level).all()
-
-    values = []
-    stddev = []
-    for stat in stats:
-        while len(values) < stat[0]:
-            #logging.warning("Filling up list...")
-            values.append(0)
-            stddev.append(0)
-        values.append(int(stat[1]))
-        stddev.append(int(stat[2]))
-    while len(values) <= max_level[0]:
-        values.append(0)
-        stddev.append(0)
-
-    logging.warning(values)
-    logging.warning(len(values))
-    logging.warning(stddev)
-    logging.warning(len(stddev))
-
-    b = ax.bar(
-        ind + (width),
-        tuple(values),
-        width,
-        color='gold',
-        yerr=tuple(stddev)
-    )
-
-    # add some text for labels, title and axes ticks
-    ax.set_ylabel('XP')
-    ax.set_title('Experience in Forest')
-    ax.set_xticks(ind + (width * 4) / 2)
-    ax.set_xticklabels(range(1, max_level[0] + 1))
-
-    """ax.legend(
-        [rect for rect in bars],
-        [daytime[1] for daytime in times],
-    )
-    [autolabel(ax, bar) for bar in bars]"""
-
-    with io.BytesIO() as f:
-        plot.savefig(f, format='png')
-        f.seek(0)
-        bot.send_photo(
-            chat_id=update.message.chat.id,
-            photo=f,
-            caption="Forest!"
-        )
-    plot.clf()
-
-
-def autolabel(ax, rects):
-    """
-    Attach a text label above each bar displaying its height
-    """
-    for rect in rects:
-        height = rect.get_height()
-        if int(height) > 0:
-            ax.text(rect.get_x() + rect.get_width() / 2., 1.05 * height,
-                    '%d' % int(height),
-                    ha='center', va='bottom')
-
-
-@command_handler()
-def skill_statistic(bot: Bot, update: Update, user: User):
+def skill_statistic(bot: MQBot, update: Update, user: User):
     my_class = Session.query(Profession).filter_by(
         user_id=update.message.from_user.id).order_by(
         Profession.date.desc()).first()
@@ -586,9 +270,9 @@ def skill_statistic(bot: Bot, update: Update, user: User):
     recent_classes = Session.query(Profession.user_id, func.max(Profession.date)). \
         group_by(Profession.user_id)
 
-    classes = Session.query(Profession).filter(tuple_(Profession.user_id, Profession.date)
-                                               .in_([(a[0], a[1]) for a in recent_classes]))\
-
+    classes = Session.query(Profession).filter(
+        tuple_(Profession.user_id, Profession.date).in_([(a[0], a[1]) for a in recent_classes])
+    )
     recent_classes = recent_classes.all()
 
     classes = classes.all()
@@ -624,18 +308,18 @@ def skill_statistic(bot: Bot, update: Update, user: User):
         del my_skills[skill][3]
 
     # Set data
-    df = pd.DataFrame(my_skills)
+    df = pandas.DataFrame(my_skills)
     categories = list(df)
-    N = len(categories)
+    number_of_occurences = len(categories)
     # What will be the angle of each axis in the plot? (we divide the plot / number of variable)
-    angles = [n / float(N) * 2 * pi for n in range(N)]
-    #angles += angles[:1]
+    angles = [n / float(number_of_occurences) * 2 * numpy.pi for n in range(number_of_occurences)]
+    # angles += angles[:1]
 
     # Initialise the spider plot
     ax = plot.subplot(111, polar=True)
 
     # If you want the first axis to be on top:
-    ax.set_theta_offset(pi / 2)
+    ax.set_theta_offset(numpy.pi / 2)
     ax.set_theta_direction(-1)
 
     # Draw one axe per variable + add labels labels yet
@@ -683,8 +367,8 @@ def skill_statistic(bot: Bot, update: Update, user: User):
 
 
 @command_handler()
-def exp_statistic(bot: Bot, update: Update, user: User):
-    profiles = Session.query(Character).filter_by(user_id=update.message.from_user.id)\
+def exp_statistic(bot: MQBot, update: Update, user: User):
+    profiles = Session.query(Character).filter_by(user_id=update.message.from_user.id) \
         .order_by(Character.date).all()
     plot.switch_backend('ps')
     plot.xlabel(PLOT_X_LABEL)
@@ -735,4 +419,3 @@ def exp_statistic(bot: Bot, update: Update, user: User):
         )
 
     plot.clf()
-

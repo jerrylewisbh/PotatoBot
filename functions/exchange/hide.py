@@ -1,14 +1,12 @@
-import logging
-
-import re
-
 import math
 
-from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL
-
+import logging
+import re
 import redis
-from telegram import Bot, ParseMode, Update
+from telegram import ParseMode, Update
 
+from config import REDIS_PORT, REDIS_SERVER
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.texts import *
 from core.types import Session, User, UserStockHideSetting, new_item, Item
@@ -117,10 +115,11 @@ profile.py
 
 """
 
+
 @command_handler(
     squad_only=True
 )
-def hide_gold_info(bot: Bot, update: Update, user: User):
+def hide_gold_info(bot: MQBot, update: Update, user: User):
     logging.info("hide_gold_info called by %s", update.message.chat.id)
 
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
@@ -158,7 +157,7 @@ def hide_gold_info(bot: Bot, update: Update, user: User):
 @command_handler(
     squad_only=True
 )
-def hide_items(bot: Bot, update: Update, user: User, **kwargs):
+def hide_items(bot: MQBot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
@@ -179,8 +178,9 @@ def hide_items(bot: Bot, update: Update, user: User, **kwargs):
 
     autohide(user)
 
+
 @command_handler()
-def hide_list(bot: Bot, update: Update, user: User):
+def hide_list(bot: MQBot, update: Update, user: User):
     logging.info("hide_list called by user_id='%s'", user.id)
     """ Generate a forwardable list of items to hide... """
     if user.is_api_stock_allowed:
@@ -226,32 +226,32 @@ def hide_list(bot: Bot, update: Update, user: User):
                             worth,
                             (worth * count)
                         )
-                    elif x == order_count -1:
+                    elif x == order_count - 1:
                         remaining = int(count % max_weight)
                         link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) {} x {} = {}💰 ({}/{})".format(
-                            db_item.name,               # Name
-                            db_item.cw_id,              # Command: Item ID
-                            remaining,                  # Command: Number of items
-                            remaining,                  # Number of items
-                            worth,                      # Worth
-                            remaining * worth,          # Overall worth
-                            x + 1,                      # Batch X
-                            order_count,                # ... of Y
+                            db_item.name,  # Name
+                            db_item.cw_id,  # Command: Item ID
+                            remaining,  # Command: Number of items
+                            remaining,  # Number of items
+                            worth,  # Worth
+                            remaining * worth,  # Overall worth
+                            x + 1,  # Batch X
+                            order_count,  # ... of Y
                         )
                     else:
                         link = "\n[{}](https://t.me/share/url?url=/wts_{}_{}_1000) {} x {} = {}💰 ({}/{})".format(
-                            db_item.name,       # Name
-                            db_item.cw_id,      # Command: Item ID
-                            lot_size,           # Command: Number of items
-                            lot_size,           # Number of items
-                            worth,              # Worth
-                            (worth * lot_size), # Overall worth
-                            x + 1,              # Batch X
-                            order_count,        # ... of Y
+                            db_item.name,  # Name
+                            db_item.cw_id,  # Command: Item ID
+                            lot_size,  # Command: Number of items
+                            lot_size,  # Number of items
+                            worth,  # Worth
+                            (worth * lot_size),  # Overall worth
+                            x + 1,  # Batch X
+                            order_count,  # ... of Y
                         )
                     item_list.append((worth, link))
 
-    for item in sorted(item_list, key=lambda x: x[0], reverse=True):
+    for item in sorted(item_list, key=lambda y: y[0], reverse=True):
         text += item[1]
 
     if not item_list:
@@ -263,6 +263,7 @@ def hide_list(bot: Bot, update: Update, user: User):
         text=text,
         parse_mode=ParseMode.MARKDOWN,
     )
+
 
 def exit_hide_mode(user):
     logging.debug("[Hide] user_id='%s' exiting hide_mode", user.id)
@@ -314,7 +315,7 @@ def get_hide_result(user):
 @command_handler(
     squad_only=True
 )
-def auto_hide(bot: Bot, update: Update, user: User, **kwargs):
+def auto_hide(bot: MQBot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]

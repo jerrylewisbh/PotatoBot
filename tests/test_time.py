@@ -12,49 +12,49 @@ class TestTime(unittest.TestCase):
     def test_game_state_morning(self):
         """ Test if GameState returns Morning state... """
 
-        sample_1 = get_game_state(datetime.time(hour=23, minute=3))     # Morning C1
+        sample_1 = get_game_state(datetime.time(hour=23, minute=3))  # Morning C1
         self.assertIn(GameState.MORNING, sample_1, "State should contain MORNING state")
 
-        sample_2 = get_game_state(datetime.time(hour=7, minute=3))     # Morning C2
+        sample_2 = get_game_state(datetime.time(hour=7, minute=3))  # Morning C2
         self.assertIn(GameState.MORNING, sample_2, "State should contain MORNING state")
 
-        sample_3 = get_game_state(datetime.time(hour=15, minute=3))    # Morning C3
+        sample_3 = get_game_state(datetime.time(hour=15, minute=3))  # Morning C3
         self.assertIn(GameState.MORNING, sample_3, "State should contain MORNING state")
 
     def test_game_state_day(self):
         """ Test if GameState returns Day state... """
 
-        sample_1 = get_game_state(datetime.time(hour=1, minute=3))     # Day C1
+        sample_1 = get_game_state(datetime.time(hour=1, minute=3))  # Day C1
         self.assertIn(GameState.DAY, sample_1, "State should contain DAY state")
 
-        sample_2 = get_game_state(datetime.time(hour=9, minute=3))     # Day C2
+        sample_2 = get_game_state(datetime.time(hour=9, minute=3))  # Day C2
         self.assertIn(GameState.DAY, sample_2, "State should contain DAY state")
 
-        sample_3 = get_game_state(datetime.time(hour=17, minute=3))    # Day C3
+        sample_3 = get_game_state(datetime.time(hour=17, minute=3))  # Day C3
         self.assertIn(GameState.DAY, sample_3, "State should contain DAY state")
 
     def test_game_state_evening(self):
         """ Test if GameState returns Evening state... """
 
-        sample_1 = get_game_state(datetime.time(hour=3, minute=3))     # Evening C1
+        sample_1 = get_game_state(datetime.time(hour=3, minute=3))  # Evening C1
         self.assertIn(GameState.EVENING, sample_1, "State should contain EVENING state")
 
-        sample_2 = get_game_state(datetime.time(hour=11, minute=3))     # Evening C2
+        sample_2 = get_game_state(datetime.time(hour=11, minute=3))  # Evening C2
         self.assertIn(GameState.EVENING, sample_2, "State should contain EVENING state")
 
-        sample_3 = get_game_state(datetime.time(hour=19, minute=3))    # Evening C3
+        sample_3 = get_game_state(datetime.time(hour=19, minute=3))  # Evening C3
         self.assertIn(GameState.EVENING, sample_3, "State should contain EVENING state")
 
     def test_game_state_night(self):
         """ Test if GameState returns Night state... """
 
-        sample_1 = get_game_state(datetime.time(hour=5, minute=3))     # Night C1
+        sample_1 = get_game_state(datetime.time(hour=5, minute=3))  # Night C1
         self.assertIn(GameState.NIGHT, sample_1, "State should contain NIGHT state")
 
-        sample_2 = get_game_state(datetime.time(hour=13, minute=3))     # Night C2
+        sample_2 = get_game_state(datetime.time(hour=13, minute=3))  # Night C2
         self.assertIn(GameState.NIGHT, sample_2, "State should contain NIGHT state")
 
-        sample_3 = get_game_state(datetime.time(hour=21, minute=3))    # Night C3
+        sample_3 = get_game_state(datetime.time(hour=21, minute=3))  # Night C3
         self.assertIn(GameState.NIGHT, sample_3, "State should contain NIGHT state")
 
     def test_no_reports(self):
@@ -145,7 +145,7 @@ class TestTime(unittest.TestCase):
             t += datetime.timedelta(minutes=1)
             t_state = get_game_state(t.time())
             # print(t)
-            #print(t.time() in expected_silence)
+            # print(t.time() in expected_silence)
             if t.time() in expected_silence:
                 self.assertIn(GameState.BATTLE_SILENCE, t_state, "Expected silence at {}!".format(t))
             else:
@@ -175,6 +175,7 @@ class TestTime(unittest.TestCase):
 if __name__ == '__main__':
     # Force TZ!
     import os
+
     os.environ['TZ'] = 'UTC'
 
     unittest.main()

@@ -1,7 +1,7 @@
+from telegram import Update
+
 from config import ACADEM_CHAT_ID, CASTLE_CHAT_ID
-
-from telegram import Bot, Update
-
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.template import fill_template
 from core.texts import *
@@ -12,7 +12,7 @@ Session()
 
 
 @command_handler()
-def newbie(bot: Bot, update: Update, user: User):
+def newbie(bot: MQBot, update: Update, user: User):
     if ACADEM_CHAT_ID and CASTLE_CHAT_ID:
         if update.message.chat.id in [CASTLE_CHAT_ID]:
             for new_chat_member in update.message.new_chat_members:

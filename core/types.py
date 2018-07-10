@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from config import DB, SUPER_ADMIN_ID
 from datetime import datetime
 from enum import Enum, IntEnum
-
 from sqlalchemy import (BigInteger, Boolean, Column, DateTime, ForeignKey,
                         Integer, Text, UnicodeText, UniqueConstraint,
                         create_engine)
@@ -11,7 +9,8 @@ from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
-from telegram import Bot
+
+from config import DB
 
 
 class AdminType(Enum):
@@ -71,9 +70,11 @@ class Group(Base):
 
     fwd_minireport = Column(Boolean, default=False)
 
-    group_items = relationship('OrderGroupItem', back_populates='chat')
+    group_items = relationship(
+        'OrderGroupItem', back_populates='chat', cascade="save-update, merge, delete, delete-orphan"
+    )
     squad = relationship('Squad', back_populates='chat')
-    orders = relationship('Order', back_populates='chat')
+    orders = relationship('Order', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
 
 
 class User(Base):
@@ -266,11 +267,19 @@ class Trigger(Base):
 class Admin(Base):
     __tablename__ = 'admins'
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
     user = relationship(User, back_populates='permission')
 
     admin_type = Column(Integer)
-    admin_group = Column(BigInteger, primary_key=True, default=0)
+
+    group_id = Column(BigInteger, ForeignKey(Group.id), nullable=True)
+    group = relationship(Group)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'group_id', name='uc_usr_group'),
+    )
 
 
 class OrderGroup(Base):
@@ -359,8 +368,8 @@ class Character(Base):
     gold = Column(Integer, default=0)
     donateGold = Column(Integer, default=0)
 
-    #guild = Column(UnicodeText(250), nullable=True, default=None)
-    #guild_tag = Column(UnicodeText(250), nullable=True, default=None)
+    # guild = Column(UnicodeText(250), nullable=True, default=None)
+    # guild_tag = Column(UnicodeText(250), nullable=True, default=None)
 
     # Note: Technically this is also tracked in a characters profession-information. But this represents the
     # current state. Also this way we can display class info without having a users /class information which is not
@@ -541,13 +550,13 @@ def check_admin(update, adm_type, allowed_types=()):
     if adm_type == AdminType.NOT_ADMIN:
         allowed = True
     else:
-        admins = Session().query(Admin).filter_by(user_id=update.message.from_user.id).all()
+        admins = Session().query(Admin).filter_by(user_id=update.effective_user.id).all()
         for adm in admins:
             if (AdminType(adm.admin_type) in allowed_types or adm.admin_type <= adm_type.value) and \
-                    (adm.admin_group in [0, update.message.chat.id] or
-                     update.message.chat.id == update.message.from_user.id):
-                if adm.admin_group != 0:
-                    group = Session().query(Group).filter_by(id=adm.admin_group).first()
+                (adm.group in [None, update.effective_message.chat.id] or
+                 update.effective_message.chat.id == update.effective_user.id):
+                if adm.group_id:
+                    group = Session().query(Group).filter_by(id=adm.group_id).first()
                     if group and group.bot_in_group:
                         allowed = True
                         break

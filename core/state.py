@@ -81,7 +81,7 @@ def get_last_battle(date=None) -> datetime:
     now = date
     if not date:
         now = datetime.now()
-    if (now.hour < 7):
+    if now.hour < 7:
         now = now - timedelta(days=1)
 
     return now.replace(

@@ -3,11 +3,10 @@
 
 import os
 import sys
-
 import time
-from telethon import events, TelegramClient
-from telethon.tl.types import InputPeerChat, PeerChannel, InputPeerUser
-from telethon.utils import get_input_peer
+
+# noinspection PyPackageRequirements
+from telethon import TelegramClient
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -25,7 +24,6 @@ for item in dir(commands):
     if not item.startswith("__"):
         client.send_message('@KartoffelTheTestBot', getattr(commands, item))
         time.sleep(1)
-
 
 for item in dir(chats):
     if item.startswith("CC_"):

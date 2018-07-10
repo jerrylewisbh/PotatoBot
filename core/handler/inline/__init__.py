@@ -2,7 +2,8 @@ from uuid import uuid4
 
 from telegram import (InlineQueryResultArticle, InputTextMessageContent)
 
-from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, Castle
+from config import CASTLE
+from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX
 from core.types import (Session)
 from functions.guild.stock import generate_gstock_requests
 
@@ -15,13 +16,17 @@ def inlinequery(bot, update):
     results = []
 
     if query in CASTLE_LIST or query.startswith(TACTICTS_COMMAND_PREFIX):
+        title = "DEFEND" if CASTLE == query or query.startswith(TACTICTS_COMMAND_PREFIX) else "ATTACK "
+        title += query
+
         results = [
-            InlineQueryResultArticle(id=0,
-                                     title=("DEFEND " if Castle.BLUE.value == query
-                                                         or query.startswith(TACTICTS_COMMAND_PREFIX)
-                                            else "ATTACK ") + query,
-                                     input_message_content=InputTextMessageContent(query))]
-    elif query.startswith("withdraw ") or query.startswith ("deposit "):
+            InlineQueryResultArticle(
+                id=0,
+                title=title,
+                input_message_content=InputTextMessageContent(query)
+            )
+        ]
+    elif query.startswith("withdraw ") or query.startswith("deposit "):
         withdraw_requests = generate_gstock_requests(query)
         if withdraw_requests:
             for entry in withdraw_requests:

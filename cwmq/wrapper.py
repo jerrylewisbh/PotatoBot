@@ -1,7 +1,6 @@
 import logging
 
-from telegram import Bot
-
+from core.bot import MQBot
 from core.texts import *
 from core.types import Item, Session, User
 from cwmq import Publisher
@@ -89,7 +88,7 @@ def want_to_buy(user: User, item_code, quantity, price, exact_price=True):
     p.publish(wtb_req)
 
 
-def request_trade_terminal_access(bot: Bot, user: User):
+def request_trade_terminal_access(bot: MQBot, user: User):
     if not user:
         return
 
@@ -109,7 +108,7 @@ def request_trade_terminal_access(bot: Bot, user: User):
     p.publish(grant_req)
 
 
-def request_stock_access(bot: Bot, user: User):
+def request_stock_access(bot: MQBot, user: User):
     if not user:
         return
 
@@ -129,7 +128,7 @@ def request_stock_access(bot: Bot, user: User):
     p.publish(grant_req)
 
 
-def request_profile_access(bot: Bot, user: User):
+def request_profile_access(bot: MQBot, user: User):
     if not user:
         return
 

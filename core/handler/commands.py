@@ -3,10 +3,8 @@ import logging
 from telegram.ext import CommandHandler, Dispatcher
 
 from functions.battle import call_ready_to_battle_result
-from functions.admins import (del_admin, del_global_admin, get_log,
-                              list_admins, set_admin, set_global_admin,
-                              set_super_admin)
-from functions.common import admin_panel, ban, help_msg, force_kick_botato, ping, unban, kick_from_chat
+from functions.user import set_admin, del_admin, list_admins, set_global_admin, set_super_admin, del_global_admin
+from functions.common import admin_panel, ban, help_msg, kick, ping, unban, get_log
 from functions.exchange import list_items, list_items_other, list_items_unknown
 from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume
@@ -14,12 +12,9 @@ from functions.guild.stock import deposit, withdraw_help
 from functions.profile import (find_by_character, find_by_id,
                                find_by_username, grant_access, revoke,
                                show_char, show_report, user_panel)
-from functions.squad import (add_squad, add_to_squad, del_squad,
-                             disable_reminders, disable_silence,
-                             disable_thorns, enable_reminders,
-                             enable_silence, enable_thorns,
-                             force_add_to_squad, set_invite_link,
-                             set_squad_name)
+from functions.squad.admin.commands import enable_thorns, enable_reminders, enable_silence, disable_thorns, \
+    disable_silence, disable_reminders, add_squad, set_invite_link, set_squad_name, del_squad, force_add_to_squad, \
+    add_to_squad
 from functions.triggers import (add_global_trigger, add_trigger,
                                 del_global_trigger, del_trigger,
                                 disable_trigger_all, enable_trigger_all,
@@ -65,8 +60,8 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     disp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))
     disp.add_handler(CommandHandler("grant_access", grant_access))
-    disp.add_handler(CommandHandler("add_squad", add_squad))
-    disp.add_handler(CommandHandler("del_squad", del_squad))
+
+    # Squad / Group things
     disp.add_handler(CommandHandler("enable_thorns", enable_thorns))
     disp.add_handler(CommandHandler("enable_silence", enable_silence))
     disp.add_handler(CommandHandler("enable_reminders", enable_reminders))
@@ -75,11 +70,14 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("disable_reminders", disable_reminders))
     disp.add_handler(CommandHandler("set_squad_name", set_squad_name))
     disp.add_handler(CommandHandler("set_invite_link", set_invite_link))
+    disp.add_handler(CommandHandler("add_squad", add_squad))
+    disp.add_handler(CommandHandler("del_squad", del_squad))
+    disp.add_handler(CommandHandler("add", add_to_squad))
+    disp.add_handler(CommandHandler("forceadd", force_add_to_squad))
+
     disp.add_handler(CommandHandler("find", find_by_username))
     disp.add_handler(CommandHandler("findc", find_by_character))
     disp.add_handler(CommandHandler("findi", find_by_id))
-    disp.add_handler(CommandHandler("add", add_to_squad))
-    disp.add_handler(CommandHandler("forceadd", force_add_to_squad))
     disp.add_handler(CommandHandler("ban", ban))
     disp.add_handler(CommandHandler("unban", unban))
     disp.add_handler(CommandHandler("get_log", get_log))

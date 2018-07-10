@@ -1,8 +1,8 @@
 import logging
-
 from sqlalchemy import func
-from telegram import Bot, ParseMode, Update
+from telegram import ParseMode, Update
 
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.texts import *
 from core.types import Session, User, UserExchangeOrder
@@ -36,7 +36,7 @@ def __get_snipe_settings(user: User):
 @command_handler(
     squad_only=True
 )
-def sniping_info(bot: Bot, update: Update, user: User, **kwargs):
+def sniping_info(bot: MQBot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
@@ -78,7 +78,7 @@ def sniping_info(bot: Bot, update: Update, user: User, **kwargs):
 @command_handler(
     squad_only=True
 )
-def sniping_remove(bot: Bot, update: Update, user: User, **kwargs):
+def sniping_remove(bot: MQBot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
@@ -134,7 +134,7 @@ def sniping_remove(bot: Bot, update: Update, user: User, **kwargs):
 @command_handler(
     squad_only=True
 )
-def sniping_resume(bot: Bot, update: Update, user: User):
+def sniping_resume(bot: MQBot, update: Update, user: User):
     logging.info("sniping_resume called by %s", update.message.chat.id)
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
 
@@ -170,7 +170,7 @@ def sniping_resume(bot: Bot, update: Update, user: User):
 @command_handler(
     squad_only=True
 )
-def sniping(bot: Bot, update: Update, user: User, **kwargs):
+def sniping(bot: MQBot, update: Update, user: User, **kwargs):
     args = None
     if "args" in kwargs:
         args = kwargs["args"]

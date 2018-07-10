@@ -6,6 +6,7 @@ import urllib.request
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# noinspection PyPep8
 from core.types import *
 
 Session()
@@ -17,7 +18,7 @@ with urllib.request.urlopen(the_url) as url:
     for line in csv.DictReader(the_file):
         item = Session.query(Item).filter(
             Item.name == line['name'],
-            Item.cw_id == None
+            Item.cw_id.is_(None)
         ).first()
 
         if item:
@@ -25,4 +26,3 @@ with urllib.request.urlopen(the_url) as url:
             item.cw_id = line['id']
             Session.add(item)
             Session.commit()
-

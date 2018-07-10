@@ -104,7 +104,7 @@ VS
 
 🗡Fozzie 🥔Potato Castle carried out strong attack and unexpectedly stabbed his opponent with a sharp dagger at the head! 26(+3)
 
-🛡[JIN]Sinkoz 🐺Wolfpack Castle hammered his opponent at the head, but Fozzie swiftly dodged that! 
+🛡[JIN]Sinkoz 🐺Wolfpack Castle hammered his opponent at the head, but Fozzie swiftly dodged that!
 
 Fozzie from 🥔Potato Castle was stronger than [JIN]Sinkoz from 🐺Wolfpack Castle.
 You received: 30 exp.

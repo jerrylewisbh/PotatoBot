@@ -1,10 +1,8 @@
-import logging
-
 from sqlalchemy import func
-from telegram import Bot, Update, ParseMode
+from telegram import Update, ParseMode
 
+from core.bot import MQBot
 from core.decorators import command_handler
-from core.texts import *
 from core.types import Session, Item, User
 from core.utils import send_async, pad_string
 
@@ -18,9 +16,10 @@ def get_item_by_cw_id(cw_id):
     item = Session.query(Item).filter(Item.cw_id == cw_id).first()
     return item
 
-def __generate_itemlist(intro: str, footer: str, filter):
+
+def __generate_itemlist(intro: str, footer: str, item_filter):
     items = Session.query(Item).filter(
-        *filter
+        *item_filter
     ).order_by(func.length(Item.cw_id), Item.cw_id).all()
 
     text = intro
@@ -30,15 +29,16 @@ def __generate_itemlist(intro: str, footer: str, filter):
 
     return text
 
+
 @command_handler(
     allow_group=True,
     allow_private=True,
 )
-def list_items(bot: Bot, update: Update, user: User):
+def list_items(bot: MQBot, update: Update, user: User):
     text = __generate_itemlist(
         "*Tradable items:*\n",
         "\nFor a list of additional items that can only be traded in via Auction see /items\_other",
-        (Item.tradable == True, Item.cw_id != None)
+        (Item.tradable.is_(True), Item.cw_id.isnot(None))
     )
     send_async(
         bot,
@@ -46,16 +46,17 @@ def list_items(bot: Bot, update: Update, user: User):
         text=text,
         parse_mode=ParseMode.MARKDOWN,
     )
+
 
 @command_handler(
     allow_group=True,
     allow_private=True,
 )
-def list_items_other(bot: Bot, update: Update, user: User):
+def list_items_other(bot: MQBot, update: Update, user: User):
     text = __generate_itemlist(
         "*Items not tradable via Exchange or new items:*\n",
         "\nFor a list of additional items that can be traded in the Exchange see /items",
-        (Item.tradable == False, Item.cw_id != None)
+        (Item.tradable.is_(False), Item.cw_id.isnot(None))
     )
     send_async(
         bot,
@@ -64,12 +65,13 @@ def list_items_other(bot: Bot, update: Update, user: User):
         parse_mode=ParseMode.MARKDOWN,
     )
 
+
 @command_handler()
-def list_items_unknown(bot: Bot, update: Update, user: User):
+def list_items_unknown(bot: MQBot, update: Update, user: User):
     text = __generate_itemlist(
         "*Items missing a Chatwars Item ID:*\n",
         "",
-        (Item.cw_id == None,)
+        (Item.cw_id.is_(None),)
     )
     send_async(
         bot,

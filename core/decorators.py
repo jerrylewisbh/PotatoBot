@@ -1,15 +1,17 @@
 import logging
 from functools import wraps
 
-from sqlalchemy.exc import SQLAlchemyError
+import telegram
 from telegram import Bot, Update
 
-from core.types import AdminType, Session, check_admin, check_ban, log
-from functions.user import create_or_update_user
+from core.types import AdminType, Session, check_admin, User
 
 Session()
 
+
 # TODO: A lot of this can be moved out here in favor of python-telegram-command handlers and filters!
+
+# noinspection PyNestedDecorators
 def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_private: bool = True,
                     allow_group: bool = False, allow_channel: bool = False,
                     allow_banned: bool = False, squad_only: bool = False, testing_only: bool = False,
@@ -71,7 +73,7 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
 
             bot = args[0]
             update = args[1]
-            #args = kwargs['args'] if kwargs and 'args' in kwargs else None
+            # args = kwargs['args'] if kwargs and 'args' in kwargs else None
 
             if update.message and not update.callback_query:
                 if update.message.chat.type == 'channel' and not allow_channel:
@@ -100,8 +102,7 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                 if user.is_banned and not allow_banned:
                     logging.info(
                         "Message received from banned user '%s' but this is not an allowed function for a banned account.",
-                        user.id
-                    )
+                        user.id)
                     return
 
                 if squad_only and not user.is_squadmember:
@@ -133,5 +134,41 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                 logging.info("User '%s' has called: '%s'", user.id, func.__name__)
 
             return func(bot, update, user, **kwargs)
+
         return wrapper
+
     return real_decorator
+
+
+def create_or_update_user(telegram_user: telegram.User) -> User:
+    """
+
+    :type telegram_user: object
+    :rtype: User
+    """
+    if not telegram_user:
+        return None
+    user = Session.query(User).filter_by(id=telegram_user.id).first()
+    if not user:
+        user = User(
+            id=telegram_user.id,
+            username=telegram_user.username or '',
+            first_name=telegram_user.first_name or '',
+            last_name=telegram_user.last_name or ''
+        )
+        Session.add(user)
+    else:
+        updated = False
+        if user.username != telegram_user.username:
+            user.username = telegram_user.username
+            updated = True
+        if user.first_name != telegram_user.first_name:
+            user.first_name = telegram_user.first_name
+            updated = True
+        if user.last_name != telegram_user.last_name:
+            user.last_name = telegram_user.last_name
+            updated = True
+        if updated:
+            Session.add(user)
+    Session.commit()
+    return user

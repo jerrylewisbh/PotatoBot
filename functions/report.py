@@ -1,7 +1,8 @@
-from telegram import Bot, Update
+from telegram import Update
 from telegram.error import BadRequest, TimedOut
 
 from config import FWD_CHANNEL
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.texts import *
 from core.types import *
@@ -9,11 +10,12 @@ from core.utils import update_group, send_async
 
 Session()
 
+
 @command_handler(
     allow_group=True,
     min_permission=AdminType.GROUP
 )
-def enable_report_fwd(bot: Bot, update: Update, user: User):
+def enable_report_fwd(bot: MQBot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         group.fwd_minireport = True
@@ -21,11 +23,12 @@ def enable_report_fwd(bot: Bot, update: Update, user: User):
         Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_MINI_REPORT_FWD_ENABLED)
 
+
 @command_handler(
     allow_group=True,
     min_permission=AdminType.GROUP
 )
-def disable_report_fwd(bot: Bot, update: Update, user: User):
+def disable_report_fwd(bot: MQBot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
         group.fwd_minireport = False
@@ -34,7 +37,7 @@ def disable_report_fwd(bot: Bot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_MINI_REPORT_FWD_DISABLED)
 
 
-def fwd_report(bot: Bot, update: Update):
+def fwd_report(bot: MQBot, update: Update):
     logging.info("fwd_report called")
     if not update.channel_post or (update.effective_chat and update.effective_chat.id != FWD_CHANNEL):
         # No channel post or wrong channel: Done!
@@ -44,8 +47,8 @@ def fwd_report(bot: Bot, update: Update):
         return
 
     fwd_group = Session.query(Group).filter(
-        Group.fwd_minireport == True,
-        Group.bot_in_group == True,
+        Group.fwd_minireport.is_(True),
+        Group.bot_in_group.is_(True),
         Group.id != FWD_CHANNEL
     ).all()
 
@@ -66,5 +69,3 @@ def fwd_report(bot: Bot, update: Update):
             logging.warning("BadRequest raised for fwd to '%s/%s'", group.id, group.title)
         except TimedOut:
             logging.warning("TimedOut raised for fwd to '%s/%s'", group.id, group.title)
-
-

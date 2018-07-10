@@ -1,15 +1,13 @@
 import io
 import logging
-import os
-from datetime import datetime
-
 import matplotlib.pyplot as plot
 import numpy
 from sqlalchemy import func, extract
 from sqlalchemy.sql.functions import count
-from telegram import Bot, ParseMode, Update
+from telegram import ParseMode, Update
 
 from config import QUEST_LOCATION_FORAY_ID
+from core.bot import MQBot
 from core.decorators import command_handler
 from core.texts import *
 from core.types import (Character, Location, Session, User,
@@ -17,6 +15,7 @@ from core.types import (Character, Location, Session, User,
 
 plot.ioff()
 Session()
+
 
 def __get_additional_stats_foray(from_date, location, text, user):
     foray_stats_success = Session.query(
@@ -110,8 +109,7 @@ def __get_knight_pledgerate():
     return x, y
 
 
-
-def send_graph(bot: Bot, user: User):
+def send_graph(bot: MQBot, user: User):
     logging.debug("Quest statistics.py")
 
     fig, ax = plot.subplots(figsize=(20, 15))
@@ -205,6 +203,6 @@ def __get_overall_successrate():
 
 
 @command_handler()
-def foray_statistic(bot: Bot, update: Update, user: User):
+def foray_statistic(bot: MQBot, update: Update, user: User):
     logging.info("User '%s' called quest_statistic", user.id)
     send_graph(bot, user)

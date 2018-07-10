@@ -2,20 +2,22 @@ import logging
 import re
 from datetime import datetime, timedelta
 from enum import Enum
-
-from telegram import Bot, ParseMode, Update
+from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import CASTLE
+from core.bot import MQBot
 from core.enums import CASTLE_MAP
+from core.handler.callback import CallbackAction
+from core.handler.callback.util import create_callback
 from core.regexp import BUILD_REPORT, HERO, PROFESSION, REPAIR_REPORT, REPORT
 from core.state import get_last_battle
 from core.template import fill_char_template
 from core.texts import *
+from core.texts import BTN_HERO, BTN_STOCK, BTN_EQUIPMENT, BTN_SKILL
 from core.types import (BuildReport, Character, Equip, Item, Profession,
                         Report, Session, Stock, User, new_item)
 from core.utils import send_async
 from functions.common import StockType, __ban_traitor, __get_item_worth
-from functions.inline_markup import (generate_profile_buttons)
 
 
 class BuildType(Enum):
@@ -26,7 +28,6 @@ class BuildType(Enum):
 def parse_hero_text(report_text):
     if not report_text:
         return None
-
 
     parsed = re.search(HERO, report_text, flags=re.UNICODE)
     if not parsed:
@@ -61,7 +62,7 @@ def parse_hero_text(report_text):
     # TODO: Should boosted def/atk be used?
 
 
-def parse_hero(bot: Bot, profile, user_id, date):
+def parse_hero(bot: MQBot, profile, user_id, date):
     """ Parse a forwarded hero """
     logging.info("parse_hero for user_id='%s'", user_id)
     char = Session.query(Character).filter_by(user_id=user_id, date=date).first()
@@ -139,7 +140,6 @@ def parse_report_text(report_text):
 
 
 def save_report(report_text, user_id, date):
-
     logging.info("Report: report_text='%s', user_id='%s', date='%s'", report_text, user_id, date)
     existing_report = get_latest_report(user_id)
     # New one or update to preliminary
@@ -182,10 +182,10 @@ def parse_profession(prof, user_id, date):
         profession.date = date
         profession.name = str(parsed_data.group(1))
         strings = prof.splitlines()
-        skillList = ""
+        skill_list = ""
         for string in strings[2:]:
-            skillList += string.split("/")[0] + "\n"
-        profession.skillList = skillList
+            skill_list += string.split("/")[0] + "\n"
+        profession.skillList = skill_list
         Session.add(profession)
         Session.commit()
     return profession
@@ -298,7 +298,7 @@ def parse_repair_reports(report, user_id, date):
     return report
 
 
-def __send_user_with_settings(bot: Bot, update: Update, user: User):
+def __send_user_with_settings(bot: MQBot, update: Update, user: User):
     if user and user.character:
         char = user.character
         profession = user.profession
@@ -316,7 +316,7 @@ def __send_user_with_settings(bot: Bot, update: Update, user: User):
             bool(user.setting_automated_sniping),
             "Temp. Suspended" if user.sniping_suspended else ""
         )
-        btns = generate_profile_buttons(user)
+        btns = __get_keyboard_profile(user, user)
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -353,13 +353,14 @@ def format_report(report: Report) -> str:
 
     return text
 
+
 # TODO: Review. Can't this be moved directly into User class and a getter?
 
 
 def get_latest_report(user_id) -> Report:
     logging.debug("get_latest_report for '%s'", user_id)
     now = datetime.now()
-    if (now.hour < 7):
+    if now.hour < 7:
         now = now - timedelta(days=1)
     time_from = now.replace(hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0, microsecond=0)
     existing_report = Session.query(Report).filter(Report.user_id == user_id, Report.date > time_from).first()
@@ -384,10 +385,10 @@ def get_stock_before_after_war(user: User) -> tuple:
         Stock.date > last_battle
     ).order_by(Stock.date.asc()).first()
 
-    return (before_battle, after_battle)
+    return before_battle, after_battle
 
 
-def annotate_stock_with_price(bot: Bot, stock: str):
+def annotate_stock_with_price(bot: MQBot, stock: str):
     stock_text = ""
     overall_worth = 0
     for line in stock.splitlines():
@@ -421,3 +422,59 @@ def annotate_stock_with_price(bot: Bot, stock: str):
     return stock_text
 
 
+def __get_keyboard_profile(user: User, for_user: User, back_button=None):
+    inline_keys = [
+        [
+            InlineKeyboardButton(
+                BTN_HERO,
+                callback_data=create_callback(
+                    CallbackAction.HERO,
+                    user.id,
+                    profile_id=for_user.id,
+                    back_button=back_button
+                )
+            )
+        ]
+    ]
+    if for_user.stock:
+        inline_keys.append([
+            InlineKeyboardButton(
+                BTN_STOCK,
+                callback_data=create_callback(
+                    CallbackAction.HERO_STOCK,
+                    user.id,
+                    profile_id=for_user.id,
+                    back_button=back_button
+                )
+            )
+        ])
+    if for_user.equip:
+        inline_keys.append([
+            InlineKeyboardButton(
+                BTN_EQUIPMENT,
+                callback_data=create_callback(
+                    CallbackAction.HERO_EQUIP,
+                    user.id,
+                    profile_id=for_user.id,
+                    back_button=back_button
+                )
+            )
+        ])
+    if for_user.profession:
+        inline_keys.append([
+            InlineKeyboardButton(
+                BTN_SKILL,
+                callback_data=create_callback(
+                    CallbackAction.HERO_SKILL,
+                    user.id,
+                    profile_id=for_user.id,
+                    back_button=back_button
+                )
+            )
+        ])
+    if back_button:
+        inline_keys.append([
+            back_button
+        ])
+
+    return InlineKeyboardMarkup(inline_keys)

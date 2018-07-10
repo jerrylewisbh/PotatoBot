@@ -1,11 +1,11 @@
 import datetime
 import json
 import logging
-
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
-from telegram import Bot, ParseMode
+from telegram import ParseMode
 
 from config import BOT_ONE_STEP_API, LOG_LEVEL_MQ
+from core.bot import MQBot
 from core.enums import CASTLE_MAP, CLASS_MAP
 from core.texts import *
 from core.types import Character, Session, User
@@ -20,6 +20,7 @@ p = Publisher()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL_MQ)
+
 
 def profile_handler(channel, method, properties, body, dispatcher):
     logger.info('Received message # %s from %s: %s', method.delivery_tag, properties.app_id, body)
@@ -84,7 +85,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
             #    "payload": {
             #        "operation": "GetUserProfile",
             #    }
-            #}
+            # }
             # p.publish(grant_req)
         elif data['action'] == "grantAdditionalOperation" and data['result'] == "Ok":
             logger.info("grantAdditionalOperation was successful!")
@@ -133,7 +134,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 reply_markup=generate_user_markup(user.id)
             )
 
-         # Profile requests...
+        # Profile requests...
         elif data['action'] == "requestProfile":
             if data['result'] == "InvalidToken":
                 # Revoked token?
@@ -157,9 +158,9 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c = Character()
                 c.user_id = user.id
                 c.date = datetime.datetime.now()
-                guildTag = "[" + data['payload']['profile']['guild_tag'] + "]" if 'guild_tag' in data['payload'][
+                guild_tag = "[" + data['payload']['profile']['guild_tag'] + "]" if 'guild_tag' in data['payload'][
                     'profile'] and data['payload']['profile']['guild_tag'] else ''
-                c.name = guildTag + data['payload']['profile']['userName']
+                c.name = guild_tag + data['payload']['profile']['userName']
                 c.prof = CASTLE_MAP[data['payload']['profile']['castle']]
                 c.characterClass = CLASS_MAP.get(data['payload']['profile']['class'], "Unknown class")
                 c.pet = None
@@ -172,8 +173,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c.castle = data['payload']['profile']['castle']
                 c.gold = data['payload']['profile']['gold']
                 c.donateGold = data['payload']['profile']['pouches'] if 'pouches' in data['payload']['profile'] else 0
-                #c.guild = data['payload']['profile']['guild'] if 'guild' in data['payload']['guild'] else None
-                #c.guild_tag = data['payload']['profile']['guild_tag'] if 'guild_tag' in data['payload']['guild_tag'] else None
+                # c.guild = data['payload']['profile']['guild'] if 'guild' in data['payload']['guild'] else None
+                # c.guild_tag = data['payload']['profile']['guild_tag'] if 'guild_tag' in data['payload']['guild_tag'] else None
                 Session.add(c)
                 Session.commit()
 
@@ -222,7 +223,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 #    stock_info,
                 #    parse_mode=ParseMode.HTML,
                 #    reply_markup=generate_user_markup(user.id)
-                #)
+                # )
         elif data['action'] == "wantToBuy":
             if data['result'] == "InvalidToken":
                 # Revoked token?
@@ -237,7 +238,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 # Don't suspend sniping if user is in "hide mode"
                 if get_hide_mode(user):
                     if not get_best_fulfillable_order(user):
-                        logger.info("[Hide] No more fulfillable orders for user_id='%s' - I think....", user.id)
+                        logger.info("[Hide] No more fulfillable order for user_id='%s' - I think....", user.id)
 
                         dispatcher.bot.send_message(
                             user.id,
@@ -263,7 +264,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                         reply_markup=generate_user_markup(user.id)
                     )
             elif data['result'] == "Ok":
-                # Do we need to track OK results for buy orders?
+                # Do we need to track OK results for buy order?
                 pass
 
         # We're done...
@@ -283,7 +284,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
         logger.exception("Exception in MQ handler occured!")
 
 
-def api_access_revoked(bot: Bot, user):
+def api_access_revoked(bot: MQBot, user):
     if user:
         logger.info("Revoking settings for user %s and token %s", user.id, user.api_token)
         # We have to get the user from by token since userId is not published and user is None currently...

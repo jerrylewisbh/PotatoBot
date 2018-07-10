@@ -167,19 +167,33 @@ MSG_STOCK_COMPARE_WO_PRICE = '{} ({})\n'
 MSG_STOCK_COMPARE_WAIT = 'Waiting for data to compare...'
 MSG_STOCK_PRICE = "{} <i>({} x {} = {}💰)</i>\n"
 MSG_STOCK_OVERALL_PRICE = "\nEstimated overall worth: {}💰\n"
-MSG_STOCK_OVERALL_PRICE = "\nEstimated overall worth: {}💰\n"
-
 
 MSG_PERSONAL_SITE_LINK = 'Your personal link: {}'
 
 MSG_GROUP_STATUS_CHOOSE_CHAT = 'Choose chat'
-MSG_GROUP_STATUS = """Group: {}
+MSG_GROUP_STATUS = """<b>Group: {}</b>
 
-Admins:
+<i>Admins:</i>
 {}
+
+<i>Settings:</i>
 Welcome: {}
 Trigger allowed: {}
-Thorns: {}"""
+FWD Minireport: {}"""
+
+MSG_GROUP_STATUS_SQUAD = """
+
+<b>This group is linked to a squad!</b>
+
+<i>Squad Settings:</i>
+Thorns: {}
+Silence: {}
+Reminders: {}
+Hiring: {}
+Testing Squad: {}
+
+<b>Be careful, deleting this group also deletes the squad!</b>"""
+
 
 MSG_GROUP_STATUS_ADMIN_FORMAT = '{} @{} {} {}\n'
 MSG_GROUP_STATUS_DEL_ADMIN = 'Demote {} {}'
@@ -206,11 +220,16 @@ MSG_ORDER_CLEARED = 'Recorded, soldier!'
 
 
 MSG_ORDER_CLEARED_ERROR = 'STOP! You do not belong here!!!!'
-MSG_ORDER_SEND_HEADER = 'Where to send?\n\nImportant: Do not use \"Button\" for battle orders as this slows down the order process considerably!'
+MSG_ORDER_SEND_HEADER = """<b>Where to send this order?</b>
+
+<b>Order:</b>
+{}
+
+<i>Important: Do not use "Button" for battle orders as this slows down the order process considerably!</i>"""
 
 MSG_ORDER_GROUP_CONFIG_HEADER = 'Group settings: {}'
-MSG_ORDER_GROUP_NEW = 'Send me the name of a new group of squads'
-MSG_ORDER_GROUP_LIST = 'List groups'
+MSG_ORDER_GROUP_NEW = 'Send me the name of a new group of squad'
+MSG_ORDER_GROUP_LIST = 'These are the existing groups:'
 MSG_ORDER_GROUP_ADD = '➕Add group'
 MSG_ORDER_GROUP_DEL = '🔥🚨Delete group🚨🔥'
 
@@ -326,7 +345,7 @@ MSG_SQUAD_SILENCE_DISABLED = 'Battle silence disabled'
 MSG_SQUAD_REMINDERS_ENABLED = 'This squad will automatically be reminded of battles and reports, lazy captain'
 MSG_SQUAD_REMINDERS_DISABLED = 'This squad will NOT be automatically reminded of battles and reports, do not let them forget 👀'
 
-MSG_SQUAD_ALREADY_DELETED = 'This user is already expelled from the squad, this button no longer works=('
+MSG_SQUAD_ALREADY_DELETED = 'This user is already expelled from the squad, this button no longer works.'
 MSG_SQUAD_LEVEL_TOO_LOW = 'This squad takes soldiers at level {} and above. Come back when you get pumped!'
 
 MSG_TRIGGER_NEW = 'The trigger for the phrase "{}" is set.'
@@ -334,7 +353,7 @@ MSG_TRIGGER_GLOBAL = '<b>Global:</b>\n'
 MSG_TRIGGER_LOCAL = '\n<b>Local:</b>\n'
 MSG_TRIGGER_NEW_ERROR = 'You thoughts are not clear, try one more time'
 MSG_TRIGGER_EXISTS = 'Trigger "{}" already exists, select another one.'
-MSG_TRIGGER_ALL_ENABLED = 'now everything can call triggers.'
+MSG_TRIGGER_ALL_ENABLED = 'Now everything can call triggers.'
 MSG_TRIGGER_ALL_DISABLED = 'Now only admins can call triggers.'
 MSG_TRIGGER_DEL = 'The trigger for "{}" has been deleted.'
 MSG_TRIGGER_DEL_ERROR = 'Where did you see such a trigger? 0_o'
@@ -363,10 +382,10 @@ MSG_WANTS_TO_JOIN = '\n\nWants to join {}'
 MSG_CLEARED = 'Done'
 
 MSG_SQUAD_LIST = 'List of your squads:'
-MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter this squad. \
+MSG_SQUAD_REQUEST_EXISTS = 'You are already have requested to enter a squad. \
 Exit the current squad or cancel the request to create a new one. '
 MSG_SQUAD_REQUEST = 'Here are the requests you have received:'
-MSG_SQUAD_LEAVED = '{} left the squad {} 😰'
+MSG_SQUAD_LEFT = '{} left the squad {} 😰'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
 MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. ' \
@@ -383,7 +402,7 @@ MSG_SQUAD_ADD = '{}, Do you want to join the squad?'
 MSG_SQUAD_ADD_IN_SQUAD = '{} is already in a squad (perhaps not yours)'
 MSG_SQUAD_ADD_ACCEPTED = '{} Accepted the offer'
 MSG_SQUAD_ADD_FORCED = '{} was added to the squad'
-MSG_SQUAD_ADD_DECLINED = '{} declined, 😰'
+MSG_SQUAD_ADD_DECLINED = '{} declined! 😰'
 
 MSG_SQUAD_READY = '{} warriors of <b>{}</b> are ready to battle!\n{}⚔ {}🛡'
 MSG_FULL_TEXT_LINE = '<b>{}</b>: {}👥 {}⚔ {}🛡\n'
@@ -396,11 +415,19 @@ MSG_SQUAD_NONE = 'You are currently not a member of any squad. Select "⚜Join S
 
 MSG_TOP_FORMAT = '{}. {} (Level {}) - {}{}\n'
 MSG_SQUAD_TOP_FORMAT = '{}. {} ({}👥) - {}{} ({}{}/👤)\n'
-MSG_TOP_DEFENCE = '🛡Top Defenders:\n'
-MSG_TOP_ATTACK = '⚔Тop attackers:\n'
-MSG_TOP_EXPERIENCE = '🔥Top XP:\n'
-MSG_TOP_GLOBAL_BUILDERS = '⚒Top Builders:\n'
-MSG_TOP_WEEK_BUILDERS = '👷Top builders of the week:\n'
+
+MSG_TOP_DEFENCE = '🛡Top Defenders:\n\n'
+MSG_TOP_ATTACK = '⚔Тop Attackers:\n\n'
+MSG_TOP_EXPERIENCE = '🔥Top XP:\n\n'
+
+MSG_TOP_DEFENCE_CLASS = '🛡Top Defenders for class {}:\n\n'
+MSG_TOP_ATTACK_CLASS = '⚔Тop Attackers for class {}:\n\n'
+MSG_TOP_EXPERIENCE_CLASS = '🔥Top XP for class {}:\n\n'
+
+MSG_TOP_DEFENCE_SQUAD = '🛡Top Defenders for squad {}:\n\n'
+MSG_TOP_ATTACK_SQUAD = '⚔Тop Attackers for squad {}:\n\n'
+MSG_TOP_EXPERIENCE_SQUAD = '🔥Top XP for squad {}:\n\n'
+
 MSG_TOP_WEEK_WARRIORS = '⛳️Top battle attendance:\n\n'
 MSG_TOP_WEEK_WARRIORS_SQUAD = '⛳️Reports sent on the past 7 days for {}:\n\n'
 MSG_TOP_SQUAD = '<b>Squad TOP:</b>\n'
@@ -468,7 +495,7 @@ MSG_REPORT_SUMMARY_ROW_EMPTY = '<b>{}</b> (@{}) ❗\n'
 BTN_HERO = '🏅Hero'
 BTN_STOCK = '📦Stock'
 BTN_EQUIPMENT = '🎽Equipment'
-BTN_PROFESSIONS = '🏛Skills'
+BTN_SKILL = '🏛Skills'
 
 BTN_YES = '✅YES'
 BTN_NO = '❌NO'
@@ -560,8 +587,6 @@ MSG_NO_REPORT_PHASE_AFTER_BATTLE = "War is over but I don't accept reports just 
 
 MSG_DEAL_SOLD = "⚖️You sold <b>{}</b> for {}💰 ({} x {}💰)\nBuyer: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"
 
-#text += "\n\n<b>Please do not forget to forward me your /report command!</b>"
-
 MSG_QUEST = "<b>Please tell me where did you quest?</b>\n\n<i>{}</i>"
 MSG_QUEST_DUPLICATE = "You already told me about this particular quest!"
 MSG_QUEST_OK = "Your adventure took place in {}. Thank you for your quest details!"
@@ -581,8 +606,8 @@ MSG_QUEST_STAT_LOCATION = "*{} ({})*: \n" \
                           "Avg: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n" \
                           "Ttl: {:.2f}🔥, {:.2f}💰, {:.2f}📦\n"
 MSG_QUEST_STAT_NO_LOOT = "*{} ({})*: \n" \
-                          "Avg: {:.2f}🔥, {:.2f}💰\n" \
-                          "Ttl: {:.2f}🔥, {:.2f}💰\n"
+    "Avg: {:.2f}🔥, {:.2f}💰\n" \
+    "Ttl: {:.2f}🔥, {:.2f}💰\n"
 MSG_FORAY_INTRO = "Statistics for all forays I know. Forward them to me to get " \
                   "more detailed stats! This graph also contains /pledge rate for knights.\n\n" \
                   "_Tip: Your personal statistics can be found in 🗺Quests_"

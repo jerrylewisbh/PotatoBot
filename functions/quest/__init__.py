@@ -1,16 +1,16 @@
-import json
 import logging
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update, Bot
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 
 from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID, CWBOT_ID
+from core.bot import MQBot
 from core.decorators import command_handler
+from core.handler.callback import CallbackAction
+from core.handler.callback.util import create_callback, get_callback_action
 from core.state import get_game_state, GameState
 from core.texts import *
 from core.texts import MSG_QUEST_OK, MSG_FORAY_ACCEPTED_SAVED_PLEDGE, MSG_FORAY_ACCEPTED_SAVED
 from core.types import (Item, Location, Quest, Session, User, UserQuest,
                         UserQuestItem)
-from functions.inline_markup import QueryType
 from functions.quest.parse import QuestType, analyze_text
 
 Session()
@@ -78,7 +78,7 @@ def save_user_quest(user: User, update: Update, quest_data):
 @command_handler(
     forward_from=CWBOT_ID
 )
-def parse_quest(bot: Bot, update: Update, user: User):
+def parse_quest(bot: MQBot, update: Update, user: User):
     logging.info("Parsing quest for user_id='%s'", user.id)
     quest_data = analyze_text(update.message.text)
 
@@ -104,16 +104,18 @@ def parse_quest(bot: Bot, update: Update, user: User):
         uq = save_user_quest(user, update, quest_data)
 
         inline_keys = []
-        for location in Session.query(Location).filter(Location.selectable == True).all():
+        for location in Session.query(Location).filter(Location.selectable.is_(True)).all():
             inline_keys.append(
                 [
-                    InlineKeyboardButton(location.name, callback_data=json.dumps(
-                        {
-                            't': QueryType.QuestFeedbackRequired,
-                            'l': location.id,
-                            'uq': uq.id
-                        }
-                    ))
+                    InlineKeyboardButton(
+                        location.name,
+                        callback_data=create_callback(
+                            CallbackAction.QUEST_LOCATION,
+                            user.id,
+                            user_quest_id=uq.id,
+                            location_id=location.id,
+                        )
+                    )
                 ]
             )
         inline_keyboard = InlineKeyboardMarkup(inline_keys)
@@ -143,16 +145,28 @@ def parse_quest(bot: Bot, update: Update, user: User):
 
         if user.character and user.character.characterClass == "Knight":
             inline_keys = [
-                [InlineKeyboardButton(BTN_PLEDGE_YES, callback_data=json.dumps({
-                    't': QueryType.ForayFeedbackRequired,
-                    's': True,
-                    'uq': uq.id
-                }))],
-                [InlineKeyboardButton(BTN_PLEDGE_NO, callback_data=json.dumps({
-                    't': QueryType.ForayFeedbackRequired,
-                    's': False,
-                    'uq': uq.id
-                }))],
+                [
+                    InlineKeyboardButton(
+                        BTN_PLEDGE_YES,
+                        callback_data=create_callback(
+                            CallbackAction.FORAY_PLEDGE,
+                            user.id,
+                            user_quest_id=uq.id,
+                            pledge=True,
+                        )
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        BTN_PLEDGE_NO,
+                        callback_data=create_callback(
+                            CallbackAction.FORAY_PLEDGE,
+                            user.id,
+                            user_quest_id=uq.id,
+                            pledge=False,
+                        )
+                    )
+                ]
             ]
             inline_keyboard = InlineKeyboardMarkup(inline_keys)
             bot.sendMessage(
@@ -193,10 +207,16 @@ def parse_quest(bot: Bot, update: Update, user: User):
         )
 
 
-def set_user_quest_location(bot, update, user, data):
-    user_quest = Session.query(UserQuest).filter_by(id=data['uq']).first()
+@command_handler()
+def set_user_quest_location(bot, update, user):
+    action = get_callback_action(update.callback_query.data, user.id)
+    if not action:
+        logging.warning("set_user_foray_pledge got no valid action!")
+        return
+
+    user_quest = Session.query(UserQuest).filter_by(id=action.data['user_quest_id']).first()
     if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
-        location = Session.query(Location).filter_by(id=data['l']).first()
+        location = Session.query(Location).filter_by(id=action.data['location_id']).first()
         user_quest.location = location
         Session.add(user_quest)
         Session.commit()
@@ -208,15 +228,21 @@ def set_user_quest_location(bot, update, user, data):
         )
 
 
-def set_user_foray_pledge(bot, update, user, data):
-    user_quest = Session.query(UserQuest).filter_by(id=data['uq']).first()
+@command_handler()
+def set_user_foray_pledge(bot, update, user):
+    action = get_callback_action(update.callback_query.data, user.id)
+    if not action:
+        logging.warning("set_user_foray_pledge got no valid action!")
+        return
+
+    user_quest = Session.query(UserQuest).filter_by(id=action.data['user_quest_id']).first()
     if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
-        user_quest.pledge = data['s']
+        user_quest.pledge = action.data['pledge']
         Session.add(user_quest)
         Session.commit()
 
         bot.editMessageText(
-            MSG_FORAY_ACCEPTED_SAVED_PLEDGE if data['s'] else MSG_FORAY_ACCEPTED_SAVED,
+            MSG_FORAY_ACCEPTED_SAVED_PLEDGE if action.data['pledge'] else MSG_FORAY_ACCEPTED_SAVED,
             update.callback_query.message.chat.id,
             update.callback_query.message.message_id
         )

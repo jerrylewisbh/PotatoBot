@@ -1,35 +1,34 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
-
-from core.decorators import command_handler
-from functions.common import (get_weighted_diff, stock_compare_text,
-                                   stock_split)
-from functions.orders import send_order
-from functions.inline_markup import QueryType
 from sqlalchemy import and_, func, tuple_
 from sqlalchemy.exc import SQLAlchemyError
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
+from telegram import ParseMode, Update
 from telegram.error import TelegramError
 from telegram.ext import Job
 from telegram.ext.dispatcher import run_async
+from typing import Optional
 
 from config import (CASTLE, DAYS_OLD_PROFILE_KICK, DAYS_PROFILE_REMIND,
                     GOVERNMENT_CHAT)
+from core.bot import MQBot
+from core.decorators import command_handler
 from core.state import get_last_battle
 from core.texts import *
 from core.types import (Admin, Character, Order, Report, Session, Squad,
                         SquadMember, User, MessageType, AdminType)
 from core.utils import send_async
 from cwmq import Publisher
+from functions.common import (get_weighted_diff, stock_compare_text,
+                              stock_split)
+from functions.order import OrderDraft, __send_order
 from functions.profile import (format_report, get_latest_report,
                                get_stock_before_after_war)
 
 Session()
 
-def ready_to_battle(bot: Bot, job_queue: Job):
+
+def ready_to_battle(bot: MQBot, job_queue: Job):
     try:
         group = Session.query(Squad).filter(Squad.reminders_enabled == True).all()
         for item in group:
@@ -41,13 +40,18 @@ def ready_to_battle(bot: Bot, job_queue: Job):
             Session.add(new_order)
             Session.commit()
 
-            send_order(
+            # Temporary object... TODO: Move this directly to DB?
+            o = OrderDraft()
+            o.pin = True
+            o.order = new_order.text
+            o.type = MessageType.TEXT
+            o.button = False
+
+            __send_order(
                 bot=bot,
-                text=new_order.text,
-                message_type=MessageType.TEXT,
+                order=o,
                 chat_id=new_order.chat_id,
-                markup=None,
-                pin=True
+                markup=None
             )
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
@@ -58,11 +62,12 @@ def ready_to_battle(bot: Bot, job_queue: Job):
     min_permission=AdminType.FULL,
     allow_private=True
 )
-def call_ready_to_battle_result(bot: Bot, update: Update, user: User):
+def call_ready_to_battle_result(bot: MQBot, update: Update, user: User):
     ready_to_battle_result(bot, None)
 
+
 @run_async
-def ready_to_battle_result(bot: Bot, job_queue: Job):
+def ready_to_battle_result(bot: MQBot, job_queue: Job):
     if not GOVERNMENT_CHAT:
         return
     logging.info("Generating ready_to_battle_result")
@@ -82,7 +87,7 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
     try:
         squads = Session.query(Squad).all()
         now = datetime.now()
-        if (now.hour < 7):
+        if now.hour < 7:
             now = now - timedelta(days=1)
         time_from = now.replace(hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
         text = MSG_REPORT_SUMMARY_RATING.format(time_from.strftime('%d-%m-%Y %H:%M'))
@@ -157,7 +162,7 @@ def ready_to_battle_result(bot: Bot, job_queue: Job):
 
 
 @run_async
-def fresh_profiles(bot: Bot, job_queue: Job):
+def fresh_profiles(bot: MQBot, job_queue: Job):
     try:
         actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
             group_by(Character.user_id)
@@ -185,7 +190,7 @@ def fresh_profiles(bot: Bot, job_queue: Job):
             .join(User, User.id == SquadMember.user_id).all()
         for member, user in members:
             Session.delete(member)
-            admins = Session.query(Admin).filter_by(admin_group=member.squad_id).all()
+            admins = Session.query(Admin).filter_by(group_id=member.squad_id).all()
             try:
                 bot.restrictChatMember(member.squad_id, member.user_id)
                 bot.kick_chat_member(member.squad_id, member.user_id)
@@ -212,7 +217,7 @@ def fresh_profiles(bot: Bot, job_queue: Job):
 
 
 @run_async
-def refresh_api_users(bot: Bot, job_queue: Job):
+def refresh_api_users(bot: MQBot, job_queue: Job):
     logging.info("Running refresh_api_users")
     try:
         p = Publisher()
@@ -313,7 +318,7 @@ def create_user_report(user: User) -> Optional[str]:
 
 
 @run_async
-def report_after_battle(bot: Bot, job_queue: Job):
+def report_after_battle(bot: MQBot, job_queue: Job):
     logging.info("report_after_battle - Running")
     try:
         api_users = Session.query(User).join(SquadMember).join(Squad).join(Character).filter(

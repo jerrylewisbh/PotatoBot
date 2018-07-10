@@ -58,7 +58,7 @@ def offers_handler(channel, method, properties, body, dispatcher):
             if data['price'] > order.max_price:
                 # Done...
                 logger.info("Price '%s' for '%s' is greater than max_price '%s'",
-                             data['price'], order.item.name, order.max_price)
+                            data['price'], order.item.name, order.max_price)
                 continue  # Next order!
             elif not order.user.is_api_trade_allowed or not order.user.setting_automated_sniping or order.user.sniping_suspended:
                 logger.info(
@@ -84,9 +84,8 @@ def offers_handler(channel, method, properties, body, dispatcher):
             except BaseException:
                 pass
 
-            if data['qty'] >= order_limit:
-                quantity = order_limit
-            elif data['qty'] < order_limit:
+            quantity = order_limit
+            if data['qty'] < order_limit:
                 quantity = data['qty']
 
             # Let's try to fullfil this order

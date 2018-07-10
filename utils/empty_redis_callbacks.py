@@ -3,28 +3,21 @@
 import os
 import sys
 import time
+import redis
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # noinspection PyPep8
-from cwmq import Consumer
+from config import *
 
 
 def clear_handler(channel, method, properties, body, dispatcher):
     print("Cleared {}".format(method.delivery_tag))
-    #time.sleep(0.01)
+    time.sleep(0.01)
     channel.basic_ack(method.delivery_tag)
 
 
 if __name__ == "__main__":
-    q_in = Consumer(
-        clear_handler,
-        clear_handler,
-        clear_handler,
-        clear_handler,
-        dispatcher=None
-    )
-    q_in.setName("T1_IN")
-    q_in.start()
-
-    q_in.join()
+    r = redis.StrictRedis(REDIS_SERVER)
+    for key in r.keys("????????????????????????????????????"):
+        r.delete(key)

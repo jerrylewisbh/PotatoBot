@@ -2,9 +2,7 @@ import logging
 from html import escape
 
 from telegram import Bot, ParseMode
-from telegram.error import NetworkError, BadRequest
-
-from core.utils import send_async
+from telegram.error import NetworkError
 
 # This code is based on python-telegram-handler from
 # from https://github.com/sashgorokhov/python-telegram-handler
@@ -13,7 +11,8 @@ from core.utils import send_async
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-__all__ = ['TelegramHandler']
+__all__ = ['TelegramHandler', 'HtmlFormatter']
+
 
 class TelegramHandler(logging.Handler):
     last_response = None
@@ -44,10 +43,9 @@ class TelegramHandler(logging.Handler):
                 parse_mode=ParseMode.HTML,
                 disable_web_page_preview=True,
                 disable_notification=True,
-             )
+            )
         except NetworkError as ex:
             logging.warning("Log was not send to telegram due to NetworkError Exception: %s", ex)
-
 
     def emit(self, record):
         text = self.format(record)
@@ -68,6 +66,7 @@ class TelegramFormatter(logging.Formatter):
     def __init__(self, fmt=None, *args, **kwargs):
         super(TelegramFormatter, self).__init__(fmt or self.fmt, *args, **kwargs)
 
+
 class EMOJI:
     WHITE_CIRCLE = '⚪'
     BLUE_CIRCLE = '🔵'
@@ -84,7 +83,7 @@ class HtmlFormatter(TelegramFormatter):
         self.use_emoji = kwargs.pop('use_emoji', False)
         super(HtmlFormatter, self).__init__(*args, **kwargs)
 
-    def format(self, record):
+    def format(self, record: object) -> object:
         """
         :param logging.LogRecord record:
         """
