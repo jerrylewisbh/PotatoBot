@@ -11,8 +11,6 @@ from core.bot import MQBot
 from core.decorators import command_handler
 from core.state import GameState, get_game_state
 from core.texts import *
-from core.texts import MSG_ALREADY_BANNED, MSG_NO_REASON, MSG_USER_BANNED, MSG_YOU_BANNED, MSG_BAN_COMPLETE, \
-    MSG_USER_UNKNOWN, MSG_REASON_TRAITOR, MSG_YOU_UNBANNED, MSG_USER_UNBANNED, MSG_USER_NOT_BANNED
 from core.types import Admin, AdminType, Stock, User, Session, Item, Ban, SquadMember, Squad, Group, new_item
 from core.utils import send_async
 from functions.reply_markup import (generate_admin_markup)
@@ -99,7 +97,7 @@ def admin_panel(bot: MQBot, update: Update, user: User):
     allow_private=False,
     allow_group=True
 )
-def force_kick_botato(bot: Bot, update: Update, user: User):
+def force_kick_botato(bot: MQBot, update: Update, user: User):
     bot.leave_chat(update.message.chat.id)
 
 
@@ -308,7 +306,7 @@ def delete_msg(bot: MQBot, update: Update):
     allow_private=False,
     allow_group=True
 )
-def kick_from_chat(bot: Bot, update: Update, user: User):
+def kick_from_chat(bot: MQBot, update: Update, user: User):
     bot.kickChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
     bot.unbanChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
 
