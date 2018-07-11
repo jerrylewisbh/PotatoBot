@@ -28,7 +28,7 @@ def gen_squad_top_msg(data, counts, header, icon):
     return text
 
 
-def __get_top_attendance(user: User, date_filter):
+def __get_top_attendance(user: User, date_filter, date_desc):
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)).group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
 
@@ -52,26 +52,26 @@ def __get_top_attendance(user: User, date_filter):
         Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci')
     ).all()
 
-    text = __gen_top_msg(battles, user.id, MSG_TOP_ATTACK_SQUAD.format(user.member.squad.squad_name), '⛳️')
+    text = __gen_top_msg(battles, user.id, MSG_TOP_WEEK_WARRIORS_SQUAD.format(user.member.squad.squad_name, date_desc), '⛳️')
     additional_markup = [
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_WEEK,
             callback_data=create_callback(
-                CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_WEEK,
+                CallbackAction.TOP | CallbackAction.TOP_FILTER_SQUAD | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_WEEK,
                 user.id
             )
         ),
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_MONTH,
             callback_data=create_callback(
-                CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_MONTH,
+                CallbackAction.TOP | CallbackAction.TOP_FILTER_SQUAD | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_MONTH,
                 user.id
             )
         ),
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_ALL,
             callback_data=create_callback(
-                CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_ALL,
+                CallbackAction.TOP | CallbackAction.TOP_FILTER_SQUAD | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_ALL,
                 user.id
             )
         ),
@@ -164,18 +164,21 @@ def top(bot: MQBot, update: Update, user: User):
             if CallbackAction.TOP_FILTER_MONTH in action.action:
                 text, additional_keyboard = __get_top_attendance(
                     user,
-                    date_filter=Report.date > datetime(2017, 12, 11)
+                    Report.date > datetime(2017, 12, 11),
+                    "this month"
                 )
             elif CallbackAction.TOP_FILTER_ALL in action.action:
                 text, additional_keyboard = __get_top_attendance(
                     user,
-                    Report.date >= datetime.today().replace(day=1, hour=0, minute=0, second=0)
+                    Report.date >= datetime.today().replace(day=1, hour=0, minute=0, second=0),
+                    "since the beginning of time"
                 )
             else:
                 # By default show week
                 text, additional_keyboard = __get_top_attendance(
                     user,
-                    Report.date > datetime.today().date() - timedelta(days=datetime.today().date().weekday())
+                    Report.date > datetime.today().date() - timedelta(days=datetime.today().date().weekday()),
+                    "this week"
                 )
             keys.append(additional_keyboard)
 

@@ -28,7 +28,7 @@ def gen_class_top_msg(data, counts, header, icon):
     return text
 
 
-def __get_top_attendance(user: User, date_filter):
+def __get_top_attendance(user: User, date_filter, class_name, date_desc):
     actual_profiles = Session.query(Character.user_id, func.max(Character.date)).group_by(Character.user_id)
     actual_profiles = actual_profiles.all()
 
@@ -41,7 +41,8 @@ def __get_top_attendance(user: User, date_filter):
     ).outerjoin(
         Report, Report.user_id == Character.user_id
     ).filter(
-        date_filter
+        date_filter,
+        Character.characterClass.ilike(class_name)
     ).filter(
         Report.earned_exp > 0
     ).group_by(
@@ -52,27 +53,30 @@ def __get_top_attendance(user: User, date_filter):
         Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci')
     ).all()
 
-    text = __gen_top_msg(battles, user.id, MSG_TOP_ATTACK_CLASS.format(user.member.squad.squad_name), '⛳️')
+    text = __gen_top_msg(battles, user.id, MSG_TOP_WEEK_WARRIORS_CLASS.format(user.character.characterClass, date_desc), '⛳️')
     additional_markup = [
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_WEEK,
             callback_data=create_callback(
                 CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_WEEK,
-                user.id
+                user.id,
+                class_name=class_name
             )
         ),
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_MONTH,
             callback_data=create_callback(
                 CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_MONTH,
-                user.id
+                user.id,
+                class_name=class_name
             )
         ),
         InlineKeyboardButton(
             TOP_COMMAND_BATTLES_ALL,
             callback_data=create_callback(
                 CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_ALL,
-                user.id
+                user.id,
+                class_name=class_name
             )
         ),
     ]
@@ -81,117 +85,30 @@ def __get_top_attendance(user: User, date_filter):
 
 @command_handler()
 def top(bot: MQBot, update: Update, user: User):
+    class_name = 'Knight'
     text = ""
-    keys = [
-        [
-            InlineKeyboardButton(
-                TOP_COMMAND_ATTACK,
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
-                    user.id
-                )
-            ),
-            InlineKeyboardButton(
-                TOP_COMMAND_DEFENCE,
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_DEF | CallbackAction.TOP_FILTER_CLASS,
-                    user.id
-                )
-            ),
-            InlineKeyboardButton(
-                TOP_COMMAND_EXP,
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_EXP | CallbackAction.TOP_FILTER_CLASS,
-                    user.id
-                )
-            ),
-            InlineKeyboardButton(
-                TOP_COMMAND_BATTLES,
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_CLASS,
-                    user.id
-                )
-            )
-        ],
-    ]
+
+    action = None
+    if update.callback_query:
+        action = get_callback_action(update.callback_query.data, user.id)
+        if "class_name" in action.data:
+            class_name = action.data["class_name"]
+
+        print(action.action)
+        print(action.data)
 
     if not update.callback_query:
         # Initial call...
         text = get_top(
             Character.attack.desc(),
-            MSG_TOP_ATTACK_CLASS.format(user.member.squad.squad_name),
+            MSG_TOP_ATTACK_CLASS.format(class_name),
             'attack',
             '⚔',
             user,
-            filter_by_squad=False
+            filter_by_squad=False,
+            character_class="Knight"
         )
-
-        class_buttons = []
-        class_buttons_esquire = [
-            InlineKeyboardButton(
-                '⚔️Knight',
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
-                    user.id,
-                    class_name="Knight"
-                )
-            ),
-            InlineKeyboardButton(
-                '🛡Sentinel',
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
-                    user.id,
-                    class_name="Sentinel"
-                )
-            ),
-            InlineKeyboardButton(
-                '🏹Ranger',
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
-                    user.id,
-                    class_name="Ranger"
-                )
-            )
-        ]
-        class_buttons_master = [
-            InlineKeyboardButton(
-                '⚗️Alchemist',
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
-                    user.id,
-                    class_name="️Alchemist"
-                )
-            ),
-            InlineKeyboardButton(
-                '⚒️Blacksmith',
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
-                    user.id,
-                    class_name="️Blacksmith"
-                )
-            ),
-            InlineKeyboardButton(
-                '📦Collector',
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
-                    user.id,
-                    class_name="Collector"
-                )
-            )
-        ]
-        class_buttons_other = [
-            InlineKeyboardButton(
-                '🐣Others',
-                callback_data=create_callback(
-                    CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
-                    user.id,
-                    class_name="Esquire / Master"
-                )
-            ),
-        ]
-        class_buttons.append(class_buttons_esquire)
-        class_buttons.append(class_buttons_master)
-        class_buttons.append(class_buttons_other)
+        class_buttons = __get_class_keyboard(user)
 
         send_async(
             bot,
@@ -202,12 +119,52 @@ def top(bot: MQBot, update: Update, user: User):
         )
     else:
         # Call with callback_query
-        action = get_callback_action(update.callback_query.data, user.id)
-        print(action.action)
-        print(action.data)
-        class_name = 'Knight'
-        if "class_name" in action.data:
-            class_name = action.data["class_name"]
+        keys = [
+            [
+                InlineKeyboardButton(
+                    TOP_COMMAND_ATTACK,
+                    callback_data=create_callback(
+                        CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
+                        user.id,
+                        class_name=class_name
+                    )
+                ),
+                InlineKeyboardButton(
+                    TOP_COMMAND_DEFENCE,
+                    callback_data=create_callback(
+                        CallbackAction.TOP | CallbackAction.TOP_DEF | CallbackAction.TOP_FILTER_CLASS,
+                        user.id,
+                        class_name=class_name
+                    )
+                ),
+                InlineKeyboardButton(
+                    TOP_COMMAND_EXP,
+                    callback_data=create_callback(
+                        CallbackAction.TOP | CallbackAction.TOP_EXP | CallbackAction.TOP_FILTER_CLASS,
+                        user.id,
+                        class_name=class_name
+                    )
+                ),
+                InlineKeyboardButton(
+                    TOP_COMMAND_BATTLES,
+                    callback_data=create_callback(
+                        CallbackAction.TOP | CallbackAction.TOP_ATT | CallbackAction.TOP_FILTER_CLASS,
+                        user.id,
+                        class_name=class_name
+                    )
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    USER_COMMAND_BACK,
+                    callback_data=create_callback(
+                        CallbackAction.TOP | CallbackAction.TOP_FILTER_CLASS,
+                        user.id,
+                        class_name=class_name
+                    )
+                )
+            ]
+        ]
 
         if CallbackAction.TOP_ATK in action.action:
             text = get_top(
@@ -216,7 +173,8 @@ def top(bot: MQBot, update: Update, user: User):
                 'attack',
                 '⚔',
                 user,
-                filter_by_squad=False
+                filter_by_squad=False,
+                character_class=class_name
             )
         elif CallbackAction.TOP_DEF in action.action:
             text = get_top(
@@ -225,7 +183,8 @@ def top(bot: MQBot, update: Update, user: User):
                 'defence',
                 '🛡',
                 user,
-                filter_by_squad=False)
+                filter_by_squad=False,
+                character_class=class_name)
         elif CallbackAction.TOP_EXP in action.action:
             text = get_top(
                 Character.exp.desc(),
@@ -233,25 +192,43 @@ def top(bot: MQBot, update: Update, user: User):
                 'exp',
                 '🔥',
                 user,
-                filter_by_squad=False)
+                filter_by_squad=False,
+                character_class=class_name)
         elif CallbackAction.TOP_ATT in action.action:
             if CallbackAction.TOP_FILTER_MONTH in action.action:
                 text, additional_keyboard = __get_top_attendance(
                     user,
-                    date_filter=Report.date > datetime(2017, 12, 11)
+                    Report.date > datetime(2017, 12, 11),
+                    class_name,
+                    "this month"
                 )
             elif CallbackAction.TOP_FILTER_ALL in action.action:
                 text, additional_keyboard = __get_top_attendance(
                     user,
-                    Report.date >= datetime.today().replace(day=1, hour=0, minute=0, second=0)
+                    Report.date >= datetime.today().replace(day=1, hour=0, minute=0, second=0),
+                    class_name,
+                    "since the beginning of time"
                 )
             else:
                 # By default show week
                 text, additional_keyboard = __get_top_attendance(
                     user,
-                    Report.date > datetime.today().date() - timedelta(days=datetime.today().date().weekday())
+                    Report.date > datetime.today().date() - timedelta(days=datetime.today().date().weekday()),
+                    class_name,
+                    "this week"
                 )
-            keys.append(additional_keyboard)
+            text = "" + text
+            keys.insert(1, additional_keyboard)
+        else:
+            class_buttons = __get_class_keyboard(user)
+
+            bot.edit_message_text(
+                chat_id=user.id,
+                message_id=update.callback_query.message.message_id,
+                text="Please choose the class you want to get the statistics for.",
+                reply_markup=InlineKeyboardMarkup(class_buttons),
+                parse_mode=ParseMode.HTML,
+            )
 
         bot.edit_message_text(
             chat_id=user.id,
@@ -260,3 +237,73 @@ def top(bot: MQBot, update: Update, user: User):
             reply_markup=InlineKeyboardMarkup(keys),
             parse_mode=ParseMode.HTML,
         )
+
+
+def __get_class_keyboard(user):
+    class_buttons = []
+    class_buttons_esquire = [
+        InlineKeyboardButton(
+            '⚔️Knight',
+            callback_data=create_callback(
+                CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
+                user.id,
+                class_name="Knight",
+            )
+        ),
+        InlineKeyboardButton(
+            '🛡Sentinel',
+            callback_data=create_callback(
+                CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
+                user.id,
+                class_name="Sentinel",
+            )
+        ),
+        InlineKeyboardButton(
+            '🏹Ranger',
+            callback_data=create_callback(
+                CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
+                user.id,
+                class_name="Ranger",
+            )
+        )
+    ]
+    class_buttons_master = [
+        InlineKeyboardButton(
+            '⚗️Alchemist',
+            callback_data=create_callback(
+                CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
+                user.id,
+                class_name="Alchemist",
+            )
+        ),
+        InlineKeyboardButton(
+            '⚒️Blacksmith',
+            callback_data=create_callback(
+                CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
+                user.id,
+                class_name="Blacksmith",
+            )
+        ),
+        InlineKeyboardButton(
+            '📦Collector',
+            callback_data=create_callback(
+                CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
+                user.id,
+                class_name="Collector",
+            )
+        )
+    ]
+    class_buttons_other = [
+        InlineKeyboardButton(
+            '🐣Others',
+            callback_data=create_callback(
+                CallbackAction.TOP | CallbackAction.TOP_ATK | CallbackAction.TOP_FILTER_CLASS,
+                user.id,
+                class_name="Esquire / Master"
+            )
+        ),
+    ]
+    class_buttons.append(class_buttons_esquire)
+    class_buttons.append(class_buttons_master)
+    class_buttons.append(class_buttons_other)
+    return class_buttons

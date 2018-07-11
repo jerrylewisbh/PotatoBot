@@ -51,7 +51,7 @@ def get_top(condition, header, field_name, icon, user, character_class='%', filt
             Character.characterClass.ilike(character_class)
         ).join(User).order_by(condition).all()
 
-    text = "<b> YYY" + header + "</b>"
+    text = "<b>" + header + "</b>"
     str_format = MSG_TOP_FORMAT
     str_format_reduced = MSG_TOP_FORMAT_REDUCED
     for i in range(min(3, len(characters))):
@@ -101,7 +101,7 @@ def __get_attendence(bot: MQBot, update: Update, user: User):
 
 
 def __gen_top_msg(data, user_id, header, icon):
-    text = "<b> XXX" + header + "</b>"
+    text = "<b>" + header + "</b>"
     str_format = MSG_TOP_FORMAT
     for i in range(min(3, len(data))):
         text += str_format.format(i + 1, data[i][0].name, data[i][0].level, data[i][1], icon)
