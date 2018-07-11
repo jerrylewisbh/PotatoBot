@@ -2,6 +2,7 @@ import logging
 import redis
 from datetime import datetime
 from enum import Enum
+from pymysql import IntegrityError
 from sqlalchemy import func
 from telegram import ParseMode, Update, TelegramError
 from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated
@@ -372,10 +373,15 @@ def __ban_traitor(bot: MQBot, user_id: int):
         # for admin in admins:
         # Session.delete(admin)
 
-        Session.add(banned)
-        Session.add(user)
-        Session.commit()
-        squads = Session.query(Squad).all()
+        try:
+            Session.add(banned)
+            Session.add(user)
+            Session.commit()
+        except IntegrityError:
+            logging.warning("User user_id='%s' already banned", user.id)
+            Session.rollback()
+
+
 
         # send_async(bot, chat_id=GOVERNMENT_CHAT, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
 
