@@ -94,9 +94,6 @@ def top(bot: MQBot, update: Update, user: User):
         if "class_name" in action.data:
             class_name = action.data["class_name"]
 
-        print(action.action)
-        print(action.data)
-
     if not update.callback_query:
         # Initial call...
         text = get_top(
