@@ -38,6 +38,13 @@ class CallbackAction(IntFlag):
 
     # Report
     REPORT = auto()
+    PAGINATION_SKIP_FORWARD = auto()
+    PAGINATION_SKIP_BACKWARD = auto()
+    PAGINATION_SKIP_NEXT = auto()
+    PAGINATION_SKIP_PREV = auto()
+    PAGINATION_SKIP_BATTLE_1 = auto()
+    PAGINATION_SKIP_BATTLE_2 = auto()
+    PAGINATION_SKIP_BATTLE_3 = auto()
 
     # Hero related
     HERO = auto()

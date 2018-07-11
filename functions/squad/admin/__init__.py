@@ -514,6 +514,61 @@ def __generate_report_paging(user: User, time: datetime, squad_id):
         )
     )]
 
+    row2 = [
+        InlineKeyboardButton(
+            "🕖 07:00",
+            callback_data=create_callback(
+                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
+                user.id
+            )
+        ),
+        InlineKeyboardButton(
+            "🕒 15:00",
+            callback_data=create_callback(
+                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
+                user.id
+            )
+        ),
+        InlineKeyboardButton(
+            "🕚 23:00",
+            callback_data=create_callback(
+                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
+                user.id
+            )
+        ),
+    ]
+
+    row3 = [
+        InlineKeyboardButton(
+            "⏪ 12/01",
+            callback_data=create_callback(
+                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
+                user.id
+            )
+        ),
+        InlineKeyboardButton(
+            "⬅️ 31/12",
+            callback_data=create_callback(
+                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
+                user.id
+            )
+        ),
+        InlineKeyboardButton(
+            "27/06 ➡️",
+            callback_data=create_callback(
+                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
+                user.id
+            )
+        ),
+        InlineKeyboardButton(
+            "31/06 ⏩",
+            callback_data=create_callback(
+                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
+                user.id
+            )
+        )
+    ]
+
     if time + timedelta(hours=4) < datetime.now():
         row1.append(
             InlineKeyboardButton(
@@ -528,7 +583,7 @@ def __generate_report_paging(user: User, time: datetime, squad_id):
         )
         #'ts': (time + timedelta(hours=8)).timestamp(),
 
-    pagination = [row1]
+    pagination = [row1, row2, row3]
 
     return InlineKeyboardMarkup(pagination)
 
