@@ -56,6 +56,7 @@ def get_best_fulfillable_order(user):
             )
             continue
 
+        latest_known_prices = list(map(int, latest_known_prices))
         min_price = int(min(latest_known_prices))
 
         logging.debug("[Hide] Setting: max_price='%s' latest_known_min_price='%s'", setting.max_price, min_price)
