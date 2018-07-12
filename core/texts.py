@@ -667,7 +667,7 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 /items_other - List known untradable items
 /items_unknown - Show new items
 /hide - Manually trigger hide
-/hide_list - Show commands to your items for 1000g in exchange - Sorted by price
+/hide_list - Show commands to put your items for 1000g in exchange - Sorted by price
 /ah - Auto-Hide settings
 /resume - Resume suspended sniping
 /s &lt;itemID&gt; &lt;maxPrice&gt; [&lt;limit&gt;] - Create snipe order
