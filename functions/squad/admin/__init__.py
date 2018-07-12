@@ -583,7 +583,7 @@ def __generate_report_paging(user: User, time: datetime, squad_id):
         )
         #'ts': (time + timedelta(hours=8)).timestamp(),
 
-    pagination = [row1, row2, row3]
+    pagination = [row1]#, row2, row3]
 
     return InlineKeyboardMarkup(pagination)
 
