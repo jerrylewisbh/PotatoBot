@@ -2,9 +2,15 @@ import logging
 
 from telegram.ext import CommandHandler, Dispatcher
 
+from functions.activity import day_activity, week_activity, battle_activity
 from functions.battle import call_ready_to_battle_result
-from functions.user import set_admin, del_admin, list_admins, set_global_admin, set_super_admin, del_global_admin
-from functions.common import admin_panel, ban, help_msg, ping, unban, get_log, force_kick_botato, kick_from_chat
+from functions.common.pin import pin, silent_pin, not_pin_all, pin_all
+from functions.report import enable_report_fwd, disable_report_fwd
+from functions.squad.admin import call_squad
+from functions.user import set_admin, del_admin, list_admins, set_global_admin, set_super_admin, del_global_admin, \
+    admins_for_users
+from functions.common import admin_panel, ban, help_msg, ping, unban, get_log, force_kick_botato, kick_from_chat, \
+    delete_msg
 from functions.exchange import list_items, list_items_other, list_items_unknown
 from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume
@@ -14,7 +20,7 @@ from functions.profile import (find_by_character, find_by_id,
                                show_char, show_report, user_panel)
 from functions.squad.admin.commands import enable_thorns, enable_reminders, enable_silence, disable_thorns, \
     disable_silence, disable_reminders, add_squad, set_invite_link, set_squad_name, del_squad, force_add_to_squad, \
-    add_to_squad
+    add_to_squad, open_hiring, close_hiring
 from functions.triggers import (add_global_trigger, add_trigger,
                                 del_global_trigger, del_trigger,
                                 disable_trigger_all, enable_trigger_all,
@@ -74,6 +80,24 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("del_squad", del_squad))
     disp.add_handler(CommandHandler("add", add_to_squad))
     disp.add_handler(CommandHandler("forceadd", force_add_to_squad))
+
+    # Old inline chat commands
+    disp.add_handler(CommandHandler("delete", delete_msg))
+    disp.add_handler(CommandHandler("pin", silent_pin))
+    disp.add_handler(CommandHandler("pin_notify", pin))
+    disp.add_handler(CommandHandler("hiring_close", close_hiring))
+    disp.add_handler(CommandHandler("hiring_open", open_hiring))
+    disp.add_handler(CommandHandler("disable_pin_all", pin_all))
+    disp.add_handler(CommandHandler("enable_pin_all", not_pin_all))
+    disp.add_handler(CommandHandler("commander", admins_for_users))
+    disp.add_handler(CommandHandler("admins", admins_for_users))
+    disp.add_handler(CommandHandler("squad", call_squad))
+    disp.add_handler(CommandHandler("welcome", show_welcome))
+    disp.add_handler(CommandHandler("enable_report_forward", enable_report_fwd))
+    disp.add_handler(CommandHandler("disable_report_forward", disable_report_fwd))
+    disp.add_handler(CommandHandler("daily_stats", day_activity))
+    disp.add_handler(CommandHandler("weekly_stats", week_activity))
+    disp.add_handler(CommandHandler("battle_stats", battle_activity))
 
     disp.add_handler(CommandHandler("find", find_by_username))
     disp.add_handler(CommandHandler("findc", find_by_character))

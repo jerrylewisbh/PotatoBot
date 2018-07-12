@@ -46,117 +46,6 @@ MSG_START_MEMBER_SQUAD_REGISTERED = 'Welcome back 🥔{}!\n\n' \
 
 MSG_ADMIN_WELCOME = 'Welcome, master!'
 
-MSG_HELP_GLOBAL_ADMIN = """Welcome:
-/enable_welcome — enable welcome message.
-/disable_welcome — disable welcome message.
-/set_welcome <text> — set welcome message. \
-Can contain %username% — will be shown as @username, %ign% - will show user ingame name, \
-if not set to First and Last name, or ID,
-using %last_name%, %first_name%, %id%.
-/show_welcome — show welcome message.
-
-Trigger:
-Reply to a message or file with /set_trigger <trigger text> — \
-set message to reply with on a trigger (only current chat)
-/del_trigger <trigger> — delete trigger.
-/list_triggers — show all triggers.
-Reply to a message or file with /set_global_trigger <trigger text> — \
-set message to reply with on a trigger (all chats)
-/del_global_trigger <trigger> — delete trigger.
-
-Super administrator:
-/add_admin <user> — add administrator to current chat.
-/del_admin <user> — delete administrator from current chat.
-/list_admins — show list of current chat administrators.
-/enable_trigger — allow everyone to call trigger.
-/disable_trigger — forbid everyone to call trigger.
-/get_log - Get latest logfile
-
-Squad:
-/add_squad - Create a new squad and associates it to the current group
-/del_squad - Delete the squad associated with teh group
-/enable_thorns - Prevent non members of the squad be in the group
-/disable_thorns - Allow non members of the group to be in the squad
-/enable_silence  - Deletes all messages typed 3 minutes before battle
-/disable_silence - Allow user to type even 3 minutes before batte
-/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
-/disable_reminders - Disable reminders
-/set_squad_name <name> - Change the name of the squad
-/set_invite_link <link> - Set up the invite link that will be sent to approved members
-/add <user> - Ask an user to join the squad
-/forceadd <user> - add user to a squad without asking for confirmation
-/ban <user> <reason> - Ban an user from the squad
-/unban <user> - Unban an user from the squad
-/find <user> - Show user status by telegram user name
-/findc <ign> - Show user status by ingame name
-/findi <id> - Show user status by telegram uquique id
-
-User:
-/items - List known items
-/hide - Manually trigger hide
-/resume - Resume suspended sniping
-/s <itemID> <maxPrice> [<limit>] - Create snipe order
-/sr <itemID> - Remove sniping order
-/report - Show your last report (including stock change if API is enabled)
-admins - Show Admins/Commanders
-commander - Show Admins/Commanders
-
-Free text:
-daily stats  - Show squad daily stats
-weekly stats - Show squad weekly stats
-battle stats - Show last batle stats for batle
-prevent everyone from triggering - Allow only admins to call triggers
-allow everyone to pin - Allow all members to pin messages
-prevent everyone from pinning - Allow only admins to pin messages
-squad - mention every squad member
-
-Reply any message with Pin to Pin it (admins always can do that, other members if its enabled)
-Reply any message with Pin and notify to pin and send notificaion
-Reply any message with Delete to delete it
-
-"""
-
-MSG_HELP_GROUP_ADMIN = """Welcome:
-/enable_welcome — enable welcome message.
-/disable_welcome — disable welcome message.
-/set_welcome <text> — set welcome message. \
-Can contain %username% — will be shown as @username, \
-if not set to First and Last name, or ID,
-using %last_name%, %first_name%, %id%.
-/show_welcome — show welcome message.
-
-Squad:
-/enable_thorns - Prevent non members of the squad be in the group
-/disable_thorns - Allow non members of the group to be in the squad
-/enable_silence  - Deletes all messages typed 3 minutes before battle
-/disable_silence - Allow user to type even 3 minutes before batte
-/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
-/disable_reminders - Disable reminders
-/set_invite_link <link> - Set up the invite link that will be sent to approved members
-/add <user> - Ask an user to join the squad
-/ban <user> <reason>  - Ban an user from the squad
-/unban <user> - Unban an user from the squad
-
-
-Free text:
-daily stats  - Show squad daily stats
-weekly stats - Show squad weekly stats
-battle stats - Show last batle stats for batle
-allow everyone to trigger - Allow every member to call triggers
-prevent everyone from triggering - Allow only admins to call triggers
-allow everyone to pin - Allow all members to pin messages
-prevent everyone from pinning - Allow only admins to pin messages
-squad - mention every squad member
-
-Reply any message with Pin to Pin it (admins always can do that, other members if its enabled)
-Reply any message with Pin and notify to pin and send notificaion
-Reply any message with Delete to delete it
-
-
-"""
-
-MSG_HELP_USER = "/list_triggers — show all triggers."
-
 MSG_PING = 'Go and dig some potatoes, @{}!'
 
 MSG_STOCK_COMPARE_HARVESTED = '📦<b>You got:</b>\n'
@@ -697,3 +586,97 @@ ITEM_LIST = "*Items I know:*\n"
 GUILD_DEPOSIT = "*Deposit:*"
 GUILD_WITHDRAW = "*Withdraw:*"
 GUILD_WITHDRAW_HELP = "Please forward me your Guild Warehouse"
+
+MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
+
+<i>General stuff:</i>
+/start - Start interacting with Botato
+/help - Show this help
+
+<i>Admin:</i>
+/admin - Show admin-panel
+/ping - Ping botato
+/list_admins — show list of current chat administrators
+/add_admin &lt;user&gt; — add administrator to current chat
+/add_global_admin &lt;user&gt; — add global administrator
+/del_admin &lt;user&gt; — delete administrator from current chat
+/del_global_admin &lt;user&gt; — delete global administrator 
+/get_log - Get latest logfile - ONLY FOR A FEW PPL
+/force_kick_botato - Force Botato to leave the chat where this command was issued
+/kick - Reply to any message to kick the user from a chat
+/ban &lt;user&gt; &lt;reason&gt;  - Ban user 
+/unban &lt;user&gt; - Unban user 
+/find &lt;user&gt; - Show user status by telegram user name
+/findc &lt;ign&gt; - Show user status by ingame name
+/findi &lt;id&gt; - Show user status by telegram uquique id
+/battleresult - Send last battle-result to government chat 
+
+
+<i>Groups and Squads:</i>
+/enable_welcome - Enable welcome message 
+/disable_welcome — Disable welcome message
+/set_welcome &lt;text&gt; — set welcome message (Can contain %username% — will be shown as @username, %ign% - will show user ingame name, if not set to First and Last name, or ID, using %last_name%, %first_name%, %id%)
+/show_welcome — Show welcome message
+/enable_trigger — Allow everyone to call trigger
+/disable_trigger — Forbid everyone to call trigger
+/enable_report_forward - Enable report forwarding
+/disable_report_forward - Disable report forwarding
+/delete - Reply to message with /delete will delete that message
+/pin - Reply to message will pin this message 
+/pin_notify - Reply to message will pin this message and notify people
+/disable_pin_all - Disable pinning for everyone 
+/enable_pin_all - Allow pinning for everyone
+/commander - Show admins of Squad/Group
+/admins - Show admins of Squad/Group
+
+<i>Triggers:</i>
+/list_triggers — show all triggers
+/set_trigger - Reply to a message or file /set_trigger &lt;trigger name&gt; to set a new trigger
+/del_trigger &lt;trigger&gt; — delete trigger
+/add_trigger - Same as /set_trigger but does not override existing ones
+/set_global_trigger - Reply to a message or file with /set_global_trigger &lt;trigger name&gt; to set a new trigger (all chats)
+/add_global_trigger - Same as /set_global_trigger but does not override existing ones
+/del_global_trigger &lt;trigger&gt; — delete trigger
+
+<i>Squads:</i>
+/add_squad - Create a new squad and associates it to the current group
+/del_squad - Delete the squad associated with teh group
+/enable_thorns - Prevent non members of the squad be in the group
+/disable_thorns - Allow non members of the group to be in the squad
+/enable_silence  - Deletes all messages typed 3 minutes before battle
+/disable_silence - Allow user to type even 3 minutes before batte
+/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
+/disable_reminders - Disable reminders
+/set_squad_name &lt;name&gt; - Change the name of the squad
+/set_invite_link &lt;link&gt; - Set up the invite link that will be sent to approved members
+/add &lt;user&gt; - Ask an user to join the squad
+/forceadd &lt;user&gt; - add user to a squad without asking for confirmation
+/hiring_open - Open hiring
+/hiring_close - Close hiring
+/squad - Call every squadmember to get their attention
+/daily_stats - Show daily squad stats
+/weekly_stats - Show weekly squad stats
+/battle_stats - Show battlestats
+
+<i>User commands:</i>
+/me - Show your profile 
+/report - Show your last report
+/admins - Show Admins/Commanders
+/commander - Show Admins/Commanders
+/items - List known exchange-tradable items
+/items_other - List known untradable items
+/items_unknown - Show new items
+/hide - Manually trigger hide
+/hide_list - Show commands to your items for 1000g in exchange - Sorted by price
+/ah - Auto-Hide settings
+/resume - Resume suspended sniping
+/s &lt;itemID&gt; &lt;maxPrice&gt; [&lt;limit&gt;] - Create snipe order
+/sr &lt;itemID&gt; - Remove sniping order
+/report - Show your last report (including stock change if API is enabled)
+/deposit - Generate deposit-list for guild
+/withdraw - Generate withdraw-list
+"""
+
+MSG_HELP_GROUP_ADMIN= "TODO"
+
+MSG_HELP_USER = "TODO"

@@ -111,11 +111,11 @@ def help_msg(bot: MQBot, update, user: User):
             global_adm = True
             break
     if global_adm:
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_GLOBAL_ADMIN)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_GLOBAL_ADMIN, parse_mode=ParseMode.HTML)
     elif len(admin_user) != 0:
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_GROUP_ADMIN)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_GROUP_ADMIN, parse_mode=ParseMode.HTML)
     else:
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_USER)
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_USER, parse_mode=ParseMode.HTML)
 
 
 @command_handler(
