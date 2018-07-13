@@ -124,7 +124,15 @@ def help_msg(bot: MQBot, update, user: User):
     allow_group=True
 )
 def ping(bot: MQBot, update: Update, user: User):
-    send_async(bot, chat_id=update.message.chat.id, text=MSG_PING.format(update.message.from_user.username))
+    send_date = update.effective_message.date
+    ping_time = send_date - datetime.now()
+
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=MSG_PING.format(update.message.from_user.username, (ping_time.microseconds / 1000)),
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
 
 def get_diff(dict_one, dict_two):

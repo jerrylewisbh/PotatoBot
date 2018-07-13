@@ -46,7 +46,7 @@ MSG_START_MEMBER_SQUAD_REGISTERED = 'Welcome back 🥔{}!\n\n' \
 
 MSG_ADMIN_WELCOME = 'Welcome, master!'
 
-MSG_PING = 'Go and dig some potatoes, @{}!'
+MSG_PING = 'Go and dig some potatoes, @{}! - `{:.2f}ms`'
 
 MSG_STOCK_COMPARE_HARVESTED = '📦<b>You got:</b>\n'
 MSG_STOCK_COMPARE_LOST = '\n📦<b>You lost:</b>\n'
