@@ -162,13 +162,13 @@ def battle_reports(bot: MQBot, update: Update, user: User):
         full_stock = 0
         total_reports = 0
         total_members = 0
-        for user, report in reports:
+        for report_user, report in reports:
             total_members += 1
             if report:
                 icon = REST_ICON if report.earned_exp == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
                 icon = PRELIMINARY_ICON + icon if report.preliminary_report else icon
                 text = MSG_REPORT_SUMMARY_ROW.format(
-                    icon, report.name, user.username, report.attack, report.defence,
+                    icon, report.name, report_user.username, report.attack, report.defence,
                     report.earned_exp, report.earned_gold, report.earned_stock)
                 texts.append(text)
                 full_atk += report.attack
@@ -178,9 +178,9 @@ def battle_reports(bot: MQBot, update: Update, user: User):
                 full_stock += report.earned_stock
                 total_reports += 1
             else:
-                if not user.character:
+                if not report_user.character:
                     continue
-                text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name, user.username)
+                text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(report_user.character.name, report_user.username)
                 texts.append(text)
 
         template = MSG_REPORT_SUMMARY_HEADER.format(
@@ -344,13 +344,13 @@ def battle_reports_inline(bot: MQBot, update: Update, user: User):
     full_stock = 0
     total_reports = 0
     total_members = 0
-    for user, report in reports:
+    for report_user, report in reports:
         total_members += 1
         if report:
             icon = REST_ICON if report.earned_exp == 0 else ATTACK_ICON if report.earned_stock > 0 else DEFENSE_ICON
             icon = PRELIMINARY_ICON + icon if report.preliminary_report else icon
             text = MSG_REPORT_SUMMARY_ROW.format(icon,
-                                                 report.name, user.username, report.attack, report.defence,
+                                                 report.name, report_user.username, report.attack, report.defence,
                                                  report.earned_exp, report.earned_gold, report.earned_stock)
             texts.append(text)
             full_atk += report.attack
@@ -360,8 +360,8 @@ def battle_reports_inline(bot: MQBot, update: Update, user: User):
             full_stock += report.earned_stock
             total_reports += 1
         else:
-            text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(user.character.name if user.character else "Unknown",
-                                                       user.username)
+            text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(report_user.character.name if report_user.character else "Unknown",
+                                                       report_user.username)
             texts.append(text)
     template = MSG_REPORT_SUMMARY_HEADER.format(
         squad.squad_name,
@@ -501,7 +501,6 @@ def __generate_squad_member_list_keyboard_button(user: User, squad: Squad):
 
 
 def __generate_report_paging(user: User, day: datetime, squad_id):
-
     row1 = [
         InlineKeyboardButton(
             "🕒 07:00 🔘" if day.hour == 7 else "🕒 07:00",
