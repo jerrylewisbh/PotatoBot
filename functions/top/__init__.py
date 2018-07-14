@@ -26,7 +26,7 @@ def top_about(bot: MQBot, update: Update, user: User):
     )
 
 
-def get_top(condition, header, field_name, icon, user, character_class='%', filter_by_squad=False, limit=3):
+def get_top(condition, header, field_name, icon, user, character_class='%', filter_by_squad=False):
     newest_profiles = Session.query(
         Character.user_id,
         func.max(Character.date)
@@ -54,12 +54,12 @@ def get_top(condition, header, field_name, icon, user, character_class='%', filt
     text = "<b>" + header + "</b>"
     str_format = MSG_TOP_FORMAT
     str_format_reduced = MSG_TOP_FORMAT_REDUCED
-    for i in range(min(limit, len(characters))):
+    for i in range(min(3, len(characters))):
         text += str_format_reduced.format(i + 1, characters[i].name, characters[i].level,
                                   getattr(characters[i], field_name), icon)
     if user.id in [character.user_id for character in characters]:
-        if user.id not in [character.user_id for character in characters[:limit]]:
-            for i in range(limit, len(characters)):
+        if user.id not in [character.user_id for character in characters[:3]]:
+            for i in range(3, len(characters)):
                 if characters[i].user_id == user.id:
                     text += '...\n'
                     text += str_format.format(i, characters[i - 1].name, characters[i - 1].level,
@@ -100,15 +100,15 @@ def __get_attendence(bot: MQBot, update: Update, user: User):
     )
 
 
-def __gen_top_msg(data, user_id, header, icon, limit=3):
+def __gen_top_msg(data, user_id, header, icon):
     text = "<b>" + header + "</b>"
     str_format = MSG_TOP_FORMAT
-    for i in range(min(limit, len(data))):
+    for i in range(min(3, len(data))):
         text += str_format.format(i + 1, data[i][0].name, data[i][0].level, data[i][1], icon)
 
     if len(data) and hasattr(data[0][0], 'user_id') and user_id in [build[0].user_id for build in data]:
-        if user_id not in [build[0].user_id for build in data[:limit]]:
-            for i in range(limit, len(data)):
+        if user_id not in [build[0].user_id for build in data[:3]]:
+            for i in range(3, len(data)):
                 if data[i][0].user_id == user_id:
                     text += '...\n'
                     text += str_format.format(i, data[i - 1][0].name, data[i - 1][0].level, data[i - 1][1], icon)
