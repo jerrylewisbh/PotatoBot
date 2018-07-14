@@ -11,22 +11,6 @@ from core.utils import send_async, update_group
 
 Session()
 
-
-def trigger_decorator(func):
-    @command_handler(
-        allow_group=True
-    )
-    def wrapper(bot, update, *args, **kwargs):
-        group = update_group(update.message.chat)
-        if group is None and \
-                check_admin(update, AdminType.FULL) or \
-                group is not None and \
-                (group.allow_trigger_all or
-                 check_admin(update, AdminType.GROUP)):
-            func(bot, update, *args, **kwargs)
-    return wrapper
-
-
 def add_global_trigger_db(msg: Message, trigger_text: str):
     trigger = Session.query(Trigger).filter_by(trigger=trigger_text).first()
     if trigger is None:
@@ -102,7 +86,7 @@ def add_global_trigger(bot: MQBot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW_ERROR)
 
 
-@trigger_decorator
+@command_handler()
 def trigger_show(bot: MQBot, update: Update, user: User):
     trigger = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id, trigger=update.message.text).first()
     if trigger is None:
@@ -159,7 +143,7 @@ def del_global_trigger(bot: MQBot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_DEL_ERROR)
 
 
-@trigger_decorator
+@command_handler()
 def list_triggers(bot: MQBot, update: Update, user: User):
     triggers = Session.query(Trigger).all()
     local_triggers = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id).all()
