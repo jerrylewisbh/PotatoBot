@@ -5,7 +5,7 @@ import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from functions.profile import parse_hero_text, parse_report_text
-
+from functions.profile import user_panel
 
 class TestRegex(unittest.TestCase):
     def test_report_parsing(self):
@@ -271,6 +271,56 @@ Royal Guard Cape +1⚔️ +1🛡
         # self.assertEqual(parsed_data['expertise'], "📕")
         self.assertEqual(parsed_data['diamonds'], 0)
         self.assertIsNotNone(parsed_data['equipment'])
+
+    def test_hero_parsing_pet(self):
+        test = """🦈[R1]Maling
+🏅Level: 45
+⚔️Atk: 166 🛡Def: 141
+🔥Exp: 303151/320501
+🔋Stamina: 8/9
+💰83 👝74 💎169
+📚Expertise: 📕📗📘📙
+🏛Class info: /class
+
+
+
+Pet:
+🐷 shoat Rogue (5 lvl) 😁 /pet
+
+🎽Equipment +59⚔️+48🛡
+⚡️+3 Rapier +30⚔️
+⚡️+3 Mithril dagger +10⚔️
+Hunter Helmet +5⚔️ +11🛡
+Hunter Gloves +3⚔️ +8🛡
+Hunter Armor +8⚔️ +18🛡
+Order Boots +2⚔️ +10🛡
+Royal Guard Cape +1⚔️ +1🛡
+
+🎒Bag: 7/15 /inv
+📦Warehouse: 580 /stock"""
+
+        parsed_data = parse_hero_text(test)
+        self.assertNotEqual(parsed_data, None)
+
+        self.assertEqual(parsed_data['castle'], "🦈")
+        self.assertEqual(parsed_data['castle_name'], "Sharkteeth")
+        self.assertEqual(parsed_data['name'], "[R1]Maling")
+        self.assertEqual(parsed_data['attack'], 166)
+        self.assertEqual(parsed_data['guild'], "[R1]")
+        self.assertEqual(parsed_data['ribbon'], None)
+        self.assertEqual(parsed_data['defence'], 141)
+        self.assertEqual(parsed_data['level'], 45)
+        self.assertEqual(parsed_data['exp'], 303151)
+        self.assertEqual(parsed_data['gold'], 83)
+        self.assertEqual(parsed_data['stamina'], 8)
+        self.assertEqual(parsed_data['max_stamina'], 9)
+        self.assertEqual(parsed_data['pouches'], 74)
+        self.assertEqual(parsed_data['exp_needed'], 320501)
+        # self.assertEqual(parsed_data['expertise'], "📕")
+        self.assertEqual(parsed_data['diamonds'], 169)
+        self.assertIsNotNone(parsed_data['equipment'])
+
+
 
 
 if __name__ == '__main__':

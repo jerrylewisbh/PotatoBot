@@ -2,7 +2,7 @@ import json
 import logging
 
 import redis
-from sqlalchemy import func
+from sqlalchemy import func, collate
 
 from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL, LOG_LEVEL_MQ
 from core.types import Item, Session, UserExchangeOrder, new_item
@@ -27,7 +27,7 @@ def offers_handler(channel, method, properties, body, dispatcher):
 
     try:
         item = Session.query(Item).filter(
-            func.lower(Item.name) == data['item'].lower()
+            Item.name == collate(data['item'], 'utf8mb4_unicode_520_ci')
         ).first()
 
         if not item:

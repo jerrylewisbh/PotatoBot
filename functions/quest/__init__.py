@@ -1,4 +1,6 @@
 import logging
+
+from sqlalchemy import collate
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 
 from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID, CWBOT_ID
@@ -52,7 +54,9 @@ def save_user_quest(user: User, update: Update, quest_data):
             uq.quest = q
 
     for name, count in quest_data['items'].items():
-        item = Session.query(Item).filter_by(name=name).first()
+        item = Session.query(Item).filter(
+            Item.name == collate(name, 'utf8mb4_unicode_520_ci')
+        ).first()
         if not item:
             item = Item()
             item.name = name

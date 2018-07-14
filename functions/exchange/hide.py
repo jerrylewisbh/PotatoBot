@@ -3,6 +3,7 @@ import math
 import logging
 import re
 import redis
+from sqlalchemy import collate
 from telegram import ParseMode, Update
 
 from config import REDIS_PORT, REDIS_SERVER
@@ -196,7 +197,9 @@ def hide_list(bot: MQBot, update: Update, user: User):
     for line in user.stock.stock.splitlines():
         find = re.search(r"(?P<item>.+)(?: \((?P<count>[0-9]+)\))", line)
         if find:
-            db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
+            db_item = Session.query(Item).filter(
+                Item.name == collate(find.group("item"), 'utf8mb4_unicode_520_ci')
+            ).first()
             if not db_item:
                 db_item = new_item(find.group("item"), False)
                 if not db_item:

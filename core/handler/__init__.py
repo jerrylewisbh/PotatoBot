@@ -9,7 +9,7 @@ from core.state import get_game_state, GameState
 from core.types import User, Session, Squad, Admin
 from functions import order
 from functions.order.groups import add
-from functions.profile import user_panel
+from functions import profile
 from functions.quest import parse_quest
 from functions.report import fwd_report
 from functions.triggers import trigger_show
@@ -62,10 +62,10 @@ def manage_all(bot: MQBot, update: Update, user: User, chat_data, job_queue):
             elif 'wait_group_name' in chat_data and chat_data['wait_group_name']:
                 add(bot, update, user, chat_data=chat_data)
             elif not is_admin:
-                user_panel(bot, update)
+                profile.user_panel(bot, update)
             else:
                 order.manage(bot, update, user, chat_data=chat_data)
         elif not is_admin:
-            user_panel(bot, update)
+            profile.user_panel(bot, update)
         else:
             order.manage(bot, update, user, chat_data=chat_data)

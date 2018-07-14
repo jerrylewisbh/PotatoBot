@@ -3,7 +3,7 @@ import redis
 from datetime import datetime
 from enum import Enum
 from pymysql import IntegrityError
-from sqlalchemy import func
+from sqlalchemy import func, collate
 from telegram import ParseMode, Update, TelegramError
 from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated
 
@@ -207,7 +207,9 @@ def stock_split(old_stock, new_stock):
 
 
 def __get_item(item_name):
-    return Session.query(Item).filter(func.lower(Item.name) == item_name.lower()).first()
+    return Session.query(Item).filter(
+        Item.name == collate(item_name, 'utf8mb4_unicode_520_ci')
+    ).first()
 
 
 def stock_compare_text(old_stock, new_stock):

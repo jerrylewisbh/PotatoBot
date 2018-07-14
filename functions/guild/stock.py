@@ -1,4 +1,6 @@
 import re
+
+from sqlalchemy import collate
 from telegram import Update, ParseMode
 
 from config import CWBOT_ID
@@ -54,7 +56,9 @@ def withdraw(bot: MQBot, update: Update, user: User):
     for line in update.message.text.splitlines():
         find = re.search(r"(?P<itemId>[a-zA-Z0-9]+) (?P<item>.+)(?: x (?P<count>[0-9]+))", line)
         if find:
-            db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
+            db_item = Session.query(Item).filter(
+                Item.name == collate(find.group("item"), 'utf8mb4_unicode_520_ci')
+            ).first()
             if not db_item:
                 db_item = new_item(find.group("item"), False)
             if db_item:
@@ -78,7 +82,9 @@ def deposit(bot: MQBot, update: Update, user: User):
     for line in user.stock.stock.splitlines():
         find = re.search(r"(?P<item>.+)(?: \((?P<count>[0-9]+)\))", line)
         if find:
-            db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
+            db_item = Session.query(Item).filter(
+                Item.name == collate(find.group("item"), 'utf8mb4_unicode_520_ci')
+            ).first()
             if not db_item:
                 db_item = new_item(find.group("item"), False)
             if db_item and db_item.cw_id:

@@ -2,7 +2,7 @@ import json
 import logging
 
 import redis
-from sqlalchemy import func
+from sqlalchemy import func, collate
 
 from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL, LOG_LEVEL_MQ
 from core.types import (Item, Session, UserExchangeOrder)
@@ -30,7 +30,9 @@ def digest_handler(channel, method, properties, body, dispatcher):
             r.lpush(digest_item['name'], *digest_item['prices'])
 
             # Look for sniping orders in case we missed a new or old deal that matches...
-            item = Session.query(Item).filter(func.lower(Item.name) == digest_item['name'].lower()).first()
+            item = Session.query(Item).filter(
+                Item.name == collate(digest_item['item'], 'utf8mb4_unicode_520_ci')
+            ).first()
             if not item:
                 continue  # Don't know that item...
 

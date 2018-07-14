@@ -2,6 +2,8 @@ import logging
 import re
 from datetime import datetime, timedelta
 from enum import Enum
+
+from sqlalchemy import collate
 from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import CASTLE
@@ -394,7 +396,9 @@ def annotate_stock_with_price(bot: MQBot, stock: str):
     for line in stock.splitlines():
         find = re.search(r"(?P<item>.+)(?: \((?P<count>[0-9]+)\))", line)
         if find:
-            db_item = Session.query(Item).filter(Item.name == find.group("item")).first()
+            db_item = Session.query(Item).filter(
+                Item.name == collate(find.group("item"), 'utf8mb4_unicode_520_ci')
+            ).first()
             if not db_item:
                 new_item(find.group("item"), False)
                 stock_text += "{}\n".format(line)

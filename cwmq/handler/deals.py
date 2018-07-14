@@ -1,7 +1,7 @@
 import json
 import logging
 
-from sqlalchemy import func
+from sqlalchemy import func, collate
 from telegram import ParseMode
 
 from config import CC_EXCHANGE_ORDERS, LOG_LEVEL_MQ
@@ -85,7 +85,9 @@ def __handle_snipes(user, data, channel, method, dispatcher):
     if user.setting_automated_sniping and not user.sniping_suspended and not user.is_banned:
         logger.info("[Snipe] Snipe-Check for %s", user.id)
         # Check if we have a sniping order for this item + user
-        item = Session.query(Item).filter(func.lower(Item.name) == data['item'].lower()).first()
+        item = Session.query(Item).filter(
+            Item.name == collate(data['item'], 'utf8mb4_unicode_520_ci')
+        ).first()
         if not item:
             logger.info("[Snipe] Unknown item %s", data['item'])
             new_item(data["item"], True)
