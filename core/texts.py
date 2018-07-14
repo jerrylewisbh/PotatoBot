@@ -31,8 +31,8 @@ MSG_START_NEW = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! \
                 'To get things started please forward me your game profile from @chtwrsbot ("/hero" command).'
 
 MSG_START_KNOWN = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! \n\n' \
-                  'If you want to refresh your game profile forward me your /"hero" from @chtwrsbot.\n\n' \
-                  'I also suggest you *join one of our squads* ("⚜Squad") to better coordinate in battle. After ' \
+                  'If you want to refresh your game profile forward me your "/hero" from @chtwrsbot.\n\n' \
+                  'I also suggest you <b>join one of our squads</b> ("⚜Squad") to better coordinate in battle. After ' \
                   'joining you can also get automated stock change information after war, get notified if you sell ' \
                   'something or automatically buy cheap things in the Exchange (sniping).'
 

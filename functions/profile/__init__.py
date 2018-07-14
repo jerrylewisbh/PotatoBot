@@ -1,3 +1,5 @@
+from html import escape
+
 from config import CWBOT_ID, EXT_ID
 from core.decorators import command_handler
 from core.handler.callback import get_callback_action
@@ -361,13 +363,13 @@ def user_panel(bot: MQBot, update: Update, user: User):
             if user.setting_automated_sniping and user.sniping_suspended:
                 welcome_text += "\n\n" + SNIPE_SUSPENDED_NOTICE
         else:
-            welcome_text = MSG_START_MEMBER_SQUAD.format(user.character.name if user.character else "Soldier!")
+            welcome_text = MSG_START_MEMBER_SQUAD.format(escape(user.character.name) if user.character else "Soldier!")
 
     send_async(
         bot,
         chat_id=update.message.chat.id,
         text=welcome_text,
-        parse_mode=ParseMode.MARKDOWN,
+        parse_mode=ParseMode.HTML,
         reply_markup=generate_user_markup(user_id=update.message.from_user.id)
     )
 
