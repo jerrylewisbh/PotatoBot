@@ -31,7 +31,7 @@ def digest_handler(channel, method, properties, body, dispatcher):
 
             # Look for sniping orders in case we missed a new or old deal that matches...
             item = Session.query(Item).filter(
-                Item.name == collate(digest_item['item'], 'utf8mb4_unicode_520_ci')
+                Item.name == collate(digest_item['name'], 'utf8mb4_unicode_520_ci')
             ).first()
             if not item:
                 continue  # Don't know that item...
