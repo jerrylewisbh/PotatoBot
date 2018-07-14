@@ -7,6 +7,7 @@ from core.decorators import command_handler
 from core.texts import *
 from core.types import *
 from core.utils import update_group, send_async
+from functions.order import OrderDraft, __send_order
 
 Session()
 
@@ -65,6 +66,31 @@ def fwd_report(bot: MQBot, update: Update):
                 from_chat_id=FWD_CHANNEL,
                 message_id=update.channel_post.message_id
             )
+
+            # Send "after battle" notification to these groups...
+            if group.squad and group.squad.reminders_enabled:
+                new_order = Order()
+                new_order.text = MSG_MAIN_SEND_REPORTS
+                new_order.chat_id = group.id,
+                new_order.date = datetime.now()
+                new_order.confirmed_msg = 0
+                Session.add(new_order)
+                Session.commit()
+
+                # Temporary object... TODO: Move this directly to DB?
+                o = OrderDraft()
+                o.pin = True
+                o.order = new_order.text
+                o.type = MessageType.TEXT
+                o.button = False
+
+                __send_order(
+                    bot=bot,
+                    order=o,
+                    chat_id=new_order.chat_id,
+                    markup=None
+                )
+
         except BadRequest:
             logging.warning("BadRequest raised for fwd to '%s/%s'", group.id, group.title)
         except TimedOut:

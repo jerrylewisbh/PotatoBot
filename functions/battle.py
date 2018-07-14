@@ -16,7 +16,7 @@ from core.decorators import command_handler
 from core.state import get_last_battle
 from core.texts import *
 from core.types import (Admin, Character, Order, Report, Session, Squad,
-                        SquadMember, User, MessageType, AdminType)
+                        SquadMember, User, MessageType, AdminType, Group)
 from core.utils import send_async
 from cwmq import Publisher
 from functions.common import (get_weighted_diff, stock_compare_text,
@@ -30,7 +30,44 @@ Session()
 
 def ready_to_battle(bot: MQBot, job_queue: Job):
     try:
-        group = Session.query(Squad).filter(Squad.reminders_enabled == True).all()
+        group = Session.query(Squad).filter(
+            Squad.reminders_enabled == True
+        ).all()
+        for item in group:
+            new_order = Order()
+            new_order.text = job_queue.context
+            new_order.chat_id = item.chat_id
+            new_order.date = datetime.now()
+            new_order.confirmed_msg = 0
+            Session.add(new_order)
+            Session.commit()
+
+            # Temporary object... TODO: Move this directly to DB?
+            o = OrderDraft()
+            o.pin = True
+            o.order = new_order.text
+            o.type = MessageType.TEXT
+            o.button = False
+
+            __send_order(
+                bot=bot,
+                order=o,
+                chat_id=new_order.chat_id,
+                markup=None
+            )
+    except SQLAlchemyError as err:
+        bot.logger.error(str(err))
+        Session.rollback()
+
+
+def after_battle(bot: MQBot, job_queue: Job):
+    # This will only get send to groups without mini-report enabled. Mini-Report groups get the after battle
+    # reminder sent after fwd....
+    try:
+        group = Session.query(Squad).filter(
+            Squad.reminders_enabled == True,
+            Group.fwd_minireport != True
+        ).all()
         for item in group:
             new_order = Order()
             new_order.text = job_queue.context

@@ -5,7 +5,7 @@ from telegram.ext import Updater
 
 from functions.battle import (fresh_profiles, ready_to_battle,
                               ready_to_battle_result, refresh_api_users,
-                              report_after_battle)
+                              report_after_battle, after_battle)
 from core.texts import *
 
 
@@ -21,9 +21,9 @@ def add_war_warning_messages(updater: Updater):
     updater.job_queue.run_daily(ready_to_battle, time(hour=22, minute=30), context=MSG_MAIN_READY_TO_BATTLE_30)
 
     # Send Reports
-    updater.job_queue.run_daily(ready_to_battle, time(hour=7, minute=3), context=MSG_MAIN_SEND_REPORTS)
-    updater.job_queue.run_daily(ready_to_battle, time(hour=15, minute=3), context=MSG_MAIN_SEND_REPORTS)
-    updater.job_queue.run_daily(ready_to_battle, time(hour=23, minute=3), context=MSG_MAIN_SEND_REPORTS)
+    updater.job_queue.run_daily(after_battle, time(hour=7, minute=3), context=MSG_MAIN_SEND_REPORTS)
+    updater.job_queue.run_daily(after_battle, time(hour=15, minute=3), context=MSG_MAIN_SEND_REPORTS)
+    updater.job_queue.run_daily(after_battle, time(hour=23, minute=3), context=MSG_MAIN_SEND_REPORTS)
 
     # Battle results for government chat...
     updater.job_queue.run_daily(ready_to_battle_result, time(hour=8, minute=0))
