@@ -300,25 +300,25 @@ def parse_repair_reports(report, user_id, date):
     return report
 
 
-def __send_user_with_settings(bot: MQBot, update: Update, user: User):
-    if user and user.character:
-        char = user.character
-        profession = user.profession
-        text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, user, char, profession)
+def __send_user_with_settings(bot: MQBot, update: Update, show_user: User, admin_user: User):
+    if show_user and show_user.character:
+        char = show_user.character
+        profession = show_user.profession
+        text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, show_user, char, profession)
         text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
-            bool(user.is_banned),
-            bool(user.api_token),
-            bool(user.api_user_id),
-            bool(user.is_api_profile_allowed),
-            bool(user.is_api_stock_allowed),
-            bool(user.is_api_trade_allowed),
-            bool(user.setting_automated_report),
-            bool(user.setting_automated_deal_report),
-            bool(user.setting_automated_hiding),
-            bool(user.setting_automated_sniping),
-            "Temp. Suspended" if user.sniping_suspended else ""
+            bool(show_user.is_banned),
+            bool(show_user.api_token),
+            bool(show_user.api_user_id),
+            bool(show_user.is_api_profile_allowed),
+            bool(show_user.is_api_stock_allowed),
+            bool(show_user.is_api_trade_allowed),
+            bool(show_user.setting_automated_report),
+            bool(show_user.setting_automated_deal_report),
+            bool(show_user.setting_automated_hiding),
+            bool(show_user.setting_automated_sniping),
+            "Temp. Suspended" if show_user.sniping_suspended else ""
         )
-        btns = __get_keyboard_profile(user, user)
+        btns = __get_keyboard_profile(admin_user, show_user)
         send_async(
             bot,
             chat_id=update.message.chat.id,

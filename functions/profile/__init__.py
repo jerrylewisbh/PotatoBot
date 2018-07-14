@@ -398,7 +398,7 @@ def find_by_username(bot: MQBot, update: Update, user: User):
                         break
 
                 if global_adm:
-                    __send_user_with_settings(bot, update, account)
+                    __send_user_with_settings(bot, update, account, user)
                     return
                 else:
                     group_ids = []
@@ -406,7 +406,7 @@ def find_by_username(bot: MQBot, update: Update, user: User):
                         group_ids.append(adm.group_id)
 
                     if account.member.squad.chat_id in group_ids:
-                        __send_user_with_settings(bot, update, account)
+                        __send_user_with_settings(bot, update, account, user)
                         return
 
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
@@ -432,7 +432,7 @@ def find_by_character(bot: MQBot, update: Update, user: User):
                         break
 
                 if global_adm:
-                    __send_user_with_settings(bot, update, account)
+                    __send_user_with_settings(bot, update, account, user)
                     return
                 else:
                     group_ids = []
@@ -440,7 +440,7 @@ def find_by_character(bot: MQBot, update: Update, user: User):
                         group_ids.append(adm.group_id)
 
                     if account.member.squad.chat_id in group_ids:
-                        __send_user_with_settings(bot, update, account)
+                        __send_user_with_settings(bot, update, account, user)
                         return
 
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
@@ -465,7 +465,7 @@ def find_by_id(bot: MQBot, update: Update, user: User):
                         break
 
                 if global_adm:
-                    __send_user_with_settings(bot, update, account)
+                    __send_user_with_settings(bot, update, account, user)
                     return
                 else:
                     group_ids = []
@@ -473,7 +473,7 @@ def find_by_id(bot: MQBot, update: Update, user: User):
                         group_ids.append(adm.group_id)
 
                     if account.member.squad.chat_id in group_ids:
-                        __send_user_with_settings(bot, update, account)
+                        __send_user_with_settings(bot, update, account, user)
                         return
 
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
@@ -539,6 +539,7 @@ def show_skills(bot: MQBot, update: Update, user: User):
     )
 
 
+@command_handler()
 def show_equip(bot: MQBot, update: Update, user: User):
     back = None
     if not update.callback_query:
