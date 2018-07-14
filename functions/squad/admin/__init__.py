@@ -7,6 +7,7 @@ from core.bot import MQBot
 from core.decorators import command_handler
 from core.handler.callback import get_callback_action, CallbackAction
 from core.handler.callback.util import create_callback
+from core.state import get_last_battle
 from core.template import fill_char_template
 from core.texts import *
 from core.texts import MSG_SQUAD_CLEAN
@@ -145,11 +146,7 @@ def battle_reports(bot: MQBot, update: Update, user: User):
         if squad is not None:
             group_admin.append([adm, squad])
     for adm, squad in group_admin:
-        now = datetime.now()
-        if now.hour < 7:
-            now = now - timedelta(days=1)
-
-        time_from = now.replace(hour=(int((now.hour + 1) / 8) * 8 - 1 + 24) % 24, minute=0, second=0)
+        time_from = get_last_battle()
 
         reports = Session.query(User, Report).join(SquadMember).outerjoin(
             Report, and_(User.id == Report.user_id, Report.date > time_from)
@@ -330,7 +327,7 @@ def battle_reports_inline(bot: MQBot, update: Update, user: User):
     action = get_callback_action(update.callback_query.data, user.id)
 
     squad = Session.query(Squad).filter(Squad.chat_id == action.data['squad_id']).first()
-    time_from = datetime.fromtimestamp(action.data['timestamp'])
+    time_from = action.data['timestamp']
     time_to = time_from + timedelta(hours=4)
 
     reports = Session.query(User, Report).join(SquadMember).outerjoin(
@@ -503,87 +500,78 @@ def __generate_squad_member_list_keyboard_button(user: User, squad: Squad):
     return keyboards
 
 
-def __generate_report_paging(user: User, time: datetime, squad_id):
-    row1 = [InlineKeyboardButton(
-        '<< ' + (time - timedelta(hours=8)).strftime('%d-%m-%Y %H:%M'),
-        callback_data=create_callback(
-            CallbackAction.REPORT,
-            user.id,
-            squad_id=squad_id,
-            timestamp=(time + timedelta(hours=8)).timestamp(),
-        )
-    )]
+def __generate_report_paging(user: User, day: datetime, squad_id):
+
+    row1 = [
+        InlineKeyboardButton(
+            "🕒 07:00 🔘" if day.hour == 7 else "🕒 07:00",
+            callback_data=create_callback(
+                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
+                user.id,
+                squad_id=squad_id,
+                timestamp=day.replace(hour=7, minute=0)
+            )
+        ),
+        InlineKeyboardButton(
+            "🕒 15:00 🔘" if day.hour == 15 else "🕒 15:00",
+            callback_data=create_callback(
+                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
+                user.id,
+                squad_id=squad_id,
+                timestamp=day.replace(hour=15, minute=0)
+            )
+        ),
+        InlineKeyboardButton(
+            "🕒 23:00 🔘" if day.hour == 23 else "🕒 23:00",
+            callback_data=create_callback(
+                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
+                user.id,
+                squad_id=squad_id,
+                timestamp=day.replace(hour=23, minute=0)
+            )
+        ),
+    ]
 
     row2 = [
         InlineKeyboardButton(
-            "🕖 07:00",
+            "⏪ {}".format((day - timedelta(days=7)).strftime("%d/%m")),
             callback_data=create_callback(
                 CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
-                user.id
+                user.id,
+                squad_id=squad_id,
+                timestamp=day - timedelta(days=7)
             )
         ),
         InlineKeyboardButton(
-            "🕒 15:00",
+            "⬅️ {}".format((day - timedelta(days=1)).strftime("%d/%m")),
             callback_data=create_callback(
                 CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
-                user.id
+                user.id,
+                squad_id=squad_id,
+                timestamp=day - timedelta(days=1)
             )
         ),
         InlineKeyboardButton(
-            "🕚 23:00",
+            "{} ➡️".format((day + timedelta(days=1)).strftime("%d/%m")),
             callback_data=create_callback(
                 CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
-                user.id
-            )
-        ),
-    ]
-
-    row3 = [
-        InlineKeyboardButton(
-            "⏪ 12/01",
-            callback_data=create_callback(
-                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
-                user.id
+                user.id,
+                squad_id=squad_id,
+                timestamp=day + timedelta(days=1)
             )
         ),
         InlineKeyboardButton(
-            "⬅️ 31/12",
+            "{} ⏩".format((day + timedelta(days=1)).strftime("%d/%m")),
             callback_data=create_callback(
                 CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
-                user.id
-            )
-        ),
-        InlineKeyboardButton(
-            "27/06 ➡️",
-            callback_data=create_callback(
-                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
-                user.id
-            )
-        ),
-        InlineKeyboardButton(
-            "31/06 ⏩",
-            callback_data=create_callback(
-                CallbackAction.REPORT | CallbackAction.PAGINATION_SKIP_FORWARD,
-                user.id
+                user.id,
+                squad_id=squad_id,
+                timestamp=day + timedelta(days=7)
             )
         )
     ]
 
-    if time + timedelta(hours=4) < datetime.now():
-        row1.append(
-            InlineKeyboardButton(
-                '<< ' + (time - timedelta(hours=8)).strftime('%d-%m-%Y %H:%M'),
-                callback_data=create_callback(
-                    CallbackAction.REPORT,
-                    user.id,
-                    squad_id=squad_id,
-                    timestamp=(time + timedelta(hours=8)).timestamp(),
-                )
-            )
-        )
-        #'ts': (time + timedelta(hours=8)).timestamp(),
-
-    pagination = [row1]#, row2, row3]
+    pagination = [row1, row2]
 
     return InlineKeyboardMarkup(pagination)
 
