@@ -75,6 +75,9 @@ class Action(object):
         self.user_id = user_id
         self.data = kwargs
 
+    def __str__(self):
+        return "Action: '{}', User-ID: '{}', Data: {}".format(self.action, self.user_id, str(self.data) if self.data else "Empty")
+
 
 def get_callback_action(uuid_key, user_id, allow_all=False):
     """ Save a simple callback to redis. This checks if the user using the keyboard is also the one we initially
@@ -83,6 +86,7 @@ def get_callback_action(uuid_key, user_id, allow_all=False):
     action = r.get(uuid_key)
     if action:
         action = pickle.loads(action)
+        logging.debug(action)
         if user_id == action.user_id or allow_all:
             return action
         else:

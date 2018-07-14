@@ -29,7 +29,7 @@ def callback_query(bot: MQBot, update: Update, user: User, chat_data: dict, job_
         update_group(update.callback_query.message.chat)
         user = create_or_update_user(update.effective_user)
 
-        logging.info("New Callback style: %s", update.callback_query.data)
+        logging.debug("New Callback style: %s", update.callback_query.data)
         action = get_callback_action(update.callback_query.data, update.effective_user.id)
         if action and isinstance(action, Action):
             # Order stuff...
