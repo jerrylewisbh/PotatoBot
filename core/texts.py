@@ -677,6 +677,115 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 /withdraw - Generate withdraw-list
 """
 
-MSG_HELP_GROUP_ADMIN= "TODO"
+MSG_HELP_GROUP_ADMIN= """<b>Available Commands:</b>
 
-MSG_HELP_USER = "TODO"
+<i>General stuff:</i>
+/start - Start interacting with Botato
+/help - Show this help
+
+<i>Admin:</i>
+/admin - Show admin-panel
+/ping - Ping botato
+/list_admins — show list of current chat administrators
+/add_admin &lt;user&gt; — add administrator to current chat
+/del_admin &lt;user&gt; — delete administrator from current chat
+/force_kick_botato - Force Botato to leave the chat where this command was issued
+/kick - Reply to any message to kick the user from a chat
+/ban &lt;user&gt; &lt;reason&gt;  - Ban user 
+/unban &lt;user&gt; - Unban user 
+/find &lt;user&gt; - Show user status by telegram user name
+/findc &lt;ign&gt; - Show user status by ingame name
+/findi &lt;id&gt; - Show user status by telegram uquique id
+/battleresult - Send last battle-result to government chat 
+
+
+<i>Groups and Squads:</i>
+/enable_welcome - Enable welcome message 
+/disable_welcome — Disable welcome message
+/set_welcome &lt;text&gt; — set welcome message (Can contain %username% — will be shown as @username, %ign% - will show user ingame name, if not set to First and Last name, or ID, using %last_name%, %first_name%, %id%)
+/show_welcome — Show welcome message
+/enable_trigger — Allow everyone to call trigger
+/disable_trigger — Forbid everyone to call trigger
+/enable_report_forward - Enable report forwarding
+/disable_report_forward - Disable report forwarding
+/delete - Reply to message with /delete will delete that message
+/pin - Reply to message will pin this message 
+/pin_notify - Reply to message will pin this message and notify people
+/disable_pin_all - Disable pinning for everyone 
+/enable_pin_all - Allow pinning for everyone
+/commander - Show admins of Squad/Group
+/admins - Show admins of Squad/Group
+
+<i>Triggers:</i>
+/list_triggers — show all triggers
+/set_trigger - Reply to a message or file /set_trigger &lt;trigger name&gt; to set a new trigger
+/del_trigger &lt;trigger&gt; — delete trigger
+/add_trigger - Same as /set_trigger but does not override existing ones
+/set_global_trigger - Reply to a message or file with /set_global_trigger &lt;trigger name&gt; to set a new trigger (all chats)
+/add_global_trigger - Same as /set_global_trigger but does not override existing ones
+/del_global_trigger &lt;trigger&gt; — delete trigger
+
+<i>Squads:</i>
+/add_squad - Create a new squad and associates it to the current group
+/del_squad - Delete the squad associated with teh group
+/enable_thorns - Prevent non members of the squad be in the group
+/disable_thorns - Allow non members of the group to be in the squad
+/enable_silence  - Deletes all messages typed 3 minutes before battle
+/disable_silence - Allow user to type even 3 minutes before batte
+/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
+/disable_reminders - Disable reminders
+/set_squad_name &lt;name&gt; - Change the name of the squad
+/set_invite_link &lt;link&gt; - Set up the invite link that will be sent to approved members
+/add &lt;user&gt; - Ask an user to join the squad
+/forceadd &lt;user&gt; - add user to a squad without asking for confirmation
+/hiring_open - Open hiring
+/hiring_close - Close hiring
+/squad - Call every squadmember to get their attention
+/daily_stats - Show daily squad stats
+/weekly_stats - Show weekly squad stats
+/battle_stats - Show battlestats
+
+<i>User commands:</i>
+/me - Show your profile 
+/report - Show your last report
+/admins - Show Admins/Commanders
+/commander - Show Admins/Commanders
+/items - List known exchange-tradable items
+/items_other - List known untradable items
+/items_unknown - Show new items
+/hide - Manually trigger hide
+/hide_list - Show commands to put your items for 1000g in exchange - Sorted by price
+/ah - Auto-Hide settings
+/resume - Resume suspended sniping
+/s &lt;itemID&gt; &lt;maxPrice&gt; [&lt;limit&gt;] - Create snipe order
+/sr &lt;itemID&gt; - Remove sniping order
+/report - Show your last report (including stock change if API is enabled)
+/deposit - Generate deposit-list for guild
+/withdraw - Generate withdraw-list"""
+
+MSG_HELP_USER = """<b>Available Commands:</b>
+
+<i>General stuff:</i>
+/start - Start interacting with Botato
+/help - Show this help
+
+<i>Triggers:</i>
+/list_triggers — show all triggers
+
+<i>User commands:</i>
+/me - Show your profile 
+/report - Show your last report
+/admins - Show Admins/Commanders
+/commander - Show Admins/Commanders
+/items - List known exchange-tradable items
+/items_other - List known untradable items
+/items_unknown - Show new items
+/hide - Manually trigger hide
+/hide_list - Show commands to put your items for 1000g in exchange - Sorted by price
+/ah - Auto-Hide settings
+/resume - Resume suspended sniping
+/s &lt;itemID&gt; &lt;maxPrice&gt; [&lt;limit&gt;] - Create snipe order
+/sr &lt;itemID&gt; - Remove sniping order
+/report - Show your last report (including stock change if API is enabled)
+/deposit - Generate deposit-list for guild
+/withdraw - Generate withdraw-list"""
