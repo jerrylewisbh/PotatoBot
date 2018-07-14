@@ -2,10 +2,10 @@ import os
 import sys
 import unittest
 
-from functions.quest.parse import analyze_text, QuestType
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from functions.quest import QuestType
+from functions.quest.parse import analyze_text
 from tests.fixtures import *
 
 
@@ -54,6 +54,14 @@ class TestTime(unittest.TestCase):
         self.assertFalse(a["success"])
         self.assertEqual(a["gold"], 0)
         self.assertEqual(a["exp"], 2)
+        self.assertEqual(a["items"], {})
+
+    def test_go_fail_2_identification(self):
+        a = analyze_text(GO_FAILED_2)
+        self.assertEqual(a["type"], QuestType.STOP_FAIL)
+        self.assertFalse(a["success"])
+        self.assertEqual(a["gold"], 0)
+        self.assertEqual(a["exp"], 6)
         self.assertEqual(a["items"], {})
 
     def test_foray_stop_fail_identification(self):

@@ -10,7 +10,7 @@ from core.utils import update_group
 from functions import group
 from functions import order
 from functions import profile
-from functions import quest
+from functions.quest import handler as quest_handler
 from functions import squad
 from functions import user as user_functions
 from functions.order import groups as order_group
@@ -54,9 +54,9 @@ def callback_query(bot: MQBot, update: Update, user: User, chat_data: dict, job_
 
             # Quest
             elif CallbackAction.QUEST_LOCATION in action.action:
-                quest.set_user_quest_location(bot, update, user)
+                quest_handler.set_user_quest_location(bot, update, user)
             elif CallbackAction.FORAY_PLEDGE in action.action:
-                quest.set_user_foray_pledge(bot, update, user)
+                quest_handler.set_user_foray_pledge(bot, update, user)
 
             # Squad...
             elif CallbackAction.SQUAD_INVITE in action.action:

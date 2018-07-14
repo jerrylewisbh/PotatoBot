@@ -80,6 +80,7 @@ QUESTS_FAILED = [QUEST_FAIL_1, QUEST_FAIL_2]
 # Stopping forays...
 GO = """You successfully defeated Caio Raio. As he was crawling away, you picked up some of the gold he left behind. Received 10 gold and 39 exp."""
 GO_FAILED = "You tried stopping Kamelot. Sadly, he was too strong. Your body hurts, but for some reason you feel enlightened. Received: 2 exp."
+GO_FAILED_2 = """You tried stopping aem_aeman. Sadly, he was too strong. Your body hurts, but for some reason you feel enlightened. Received: 6 exp."""
 
 # Doing Foray
 FORAY_WONT_NOTICE = """Next to the village you spotted a knight of the 🦅Highnest Castle - Lagoon. Let's hope he won't notice you."""

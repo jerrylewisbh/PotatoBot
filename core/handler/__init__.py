@@ -10,7 +10,7 @@ from core.types import User, Session, Squad, Admin
 from functions import order
 from functions.order.groups import add
 from functions import profile
-from functions.quest import parse_quest
+from functions.quest.handler import parse_quest
 from functions.report import fwd_report
 from functions.triggers import trigger_show
 

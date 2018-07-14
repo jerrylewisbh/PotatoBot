@@ -1,7 +1,8 @@
 import re
-from enum import IntFlag, auto
 
 # Gold / Exp
+from functions.quest import QuestType
+
 REGEX_GOLD_EXP = r"((?:You received: )(?:([0-9]+) exp and )([0-9]+) gold)"
 REGEX_EARNED = r"(Earned: (?:(.+) (?:\(([0-9]+)\))))"
 
@@ -19,23 +20,6 @@ REGEX_GO_FAILED = r"Sadly, he was too strong. Your body hurts"
 REGEX_FORAY_GO_FAILED_REWARD = r"((?:Received: )([0-9]+) exp.)"
 
 REGEX_ARENA = r"((?:You received: )([0-9]+) exp.)"
-
-
-class QuestType(IntFlag):
-    NORMAL = auto()
-    NORMAL_FAILED = auto()
-
-    FORAY = auto()
-    FORAY_FAILED = auto()
-    FORAY_PLEDGE = auto()
-
-    STOP = auto()
-    STOP_FAIL = auto()
-
-    ARENA = auto()
-    ARENA_FAIL = auto()
-
-    UNKNOWN = auto()
 
 
 def analyze_text(text):
