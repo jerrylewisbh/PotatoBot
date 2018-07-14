@@ -1,6 +1,7 @@
 import logging
 
 from sqlalchemy import collate
+from sqlalchemy.exc import SQLAlchemyError
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 
 from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID, QUEST_LOCATION_ARENA_ID, CWBOT_ID
@@ -60,8 +61,12 @@ def save_user_quest(user: User, update: Update, quest_data):
         if not item:
             item = Item()
             item.name = name
-            Session.add(item)
-            Session.commit()
+            try:
+                Session.add(item)
+                Session.commit()
+            except SQLAlchemyError as err:
+                logging.error(str(err))
+                Session.rollback()
 
         uqi = UserQuestItem(count=count, item_id=item.id)
         uq.items.append(uqi)
@@ -222,8 +227,12 @@ def set_user_quest_location(bot, update, user):
     if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
         location = Session.query(Location).filter_by(id=action.data['location_id']).first()
         user_quest.location = location
-        Session.add(user_quest)
-        Session.commit()
+        try:
+            Session.add(user_quest)
+            Session.commit()
+        except SQLAlchemyError as err:
+            logging.error(str(err))
+            Session.rollback()
 
         bot.editMessageText(
             MSG_QUEST_OK.format(location.name),
@@ -242,8 +251,13 @@ def set_user_foray_pledge(bot, update, user):
     user_quest = Session.query(UserQuest).filter_by(id=action.data['user_quest_id']).first()
     if user_quest and user_quest.user_id == update.callback_query.message.chat.id:
         user_quest.pledge = action.data['pledge']
-        Session.add(user_quest)
-        Session.commit()
+
+        try:
+            Session.add(user_quest)
+            Session.commit()
+        except SQLAlchemyError as err:
+            logging.error(str(err))
+            Session.rollback()
 
         bot.editMessageText(
             MSG_FORAY_ACCEPTED_SAVED_PLEDGE if action.data['pledge'] else MSG_FORAY_ACCEPTED_SAVED,
