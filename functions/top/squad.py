@@ -9,7 +9,7 @@ from core.decorators import command_handler
 from core.handler.callback import CallbackAction, get_callback_action
 from core.handler.callback.util import create_callback
 from core.texts import *
-from core.types import User, Character, Session, Report
+from core.types import User, Character, Session, Report, SquadMember, Squad
 from core.utils import send_async
 from functions.top import get_top, __gen_top_msg
 
@@ -40,8 +40,10 @@ def __get_top_attendance(user: User, date_filter, date_desc):
         Character.date > datetime.now() - timedelta(days=7)
     ).outerjoin(
         Report, Report.user_id == Character.user_id
-    ).filter(
-        date_filter
+    ).join(User).join(SquadMember).join(Squad).filter(
+        date_filter,
+        Squad.chat_id == user.member.squad.chat_id,
+        SquadMember.approved.is_(True),
     ).filter(
         Report.earned_exp > 0
     ).group_by(
