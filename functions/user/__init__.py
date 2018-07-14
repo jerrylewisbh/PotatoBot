@@ -149,7 +149,6 @@ def list_admins(bot: MQBot, update: Update, user: User):
 @command_handler(
     allow_group=True,
     allow_private=False,
-    allow_group=True
 )
 def admins_for_users(bot: MQBot, update: Update, user: User):
     admins = Session.query(Admin).filter(Admin.group_id == update.message.chat.id).all()
