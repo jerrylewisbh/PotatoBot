@@ -19,6 +19,8 @@ from functions.user.util import send_settings, __toggle_gold_hiding, __toggle_sn
 
 @command_handler(
     min_permission=AdminType.FULL,
+    allow_private=False,
+    allow_group=True
 )
 def set_admin(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
@@ -55,6 +57,8 @@ def set_admin(bot: MQBot, update: Update, user: User):
 
 @command_handler(
     min_permission=AdminType.FULL,
+    allow_private=False,
+    allow_group=True
 )
 def del_admin(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
@@ -124,6 +128,8 @@ def del_admin(bot: MQBot, update: Update, user: User):
 
 @command_handler(
     min_permission=AdminType.FULL,
+    allow_private=True,
+    allow_group=True
 )
 def list_admins(bot: MQBot, update: Update, user: User):
     admins = Session.query(Admin).filter(Admin.group_id == update.message.chat.id).all()
@@ -141,6 +147,8 @@ def list_admins(bot: MQBot, update: Update, user: User):
 
 
 @command_handler(
+    allow_group=True,
+    allow_private=False,
     allow_group=True
 )
 def admins_for_users(bot: MQBot, update: Update, user: User):
