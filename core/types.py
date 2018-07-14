@@ -9,11 +9,12 @@ from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
+from telegram import Update
 
 from config import DB
 
 
-class AdminType(Enum):
+class AdminType(IntEnum):
     SUPER = 0
     FULL = 1
     GROUP = 2
@@ -104,7 +105,7 @@ class User(Base):
 
     quests = relationship('UserQuest', back_populates='user')
 
-    permission = relationship('Admin', back_populates='user')
+    permissions = relationship('Admin', back_populates='user')
 
     hide_settings = relationship('UserStockHideSetting', back_populates='user', lazy='dynamic')
     sniping_settings = relationship('UserExchangeOrder', back_populates='user', lazy='dynamic')
@@ -270,7 +271,7 @@ class Admin(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
-    user = relationship(User, back_populates='permission')
+    user = relationship(User, back_populates='permissions')
 
     admin_type = Column(Integer)
 
@@ -545,25 +546,34 @@ class UserStockHideSetting(Base):
     )
 
 
+def check_permission(user: User, update: Update, min_permission: AdminType):
+    """ Check for a users permission... """
+
+    if min_permission == AdminType.NOT_ADMIN:
+        return True
+
+    for permission_set in user.permissions:
+        # Super admins...
+        if permission_set.admin_type in [AdminType.SUPER, AdminType.FULL]:
+            return True
+        # Group admins: Allow if message is for their group OR if it is in private chat with bot...
+        elif permission_set.admin_type <= AdminType.GROUP and (
+                permission_set.group_id == update.effective_message.chat.id or
+                    update.effective_message.chat.id == update.effective_user.id):
+            return True
+        else:
+            logging.debug("[Permissions] update.effective_message.chat.id: %s", update.effective_message.chat.id)
+            logging.debug("[Permissions] update.effective_user.id: %s", update.effective_user.id)
+            logging.debug("[Permissions] permission_set.group_id: %s", permission_set.group_id)
+            logging.debug("[Permissions] min_permission: %s", min_permission)
+
+    return False
+
+
 def check_admin(update, adm_type, allowed_types=()):
     allowed = False
     if adm_type == AdminType.NOT_ADMIN:
         allowed = True
-    else:
-        admins = Session().query(Admin).filter_by(user_id=update.effective_user.id).all()
-        for adm in admins:
-            if (AdminType(adm.admin_type) in allowed_types or adm.admin_type <= adm_type.value) and \
-                (adm.group in [None, update.effective_message.chat.id] or
-                 update.effective_message.chat.id == update.effective_user.id):
-                if adm.group_id:
-                    group = Session().query(Group).filter_by(id=adm.group_id).first()
-                    if group and group.bot_in_group:
-                        allowed = True
-                        break
-                else:
-                    allowed = True
-                    break
-    return allowed
 
 
 def check_ban(update):

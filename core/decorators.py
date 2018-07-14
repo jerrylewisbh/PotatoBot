@@ -4,7 +4,7 @@ from functools import wraps
 import telegram
 from telegram import Bot, Update
 
-from core.types import AdminType, Session, check_admin, User
+from core.types import AdminType, Session, check_admin, User, check_permission
 
 Session()
 
@@ -122,7 +122,7 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                     raise ValueError("Given permission does not match an existing AdminType")
                 elif min_permission != AdminType.NOT_ADMIN:
                     # We need actual admin-permissions. Check.
-                    if not check_admin(update, min_permission):
+                    if not check_permission(user, update, min_permission):
                         logging.warning(
                             "'%s' is not allowed to call function '%s'!",
                             "@{}".format(user.username) if user.username else user.id,
