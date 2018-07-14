@@ -192,14 +192,14 @@ def top(bot: MQBot, update: Update, user: User):
                 filter_by_squad=False,
                 character_class=class_name)
         elif CallbackAction.TOP_ATT in action.action:
-            if CallbackAction.TOP_FILTER_MONTH in action.action:
+            if CallbackAction.TOP_FILTER_ALL in action.action:
                 text, additional_keyboard = __get_top_attendance(
                     user,
                     Report.date > datetime(2017, 12, 11),
                     class_name,
                     "this month"
                 )
-            elif CallbackAction.TOP_FILTER_ALL in action.action:
+            elif CallbackAction.TOP_FILTER_MONTH in action.action:
                 text, additional_keyboard = __get_top_attendance(
                     user,
                     Report.date >= datetime.today().replace(day=1, hour=0, minute=0, second=0),

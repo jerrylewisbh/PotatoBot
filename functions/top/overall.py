@@ -121,12 +121,12 @@ def top(bot: MQBot, update: Update, user: User):
         elif CallbackAction.TOP_EXP in action.action:
             text = get_top(Character.exp.desc(), MSG_TOP_EXPERIENCE, 'exp', '🔥', user)
         elif CallbackAction.TOP_ATT in action.action:
-            if CallbackAction.TOP_FILTER_MONTH in action.action:
+            if CallbackAction.TOP_FILTER_ALL in action.action:
                 text, additional_keyboard = __get_top_attendance(
                     user,
                     date_filter=Report.date > datetime(2017, 12, 11)
                 )
-            elif CallbackAction.TOP_FILTER_ALL in action.action:
+            elif CallbackAction.TOP_FILTER_MONTH in action.action:
                 text, additional_keyboard = __get_top_attendance(
                     user,
                     Report.date >= datetime.today().replace(day=1, hour=0, minute=0, second=0)
