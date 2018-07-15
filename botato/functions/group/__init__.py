@@ -57,12 +57,13 @@ def info(bot: MQBot, update: Update, user: User):
         MSG_ON if group.welcome_enabled else MSG_OFF,
         MSG_ON if group.allow_trigger_all else MSG_OFF,
         MSG_ON if group.fwd_minireport else MSG_OFF,
+        MSG_ON if group.thorns_enabled else MSG_OFF,
+        MSG_ON if group.silence_enabled else MSG_OFF,
+        MSG_ON if group.reminders_enabled else MSG_OFF,
+
     )
     if len(group.squad):
         msg += MSG_GROUP_STATUS_SQUAD.format(
-            MSG_ON if group.squad[0].thorns_enabled else MSG_OFF,
-            MSG_ON if group.squad[0].silence_enabled else MSG_OFF,
-            MSG_ON if group.squad[0].reminders_enabled else MSG_OFF,
             MSG_ON if group.squad[0].hiring else MSG_OFF,
             MSG_ON if group.squad[0].testing_squad else MSG_OFF,
         )

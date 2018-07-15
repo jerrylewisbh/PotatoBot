@@ -68,16 +68,16 @@ MSG_GROUP_STATUS = """<b>Group: {}</b>
 <i>Settings:</i>
 Welcome: {}
 Trigger allowed: {}
-FWD Minireport: {}"""
+FWD Minireport: {}
+Thorns: {}
+Silence: {}
+Reminders: {}"""
 
 MSG_GROUP_STATUS_SQUAD = """
 
 <b>This group is linked to a squad!</b>
 
 <i>Squad Settings:</i>
-Thorns: {}
-Silence: {}
-Reminders: {}
 Hiring: {}
 Testing Squad: {}
 
@@ -248,7 +248,8 @@ MSG_TRIGGER_DEL = 'The trigger for "{}" has been deleted.'
 MSG_TRIGGER_DEL_ERROR = 'Where did you see such a trigger? 0_o'
 MSG_TRIGGER_LIST_HEADER = 'List of current triggers: \n'
 
-MSG_THORNS = 'This fool {} does not look like a potato, let the straw man kick his ass'
+MSG_THORNS = 'This fool does not look like a potato, let the straw man kick his ass!'
+MSG_THORNS_NAME = 'This fool {} does not look like a potato, let the straw man kick his ass!'
 
 MSG_WELCOME_DEFAULT = 'Hi, %username%!'
 MSG_WELCOME_SET = 'The welcome text is set.'

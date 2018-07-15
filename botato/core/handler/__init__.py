@@ -7,7 +7,7 @@ from core.bot import MQBot
 from core.decorators import command_handler
 from core.state import get_game_state, GameState
 from core.db import Session
-from core.model import User, Admin, Squad
+from core.model import User, Admin, Squad, Group
 from functions import order
 from functions.order.groups import add
 from functions import profile
@@ -27,19 +27,19 @@ def manage_all(bot: MQBot, update: Update, user: User, chat_data, job_queue):
     if update.effective_message.chat.type == "channel":
         fwd_report(bot, update)
     elif update.effective_message.chat.type in ['group', 'supergroup']:
-        squad = Session.query(Squad).filter_by(chat_id=update.message.chat.id).first()
+        group = Session.query(Group).filter(Group.id == update.message.chat.id).first()
 
         admin = Session.query(Admin).filter(
             Admin.user_id == update.message.from_user.id and
             Admin.group_id in [update.message.chat.id, None]).first()
 
-        logging.debug("SILENCE STATE: State: {}, Squad: {}, Admin: {}".format(
+        logging.debug("SILENCE STATE: State: {}, Group: {}, Admin: {}".format(
             get_game_state(),
-            squad.squad_name if squad else 'NO SQUAD',
+            group.id if group else 'NO GROUP',
             admin,
         ))
 
-        if squad and squad.silence_enabled and not admin and GameState.BATTLE_SILENCE in get_game_state():
+        if group and group.silence_enabled and not admin and GameState.BATTLE_SILENCE in get_game_state():
             bot.delete_message(
                 update.message.chat.id,
                 update.message.message_id
