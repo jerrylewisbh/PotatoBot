@@ -110,19 +110,18 @@ def deny_bots(bot: MQBot, update: Update, user: User):
 )
 def list_aliens(bot: MQBot, update: Update, user: User):
     """ Get some info about the people currently in a given group """
-    group = Session.query(Group).filter_by(id=update.message.chat.id).first()
-
     no_user = []
     no_char = []
     banned = []
     not_in_squad = []
 
     chat_id = None
+    group = None
 
     for row in update.message.text.splitlines():
         if row.startswith("👽"):
             chat_id = row.replace("👽", "")
-            print("Chat-ID: {}".format(chat_id))
+            group = Session.query(Group).filter_by(id=update.message.chat.id).first()
             continue
 
         split_row = row.split(";", maxsplit=1)
