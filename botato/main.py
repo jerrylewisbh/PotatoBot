@@ -30,7 +30,7 @@ from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,
 from telegram.ext import MessageHandler, Filters
 from telegram.utils.request import Request
 
-from botato.cwmq.handler.digest import digest_handler
+from cwmq.handler.digest import digest_handler
 from config import DEBUG, LOGFILE, TOKEN, LOG_GROUP_LEVEL, LOG_GROUP, LOG_LEVEL
 
 Session()
