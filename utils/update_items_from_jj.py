@@ -7,7 +7,8 @@ import urllib.request
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # noinspection PyPep8
-from core.types import *
+from core.db import Session
+from core.model import Item
 
 Session()
 

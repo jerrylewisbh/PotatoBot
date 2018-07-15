@@ -1,10 +1,12 @@
+import logging
 import os
 import sys
 
-from functions.battle import create_user_report
-from core.types import *
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from core.db import Session
+from core.model import User, Character, Squad, SquadMember
+from functions.battle import create_user_report
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
