@@ -28,6 +28,8 @@ CW_DIGEST_Q = "<username>_<botname>_sex_digest"
 
 CW_URL = "amqps://<username>:<pass>@api.chatwars.me:5673/?socket_timeout=10&connection_attempts=5&retry_delay=5"
 
+# Set this to "True" do disable basic_ack on Queue messages. This can be used to avoid consuming messages from a
+# production bot...
 MQ_TESTING = False
 
 #
