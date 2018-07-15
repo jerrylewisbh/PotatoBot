@@ -60,19 +60,15 @@ class User(Base):
     orders_confirmed = relationship('OrderCleared', back_populates='user')
 
     member = relationship('SquadMember', back_populates='user', uselist=False)
-
     report = relationship('Report', back_populates='user', order_by='Report.date.desc()')
-
     build_report = relationship('BuildReport', back_populates='user', order_by='BuildReport.date.desc()')
-
     profession = relationship('Profession', back_populates='user', order_by='Profession.date.desc()', uselist=False)
-
     quests = relationship('UserQuest', back_populates='user')
-
     permissions = relationship('Admin', back_populates='user')
 
     hide_settings = relationship('UserStockHideSetting', back_populates='user', lazy='dynamic')
     sniping_settings = relationship('UserExchangeOrder', back_populates='user', lazy='dynamic')
+    auction_settings = relationship('UserAuctionWatchlist', back_populates='user', lazy='dynamic')
 
     # API Token and temporary stuff we need after we get an async answer...
     api_token = Column(UnicodeText(250))
@@ -485,6 +481,20 @@ class UserExchangeOrder(Base):
 
     outstanding_order = Column(Integer, nullable=False)
     initial_order = Column(Integer, nullable=False)
+
+    max_price = Column(Integer, nullable=False)
+
+
+class UserAuctionWatchlist(Base):
+    __tablename__ = 'user_auction_watchlist'
+
+    id = Column(BigInteger, autoincrement=True, primary_key=True)
+
+    user_id = Column(BigInteger, ForeignKey(User.id))
+    user = relationship(User, back_populates="auction_settings")
+
+    item_id = Column(BigInteger, ForeignKey(Item.id))
+    item = relationship(Item)
 
     max_price = Column(Integer, nullable=False)
 

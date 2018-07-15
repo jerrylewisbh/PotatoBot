@@ -3,6 +3,7 @@ import logging
 from core.commands import *
 from functions import order
 from functions.common import admin_panel
+from functions.exchange.auction import auction_info
 from functions.exchange.hide import hide_gold_info
 from functions.exchange.snipe import sniping_info
 from functions.group import list
@@ -50,6 +51,7 @@ def add_handler(disp: Dispatcher):
     # disp.add_handler(RegexHandler(to_re(USER_COMMAND_REGISTER_CONTINUE),
     disp.add_handler(RegexHandler(to_re(USER_COMMAND_SETTINGS), settings))
     disp.add_handler(RegexHandler(to_re(USER_COMMAND_EXCHANGE), sniping_info))
+    disp.add_handler(RegexHandler(to_re(USER_COMMAND_AUCTION), auction_info))
     disp.add_handler(RegexHandler(to_re(USER_COMMAND_HIDE), hide_gold_info))
 
     # Top

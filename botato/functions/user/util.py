@@ -4,7 +4,7 @@ from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from core.handler.callback.util import create_callback, CallbackAction
 from core.texts import *
 from core.db import Session
-from core.model import UserExchangeOrder, UserStockHideSetting
+from core.model import UserExchangeOrder, UserStockHideSetting, UserAuctionWatchlist
 
 
 def __toggle_sniping(bot, update, user):
@@ -63,6 +63,7 @@ def disable_api_functions(user):
     # Remove all his settings...
     Session.query(UserExchangeOrder).filter(UserExchangeOrder.user_id == user.id).delete()
     Session.query(UserStockHideSetting).filter(UserStockHideSetting.user_id == user.id).delete()
+    Session.query(UserAuctionWatchlist).filter(UserAuctionWatchlist.user_id == user.id).delete()
     Session.add(user)
     Session.commit()
 

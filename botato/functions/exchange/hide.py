@@ -21,16 +21,16 @@ from functions.exchange import get_item_by_cw_id
 def __get_autohide_settings(user):
     logging.info("Getting UserStockHideSetting for %s", user.id)
 
-    settings = user.hide_settings.order_by("priority").all()
+    settings = user.auction_settings.all()
     if not settings:
         return "_Nothing configured yet / All orders completed._"
     else:
         text = ""
         for order in settings:
             if not order.max_price:
-                text += HIDE_BUY_UNLIMITED.format(order.priority, order.item.name, order.item.cw_id)
+                text += AUCTION_NOTIFY_UNLIMITED.format(order.item.name)
             else:
-                text += HIDE_BUY_LIMITED.format(order.priority, order.item.name, order.item.cw_id, order.max_price)
+                text += AUCTION_NOTIFY_LIMITED.format(order.item.name, order.max_price)
         return text
 
 

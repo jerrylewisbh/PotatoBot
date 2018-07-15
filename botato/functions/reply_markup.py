@@ -29,7 +29,8 @@ def generate_user_markup(user_id: int = None):
 
     if user and user.is_squadmember:
         # Squad only features....
-        user_menu = [KeyboardButton(USER_COMMAND_EXCHANGE), KeyboardButton(USER_COMMAND_HIDE)]
+        user_menu = [KeyboardButton(USER_COMMAND_EXCHANGE), #KeyboardButton(USER_COMMAND_AUCTION),
+                     KeyboardButton(USER_COMMAND_HIDE)]
 
         # Exchange stuff...
         # STILL IN TESTING

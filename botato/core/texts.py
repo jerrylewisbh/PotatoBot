@@ -529,8 +529,7 @@ MSG_QUEST_STAT = "\n\nJust continue sending me your quest reports.\n\n_Hint: Ove
 
 # Exchange stuff
 HIDE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
-               "*With this feature enabled I will try to spend all your gold once you issue /hide. " \
-               "As this feature becomes more mature we will probably allow you to even do this automatically!* \n\n" \
+               "*With this feature enabled I will try to spend all your gold once you issue /hide. \n\n" \
                "You can set your buy-preferences via `/ah <itemId> <prio> <maxPrice>`.\n" \
                "Leave `<maxPrice>` out to always buy at market price. You can get a list of items with `/items`. \n\n" \
                "Examples: \n" \
@@ -567,6 +566,18 @@ SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFe
     "To remove a buy order `/sr <itemId>`.\n\n" \
     "*Your current orders are:*\n" \
     "{}"
+
+AUCTION_WELCOME = "*Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
+    "*You can be notified once an item you're looking for is up for auction. Optionally matching a maximum price.*\n\n" \
+    "You can put items on your watchlist with `/a <itemId> [<maxPrice>]`.\n\n" \
+    "Examples: \n" \
+    "- `/a k17   ` - Notifies you if 📗Scroll of Peace is on auction\n" \
+    "- `/s k09 31` - Notifes you if Order Gauntlets part is on auction for 31👝 or less\n\n" \
+    "To remove an item from your watchlist do `/ar <itemId>`.\n\n" \
+    "*Your current orders are:*\n" \
+    "{}"
+AUCTION_NOTIFY_UNLIMITED = "- Notify if {} is up for auction\n"
+AUCTION_NOTIFY_LIMITED = "- Notify if {} is up for a maximum price of {} 👝\n"
 
 SNIPE_LIMIT_EXCEEDED = "Sorry but you may only have {} orders active at any given time. Please remove another order first."
 SNIPE_INITIAL_ORDER_EXCEEDED = "Sorry but you may only order {} pieces at a time. Please reduce your amount."

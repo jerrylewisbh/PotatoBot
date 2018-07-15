@@ -19,7 +19,6 @@ config = context.config
 fileConfig(config.config_file_name)
 
 from core.model import Base
-
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
