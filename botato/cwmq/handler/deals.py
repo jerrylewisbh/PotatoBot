@@ -4,7 +4,7 @@ import logging
 from sqlalchemy import func, collate
 from telegram import ParseMode
 
-from config import CC_EXCHANGE_ORDERS, LOG_LEVEL_MQ
+from config import CC_EXCHANGE_ORDERS, LOG_LEVEL_MQ, MQ_TESTING
 from core.texts import *
 from core.db import Session, new_item
 from core.model import User, Item, UserExchangeOrder
@@ -35,11 +35,13 @@ def deals_handler(channel, method, properties, body, dispatcher):
                 __handle_hides(user, data, channel, method, dispatcher)
 
         # We're done...
-        channel.basic_ack(method.delivery_tag)
+        if not MQ_TESTING:
+            channel.basic_ack(method.delivery_tag)
     except Exception:
         try:
             # Acknowledge if possible...
-            channel.basic_ack(method.delivery_tag)
+            if not MQ_TESTING:
+                channel.basic_ack(method.delivery_tag)
         except Exception:
             logger.exception("Can't acknowledge message")
 

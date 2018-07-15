@@ -4,7 +4,7 @@ import logging
 import redis
 from sqlalchemy import func, collate
 
-from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL, LOG_LEVEL_MQ
+from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL, LOG_LEVEL_MQ, MQ_TESTING
 from core.db import Session
 from core.model import Item, UserExchangeOrder
 from cwmq import Publisher, wrapper
@@ -42,11 +42,13 @@ def digest_handler(channel, method, properties, body, dispatcher):
                 __handle_snipe_orders(digest_item, item, order, r, dispatcher)
 
         # We're done...
-        channel.basic_ack(method.delivery_tag)
+        if not MQ_TESTING:
+            channel.basic_ack(method.delivery_tag)
     except Exception:
         try:
             # Acknowledge if possible...
-            channel.basic_ack(method.delivery_tag)
+            if not MQ_TESTING:
+                channel.basic_ack(method.delivery_tag)
         except Exception:
             logging.exception("Can't acknowledge message")
 

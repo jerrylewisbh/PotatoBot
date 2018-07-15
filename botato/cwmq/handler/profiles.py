@@ -4,7 +4,7 @@ import logging
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
 from telegram import ParseMode
 
-from config import BOT_ONE_STEP_API, LOG_LEVEL_MQ
+from config import BOT_ONE_STEP_API, LOG_LEVEL_MQ, MQ_TESTING
 from core.bot import MQBot
 from core.enums import CASTLE_MAP, CLASS_MAP
 from core.texts import *
@@ -153,7 +153,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
 
                 if not user:
                     # Shouldn't happen!?
-                    channel.basic_ack(method.delivery_tag)
+                    if not MQ_TESTING:
+                        channel.basic_ack(method.delivery_tag)
                     return
 
                 c = Character()
@@ -200,7 +201,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
             elif data['result'] == "Ok":
                 if not user:
                     # Shouldn't happen!?
-                    channel.basic_ack(method.delivery_tag)
+                    if not MQ_TESTING:
+                        channel.basic_ack(method.delivery_tag)
                     return
                 logger.info("Stock update for %s...", user.id)
 
@@ -215,7 +217,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 #    # Don't send stock change notification when wind is not howling...
                 #    # TODO: This might be too late?!
                 #
-                channel.basic_ack(method.delivery_tag)  # Acknowledge manually
+                if not MQ_TESTING:
+                    channel.basic_ack(method.delivery_tag)
                 # FIXME: DO NOT SEND STOCK CHANGE FOR THE TIME BEEING
                 return
 
@@ -269,11 +272,13 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 pass
 
         # We're done...
-        channel.basic_ack(method.delivery_tag)
+        if not MQ_TESTING:
+            channel.basic_ack(method.delivery_tag)
     except Exception:
         try:
             # Acknowledge if possible...
-            channel.basic_ack(method.delivery_tag)
+            if not MQ_TESTING:
+                channel.basic_ack(method.delivery_tag)
         except Exception:
             logger.exception("Can't acknowledge message")
 

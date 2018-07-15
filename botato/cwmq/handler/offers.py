@@ -4,7 +4,7 @@ import logging
 import redis
 from sqlalchemy import func, collate
 
-from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL, LOG_LEVEL_MQ
+from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL, LOG_LEVEL_MQ, MQ_TESTING
 from core.db import Session, new_item
 from core.model import Item, UserExchangeOrder
 from cwmq import Publisher, wrapper
@@ -43,7 +43,8 @@ def offers_handler(channel, method, properties, body, dispatcher):
             UserExchangeOrder.max_price >= data['price']
         ).order_by(UserExchangeOrder.id).all()
         if not orders:
-            channel.basic_ack(method.delivery_tag)
+            if not MQ_TESTING:
+                channel.basic_ack(method.delivery_tag)
             return
 
         for order in orders:
@@ -120,12 +121,14 @@ def offers_handler(channel, method, properties, body, dispatcher):
             except wrapper.APIWrongSettings:
                 logger.error("User has disabled all trade settings but you tried to create a Buy-Order")
 
-        channel.basic_ack(method.delivery_tag)
+        if not MQ_TESTING:
+            channel.basic_ack(method.delivery_tag)
 
     except Exception:
         try:
             # Acknowledge if possible...
-            channel.basic_ack(method.delivery_tag)
+            if not MQ_TESTING:
+                channel.basic_ack(method.delivery_tag)
         except Exception:
             logger.exception("Can't acknowledge message")
 

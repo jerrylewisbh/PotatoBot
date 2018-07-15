@@ -7,7 +7,8 @@ from threading import Thread
 
 import pika
 
-from config import CW_OUT_Q, CW_IN_Q, CW_EXCHANGE, CW_URL, CW_DEALS_Q, CW_OFFERS_Q, CW_DIGEST_Q, LOG_LEVEL_MQ
+from config import CW_OUT_Q, CW_IN_Q, CW_EXCHANGE, CW_URL, CW_DEALS_Q, CW_OFFERS_Q, CW_DIGEST_Q, LOG_LEVEL_MQ, \
+    MQ_TESTING
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL_MQ)
@@ -132,7 +133,8 @@ class Consumer(Thread):
 
     def acknowledge_message(self, delivery_tag):
         logger.info('[Consumer] Acknowledging message %s', delivery_tag)
-        self._channel.basic_ack(delivery_tag)
+        if not MQ_TESTING:
+            self._channel.basic_ack(delivery_tag)
 
     def stop_consuming(self):
         if self._channel:
