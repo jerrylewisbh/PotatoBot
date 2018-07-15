@@ -4,11 +4,13 @@
 """
 MessageQueue usage example with @queuedmessage decorator.
 """
+import logging
 
 import telegram.bot
 from telegram.error import Unauthorized
 from telegram.ext import messagequeue as mq
 
+from core.db import Session
 from core.model import User, UserExchangeOrder, UserStockHideSetting
 
 

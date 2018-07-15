@@ -31,13 +31,13 @@ Session()
 
 def ready_to_battle(bot: MQBot, job_queue: Job):
     try:
-        group = Session.query(Squad).filter(
-            Squad.reminders_enabled == True
+        group = Session.query(Group).filter(
+            Group.reminders_enabled == True
         ).all()
         for item in group:
             new_order = Order()
             new_order.text = job_queue.context
-            new_order.chat_id = item.chat_id
+            new_order.chat_id = item.id
             new_order.date = datetime.now()
             new_order.confirmed_msg = 0
             Session.add(new_order)
