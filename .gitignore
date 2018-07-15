@@ -100,3 +100,5 @@ config.py
 
 dump.rdb
 unirio-instances.ppk
+
+alembic.ini
