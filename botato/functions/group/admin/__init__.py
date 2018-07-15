@@ -5,8 +5,7 @@ from core.db import Session
 from core.decorators import command_handler
 from core.enums import AdminType
 from core.model import User, Group
-from core.texts import MSG_GROUP_THORNS_ENABLED, MSG_GROUP_REMINDERS_ENABLED, MSG_GROUP_SILENCE_ENABLED, \
-    MSG_GROUP_THORNS_DISABLED, MSG_GROUP_SILENCE_DISABLED, MSG_GROUP_REMINDERS_DISABLED
+from core.texts import *
 from core.utils import send_async
 
 
@@ -91,3 +90,30 @@ def disable_reminders(bot: MQBot, update: Update, user: User):
         Session.add(group)
         Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_GROUP_REMINDERS_DISABLED)
+
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def deny_bots(bot: MQBot, update: Update, user: User):
+    group = Session.query(Group).filter_by(id=update.message.chat.id).first()
+    if group:
+        group.allow_bots = False
+        Session.add(group)
+        Session.commit()
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_GROUP_BOTS_DENIED)
+
+
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def allow_bots(bot: MQBot, update: Update, user: User):
+    group = Session.query(Group).filter_by(id=update.message.chat.id).first()
+    if group:
+        group.allow_bots = True
+        Session.add(group)
+        Session.commit()
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_GROUP_BOTS_ALLOWED)

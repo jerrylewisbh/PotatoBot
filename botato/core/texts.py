@@ -71,7 +71,8 @@ Trigger allowed: {}
 FWD Minireport: {}
 Thorns: {}
 Silence: {}
-Reminders: {}"""
+Reminders: {}
+Bots allowed: {}"""
 
 MSG_GROUP_STATUS_SQUAD = """
 
@@ -234,6 +235,9 @@ MSG_GROUP_SILENCE_DISABLED = 'Battle silence disabled'
 MSG_GROUP_REMINDERS_ENABLED = 'This squad will automatically be reminded of battles and reports, lazy captain'
 MSG_GROUP_REMINDERS_DISABLED = 'This squad will NOT be automatically reminded of battles and reports, do not let them forget 👀'
 
+MSG_GROUP_BOTS_ALLOWED = 'Bots can join this group now. Be aware of spais!'
+MSG_GROUP_BOTS_DENIED = 'Bots can no longer join this group.'
+
 MSG_SQUAD_ALREADY_DELETED = 'This user is already expelled from the squad, this button no longer works.'
 MSG_SQUAD_LEVEL_TOO_LOW = 'This squad takes soldiers at level {} and above. Come back when you get pumped!'
 
@@ -249,7 +253,7 @@ MSG_TRIGGER_DEL_ERROR = 'Where did you see such a trigger? 0_o'
 MSG_TRIGGER_LIST_HEADER = 'List of current triggers: \n'
 
 MSG_THORNS = 'This fool does not look like a potato, let the straw man kick his ass!'
-MSG_THORNS_NAME = 'This fool {} does not look like a potato, let the straw man kick his ass!'
+MSG_THORNS_NAME = 'This fool @{} does not look like a potato, let the straw man kick his ass!'
 
 MSG_WELCOME_DEFAULT = 'Hi, %username%!'
 MSG_WELCOME_SET = 'The welcome text is set.'
@@ -622,6 +626,14 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 /disable_trigger — Forbid everyone to call trigger
 /enable_report_forward - Enable report forwarding
 /disable_report_forward - Disable report forwarding
+/enable_thorns - Prevent non members of the squad be in the group
+/disable_thorns - Allow non members of the group to be in the squad
+/enable_silence  - Deletes all messages typed 3 minutes before battle
+/disable_silence - Allow user to type even 3 minutes before batte
+/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
+/disable_reminders - Disable reminders
+/allow_bots - Allow bots to be joined into this channel
+/deny_bots - Do not allow bots to be joined into this channel
 /delete - Reply to message with /delete will delete that message
 /pin - Reply to message will pin this message 
 /pin_notify - Reply to message will pin this message and notify people
@@ -642,12 +654,6 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 <i>Squads:</i>
 /add_squad - Create a new squad and associates it to the current group
 /del_squad - Delete the squad associated with teh group
-/enable_thorns - Prevent non members of the squad be in the group
-/disable_thorns - Allow non members of the group to be in the squad
-/enable_silence  - Deletes all messages typed 3 minutes before battle
-/disable_silence - Allow user to type even 3 minutes before batte
-/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
-/disable_reminders - Disable reminders
 /set_squad_name &lt;name&gt; - Change the name of the squad
 /set_invite_link &lt;link&gt; - Set up the invite link that will be sent to approved members
 /add &lt;user&gt; - Ask an user to join the squad
@@ -709,6 +715,14 @@ MSG_HELP_GROUP_ADMIN= """<b>Available Commands:</b>
 /disable_trigger — Forbid everyone to call trigger
 /enable_report_forward - Enable report forwarding
 /disable_report_forward - Disable report forwarding
+/enable_thorns - Prevent non members of the squad be in the group
+/disable_thorns - Allow non members of the group to be in the squad
+/enable_silence  - Deletes all messages typed 3 minutes before battle
+/disable_silence - Allow user to type even 3 minutes before batte
+/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
+/disable_reminders - Disable reminders
+/allow_bots - Allow bots to be joined into this channel
+/deny_bots - Do not allow bots to be joined into this channel
 /delete - Reply to message with /delete will delete that message
 /pin - Reply to message will pin this message 
 /pin_notify - Reply to message will pin this message and notify people
@@ -729,12 +743,6 @@ MSG_HELP_GROUP_ADMIN= """<b>Available Commands:</b>
 <i>Squads:</i>
 /add_squad - Create a new squad and associates it to the current group
 /del_squad - Delete the squad associated with teh group
-/enable_thorns - Prevent non members of the squad be in the group
-/disable_thorns - Allow non members of the group to be in the squad
-/enable_silence  - Deletes all messages typed 3 minutes before battle
-/disable_silence - Allow user to type even 3 minutes before batte
-/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
-/disable_reminders - Disable reminders
 /set_squad_name &lt;name&gt; - Change the name of the squad
 /set_invite_link &lt;link&gt; - Set up the invite link that will be sent to approved members
 /add &lt;user&gt; - Ask an user to join the squad

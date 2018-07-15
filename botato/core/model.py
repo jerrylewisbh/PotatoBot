@@ -31,6 +31,7 @@ class Group(Base):
     thorns_enabled = Column(Boolean, default=True, nullable=False)
     silence_enabled = Column(Boolean, default=True, nullable=False)
     reminders_enabled = Column(Boolean, default=True, nullable=False)
+    allow_bots = Column(Boolean, default=False, nullable=False)
 
     bot_in_group = Column(Boolean, default=True, nullable=False)
 
@@ -79,9 +80,9 @@ class User(Base):
     api_request_id = Column(UnicodeText(250))
     api_grant_operation = Column(UnicodeText(250))
 
-    is_api_profile_allowed = Column(Boolean(), nullable=False)
-    is_api_stock_allowed = Column(Boolean(), nullable=False)
-    is_api_trade_allowed = Column(Boolean(), nullable=False)
+    is_api_profile_allowed = Column(Boolean(), nullable=False, default=False)
+    is_api_stock_allowed = Column(Boolean(), nullable=False, default=False)
+    is_api_trade_allowed = Column(Boolean(), nullable=False, default=False)
 
     sniping_suspended = Column(Boolean(), nullable=False, default=False)
 

@@ -21,7 +21,7 @@ from functions.profile import (find_by_character, find_by_id,
 from functions.squad.admin.commands import add_squad, set_invite_link, set_squad_name, del_squad, force_add_to_squad, \
     add_to_squad, open_hiring, close_hiring
 from functions.group.admin import enable_thorns, enable_reminders, enable_silence, disable_thorns, disable_silence, \
-    disable_reminders
+    disable_reminders, allow_bots, deny_bots
 from functions.triggers import (add_global_trigger, add_trigger,
                                 del_global_trigger, del_trigger,
                                 disable_trigger_all, enable_trigger_all,
@@ -75,6 +75,8 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("disable_thorns", disable_thorns))
     disp.add_handler(CommandHandler("disable_silence", disable_silence))
     disp.add_handler(CommandHandler("disable_reminders", disable_reminders))
+    disp.add_handler(CommandHandler("allow_bots", allow_bots))
+    disp.add_handler(CommandHandler("deny_bots", deny_bots))
     disp.add_handler(CommandHandler("set_squad_name", set_squad_name))
     disp.add_handler(CommandHandler("set_invite_link", set_invite_link))
     disp.add_handler(CommandHandler("add_squad", add_squad))

@@ -60,6 +60,7 @@ def info(bot: MQBot, update: Update, user: User):
         MSG_ON if group.thorns_enabled else MSG_OFF,
         MSG_ON if group.silence_enabled else MSG_OFF,
         MSG_ON if group.reminders_enabled else MSG_OFF,
+        MSG_ON if group.allow_bots else MSG_OFF,
 
     )
     if len(group.squad):
