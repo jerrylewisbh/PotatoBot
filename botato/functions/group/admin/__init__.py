@@ -121,7 +121,7 @@ def list_aliens(bot: MQBot, update: Update, user: User):
     for row in update.message.text.splitlines():
         if row.startswith("👽"):
             chat_id = row.replace("👽", "")
-            group = Session.query(Group).filter_by(id=update.message.chat.id).first()
+            group = Session.query(Group).filter_by(id=chat_id).first()
             continue
 
         split_row = row.split(";", maxsplit=1)
@@ -139,7 +139,7 @@ def list_aliens(bot: MQBot, update: Update, user: User):
             elif group.squad and user.is_squadmember and user.member.squad.chat_id != group.id:
                 not_in_squad.append((user_id, username))
 
-    text = ""
+    text = "Results:\n"
     for acc in banned:
         text += "⚱️{}\n".format("@{}".format(acc[1]) if acc[1] else acc[0])
     for acc in no_user:
