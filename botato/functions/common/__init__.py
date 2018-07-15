@@ -309,7 +309,7 @@ def stock_compare_forwarded(bot: MQBot, update: Update, user: User, chat_data: d
     allow_private=False,
     allow_group=True
 )
-def delete_msg(bot: MQBot, update: Update):
+def delete_msg(bot: MQBot, update: Update, user: User):
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.reply_to_message.message_id)
     bot.delete_message(update.message.reply_to_message.chat_id, update.message.message_id)
 
