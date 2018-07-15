@@ -95,6 +95,7 @@ ENV/
 .ropeproject
 .idea/
 config.py
+botato/config.py
 
 .vscode
 
