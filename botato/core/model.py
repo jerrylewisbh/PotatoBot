@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import Column, BigInteger, ForeignKey, Integer, UnicodeText, Boolean, DateTime, UniqueConstraint, Text
+from sqlalchemy import Column, BigInteger, ForeignKey, Integer, UnicodeText, Boolean, DateTime, UniqueConstraint, Text, \
+    String
 from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -447,7 +448,7 @@ class Log(Base):
 class Auth(Base):
     __tablename__ = 'auth'
 
-    id = Column(Text(length=32))
+    id = Column(Text(32))
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
 
 
@@ -455,7 +456,7 @@ class Item(Base):
     __tablename__ = 'item'
 
     id = Column(BigInteger, autoincrement=True, primary_key=True)
-    cw_id = Column(UnicodeText(25), unique=True, nullable=True)
+    cw_id = Column(String(50), unique=True, nullable=True, index=True)
 
     tradable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
     pillagable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())

@@ -618,7 +618,7 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 /del_admin &lt;user&gt; — delete administrator from current chat
 /del_global_admin &lt;user&gt; — delete global administrator 
 /get_log - Get latest logfile - ONLY FOR A FEW PPL
-/force_kick_botato - Force Botato to leave the chat where this command was issued
+/force_kick_botato - Force Botato to leave the group
 /kick - Reply to any message to kick the user from a chat
 /ban &lt;user&gt; &lt;reason&gt;  - Ban user 
 /unban &lt;user&gt; - Unban user 
@@ -641,13 +641,13 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 /disable_thorns - Allow non members of the group to be in the squad
 /enable_silence  - Deletes all messages typed 3 minutes before battle
 /disable_silence - Allow user to type even 3 minutes before batte
-/enable_reminders  - Turn on automatated battle reminder 30 and 45 minutes before battle and report reminder 10 minutes after battle
+/enable_reminders  - Turn on automatated battle reminder 30+45 minutes before battle and reminder afterwards
 /disable_reminders - Disable reminders
 /allow_bots - Allow bots to be joined into this channel
 /deny_bots - Do not allow bots to be joined into this channel
 /delete - Reply to message with /delete will delete that message
 /pin - Reply to message will pin this message 
-/pin_notify - Reply to message will pin this message and notify people
+/pin_notify - Reply to message will pin this message and notify
 /disable_pin_all - Disable pinning for everyone 
 /enable_pin_all - Allow pinning for everyone
 /commander - Show admins of Squad/Group
@@ -658,20 +658,20 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 /set_trigger - Reply to a message or file /set_trigger &lt;trigger name&gt; to set a new trigger
 /del_trigger &lt;trigger&gt; — delete trigger
 /add_trigger - Same as /set_trigger but does not override existing ones
-/set_global_trigger - Reply to a message or file with /set_global_trigger &lt;trigger name&gt; to set a new trigger (all chats)
+/set_global_trigger - Reply to a message with /set_global_trigger &lt;trigger name&gt; to set a new trigger (all chats)
 /add_global_trigger - Same as /set_global_trigger but does not override existing ones
 /del_global_trigger &lt;trigger&gt; — delete trigger
 
 <i>Squads:</i>
 /add_squad - Create a new squad and associates it to the current group
-/del_squad - Delete the squad associated with teh group
+/del_squad - Delete the squad associated with the group
 /set_squad_name &lt;name&gt; - Change the name of the squad
-/set_invite_link &lt;link&gt; - Set up the invite link that will be sent to approved members
+/set_invite_link &lt;link&gt; - Set up the invite link 
 /add &lt;user&gt; - Ask an user to join the squad
-/forceadd &lt;user&gt; - add user to a squad without asking for confirmation
+/forceadd &lt;user&gt; - add user to a squad without asking
 /hiring_open - Open hiring
 /hiring_close - Close hiring
-/squad - Call every squadmember to get their attention
+/squad - Call every squadmember 
 /daily_stats - Show daily squad stats
 /weekly_stats - Show weekly squad stats
 /battle_stats - Show battlestats

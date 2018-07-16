@@ -162,6 +162,7 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
 
     # Send to a Group/Squad
     if "chat_id" in action.data:
+        logging.info("Sending order for order_group='%s'", action.data['chat_id'])
         if o.button:
             order = Order()
             order.text = o.order
@@ -206,8 +207,10 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
                 markup=markup
             )
     if "order_group_id" in action.data:
+        logging.info("Sending order for order_group='%s'", action.data['order_group_id'])
         group = Session.query(OrderGroup).filter_by(id=action.data['order_group_id']).first()
         for item in group.items:
+            logging.info("Order for chat_id='%s'", item.chat_id)
             if o.button:
                 order = Order()
                 order.text = o.order
