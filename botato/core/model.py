@@ -25,16 +25,16 @@ class Group(Base):
     title = Column(UnicodeText(250))
 
     # Functions...
-    welcome_enabled = Column(Boolean, default=False, nullable=False)
-    allow_trigger_all = Column(Boolean, default=False, nullable=False)
-    allow_pin_all = Column(Boolean, default=False, nullable=False)
-    fwd_minireport = Column(Boolean, default=False, nullable=False)
-    thorns_enabled = Column(Boolean, default=True, nullable=False)
-    silence_enabled = Column(Boolean, default=True, nullable=False)
-    reminders_enabled = Column(Boolean, default=True, nullable=False)
-    allow_bots = Column(Boolean, default=False, nullable=False)
+    welcome_enabled = Column(Boolean, default=False, nullable=False, server_default=expression.false())
+    allow_trigger_all = Column(Boolean, default=False, nullable=False, server_default=expression.false())
+    allow_pin_all = Column(Boolean, default=False, nullable=False, server_default=expression.false())
+    fwd_minireport = Column(Boolean, default=False, nullable=False, server_default=expression.false())
+    thorns_enabled = Column(Boolean, default=True, nullable=False, server_default=expression.true())
+    silence_enabled = Column(Boolean, default=True, nullable=False, server_default=expression.true())
+    reminders_enabled = Column(Boolean, default=True, nullable=False, server_default=expression.true())
+    allow_bots = Column(Boolean, default=False, nullable=False, server_default=expression.false())
 
-    bot_in_group = Column(Boolean, default=True, nullable=False)
+    bot_in_group = Column(Boolean, default=True, nullable=False, server_default=expression.true())
 
     group_items = relationship(
         'OrderGroupItem', back_populates='chat', cascade="save-update, merge, delete, delete-orphan"
@@ -77,16 +77,16 @@ class User(Base):
     api_request_id = Column(UnicodeText(250))
     api_grant_operation = Column(UnicodeText(250))
 
-    is_api_profile_allowed = Column(Boolean(), nullable=False, default=False, server_default=expression.true())
-    is_api_stock_allowed = Column(Boolean(), nullable=False, default=False, server_default=expression.true())
-    is_api_trade_allowed = Column(Boolean(), nullable=False, default=False, server_default=expression.true())
+    is_api_profile_allowed = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
+    is_api_stock_allowed = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
+    is_api_trade_allowed = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
 
-    sniping_suspended = Column(Boolean(), nullable=False, default=False)
+    sniping_suspended = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
 
-    setting_automated_report = Column(Boolean(), nullable=False, default=True)
-    setting_automated_deal_report = Column(Boolean(), nullable=False, default=True)
-    setting_automated_hiding = Column(Boolean(), nullable=False, default=False)
-    setting_automated_sniping = Column(Boolean(), nullable=False, default=False)
+    setting_automated_report = Column(Boolean(), nullable=False, default=True, server_default=expression.true())
+    setting_automated_deal_report = Column(Boolean(), nullable=False, default=True, server_default=expression.true())
+    setting_automated_hiding = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
+    setting_automated_sniping = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
 
     # Relationship
     admin_permission = relationship("Admin")
@@ -154,7 +154,7 @@ class Quest(Base):
     id = Column(BigInteger, autoincrement=True, primary_key=True)
 
     text = Column(UnicodeText(), nullable=False)
-    approved = Column(Boolean(), nullable=False, default=False)
+    approved = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
 
     user_quests = relationship('UserQuest', back_populates='quest')
 
@@ -182,8 +182,8 @@ class UserQuest(Base):
     user = relationship('User', back_populates='quests')
     daytime = Column(BigInteger, nullable=False, default=0)
 
-    pledge = Column(Boolean(), nullable=False, default=0)
-    successful = Column(Boolean(), nullable=False, default=0)
+    pledge = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
+    successful = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
 
     items = relationship(UserQuestItem, lazy='dynamic')
 
@@ -200,7 +200,7 @@ class Location(Base):
 
     user_locations = relationship('UserQuest', back_populates='location')
 
-    selectable = Column(Boolean(), nullable=False, default=False)
+    selectable = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
 
 
 class WelcomeMsg(Base):
@@ -370,7 +370,7 @@ class Report(Base):
     earned_gold = Column(Integer)
     earned_stock = Column(Integer)
 
-    preliminary_report = Column(Boolean(), nullable=False, default=False)
+    preliminary_report = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
 
     user = relationship('User', back_populates='report')
 
@@ -382,8 +382,8 @@ class Squad(Base):
     invite_link = Column(UnicodeText(250), default='')
     squad_name = Column(UnicodeText(250))
 
-    hiring = Column(Boolean(), nullable=False, default=False)
-    testing_squad = Column(Boolean(), nullable=False, default=False)
+    hiring = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
+    testing_squad = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
 
     members = relationship('SquadMember', back_populates='squad')
     chat = relationship('Group', back_populates='squad')
@@ -395,7 +395,7 @@ class SquadMember(Base):
     squad_id = Column(BigInteger, ForeignKey(Squad.chat_id))
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
 
-    approved = Column(Boolean, default=False, nullable=False)
+    approved = Column(Boolean, default=False, nullable=False, server_default=expression.false())
 
     squad = relationship('Squad', back_populates='members')
     user = relationship('User', back_populates='member')
@@ -457,8 +457,8 @@ class Item(Base):
     id = Column(BigInteger, autoincrement=True, primary_key=True)
     cw_id = Column(UnicodeText(25), unique=True, nullable=True)
 
-    tradable = Column(Boolean(), default=False, nullable=False)
-    pillagable = Column(Boolean(), default=False, nullable=False)
+    tradable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
+    pillagable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
     weight = Column(BigInteger, default=1, nullable=False)
 
     name = Column(UnicodeText(250))
