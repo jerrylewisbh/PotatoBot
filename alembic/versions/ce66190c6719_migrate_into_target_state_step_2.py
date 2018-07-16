@@ -17,15 +17,27 @@ depends_on = None
 
 
 def upgrade():
-    op.alter_column('users', 'is_api_profile_allowed',
-               existing_type=mysql.TINYINT(display_width=4),
-               nullable=False)
-    op.alter_column('users', 'is_api_stock_allowed',
-               existing_type=mysql.TINYINT(display_width=4),
-               nullable=False)
-    op.alter_column('users', 'is_api_trade_allowed',
-               existing_type=mysql.TINYINT(display_width=4),
-               nullable=False)
+    op.alter_column(
+        'users',
+        'is_api_profile_allowed',
+        existing_type=mysql.TINYINT(display_width=4),
+        nullable=False,
+        server_default=sa.text('false')
+    )
+    op.alter_column(
+        'users',
+        'is_api_stock_allowed',
+        existing_type=mysql.TINYINT(display_width=4),
+        nullable=False,
+        server_default=sa.text('false')
+    )
+    op.alter_column(
+        'users',
+        'is_api_trade_allowed',
+        existing_type=mysql.TINYINT(display_width=4),
+        nullable=False,
+        server_default = sa.text('false')
+    )
 
 
 def downgrade():
