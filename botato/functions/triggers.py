@@ -87,7 +87,10 @@ def add_global_trigger(bot: MQBot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_NEW_ERROR)
 
 
-@command_handler()
+@command_handler(
+    allow_private=False,
+    allow_group=True,
+)
 def trigger_show(bot: MQBot, update: Update, user: User):
     trigger = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id, trigger=update.message.text).first()
     if trigger is None:
@@ -145,7 +148,8 @@ def del_global_trigger(bot: MQBot, update: Update, user: User):
 
 
 @command_handler(
-    allow_group=True
+    allow_group=True,
+    allow_private=False,
 )
 def list_triggers(bot: MQBot, update: Update, user: User):
     triggers = Session.query(Trigger).all()
