@@ -192,7 +192,7 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
             __send_order(
                 bot=bot,
                 order=o,
-                chat_id=action.data['chat_id'],
+                chat_id=order.chat_id
                 markup=markup
             )
         else:
@@ -203,7 +203,7 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
             __send_order(
                 bot=bot,
                 order=o,
-                chat_id=action.data['chat_id'],
+                chat_id=action.data['group_id'],
                 markup=markup
             )
     if "order_group_id" in action.data:
