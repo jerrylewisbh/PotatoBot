@@ -28,9 +28,9 @@ def __get_autohide_settings(user):
         text = ""
         for order in settings:
             if not order.max_price:
-                text += AUCTION_NOTIFY_UNLIMITED.format(order.item.name)
+                text += HIDE_BUY_UNLIMITED.format(order.priority, order.item.name, order.item.cw_id)
             else:
-                text += AUCTION_NOTIFY_LIMITED.format(order.item.name, order.max_price)
+                text += HIDE_BUY_LIMITED.format(order.priority, order.item.name, order.item.cw_id, order.max_price)
         return text
 
 
@@ -148,11 +148,12 @@ def hide_gold_info(bot: MQBot, update: Update, user: User):
         )
         return
 
-    text = __get_autohide_settings(user)
+    text = HIDE_WELCOME.format(__get_autohide_settings(user))
+    print(text)
     send_async(
         bot,
         chat_id=update.message.chat.id,
-        text=HIDE_WELCOME.format(text),
+        text=text,
         parse_mode=ParseMode.MARKDOWN,
     )
 

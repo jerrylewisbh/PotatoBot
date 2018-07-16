@@ -21,9 +21,9 @@ def __get_auction_settings(user):
         text = ""
         for order in settings:
             if not order.max_price:
-                text += HIDE_BUY_UNLIMITED.format(order.priority, order.item.name, order.item.cw_id)
+                text += AUCTION_NOTIFY_UNLIMITED.format(order.item.name)
             else:
-                text += HIDE_BUY_LIMITED.format(order.priority, order.item.name, order.item.cw_id, order.max_price)
+                text += AUCTION_NOTIFY_LIMITED.format(order.item.name, order.max_price)
         return text
 
 @command_handler(
