@@ -52,12 +52,22 @@ def __handle_button_order(bot, chat_data, update, user):
         o.order = action.data['text']
     # Save to chat_data
     chat_data['order'] = o
-    markup = __get_select_groups_for_orders_keyboard(
-        user,
-        admin_user,
-        o.pin,
-        o.button,
-    )
+
+    if "sub_action" in action.data and action.data['sub_action'] == "select_squads":
+        logging.debug("Order: Choose Squad")
+        markup = __get_select_chat_for_orders_keyboard(
+            user,
+            o.pin,
+            o.button,
+        )
+    else:
+        logging.debug("Order: Choose Group")
+        markup = __get_select_groups_for_orders_keyboard(
+            user,
+            admin_user,
+            o.pin,
+            o.button,
+        )
     if o.type == MessageType.TEXT:
         text = MSG_ORDER_SEND_HEADER.format(escape(o.order))
     else:
@@ -382,11 +392,22 @@ def __get_select_chat_for_orders_keyboard(user, pin=True, btn=True):
             InlineKeyboardButton(
                 squad.squad_name,
                 callback_data=create_callback(
-                    CallbackAction.ORDER,
-                    user.id
+                    CallbackAction.ORDER_GIVE,
+                    user.id,
+                    group_id=squad.chat_id,
                 )
             )
         ])
+
+    inline_keys.append([
+        InlineKeyboardButton(
+            MSG_BACK,
+            callback_data=create_callback(
+                CallbackAction.ORDER,
+                user.id
+            )
+        )
+    ])
 
     inline_keys.append([
         InlineKeyboardButton(
@@ -409,6 +430,8 @@ def __get_select_chat_for_orders_keyboard(user, pin=True, btn=True):
             )
         )
     ])
+
+
 
     inline_markup = InlineKeyboardMarkup(inline_keys)
     return inline_markup
