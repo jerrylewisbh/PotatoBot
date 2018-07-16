@@ -161,12 +161,12 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
     )
 
     # Send to a Group/Squad
-    if "chat_id" in action.data:
-        logging.info("Sending order for order_group='%s'", action.data['chat_id'])
+    if "group_id" in action.data:
+        logging.info("Sending order for group='%s'", action.data['group_id'])
         if o.button:
             order = Order()
             order.text = o.order
-            order.chat_id = action.data['chat_id']
+            order.chat_id = action.data['group_id']
             order.date = datetime.now()
 
             msg = bot.send_message(
