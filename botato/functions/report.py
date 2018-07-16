@@ -73,7 +73,7 @@ def fwd_report(bot: MQBot, update: Update):
             )
 
             # Send "after battle" notification to these groups...
-            if group.squad and group.squad.reminders_enabled:
+            if group.reminders_enabled:
                 new_order = Order()
                 new_order.text = MSG_MAIN_SEND_REPORTS
                 new_order.chat_id = group.id,
