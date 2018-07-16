@@ -66,7 +66,7 @@ class User(Base):
     build_report = relationship('BuildReport', back_populates='user', order_by='BuildReport.date.desc()')
     profession = relationship('Profession', back_populates='user', order_by='Profession.date.desc()', uselist=False)
     quests = relationship('UserQuest', back_populates='user')
-    permissions = relationship('Admin', back_populates='user')
+    permissions = relationship('Admin', back_populates='user', lazy='dynamic')
 
     hide_settings = relationship('UserStockHideSetting', back_populates='user', lazy='dynamic')
     sniping_settings = relationship('UserExchangeOrder', back_populates='user', lazy='dynamic')

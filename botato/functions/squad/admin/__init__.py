@@ -223,16 +223,20 @@ def list_squads(bot: MQBot, update: Update, user: User):
     # Check admin...
     admin = Session.query(Admin).filter(User.id == user.id).all()
     global_adm = False
-    for adm in admin:
-        if adm.admin_type <= AdminType.FULL.value:
-            global_adm = True
+
+
+    group_ids = []
+    global_admin = False
+    for permission in user.permissions:
+        if permission.admin_type <= AdminType.FULL:
+            global_admin = True
             break
-    if global_adm:
-        squads = Session.query(Squad).all()
+        elif permission.admin_type == AdminType.GROUP:
+            group_ids.append(permission.group_id)
+
+    if global_admin:
+        squads = Session.query(Squad)
     else:
-        group_ids = []
-        for adm in admin:
-            group_ids.append(adm.group_id)
         squads = Session.query(Squad).filter(Squad.chat_id in group_ids).all()
 
     # List....
