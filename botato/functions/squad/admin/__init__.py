@@ -237,7 +237,8 @@ def list_squads(bot: MQBot, update: Update, user: User):
     if global_admin:
         squads = Session.query(Squad)
     else:
-        squads = Session.query(Squad).filter(Squad.chat_id in group_ids).all()
+        logging.info("User has access to these squads: %s", group_ids)
+        squads = Session.query(Squad).filter(Squad.chat_id.in_(group_ids)).all()
 
     # List....
     inline_keys = []
