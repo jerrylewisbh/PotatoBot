@@ -144,7 +144,9 @@ def del_global_trigger(bot: MQBot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_TRIGGER_DEL_ERROR)
 
 
-@command_handler()
+@command_handler(
+    allow_group=True
+)
 def list_triggers(bot: MQBot, update: Update, user: User):
     triggers = Session.query(Trigger).all()
     local_triggers = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id).all()
