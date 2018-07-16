@@ -66,8 +66,8 @@ def after_battle(bot: MQBot, job_queue: Job):
     # reminder sent after fwd....
     try:
         group = Session.query(Squad).filter(
-            Squad.reminders_enabled == True,
-            Group.fwd_minireport != True
+            Group.reminders_enabled == True,
+            Group.fwd_minireport == False
         ).all()
         for item in group:
             new_order = Order()
