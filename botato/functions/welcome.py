@@ -12,7 +12,7 @@ from core.template import fill_template
 from core.texts import *
 from core.db import Session, check_permission
 from core.enums import AdminType
-from core.model import User, WelcomeMsg, Wellcomed, Admin
+from core.model import User, WelcomeMsg, Wellcomed, Admin, Group
 from core.utils import send_async, update_group
 
 last_welcome = 0
@@ -60,7 +60,7 @@ def welcome(bot: MQBot, update: Update, user: User):
                 Session.commit()
 
 
-def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.User, group: int):
+def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.User, group: Group):
     """ Check if a user is allowed to join a group/supergroup and return that state and the effective user joined...
 
     :returns tuple(allowed_to_join: bool, effective_user_id: int)
@@ -92,7 +92,7 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
         CASTLE_CHAT_ID == update.message.chat.id
     )
 
-    if update.effective_chat.id in [CASTLE_CHAT_ID, ACADEM_CHAT_ID]:
+    if group.id == CASTLE_CHAT_ID or group.id == ACADEM_CHAT_ID:
         # Castle and Academy are excempted from thorns, etc.
         logging.info("[Welcome] user_id='%s' joined Castle/Academy", joined_user.id)
         return (True, joined_user)
