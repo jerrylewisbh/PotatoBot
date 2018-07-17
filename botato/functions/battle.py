@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 from sqlalchemy import and_, func, tuple_
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.sql.operators import collate
 from telegram import ParseMode, Update
 from telegram.error import TelegramError
 from telegram.ext import Job
@@ -202,30 +203,33 @@ def ready_to_battle_result(bot: MQBot, job_queue: Job):
 @run_async
 def fresh_profiles(bot: MQBot, job_queue: Job):
     try:
-        actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
-            group_by(Character.user_id)
-        actual_profiles = actual_profiles.all()
-        characters = Session.query(Character).filter(tuple_(Character.user_id, Character.date)
-                                                     .in_([(a[0], a[1]) for a in actual_profiles]),
-                                                     datetime.now() - timedelta(
-                                                         days=DAYS_PROFILE_REMIND) > Character.date,
-                                                     Character.date > datetime.now() - timedelta(
-                                                         days=DAYS_OLD_PROFILE_KICK))
-        if CASTLE:
-            characters = characters.filter_by(castle=CASTLE)
-        characters = characters.all()
+        actual_profiles = Session.query(Character.user_id, func.max(Character.date)).group_by(Character.user_id).all()
+
+        characters = Session.query(Character).filter(
+            tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in actual_profiles]),
+            datetime.now() - timedelta(days=DAYS_PROFILE_REMIND) > Character.date,
+            Character.date > datetime.now() - timedelta(days=DAYS_OLD_PROFILE_KICK),
+            Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci')
+        )
+
+        characters = characters.filter_by(castle=CASTLE)
         for character in characters:
-            send_async(bot,
-                       chat_id=character.user_id,
-                       text=MSG_UPDATE_PROFILE,
-                       parse_mode=ParseMode.HTML)
-        characters = Session.query(Character).filter(tuple_(Character.user_id, Character.date)
-                                                     .in_([(a[0], a[1]) for a in actual_profiles]),
-                                                     Character.date < datetime.now() - timedelta(
-                                                         days=DAYS_OLD_PROFILE_KICK)).all()
-        members = Session.query(SquadMember, User).filter(SquadMember.user_id
-                                                          .in_([character.user_id for character in characters])) \
-            .join(User, User.id == SquadMember.user_id).all()
+            send_async(
+                bot,
+                chat_id=character.user_id,
+                text=MSG_UPDATE_PROFILE,
+                parse_mode=ParseMode.HTML
+            )
+
+        characters = Session.query(Character).filter(
+            tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in actual_profiles]),
+            Character.date < datetime.now() - timedelta(days=DAYS_OLD_PROFILE_KICK)
+        ).all()
+
+        members = Session.query(SquadMember, User).filter(
+            SquadMember.user_id.in_([character.user_id for character in characters])
+        ).join(User, User.id == SquadMember.user_id).all()
+
         for member, user in members:
             Session.delete(member)
             admins = Session.query(Admin).filter_by(group_id=member.squad_id).all()
