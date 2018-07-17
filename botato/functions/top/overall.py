@@ -16,8 +16,7 @@ from functions.top import get_top, __gen_top_msg
 
 
 def __get_top_attendance(user: User, date_filter):
-    actual_profiles = Session.query(Character.user_id, func.max(Character.date)).group_by(Character.user_id)
-    actual_profiles = actual_profiles.all()
+    actual_profiles = Session.query(Character.user_id, func.max(Character.date)).group_by(Character.user_id).all()
 
     battles = Session.query(
         Character,
