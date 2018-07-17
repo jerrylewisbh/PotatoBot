@@ -27,7 +27,7 @@ def top_about(bot: MQBot, update: Update, user: User):
     )
 
 
-def get_top(condition, header, field_name, icon, user, character_class='%', filter_by_squad=False):
+def get_top(condition, header, field_name, icon, user, character_class=None, filter_by_squad=False):
     newest_profiles = Session.query(
         Character.user_id,
         func.max(Character.date)
@@ -35,22 +35,41 @@ def get_top(condition, header, field_name, icon, user, character_class='%', filt
 
     # Remove all accounts where we have one non ptt castle occurence...
     logging.debug("get_top: Filter by castle")
-    if filter_by_squad:
-        characters = Session.query(Character).filter(
-            tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
-            Character.date > datetime.now() - timedelta(days=7),
-            Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
-            Squad.chat_id == user.member.squad.chat_id,
-            SquadMember.approved.is_(True),
-            Character.characterClass.ilike(character_class)
-        ).join(User).join(SquadMember).join(Squad).order_by(condition).all()
+
+    # TODO: This is a workaround for empty classes for people who update manually....
+
+    if character_class:
+        if filter_by_squad:
+            characters = Session.query(Character).filter(
+                tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
+                Character.date > datetime.now() - timedelta(days=7),
+                Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
+                Squad.chat_id == user.member.squad.chat_id,
+                SquadMember.approved.is_(True),
+                Character.characterClass.ilike(character_class)
+            ).join(User).join(SquadMember).join(Squad).order_by(condition).all()
+        else:
+            characters = Session.query(Character).filter(
+                tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
+                Character.date > datetime.now() - timedelta(days=7),
+                Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
+                Character.characterClass.ilike(character_class)
+            ).join(User).order_by(condition).all()
     else:
-        characters = Session.query(Character).filter(
-            tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
-            Character.date > datetime.now() - timedelta(days=7),
-            Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
-            Character.characterClass.ilike(character_class)
-        ).join(User).order_by(condition).all()
+        if filter_by_squad:
+            characters = Session.query(Character).filter(
+                tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
+                Character.date > datetime.now() - timedelta(days=7),
+                Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
+                Squad.chat_id == user.member.squad.chat_id,
+                SquadMember.approved.is_(True),
+            ).join(User).join(SquadMember).join(Squad).order_by(condition).all()
+        else:
+            characters = Session.query(Character).filter(
+                tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in newest_profiles]),
+                Character.date > datetime.now() - timedelta(days=7),
+                Character.castle == collate(CASTLE, 'utf8mb4_unicode_520_ci'),
+            ).join(User).order_by(condition).all()
 
     text = "<b>" + header + "</b>"
     str_format = MSG_TOP_FORMAT
