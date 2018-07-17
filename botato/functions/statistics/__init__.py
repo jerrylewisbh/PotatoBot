@@ -106,7 +106,8 @@ def __get_additional_stats_foray(from_date, location, text, user):
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
-    ).first()
+    ).group_by(UserQuest.successful).first()
+
     foray_stats_failed = Session.query(
         UserQuest.successful,
         func.count(UserQuest.id).label("count"),
@@ -115,7 +116,8 @@ def __get_additional_stats_foray(from_date, location, text, user):
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
-    ).first()
+    ).group_by(UserQuest.successful).first()
+
     stat_count_failed = 0
     if foray_stats_failed:
         stat_count_failed = foray_stats_failed.count
@@ -146,7 +148,8 @@ def __get_additional_stats_basic(from_date, location, user):
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
-    ).first()
+    ).group_by(UserQuest.successful).first()
+
     stop_stats_failed = Session.query(
         UserQuest.successful,
         func.count(UserQuest.id).label("count"),
@@ -155,7 +158,8 @@ def __get_additional_stats_basic(from_date, location, user):
         UserQuest.user_id == user.id,
         UserQuest.location_id == location.id,
         UserQuest.from_date > from_date
-    ).first()
+    ).group_by(UserQuest.successful).first()
+
     stat_count_failed = 0
     if stop_stats_failed:
         stat_count_failed = stop_stats_failed.count
@@ -269,8 +273,7 @@ def skill_statistic(bot: MQBot, update: Update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_NO_CLASS)
         return
 
-    recent_classes = Session.query(Profession.user_id, func.max(Profession.date)). \
-        group_by(Profession.user_id)
+    recent_classes = Session.query(Profession.user_id, func.max(Profession.date)).group_by(Profession.user_id)
 
     classes = Session.query(Profession).filter(
         tuple_(Profession.user_id, Profession.date).in_([(a[0], a[1]) for a in recent_classes])
