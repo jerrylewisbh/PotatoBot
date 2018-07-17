@@ -151,14 +151,27 @@ def char_update(bot: MQBot, update: Update, user: User):
     if CASTLE:
         if char and (char.castle == CASTLE or update.message.from_user.id == EXT_ID):
             char.castle = CASTLE
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
-                       parse_mode=ParseMode.HTML)
+            send_async(
+                bot,
+                chat_id=update.message.chat.id,
+                text=MSG_PROFILE_SAVED.format(char.name),
+                parse_mode=ParseMode.HTML
+            )
         else:
-            send_async(bot, chat_id=update.message.chat.id,
-                       text=MSG_PROFILE_CASTLE_MISTAKE, parse_mode=ParseMode.HTML)
+            send_async(
+                bot,
+                chat_id=update.message.chat.id,
+                text=MSG_PROFILE_CASTLE_MISTAKE,
+                parse_mode=ParseMode.HTML
+            )
     else:
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_SAVED.format(char.name),
-                   parse_mode=ParseMode.HTML)
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=MSG_PROFILE_SAVED.format(char.name),
+            parse_mode=ParseMode.HTML
+        )
+
     if char and char.castle != CASTLE:
         __ban_traitor(bot, update.message.from_user.id)
 
