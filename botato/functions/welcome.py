@@ -124,20 +124,24 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
                 joined_user.id, update.effective_chat.id
             )
             return (False, joined_user)
-        elif group.squad and group.id == update.effective_chat.id and \
-            joined_user.is_squadmember and joined_user.member.squad.chat_id == update.effective_chat.id:
-
+        elif group.squad and joined_user.is_squadmember and joined_user.member.squad.chat_id == update.group.id:
             # If a user joins a squad, allow him in if it is his own...
             logging.info(
                 "[Welcome] user_id='%s' is a member of squad '%s'", joined_user.id, joined_user.member.squad.chat_id
             )
             return (True, joined_user)
-        else:
+        elif group.squad and not joined_user.is_squadmember:
+            # If a user joins a squad, allow him in if it is his own...
             logging.info(
+                "[Welcome] user_id='%s' is not a member of any squad", joined_user.id
+            )
+            return (False, joined_user)
+        else:
+            logging.warning(
                 "[Welcome] Thorns enabled and user_id='%s' does not match given criteria",
                 joined_user.id
             )
-            return (True, joined_user)
+            return (False, joined_user)
     elif not group.thorns_enabled:
         if not joined_user.character:
             logging.info(
