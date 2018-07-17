@@ -21,7 +21,7 @@ from functions.exchange import get_item_by_cw_id
 def __get_autohide_settings(user):
     logging.info("Getting UserStockHideSetting for %s", user.id)
 
-    settings = user.auction_settings.all()
+    settings = user.hide_settings.all()
     if not settings:
         return "_Nothing configured yet / All orders completed._"
     else:
@@ -429,7 +429,7 @@ def auto_hide(bot: MQBot, update: Update, user: User, **kwargs):
 
     if not ushs:
         logging.info(
-            "New stock-hiding option by user_id='%s', priority='%s', cw_id='%s', max_price='%s'",
+            "[Hide] New stock-hiding option by user_id='%s', priority='%s', cw_id='%s', max_price='%s'",
             user.id,
             priority,
             item.cw_id,
