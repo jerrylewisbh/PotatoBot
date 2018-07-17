@@ -7,7 +7,7 @@ MessageQueue usage example with @queuedmessage decorator.
 import logging
 
 import telegram.bot
-from telegram.error import Unauthorized
+from telegram.error import Unauthorized, BadRequest
 from telegram.ext import messagequeue as mq
 
 from core.db import Session
@@ -62,3 +62,9 @@ class MQBot(telegram.bot.Bot):
                         kwargs['chat_id'],
                         exc_info=True
                     )
+        except BadRequest as ex:
+            logging.error(
+                "BadRequest for: user_id='%s', text='%s'",
+                kwargs['chat_id'] if 'chat_id' in kwargs else '<unknown_chat_id>',
+                kwargs['text'] if 'text' in kwargs else '<no_text>',
+            )
