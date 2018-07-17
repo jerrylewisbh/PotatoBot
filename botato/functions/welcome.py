@@ -124,7 +124,7 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
                 joined_user.id, update.effective_chat.id
             )
             return (False, joined_user)
-        elif group.squad and joined_user.is_squadmember and joined_user.member.squad.chat_id == update.group.id:
+        elif group.squad and joined_user.is_squadmember and joined_user.member.squad.chat_id == group.id:
             # If a user joins a squad, allow him in if it is his own...
             logging.info(
                 "[Welcome] user_id='%s' is a member of squad '%s'", joined_user.id, joined_user.member.squad.chat_id
