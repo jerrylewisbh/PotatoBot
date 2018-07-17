@@ -41,13 +41,16 @@ def welcome(bot: MQBot, update: Update, user: User):
                     welcome_msg = WelcomeMsg(chat_id=group.id, message=MSG_WELCOME_DEFAULT)
                     Session.add(welcome_msg)
 
+                logging.info("[Welcome] message='%s', chat_id='%s'", welcome_msg.message, welcome_msg.chat_id)
+
                 welcomed = Session.query(Wellcomed).filter(
                     User.id == user.id,
-                    chat_id=update.message.chat.id
+                    Wellcomed.chat_id ==update.message.chat.id
                 ).first()
 
                 if not welcomed:
                     if time() - last_welcome > 30:
+                        logging.info("[Welcome] User was not yet welcomed with this message and did not already join seconds ago")
                         send_async(
                             bot, chat_id=update.message.chat.id,
                             text=fill_template(welcome_msg.message, user)
@@ -102,14 +105,14 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
     elif update.effective_user.is_bot:
         if group.allow_bots:
             logging.info("[Welcome] user_id='%s' is a bot, they are allowed in this chat.", joined_user.id)
-            return True
+            return (True, joined_user)
         else:
             logging.info("[Welcome] user_id='%s' is a bot, bot not allwed here!", joined_user.id)
             return (False, joined_user)
     elif allow_anywhere:
         # Allow these users acces...
         logging.info("[Welcome] user_id='%s' has allow_anywhere='%s'", joined_user.id, allow_anywhere)
-        return True
+        return (True, joined_user)
     elif joined_user.is_banned:
         logging.info("[Welcome] user_id='%s' is banned!", joined_user.id)
         return (False, joined_user)
@@ -171,7 +174,10 @@ def __kick_and_restrict(bot: MQBot, update: Update, kick_user: User):
         kick_user.id
     )
 
-
+@command_handler(
+    allow_group=True,
+    min_permission=AdminType.GROUP,
+)
 def set_welcome(bot: MQBot, update: Update, user: User):
     if update.message.chat.type in ['group', 'supergroup']:
         group = update_group(update.message.chat)
