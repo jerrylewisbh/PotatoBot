@@ -74,33 +74,6 @@ def get_top(condition, header, field_name, icon, user, character_class='%', filt
     return text
 
 
-def __get_attendence(bot: MQBot, update: Update, user: User):
-    # Battle stats for squad
-    actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
-        group_by(Character.user_id)
-    actual_profiles = actual_profiles.all()
-    today = datetime.today().date()
-    battles = Session.query(Character, func.count(Report.user_id)).filter(
-        tuple_(Character.user_id, Character.date).in_([(a[0], a[1]) for a in actual_profiles]),
-        Character.date > datetime.now() - timedelta(days=7),
-        Squad.chat_id == user.member.squad.chat_id,
-        SquadMember.approved.is_(True)
-    ).outerjoin(Report, Report.user_id == Character.user_id).join(User).join(SquadMember).filter(
-        Report.date > today - timedelta(days=today.weekday())
-    ).filter(Report.earned_exp > 0).group_by(Character).order_by(func.count(Report.user_id).desc())
-
-    battles = battles.filter(Character.castle == CASTLE).all()
-    user_id = user.id
-    text_battle = __gen_top_msg(battles, user_id, MSG_TOP_WEEK_WARRIORS, '⛳️')
-
-    send_async(
-        bot,
-        chat_id=update.message.chat.id,
-        text=MSG_TOP_SQUAD + "\n",
-        parse_mode=ParseMode.HTML,
-    )
-
-
 def __gen_top_msg(data, user_id, header, icon):
     text = "<b>" + header + "</b>"
     str_format = MSG_TOP_FORMAT
