@@ -63,10 +63,10 @@ def info(bot: MQBot, update: Update, user: User):
         MSG_ON if group.allow_bots else MSG_OFF,
 
     )
-    if len(group.squad):
+    if group.squad:
         msg += MSG_GROUP_STATUS_SQUAD.format(
-            MSG_ON if group.squad[0].hiring else MSG_OFF,
-            MSG_ON if group.squad[0].testing_squad else MSG_OFF,
+            MSG_ON if group.squad.hiring else MSG_OFF,
+            MSG_ON if group.squad.testing_squad else MSG_OFF,
         )
 
     adm_del_keys.append([
@@ -114,7 +114,7 @@ def list(bot: MQBot, update: Update, user: User):
                 "{}{}".format(
                     '⚜' if group.squad else '🏘️',
                     group.title if not group.squad else '{} (Squad: {})'.format(
-                        group.title, group.squad[0].squad_name
+                        group.title, group.squad.squad_name
                     )
                 ),
                 callback_data=create_callback(

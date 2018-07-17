@@ -40,7 +40,7 @@ class Group(Base):
     group_items = relationship(
         'OrderGroupItem', back_populates='chat', cascade="save-update, merge, delete, delete-orphan"
     )
-    squad = relationship('Squad', back_populates='chat', lazy='dynamic')
+    squad = relationship('Squad', back_populates='chat', uselist=False)
     orders = relationship('Order', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
 
 
