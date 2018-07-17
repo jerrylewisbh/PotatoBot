@@ -129,6 +129,12 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
                 "[Welcome] user_id='%s' is a member of squad '%s'", joined_user.id, joined_user.member.squad.chat_id
             )
             return (True, joined_user)
+        else:
+            logging.info(
+                "[Welcome] Thorns enabled and user_id='%s' does not match given criteria",
+                joined_user.id
+            )
+            return (True, joined_user)
     elif not group.thorns_enabled:
         if not joined_user.character:
             logging.info(
