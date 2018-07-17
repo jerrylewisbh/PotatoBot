@@ -5,7 +5,7 @@ import logging
 import telegram
 from telegram import Update
 
-from config import ACADEM_CHAT_ID, CASTLE, CASTLE_CHAT_ID
+from config import CASTLE_CHAT_ID
 from core.bot import MQBot
 from core.decorators import command_handler, create_or_update_user
 from core.template import fill_template
@@ -95,7 +95,7 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
         CASTLE_CHAT_ID == update.message.chat.id
     )
 
-    if group.id == CASTLE_CHAT_ID or group.id == ACADEM_CHAT_ID:
+    if group.id == CASTLE_CHAT_ID:
         # Castle and Academy are excempted from thorns, etc.
         logging.info("[Welcome] user_id='%s' joined Castle/Academy", joined_user.id)
         return (True, joined_user)
