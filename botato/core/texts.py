@@ -324,7 +324,7 @@ MSG_TOP_ATTACK_SQUAD = '⚔Тop Attackers for squad {}:\n\n'
 MSG_TOP_EXPERIENCE_SQUAD = '🔥Top XP for squad {}:\n\n'
 
 MSG_TOP_WEEK_WARRIORS = '⛳️Top attendance in {}:\n\n'
-MSG_TOP_WEEK_WARRIORS_SQUAD = '⛳Top attendance in Squad "{}" {}:\n\n'
+MSG_TOP_WEEK_WARRIORS_SQUAD = '⛳Top attendance in Squad "{}":\n\n'
 MSG_TOP_WEEK_WARRIORS_CLASS = '⛳Top {} battle attendance {}:\n\n'
 MSG_TOP_SQUAD = '<b>Squad TOP:</b>\n'
 
