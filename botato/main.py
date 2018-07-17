@@ -10,10 +10,7 @@ from core.handler import buttons, chats, manage_all
 from core.handler import commands
 from core.handler.callback import callback_query
 from core.handler.inline import inlinequery
-from core.jobs.job_queue import (add_after_war_messages,
-                                 add_battle_report_messages,
-                                 add_pre_war_messages,
-                                 add_war_warning_messages)
+from core.jobs import add_war_warning_messages, add_pre_war_messages, add_after_war_messages, add_battle_report_messages
 from core.logging import TelegramHandler, HtmlFormatter
 from core.texts import *
 from cwmq import Consumer, Publisher
