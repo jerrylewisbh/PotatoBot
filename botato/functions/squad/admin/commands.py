@@ -185,6 +185,7 @@ def add_to_squad(bot: MQBot, update: Update, user: User):
                             callback_data=create_callback(
                                 CallbackAction.SQUAD_INVITE,
                                 user.id,
+                                allow_all=True, # Can be selected by everyone. Permissions checked in accept/decline!
                                 invited_user_id=invited_user.id,
                                 squad_id=squad.chat_id,
                                 sub_action='invite_accept',
@@ -195,6 +196,7 @@ def add_to_squad(bot: MQBot, update: Update, user: User):
                             callback_data=create_callback(
                                 CallbackAction.SQUAD_INVITE,
                                 user.id,
+                                allow_all=True,  # Can be selected by everyone. Permissions checked in accept/decline!
                                 sub_action='invite_decline',
                                 squad_id=squad.chat_id,
                                 invited_user_id=invited_user.id

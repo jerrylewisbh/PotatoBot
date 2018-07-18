@@ -189,12 +189,16 @@ def squad_invite(bot: MQBot, update: Update, _user: User):
         logging.warning("squad_invite_answer without callback_query called")
         return
 
+    # BE CAREFUL: Since the squad_invite thing is sent to a GROUP we need to allow all users to click on it or
+    # otherwise the message gets invalidated. We need to MANUALLY handle this...
     action = get_callback_action(update.callback_query.data, update.effective_user.id)
     if action.data['invited_user_id'] != update.callback_query.from_user.id:
         update.callback_query.answer(text=MSG_GO_AWAY)
         return
 
     invited_user = Session.query(User).filter(User.id == action.data['invited_user_id']).first()
+
+
     if action.data['sub_action'] == "invite_decline":
         __invite_decline(bot, update, invited_user)
     elif action.data['sub_action'] == "invite_accept":

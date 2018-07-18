@@ -365,6 +365,7 @@ def __get_confirm_keyboard(user: User, order_id, count, forward=False, order='')
             callback_data=create_callback(
                 CallbackAction.ORDER_CONFIRM,
                 user.id,
+                allow_all=True,  # Can be selected by everyone. Permissions checked in accept/decline!
                 order_id=order_id
             )
         )]
