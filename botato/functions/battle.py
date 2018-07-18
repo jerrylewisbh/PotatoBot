@@ -58,7 +58,7 @@ def ready_to_battle(bot: MQBot, job_queue: Job):
                 markup=None
             )
     except SQLAlchemyError as err:
-        bot.logger.error(str(err))
+        logging.error(str(err))
         Session.rollback()
 
 
