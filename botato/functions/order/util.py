@@ -1,9 +1,11 @@
 import logging
+from telegram.error import Unauthorized
 from telegram import ReplyMarkup, TelegramError
 from telegram.ext import run_async
 
 from core.bot import MQBot
 from core.enums import MessageType
+
 
 
 class OrderDraft(object):
@@ -64,7 +66,7 @@ def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarku
         elif order.type == MessageType.PHOTO.value:
             msg_sent = bot.send_photo(chat_id, order.order, reply_markup=markup)
         else:
-            logging.info("SEND ORDER")
+            logging.info("Sending Order")
             msg_sent = bot.send_message(
                 chat_id=chat_id,
                 text=order.order,
@@ -74,12 +76,17 @@ def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarku
 
         if order.pin:
             msg_result = msg_sent.result()
-            logging.info("Pinning for message_id='%s'", msg_result.message_id)
-            bot.pin_chat_message(
-                chat_id=chat_id,
-                message_id=msg_result.message_id,
-                disable_notification=False,
-            )
+            # If it got send... Pin it
+            if msg_sent:
+                try:
+                    logging.info("Pinning for message_id='%s'", msg_result.message_id)
+                    bot.pin_chat_message(
+                        chat_id=chat_id,
+                        message_id=msg_result.message_id,
+                        disable_notification=False,
+                    )
+                except Unauthorized:
+                    logging.warning("I'm not allowed to pin message in chat_id='%s'", chat_id)
 
         logging.info(
             "END send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
@@ -92,5 +99,5 @@ def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarku
         )
         return msg_sent
     except TelegramError as err:
-        bot.logger.error(err.message)
+        logging.error(err.message)
         return None
