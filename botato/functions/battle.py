@@ -69,7 +69,8 @@ def after_battle(bot: MQBot, job_queue: Job):
         group = Session.query(Squad).filter(
             Group.reminders_enabled == True,
             Group.fwd_minireport == False
-        ).all()
+        ).join(Group).all()
+        
         for item in group:
             new_order = Order()
             new_order.text = job_queue.context
