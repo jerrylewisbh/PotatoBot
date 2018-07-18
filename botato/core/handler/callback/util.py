@@ -70,16 +70,17 @@ class CallbackAction(IntFlag):
 
 
 class Action(object):
-    def __init__(self, action, user_id, **kwargs):
+    def __init__(self, action, user_id, allow_all=False, **kwargs):
         self.action = action
         self.user_id = user_id
         self.data = kwargs
+        self.allow_all = allow_all
 
     def __str__(self):
         return "Action: '{}', User-ID: '{}', Data: {}".format(self.action, self.user_id, str(self.data) if self.data else "Empty")
 
 
-def get_callback_action(uuid_key, user_id, allow_all=False):
+def get_callback_action(uuid_key, user_id):
     """ Save a simple callback to redis. This checks if the user using the keyboard is also the one we initially
     registered. This can be disabled with allow_all=True"""
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
@@ -87,7 +88,7 @@ def get_callback_action(uuid_key, user_id, allow_all=False):
     if action:
         action = pickle.loads(action)
         logging.debug(action)
-        if user_id == action.user_id or allow_all:
+        if user_id == action.user_id or getattr(action, "allow_all", False):
             return action
         else:
             logging.error("user_id in action != user_id used for loading!")
@@ -95,13 +96,16 @@ def get_callback_action(uuid_key, user_id, allow_all=False):
     return None
 
 
-def create_callback(action, user_id, **kwargs):
+def create_callback(action, user_id, allow_all=False, **kwargs):
     """ Callback data for Telegram is limited to a few bytes. To be more flexible we create a UUID and store the
-    actual callback-data in Redis. Keys are stored for up to one day and then get removed."""
+    actual callback-data in Redis. Keys are stored for up to one day and then get removed.
+
+    allow_all will disable uid check. Use with care!
+    """
 
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
 
-    a = Action(action, user_id, **kwargs)
+    a = Action(action, user_id, allow_all, **kwargs)
     callback_id = str(uuid.uuid1())
     r.set(callback_id, pickle.dumps(a), ex=3600 * 30)  # Age out data after 180 days...
     return callback_id
