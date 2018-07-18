@@ -3,9 +3,10 @@ import logging
 
 import redis
 from sqlalchemy import func, collate
+from sqlalchemy.exc import SQLAlchemyError
 
 from config import REDIS_PORT, REDIS_SERVER, REDIS_TTL, LOG_LEVEL_MQ, MQ_TESTING
-from core.db import Session
+from core.db import Session, new_item
 from core.model import Item, UserExchangeOrder
 from cwmq import Publisher, wrapper
 from functions.common import (MSG_API_INCOMPLETE_SETUP,
@@ -35,7 +36,20 @@ def digest_handler(channel, method, properties, body, dispatcher):
                 Item.name == collate(digest_item['name'], 'utf8mb4_unicode_520_ci')
             ).first()
             if not item:
-                continue  # Don't know that item...
+                item = new_item(digest_item['name'], True)
+                if not item:
+                    # Still nothing?
+                    continue
+            elif not item.tradable:
+                item.tradable = True
+                try:
+                    Session.add(item)
+                    Session.commit()
+
+                    logging.warning("Item '%s' is now tradable according to digest! Changed setting.", item.name)
+                except SQLAlchemyError as err:
+                    logging.error(str(err))
+                    Session.rollback()
 
             orders = item.user_orders.order_by(UserExchangeOrder.id).all()
             for order in orders:
