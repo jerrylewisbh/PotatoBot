@@ -16,7 +16,7 @@ from core.utils import send_async
 )
 def enable_thorns(bot: MQBot, update: Update, _user: User):
     group = Session.query(Group).filter_by(id=update.message.chat.id).first()
-    if group and len(group.squad) == 1:
+    if group:
         group.thorns_enabled = True
         Session.add(group)
         Session.commit()
