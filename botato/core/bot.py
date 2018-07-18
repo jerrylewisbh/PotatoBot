@@ -7,11 +7,12 @@ MessageQueue usage example with @queuedmessage decorator.
 import logging
 
 import telegram.bot
-from telegram.error import Unauthorized, BadRequest, TimedOut
+from sqlalchemy.exc import SQLAlchemyError
+from telegram.error import Unauthorized, BadRequest, TimedOut, ChatMigrated
 from telegram.ext import messagequeue as mq
 
 from core.db import Session
-from core.model import User, UserExchangeOrder, UserStockHideSetting
+from core.model import User, UserExchangeOrder, UserStockHideSetting, Group
 
 
 class MQBot(telegram.bot.Bot):
@@ -55,19 +56,58 @@ class MQBot(telegram.bot.Bot):
                     Session.query(UserStockHideSetting).filter(UserStockHideSetting.user_id == user.id).delete()
                     Session.add(user)
                     Session.commit()
-                else:
-                    logging.warning(
-                        "Unauthorized occurred: %s. We should probably chat_id='%s' from bot.",
-                        ex.message,
-                        kwargs['chat_id'],
-                        exc_info=True
-                    )
-                    raise ex
+                    return
+
+                group = Session.query(Group).filter(Group.id == kwargs['chat_id']).first()
+                if group:
+                    group.bot_in_group = False
+                    try:
+                        Session.add(group)
+                        Session.commit()
+                        logging.warning(
+                            "Bot is no longer member of chat_id='%s', disabling group", kwargs['chat_id']
+                        )
+                    except SQLAlchemyError:
+                        Session.rollback()
+                        logging.warning(
+                            "Rollback while setting group.bot_in_group = False for chat_id='%s'", kwargs['chat_id']
+                        )
+                    return
+
+                logging.warning(
+                    "Unauthorized occurred: %s. We should probably remove chat_id='%s' from bot.",
+                    ex.message,
+                    kwargs['chat_id'],
+                    exc_info=True
+                )
+
+            # Otherwise raise exception
+            raise ex
+        except ChatMigrated as ex:
+            if "chat_id" in kwargs:
+                group = Session.query(Group).filter(Group.id == kwargs['chat_id']).first()
+                if group:
+                    group.bot_in_group = False
+                    try:
+                        Session.add(group)
+                        Session.commit()
+                        logging.warning(
+                            "chat_id='%s' migrated to chat_id='%s', disabling old group",
+                            ex.new_chat_id, kwargs['chat_id']
+                        )
+                    except SQLAlchemyError:
+                        Session.rollback()
+                        logging.warning(
+                            "Rollback while setting group.bot_in_group = False for chat_id='%s'", kwargs['chat_id']
+                        )
+                    return
+            raise ex
         except TimedOut as ex:
             logging.warning("TimedOut: Ignoring this message")
         except BadRequest as ex:
             logging.error(
-                "BadRequest for: user_id='%s', text='%s'",
+                "BadRequest for: user_id='%s', text='%s', error_msg='%s'",
                 kwargs['chat_id'] if 'chat_id' in kwargs else '<unknown_chat_id>',
                 kwargs['text'] if 'text' in kwargs else '<no_text>',
+                ex.message,
             )

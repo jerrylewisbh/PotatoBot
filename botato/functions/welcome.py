@@ -3,6 +3,7 @@ from time import time
 import logging
 
 import telegram
+from datetime import datetime, timedelta
 from telegram import Update
 
 from config import CASTLE_CHAT_ID
@@ -12,7 +13,7 @@ from core.template import fill_template
 from core.texts import *
 from core.db import Session, check_permission
 from core.enums import AdminType
-from core.model import User, WelcomeMsg, Wellcomed, Admin, Group
+from core.model import User, WelcomeMsg, Wellcomed, Admin, Group, Ban
 from core.utils import send_async, update_group
 
 last_welcome = 0
@@ -75,11 +76,6 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
     - I try to list every condition here to get debug logging in place
      
     """
-
-    print(update.effective_chat)
-    print(update.effective_user)
-    print(update.effective_message)
-
     joined_user = create_or_update_user(new_chat_member)
 
     # Full-Admins are allowed anywhere except when they are banned
@@ -100,7 +96,8 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
         logging.info("[Welcome] user_id='%s' joined Castle/Academy", joined_user.id)
         return (True, joined_user)
     elif joined_user.id == bot.id:
-        logging.info("user_id matches bot_id")
+        logging.info("[Welcome] user_id matches bot_id -> Bot joined this channel")
+        update_group(update.message.chat)
         return (True, joined_user)
     elif update.effective_user.is_bot:
         if group.allow_bots:

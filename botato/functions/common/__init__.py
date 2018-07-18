@@ -1,9 +1,12 @@
 import logging
+from html import escape
+
 import redis
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from pymysql import IntegrityError
 from sqlalchemy import func, collate
+from sqlalchemy.exc import SQLAlchemyError
 from telegram import ParseMode, Update, TelegramError
 from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated
 
@@ -328,75 +331,319 @@ def kick_from_chat(bot: MQBot, update: Update, user: User):
     min_permission=AdminType.FULL,
 )
 def ban(bot: MQBot, update: Update, user: User):
-    username, reason = update.message.text.split(' ', 2)[1:]
+    """ Ban Command """
+
+    try:
+        username, reason = update.message.text.split(' ', 2)[1:]
+    except ValueError:
+        send_async(
+            bot,
+            chat_id=update.message.chat_id,
+            text="Missing parameters. Format is /ban @username <some reason> or /ban userid <some reason>!"
+        )
+        return
+
     username = username.replace('@', '')
-    user = Session.query(User).filter_by(username=username).first()
-    if user:
-        banned = Session.query(Ban).filter_by(user_id=user.id).first()
-        if banned:
-            send_async(bot, chat_id=update.message.chat.id,
-                       text=MSG_ALREADY_BANNED.format(banned.to_date, banned.reason))
+    ban_user = Session.query(User).filter_by(username=username).first()
+    if not ban_user:
+        try:
+            # If we found no match, try to find by user_Id
+            ban_user = Session.query(User).filter(User.id == int(username)).first()
+        except ValueError:
+            pass
+
+    if ban_user:
+        # Compare permissions between ban user and user who requests it. Only if they are not equal we allow that!
+        max_permission_requester = AdminType.NOT_ADMIN
+        for permission in user.permissions:
+            if permission.admin_type < max_permission_requester:
+                max_permission_requester = permission.admin_type
+
+        max_permission_ban_user = AdminType.NOT_ADMIN
+        for permission in ban_user.permissions:
+            if permission.admin_type < max_permission_ban_user:
+                max_permission_ban_user = permission.admin_type
+
+        # Requester has HIGHER rights...
+        if max_permission_requester >= max_permission_ban_user:
+            logging.warning(
+                "[Ban] user_id='%s' tried to ban user_id='%s' but he has same or higher privileges",
+                user.id,
+                ban_user.id
+            )
+            send_async(
+                bot,
+                chat_id=update.message.chat_id,
+                text="🚨 Not a chance! Find someone with higher permissions."
+            )
+            return
         else:
-            banned = Ban()
-            banned.user_id = user.id
-            banned.from_date = datetime.now()
-            banned.to_date = datetime.max
-            banned.reason = reason or MSG_NO_REASON
-            member = Session.query(SquadMember).filter_by(user_id=user.id).first()
-            if member:
-                Session.delete(member)
-            admins = Session.query(Admin).filter_by(user_id=user.id).all()
-            for admin in admins:
-                Session.delete(admin)
-            Session.add(banned)
-            Session.commit()
-            squads = Session.query(Squad).all()
-            for squad in squads:
-                send_async(bot, chat_id=squad.chat_id, text=MSG_USER_BANNED.format('@' + username))
-            send_async(bot, chat_id=user.id, text=MSG_YOU_BANNED.format(banned.reason))
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_BAN_COMPLETE)
+            banned = Session.query(Ban).filter_by(user_id=ban_user.id).first()
+            if banned:
+                logging.info("[Ban] user_id='%s' is already banned", ban_user.id)
+                send_async(
+                    bot,
+                    chat_id=update.message.chat.id,
+                    text=MSG_ALREADY_BANNED
+                )
+            else:
+                was_banned = __ban(bot, ban_user, reason)
+                if was_banned:
+                    send_async(
+                        bot,
+                        chat_id=update.message.chat.id,
+                        text=MSG_BAN_COMPLETE
+                    )
+                    try:
+                        send_async(
+                            bot,
+                            chat_id=update.message.chat_id,
+                            text=__get_user_info(bot, ban_user),
+                            parse_mode=ParseMode.HTML,
+                        )
+                    # This might fail due to channels botato was removed from that where previously unknown...
+                    except TelegramError:
+                        send_async(
+                            bot,
+                            chat_id=update.message.chat_id,
+                            parse_mode=ParseMode.HTML,
+                            text="Something went wrong generating the report. Try again. If it still fails notify admins!"
+                        )
+                else:
+                    send_async(
+                        bot,
+                        chat_id=update.message.chat.id,
+                        text="Ban failed? Check logs!"
+                    )
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
 
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def user_info(bot: MQBot, update: Update, user: User):
+    """ Check one ban """
+
+    username = update.message.text.split(' ', 1)[1]
+    username = username.replace('@', '')
+    ban_user = Session.query(User).filter_by(username=username).first()
+    if not ban_user:
+        try:
+            # If we found no match, try to find by user_Id
+            ban_user = Session.query(User).filter(User.id == int(username)).first()
+        except ValueError:
+            pass
+
+    if not ban_user:
+        # Compare permissions between ban user and user who requests it. Only if they are not equal we allow that!
+        send_async(
+            bot,
+            chat_id=update.message.chat_id,
+            text="User is not banned or unknown!"
+        )
+    else:
+        try:
+            send_async(
+                bot,
+                chat_id=update.message.chat_id,
+                text=__get_user_info(bot, ban_user),
+                parse_mode=ParseMode.HTML,
+            )
+        # This might fail due to channels botato was removed from that where previously unknown...
+        except TelegramError:
+            send_async(
+                bot,
+                chat_id=update.message.chat_id,
+                parse_mode=ParseMode.HTML,
+                text="Something went wrong generating the report. Try again. If it still fails notify admins!"
+            )
+@command_handler(
+    min_permission=AdminType.FULL,
+)
+def ban_info_all(bot: MQBot, update: Update, user: User):
+    """ Check all bans """
+
+    all_banned = Session.query(Ban).all()
+    for ban in all_banned:
+        ban_user = ban.user
+        try:
+            send_async(
+                bot,
+                chat_id=update.message.chat_id,
+                text=__get_user_info(bot, ban_user),
+                parse_mode=ParseMode.HTML,
+            )
+        # This might fail due to channels botato was removed from that where previously unknown...
+        except TelegramError:
+            send_async(
+                bot,
+                chat_id=update.message.chat_id,
+                parse_mode=ParseMode.HTML,
+                text="Something went wrong generating the report. Try again. If it still fails notify admins!"
+            )
+
+def __get_user_info(bot: MQBot, ban_user: User):
+    text = "<b>User:</b> {}\n<b>Status:</b> {}\n\n".format(
+        "@"+escape(ban_user.username) if ban_user.username else ban_user.id,
+        "⚱️BANNED" if ban_user.is_banned else "👌 Not banned"
+    )
+
+    text += "<b>Status in all ACTIVE chats:</b>\n"
+
+    all_active_groups = Session.query(Group).filter(
+        Group.bot_in_group == True
+    ).all()
+    for group in all_active_groups:
+        chat_user_banned = bot.get_chat_member(group.id, ban_user.id)
+
+        status = "❓ Unknown"
+        if ban_user.is_banned:
+            if chat_user_banned.status == 'kicked':
+                status = "✅Banned"
+            elif chat_user_banned.status == 'left':
+                status = "⚠️Not in group but not banned! (Missing Bot-Permissions?)"
+            elif chat_user_banned.status == 'restricted':
+                status = "⚠️Restricted but not banned!"
+            elif chat_user_banned.status == 'member':
+                status = "🚨In group (unbanned!)"
+            elif chat_user_banned.status == 'administrator':
+                status = "🆘Administrator!"
+            elif chat_user_banned.status == 'creator':
+                status = "🆘Creator!"
+        else:
+            if chat_user_banned.status == 'kicked':
+                status = "🚨Banned"
+            elif chat_user_banned.status == 'restricted':
+                status = "⚠️Restricted"
+            elif chat_user_banned.status == 'left':
+                status = "✅️Not in group/not banned"
+            elif chat_user_banned.status == 'member':
+                status = "✅In group"
+            elif chat_user_banned.status == 'administrator':
+                status = "✅Administrator!"
+            elif chat_user_banned.status == 'creator':
+                status = "✅Creator!"
+
+        text += "- {}: {}\n".format(group.title, status)
+
+    return text
+
+
+def __ban(bot: MQBot, ban_user: User, reason: str):
+    """ Ban a  user and remove him from everywhere...
+
+        1) Revoke right to interact with bot
+        2) Remove user from assigned squad in bot
+        3) For each group where bot is admin in with ban privileges:
+            check if the user is in the group
+            - if in the group, ban the user & notify group with "Long Ass Reason"
+            - else, ban the user from the group
+        4) for each group botato does not have admin privileges:
+            - notify group with "Long Ass Reason"
+    """
+
+    # Create ban
+    banned = Ban()
+    banned.user_id = ban_user.id
+    banned.from_date = datetime.now()
+    banned.to_date = datetime.max
+    banned.reason = reason or MSG_NO_REASON
+
+    try:
+        Session.add(banned)
+        Session.commit()
+    except SQLAlchemyError as ex:
+        logging.error("[Ban] Can't save ban!")
+        Session.rollback()
+        return False
+
+    # Delete user from squad
+    member = Session.query(SquadMember).filter_by(user_id=ban_user.id).first()
+    if member:
+        logging.info("[Ban] Remove user_id='%s' from squad_id='%s'", ban_user.id, member.squad_id)
+        Session.delete(member)
+
+    # Remove Admin-Permissions
+    admins = Session.query(Admin).filter_by(user_id=ban_user.id).all()
+    for admin in admins:
+        logging.info("[Ban] Removing admin-rights for user_id='%s'", ban_user.id)
+        Session.delete(admin)
+
+    # Save everything...
+    Session.commit()
+
+    disable_api_functions(ban_user)
+
+    logging.info("[Ban] Saved ban and removed all access rights")
+
+    all_active_groups = Session.query(Group).filter(
+        Group.bot_in_group == True
+    ).all()
+
+    for group in all_active_groups:
+        group_report = {}
+        try:
+            chat_user_banned = bot.get_chat_member(group.id, ban_user.id)
+            chat_user_bot = bot.get_chat_member(group.id, bot.id)
+
+            if chat_user_bot.status not in ['administrator', 'creator']:
+                # Can't be kicked because we have no permissions
+                bot.send_message(
+                    chat_id=group.id,
+                    text=MSG_USER_BANNED_UNAUTHORIZED.format(
+                        '@' + ban_user.username if ban_user.username else ban_user.id,
+                        banned.reason
+                    ),
+                )
+            elif chat_user_banned.status in ['member', 'restricted']:
+                # Currently a member. restrict + kick
+                logging.info("[Ban] kick and restrict user_id='%s'", ban_user.id)
+                bot.restrict_chat_member(group.id, ban_user.id)
+                bot.kick_chat_member(group.id, ban_user.id)
+
+                bot.send_message(
+                    chat_id=group.id,
+                    text=MSG_USER_BANNED.format(
+                        '@' + ban_user.username if ban_user.username else ban_user.id,
+                        banned.reason
+                    ),
+                )
+            elif chat_user_banned.status == 'left':
+                # Not a member. Just restrict
+                bot.restrict_chat_member(group.id, ban_user.id)
+            elif chat_user_banned.status in ['administrator', 'creator']:
+                # Can't be kicked :-(
+                bot.send_message(
+                    chat_id=group.id,
+                    text=MSG_USER_BANNED_UNAUTHORIZED.format(
+                        '@' + ban_user.username if ban_user.username else ban_user.id,
+                        banned.reason
+                    ),
+                )
+        except Unauthorized as ex:
+            bot.send_message(
+                chat_id=group.id,
+                text=MSG_USER_BANNED_UNAUTHORIZED.format(
+                    '@' + ban_user.username if ban_user.username else ban_user.id,
+                    banned.reason
+                ),
+            )
+        except TelegramError as ex:
+            logging.warning(
+                "[Ban] Error banning user: %s",
+                ex.message
+            )
+
+    # TODO: REENABLE!
+    #send_async(bot, chat_id=ban_user.id, text=MSG_YOU_BANNED.format(banned.reason))
+
+    return True
+
 
 def __ban_traitor(bot: MQBot, user_id: int):
-    user = Session.query(User).filter(User.id == user_id).first()
-    if user:
-        logging.warning("Banning %s", user.id)
-
-        banned = Ban()
-        banned.user_id = user.id
-        banned.from_date = datetime.now()
-        banned.to_date = datetime.max
-        banned.reason = MSG_REASON_TRAITOR
-
-        member = Session.query(SquadMember).filter_by(user_id=user.id).first()
-        if member:
-            Session.delete(member)
-            try:
-                bot.restrictChatMember(member.squad_id, member.user_id)
-                bot.kickChatMember(member.squad_id, member.user_id)
-            except TelegramError as err:
-                bot.logger.error(err.message)
-
-        disable_api_functions(user)
-
-        admins = Session.query(Admin).filter_by(user_id=user.id).all()
-        # for admin in admins:
-        # Session.delete(admin)
-
-        try:
-            Session.add(banned)
-            Session.add(user)
-            Session.commit()
-        except IntegrityError:
-            logging.warning("User user_id='%s' already banned", user.id)
-            Session.rollback()
-
-
-
-        # send_async(bot, chat_id=GOVERNMENT_CHAT, text=MSG_USER_BANNED_TRAITOR.format('@' + user.username))
-
+    ban_user = Session.query(User).filter(User.id == user_id).first()
+    if ban_user:
+        __ban(bot, ban_user, MSG_REASON_TRAITOR)
 
 @command_handler(
     min_permission=AdminType.FULL
@@ -404,16 +651,66 @@ def __ban_traitor(bot: MQBot, user_id: int):
 def unban(bot: MQBot, update: Update, user: User):
     username = update.message.text.split(' ', 1)[1]
     username = username.replace('@', '')
-    user = Session.query(User).filter_by(username=username).first()
-    if user:
-        banned = Session.query(Ban).filter_by(user_id=user.id).first()
+    unban_user = Session.query(User).filter_by(username=username).first()
+    if not unban_user:
+        try:
+            # Try to find by ID
+            unban_user = Session.query(User).filter(User.id == int(username)).first()
+        except ValueError:
+            pass
+
+    if unban_user:
+        banned = Session.query(Ban).filter_by(user_id=unban_user.id).first()
         if banned:
-            Session.delete(banned)
-            Session.commit()
-            send_async(bot, chat_id=user.id, text=MSG_YOU_UNBANNED)
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNBANNED.format('@' + user.username))
-        else:
-            send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_NOT_BANNED)
+            logging.info("[Unban] user_id='%s' is banned. Lifting it.", unban_user.id)
+            try:
+                Session.delete(banned)
+                Session.commit()
+            except SQLAlchemyError:
+                Session.rollback()
+
+        logging.info("[Unban] Lifting chat restrictions for user_id='%s' regardless of ban status", unban_user.id)
+        all_active_groups = Session.query(Group).filter(
+            Group.bot_in_group == True
+        ).all()
+        for group in all_active_groups:
+            group_report = {}
+            try:
+                chat_user_unbanned = bot.get_chat_member(group.id, unban_user.id)
+                chat_user_bot = bot.get_chat_member(group.id, bot.id)
+
+                if chat_user_unbanned.status in ['kicked', 'restricted']:
+                    logging.info("[Ban] kick and restrict user_id='%s'", unban_user.id)
+                    bot.restrict_chat_member(
+                        chat_id=group.id,
+                        user_id=unban_user.id,
+                        #until_date=datetime.now()+timedelta(seconds=45),
+                        can_send_messages=True,
+                        can_send_media_messages=True,
+                        can_send_other_messages=True,
+                        can_add_web_page_previews=True,
+                    )
+            except Unauthorized as ex:
+                bot.send_message(
+                    chat_id=group.id,
+                    text=MSG_USER_BANNED_UNAUTHORIZED.format(
+                        '@' + unban_user.username if unban_user.username else unban_user.id,
+                        banned.reason
+                    ),
+                )
+            except TelegramError as ex:
+                logging.warning(
+                    "[Ban] Error banning user: %s",
+                    ex.message
+                )
+
+        send_async(bot, chat_id=unban_user.id, text=MSG_YOU_UNBANNED)
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=__get_user_info(bot, unban_user),
+            parse_mode=ParseMode.HTML
+        )
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_USER_UNKNOWN)
 

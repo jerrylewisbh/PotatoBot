@@ -12,7 +12,7 @@ def send_async(bot: MQBot, *args, **kwargs):
     return bot.send_message(*args, **kwargs)
 
 
-def update_group(grp):
+def update_group(grp, in_group=True):
     if grp.type in ['group', 'supergroup', 'channel']:
         group = Session.query(Group).filter_by(id=grp.id).first()
         if group is None:
@@ -28,8 +28,8 @@ def update_group(grp):
             if group.title != grp.title:
                 group.title = grp.title
                 updated = True
-            if not group.bot_in_group:
-                group.bot_in_group = True
+            if group.bot_in_group != in_group:
+                group.bot_in_group = in_group
                 updated = True
             if updated:
                 Session.add(group)

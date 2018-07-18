@@ -11,7 +11,7 @@ from functions.squad.admin import call_squad
 from functions.user import set_admin, del_admin, list_admins, set_global_admin, set_super_admin, del_global_admin, \
     admins_for_users
 from functions.common import admin_panel, ban, help_msg, ping, unban, get_log, force_kick_botato, kick_from_chat, \
-    delete_msg
+    delete_msg, user_info, ban_info_all
 from functions.exchange import list_items, list_items_other, list_items_unknown
 from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume
@@ -106,6 +106,8 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("findc", find_by_character))
     disp.add_handler(CommandHandler("findi", find_by_id))
     disp.add_handler(CommandHandler("ban", ban))
+    disp.add_handler(CommandHandler("user_info", user_info))
+    disp.add_handler(CommandHandler("ban_info_all", ban_info_all))
     disp.add_handler(CommandHandler("unban", unban))
     disp.add_handler(CommandHandler("get_log", get_log))
 

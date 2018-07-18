@@ -332,8 +332,10 @@ MSG_UPDATE_PROFILE = 'Send me a new profile (🏅 command "/hero"), or you might
 MSG_SQUAD_DELETE_OUTDATED = 'You were kicked from the squad for not updating your profile for a long time.'
 MSG_SQUAD_DELETE_OUTDATED_EXT = '{} (@{}) was kicked from {} for not updating profile for a long time.'
 
-MSG_ALREADY_BANNED = 'This user is already banned. The reason is: {2}.'
-MSG_USER_BANNED = '{} violated the rules and was kicked off!'
+MSG_ALREADY_BANNED = 'This user is already banned.'
+MSG_USER_BANNED = '{} violated the rules and was kicked off!\nReason: {}'
+MSG_USER_BANNED_UNAUTHORIZED = "🚨🚨🚨 {} violated the rules but can't be removed from group!\nReason: {}"
+
 MSG_USER_BANNED_TRAITOR = 'Et tu, Brute? {} pledged allegiance to another castle, we will remember you!'
 MSG_YOU_BANNED = 'You were banned because: {}'
 MSG_BAN_COMPLETE = 'Warrior successfully banned'
@@ -592,7 +594,7 @@ SNIPE_REMOVED = "{} was removed from your order list!"
 SNIPED_ITEM = "⚖️Got it! You bought <b>{}</b> for {}💰 ({} x {}💰)\nSeller: {}{}\n\n<i>Note: You can disable this notification in your \"⚙️Settings\".</i>"
 SNIPE_DISABLED = "You have to enable sniping in your settings first!"
 SNIPE_SUSPENDED = "I have tried to buy an item for you but you don't have the necessary funds. I suspended automated buying until. If you have enough gold again or after you adjusted your buying settings just send me /resume."
-SNIPE_SUSPENDED_NOTICE = '*Warning:* Sniping items is currently suspended since you did not have enough funds. You can re-enable it with /resume'
+SNIPE_SUSPENDED_NOTICE = 'Warning: Sniping items is currently suspended since you did not have enough funds. You can re-enable it with /resume'
 
 SNIPE_CONTINUED = "Automated buying will now be continued."
 SNIPE_NOT_SUSPENDED = "Automated buying is not suspended."
@@ -617,8 +619,8 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 /add_global_admin &lt;user&gt; — add global administrator
 /del_admin &lt;user&gt; — delete administrator from current chat
 /del_global_admin &lt;user&gt; — delete global administrator 
-/get_log - Get latest logfile - ONLY FOR A FEW PPL
-/force_kick_botato - Force Botato to leave the group
+/get_log - Get logfile - ONLY FOR A FEW PPL
+/force_kick_botato - Force Botato to leave group
 /kick - Reply to any message to kick the user from a chat
 /ban &lt;user&gt; &lt;reason&gt;  - Ban user 
 /unban &lt;user&gt; - Unban user 
@@ -711,6 +713,7 @@ MSG_HELP_GROUP_ADMIN= """<b>Available Commands:</b>
 /kick - Reply to any message to kick the user from a chat
 /ban &lt;user&gt; &lt;reason&gt;  - Ban user 
 /unban &lt;user&gt; - Unban user 
+/user_info - Get info for user regarding bans/restrictions 
 /find &lt;user&gt; - Show user status by telegram user name
 /findc &lt;ign&gt; - Show user status by ingame name
 /findi &lt;id&gt; - Show user status by telegram uquique id
