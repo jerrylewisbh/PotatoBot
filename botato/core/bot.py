@@ -7,7 +7,7 @@ MessageQueue usage example with @queuedmessage decorator.
 import logging
 
 import telegram.bot
-from telegram.error import Unauthorized, BadRequest
+from telegram.error import Unauthorized, BadRequest, TimedOut
 from telegram.ext import messagequeue as mq
 
 from core.db import Session
@@ -62,6 +62,9 @@ class MQBot(telegram.bot.Bot):
                         kwargs['chat_id'],
                         exc_info=True
                     )
+                    raise ex
+        except TimedOut as ex:
+            logging.warning("TimedOut: Ignoring this message")
         except BadRequest as ex:
             logging.error(
                 "BadRequest for: user_id='%s', text='%s'",
