@@ -5,13 +5,13 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMo
 from telegram.ext import JobQueue, Job
 
 from core.bot import MQBot
+from core.utils import send_async
 from core.decorators import command_handler
 from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, AdminType, MessageType
 from core.handler.callback.util import create_callback, CallbackAction, get_callback_action
 from core.texts import *
 from core.db import Session
 from core.model import Group, User, Admin, OrderGroup, Order, OrderCleared, Squad, SquadMember
-from core.utils import send_async
 from functions.order.groups import list
 from functions.order.util import OrderDraft, __send_order
 

@@ -1,16 +1,10 @@
-from telegram.ext.dispatcher import run_async
+from telegram.ext import run_async
 
 from core.bot import MQBot
 from core.db import Session
 from core.model import Group
 
 Session()
-
-
-@run_async
-def send_async(bot: MQBot, *args, **kwargs):
-    return bot.send_message(*args, **kwargs)
-
 
 def update_group(grp, in_group=True):
     if grp.type in ['group', 'supergroup', 'channel']:
@@ -48,3 +42,8 @@ def pad_string(text, padding):
         text += " "
 
     return text
+
+
+@run_async
+def send_async(bot: MQBot, *args, **kwargs):
+    return bot.send_message(*args, **kwargs)

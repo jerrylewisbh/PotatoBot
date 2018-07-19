@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from logging.handlers import TimedRotatingFileHandler
 
 from core.bot import MQBot
+from core.handler.error import error_callback
 from core.db import Session
 from core.handler import buttons, chats, manage_all
 from core.handler import commands
@@ -19,7 +20,6 @@ from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
 from functions.battle import report_after_battle, ready_to_battle_result, refresh_api_users, fresh_profiles, \
     ready_to_battle
-from functions.common import error_callback
 from functions.welcome import (welcome)
 from ratelimitingfilter import RateLimitingFilter
 from telegram.ext import (CallbackQueryHandler, InlineQueryHandler,

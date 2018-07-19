@@ -13,13 +13,13 @@ from typing import Optional
 from config import (CASTLE, DAYS_OLD_PROFILE_KICK, DAYS_PROFILE_REMIND,
                     GOVERNMENT_CHAT)
 from core.bot import MQBot
+from core.utils import send_async
 from core.decorators import command_handler
 from core.state import get_last_battle
 from core.texts import *
 from core.db import Session
 from core.enums import AdminType, MessageType
 from core.model import Group, User, Admin, Order, Character, Report, Squad, SquadMember
-from core.utils import send_async
 from cwmq import Publisher
 from functions.common import (get_weighted_diff, stock_compare_text,
                               stock_split)
@@ -70,7 +70,7 @@ def after_battle(bot: MQBot, job_queue: Job):
             Group.reminders_enabled == True,
             Group.fwd_minireport == False
         ).join(Group).all()
-        
+
         for item in group:
             new_order = Order()
             new_order.text = job_queue.context

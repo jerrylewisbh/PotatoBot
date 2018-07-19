@@ -2,13 +2,13 @@ import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot import MQBot
+from core.utils import send_async
 from core.decorators import command_handler
 from core.handler.callback.util import create_callback, CallbackAction, get_callback_action
 from core.texts import *
 from core.db import Session
 from core.enums import AdminType
 from core.model import User, OrderGroup, OrderGroupItem, Squad
-from core.utils import send_async
 
 Session()
 

@@ -3,11 +3,11 @@ import logging
 from telegram import Update, ParseMode
 
 from core.bot import MQBot
+from core.utils import send_async
 from core.db import Session
 from core.decorators import command_handler
 from core.model import User
 from core.texts import *
-from core.utils import send_async
 
 Session()
 

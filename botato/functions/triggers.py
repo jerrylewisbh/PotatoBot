@@ -8,7 +8,7 @@ from core.texts import *
 from core.db import Session, check_admin
 from core.enums import AdminType, MessageType
 from core.model import User, Trigger, LocalTrigger
-from core.utils import send_async, update_group
+from core.utils import update_group, send_async
 
 Session()
 

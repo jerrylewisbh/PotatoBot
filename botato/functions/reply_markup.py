@@ -53,12 +53,13 @@ def generate_user_markup(user_id: int = None):
     return ReplyKeyboardMarkup(buttons, True)
 
 
-def generate_top_markup():
+def generate_top_markup(user: User):
     row1 = [
         KeyboardButton(TOP_COMMAND_GLOBAL),
         KeyboardButton(TOP_COMMAND_CLASS),
-        KeyboardButton(TOP_COMMAND_SQUAD),
     ]
+    if user.is_squadmember:
+        row1.append(KeyboardButton(TOP_COMMAND_SQUAD))
     row2 = [
         KeyboardButton(USER_COMMAND_BACK)
     ]

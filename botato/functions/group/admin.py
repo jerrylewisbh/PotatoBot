@@ -1,12 +1,12 @@
 from telegram import Update
 
 from core.bot import MQBot
+from core.utils import send_async
 from core.db import Session
 from core.decorators import command_handler
 from core.enums import AdminType
 from core.model import User, Group
 from core.texts import *
-from core.utils import send_async
 
 
 @command_handler(

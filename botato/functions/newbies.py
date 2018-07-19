@@ -2,12 +2,12 @@ from telegram import Update
 
 from config import ACADEM_CHAT_ID, CASTLE_CHAT_ID
 from core.bot import MQBot
+from core.utils import send_async
 from core.decorators import command_handler
 from core.template import fill_template
 from core.texts import *
 from core.db import Session
 from core.model import Group, User
-from core.utils import send_async
 
 Session()
 

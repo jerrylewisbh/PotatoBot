@@ -3,6 +3,7 @@ from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMark
 
 from config import WAITING_ROOM_LINK, MINIMUM_SQUAD_MEMBER_LEVEL
 from core.bot import MQBot
+from core.utils import send_async
 from core.decorators import command_handler
 from core.handler.callback import CallbackAction
 from core.handler.callback.util import create_callback, get_callback_action
@@ -11,7 +12,6 @@ from core.texts import MSG_SQUAD_LEAVE_DECLINE, BTN_YES, BTN_NO, MSG_SQUAD_REQUE
     MSG_SQUAD_REQUEST_EXISTS, MSG_GO_AWAY, MSG_SQUAD_ADD_ACCEPTED
 from core.db import Session
 from core.model import User, Admin, Squad, SquadMember
-from core.utils import send_async
 from functions.reply_markup import generate_squad_markup
 from functions.squad.util import __remove
 

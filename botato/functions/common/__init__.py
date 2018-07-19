@@ -1,24 +1,23 @@
 import logging
+from datetime import datetime
+from enum import Enum
 from html import escape
 
 import redis
-from datetime import datetime, timedelta
-from enum import Enum
-from pymysql import IntegrityError
-from sqlalchemy import func, collate
+from sqlalchemy import collate
 from sqlalchemy.exc import SQLAlchemyError
 from telegram import ParseMode, Update, TelegramError
-from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated
+from telegram.error import Unauthorized
 
 from config import CWBOT_ID, REDIS_SERVER, REDIS_PORT, LOG_ALLOWED_RECIPIENTS, LOGFILE
 from core.bot import MQBot
+from core.utils import send_async
+from core.db import Session, new_item
 from core.decorators import command_handler
+from core.enums import AdminType
+from core.model import Group, User, Admin, Stock, SquadMember, Ban, Item
 from core.state import GameState, get_game_state
 from core.texts import *
-from core.db import Session, new_item
-from core.enums import AdminType
-from core.model import Group, User, Admin, Stock, Squad, SquadMember, Ban, Item
-from core.utils import send_async
 from functions.reply_markup import (generate_admin_markup)
 from functions.user.util import disable_api_functions
 
@@ -28,59 +27,6 @@ Session()
 class StockType(Enum):
     Stock = 0
     TradeBot = 1
-
-
-def error_callback(bot: MQBot, update, error, **kwargs):
-    """ Error handling """
-    try:
-        raise error
-    except Unauthorized:
-        if update.message.chat_id:
-            # Group?
-            group = Session.query(Group).filter(Group.id == update.message.chat_id).first()
-            if group is not None:
-                group.bot_in_group = False
-                Session.add(group)
-                Session.commit()
-
-            # remove update.message.chat_id from conversation list
-            user = Session.query(User).filter(User.id == update.message.chat_id).first()
-            if user:
-                logging.info(
-                    "Unauthorized for user_id='%s'. Disabling API settings so that we don't contact the user in the future",
-                    user.id)
-                disable_api_functions(user)
-            else:
-                logging.warning(
-                    "Unauthorized occurred: %s. We should probably remove user chat_id='%s' from bot.",
-                    error.message,
-                    update.message.chat_id,
-                    exc_info=True
-                )
-    except BadRequest:
-        # handle malformed requests - read more below!
-        logging.error("BadRequest occurred: %s", error.message, exc_info=True)
-    except TimedOut:
-        # handle slow connection problems
-        logging.error("TimedOut occurred: %s", error.message, exc_info=True)
-    except NetworkError:
-        # handle other connection problems
-
-        logging.error("NetworkError occurred: %s", error.message, exc_info=True)
-    except ChatMigrated as e:
-        # the chat_id of a group has changed, use e.new_chat_id instead
-        logging.warning(
-            "ChatMigrated occurred: %s",
-            error.message,
-            exc_info=True
-        )
-    except TelegramError:
-        # handle all other telegram related errors
-        logging.error("TelegramError occurred: %s", error.message, exc_info=True)
-    except Exception:
-        print("START ##################################################")
-        print(error)
-        print("END ####################################################")
 
 
 @command_handler(
@@ -323,8 +269,8 @@ def delete_msg(bot: MQBot, update: Update, user: User):
     allow_group=True
 )
 def kick_from_chat(bot: MQBot, update: Update, user: User):
-    bot.kickChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
-    bot.unbanChatMember(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
+    bot.kick_chat_member(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
+    bot.unban_chat_member(update.message.reply_to_message.chat_id, update.message.reply_to_message.from_user.id)
 
 
 @command_handler(

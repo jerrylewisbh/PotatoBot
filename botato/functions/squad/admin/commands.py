@@ -1,13 +1,13 @@
 from telegram import Update, ParseMode, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton
 
 from core.bot import MQBot
+from core.utils import send_async
 from core.db import Session
 from core.decorators import command_handler
 from core.enums import AdminType
 from core.handler.callback.util import create_callback, CallbackAction
 from core.model import Group, User, Squad, SquadMember
 from core.texts import *
-from core.utils import send_async
 
 
 @command_handler(

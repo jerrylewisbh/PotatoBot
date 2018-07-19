@@ -3,6 +3,7 @@ from telegram import Update
 
 from config import SUPER_ADMIN_ID
 from core.bot import MQBot
+from core.utils import send_async
 from core.decorators import command_handler
 from core.handler.callback import get_callback_action
 from core.texts import MSG_USER_UNKNOWN, MSG_NEW_GROUP_ADMIN, \
@@ -13,7 +14,6 @@ from core.texts import MSG_USER_UNKNOWN, MSG_NEW_GROUP_ADMIN, \
 from core.db import Session
 from core.enums import AdminType
 from core.model import User, Admin
-from core.utils import send_async
 from functions.user.util import send_settings, __toggle_gold_hiding, __toggle_sniping, __toggle_deal_report, \
     __toggle_report, \
     __disable_api

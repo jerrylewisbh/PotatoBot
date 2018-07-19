@@ -2,12 +2,12 @@ from datetime import datetime, timedelta
 from telegram import Update
 
 from core.bot import MQBot
+from core.utils import send_async
 from core.decorators import command_handler
 from core.texts import MSG_ORDER_STATISTIC, MSG_ORDER_STATISTIC_OUT_FORMAT
 from core.db import Session
 from core.enums import AdminType
 from core.model import User, Squad
-from core.utils import send_async
 
 Session()
 

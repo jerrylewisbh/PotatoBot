@@ -4,6 +4,7 @@ from sqlalchemy import func, tuple_, and_
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot import MQBot
+from core.utils import send_async
 from core.decorators import command_handler
 from core.handler.callback import get_callback_action, CallbackAction
 from core.handler.callback.util import create_callback
@@ -14,7 +15,6 @@ from core.texts import MSG_SQUAD_CLEAN
 from core.db import Session
 from core.enums import AdminType
 from core.model import User, Admin, Character, Report, Squad, SquadMember
-from core.utils import send_async
 from functions.reply_markup import generate_user_markup
 
 

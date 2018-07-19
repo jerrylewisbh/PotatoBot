@@ -4,6 +4,7 @@ from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMark
 
 from config import CASTLE
 from core.bot import MQBot
+from core.utils import send_async
 from core.commands import *
 from core.decorators import command_handler
 from core.handler.callback import CallbackAction, get_callback_action
@@ -11,7 +12,6 @@ from core.handler.callback.util import create_callback
 from core.texts import *
 from core.db import Session
 from core.model import User, Character, Report, Squad, SquadMember
-from core.utils import send_async
 from functions.top import get_top, __gen_top_msg
 
 

@@ -10,12 +10,12 @@ from telegram import Update, ParseMode
 
 from config import QUEST_LOCATION_ARENA_ID, QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID
 from core.bot import MQBot
+from core.utils import send_async
 from core.db import Session
 from core.decorators import command_handler
 from core.model import UserQuestItem, User, UserQuest, Location, Profession, Character, Item
 from core.state import GameState
 from core.texts import *
-from core.utils import send_async
 from functions.reply_markup import generate_statistics_markup
 
 Session()

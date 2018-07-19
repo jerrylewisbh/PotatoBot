@@ -6,7 +6,7 @@ from core.texts import *
 from core.db import Session
 from core.enums import AdminType
 from core.model import User
-from core.utils import send_async, update_group
+from core.utils import update_group, send_async
 
 Session()
 

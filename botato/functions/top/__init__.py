@@ -5,12 +5,12 @@ from telegram import Update, ParseMode
 
 from config import CASTLE
 from core.bot import MQBot
+from core.utils import send_async
 from core.decorators import command_handler
 from core.texts import *
 from core.texts import MSG_TOP_FORMAT
 from core.db import Session
 from core.model import User, Character, Report, Squad, SquadMember
-from core.utils import send_async
 from functions.reply_markup import generate_top_markup
 
 Session()
@@ -18,7 +18,7 @@ Session()
 
 @command_handler()
 def top_about(bot: MQBot, update: Update, user: User):
-    markup = generate_top_markup()
+    markup = generate_top_markup(user)
     send_async(
         bot,
         chat_id=update.message.chat.id,

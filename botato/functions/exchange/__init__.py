@@ -5,7 +5,7 @@ from core.bot import MQBot
 from core.decorators import command_handler
 from core.db import Session
 from core.model import User, Item
-from core.utils import send_async, pad_string
+from core.utils import pad_string, send_async
 
 Session()
 
