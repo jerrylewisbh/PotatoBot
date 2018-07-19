@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 from sqlalchemy import func, collate, tuple_
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
@@ -215,7 +216,11 @@ def top(bot: MQBot, update: Update, user: User):
                     class_name,
                     "this week"
                 )
-            text = "" + text
+            if text:
+                text = "" + text
+            else:
+                text = "<empty>"
+                logging.warning("Empty class toplist?")
             keys.insert(1, additional_keyboard)
         else:
             class_buttons = __get_class_keyboard(user)
