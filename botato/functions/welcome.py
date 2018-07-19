@@ -16,53 +16,31 @@ from core.enums import AdminType
 from core.model import User, WelcomeMsg, Wellcomed, Admin, Group, Ban
 from core.utils import send_async, update_group
 
-last_welcome = 0
-
 Session()
 
 @command_handler(
     allow_group=True,
 )
 def welcome(bot: MQBot, update: Update, user: User):
-    # newbie(bot, update)
-    global last_welcome
-    logging.info("Welcome")
+    if update.message.chat.type not in ['group', 'supergroup']:
+        return 
+        
+    group = update_group(update.message.chat)
+    for new_chat_member in update.message.new_chat_members:
+        user_allowed, joined_user = __is_allowed_to_join(bot, update, new_chat_member, group)
+        if not user_allowed:
+            __kick_and_restrict(bot, update, joined_user)
+        elif group.welcome_enabled:
+            welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
+            if not welcome_msg:
+                welcome_msg = WelcomeMsg(chat_id=group.id, message=MSG_WELCOME_DEFAULT)
+                Session.add(welcome_msg)
 
-    if update.message.chat.type in ['group', 'supergroup']:
-        group = update_group(update.message.chat)
-
-        for new_chat_member in update.message.new_chat_members:
-            user_allowed, joined_user = __is_allowed_to_join(bot, update, new_chat_member, group)
-            if not user_allowed:
-                __kick_and_restrict(bot, update, joined_user)
-            elif group.welcome_enabled:
-                welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
-
-                if not welcome_msg:
-                    welcome_msg = WelcomeMsg(chat_id=group.id, message=MSG_WELCOME_DEFAULT)
-                    Session.add(welcome_msg)
-
-                logging.info("[Welcome] message='%s', chat_id='%s'", welcome_msg.message, welcome_msg.chat_id)
-
-                welcomed = Session.query(Wellcomed).filter(
-                    User.id == user.id,
-                    Wellcomed.chat_id ==update.message.chat.id
-                ).first()
-
-                if not welcomed:
-                    if time() - last_welcome > 30:
-                        logging.info("[Welcome] User was not yet welcomed with this message and did not already join seconds ago")
-                        send_async(
-                            bot, chat_id=update.message.chat.id,
-                            text=fill_template(welcome_msg.message, user)
-                        )
-                        last_welcome = time()
-
-                    welcomed = Wellcomed(user_id=new_chat_member.id, chat_id=update.message.chat.id)
-                    Session.add(welcomed)
-
-                Session.commit()
-
+            logging.info("[Welcome] message='%s', chat_id='%s'", welcome_msg.message, welcome_msg.chat_id)
+            send_async(
+                bot, chat_id=update.message.chat.id,
+                text=fill_template(welcome_msg.message, user)
+            )
 
 def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.User, group: Group):
     """ Check if a user is allowed to join a group/supergroup and return that state and the effective user joined...
