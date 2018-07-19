@@ -77,7 +77,7 @@ def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarku
         if order.pin:
             msg_result = msg_sent.result()
             # If it got send... Pin it
-            if msg_sent:
+            if msg_result:
                 try:
                     logging.info("Pinning for message_id='%s'", msg_result.message_id)
                     bot.pin_chat_message(
