@@ -21,6 +21,7 @@ from core.db import Session
 from core.enums import AdminType, MessageType
 from core.model import Group, User, Admin, Order, Character, Report, Squad, SquadMember
 from cwmq import Publisher
+from functions.admin import __kickban_from_chat
 from functions.common import (get_weighted_diff, stock_compare_text,
                               stock_split)
 from functions.order import OrderDraft, __send_order
@@ -234,25 +235,38 @@ def fresh_profiles(bot: MQBot, job_queue: Job):
         for member, user in members:
             Session.delete(member)
             admins = Session.query(Admin).filter_by(group_id=member.squad_id).all()
-            try:
-                bot.restrictChatMember(member.squad_id, member.user_id)
-                bot.kick_chat_member(member.squad_id, member.user_id)
-            except TelegramError as err:
-                bot.logger.error(err.message)
+
+            # Remove the inactive user from chat
+            __kickban_from_chat(bot, member, member.squad.chat)
 
             for adm in admins:
-                send_async(bot, chat_id=adm.user_id,
-                           text=MSG_SQUAD_DELETE_OUTDATED_EXT
-                           .format(member.user.character.name, member.user.username, member.squad.squad_name),
-                           parse_mode=ParseMode.HTML)
-            send_async(bot, chat_id=member.squad_id,
-                       text=MSG_SQUAD_DELETE_OUTDATED_EXT.format(member.user.character.name, member.user.username,
-                                                                 member.squad.squad_name),
-                       parse_mode=ParseMode.HTML)
-            send_async(bot,
-                       chat_id=member.user_id,
-                       text=MSG_SQUAD_DELETE_OUTDATED_EXT,
-                       parse_mode=ParseMode.HTML)
+                send_async(
+                    bot,
+                    chat_id=adm.user_id,
+                    text=MSG_SQUAD_DELETE_OUTDATED_EXT.format(
+                        member.user.character.name,
+                        member.user.username,
+                        member.squad.squad_name
+                    ),
+                    parse_mode=ParseMode.HTML
+                )
+
+            send_async(
+                bot,
+                chat_id=member.squad_id,
+                text=MSG_SQUAD_DELETE_OUTDATED_EXT.format(
+                    member.user.character.name,
+                    member.user.username,
+                    member.squad.squad_name
+                ),
+                parse_mode=ParseMode.HTML
+            )
+            send_async(
+                bot,
+                chat_id=member.user_id,
+                text=MSG_SQUAD_DELETE_OUTDATED,
+                parse_mode=ParseMode.HTML
+            )
         Session.commit()
     except SQLAlchemyError as err:
         bot.logger.error(str(err))

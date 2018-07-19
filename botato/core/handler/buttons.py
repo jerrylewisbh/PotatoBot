@@ -2,7 +2,7 @@ import logging
 
 from core.commands import *
 from functions import order
-from functions.common import admin_panel
+from functions.admin import admin_panel
 from functions.exchange.auction import auction_info
 from functions.exchange.hide import hide_gold_info
 from functions.exchange.snipe import sniping_info

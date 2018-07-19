@@ -14,8 +14,7 @@ from core.texts import *
 from core.db import Session, new_item
 from core.model import User, Item, UserStockHideSetting
 from cwmq import wrapper
-from functions.common import __get_item_worth
-from functions.exchange import get_item_by_cw_id
+from functions.exchange import get_item_by_cw_id, __get_item_worth
 
 
 def __get_autohide_settings(user):

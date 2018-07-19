@@ -15,6 +15,7 @@ from core.db import Session, check_permission
 from core.enums import AdminType
 from core.model import User, WelcomeMsg, Wellcomed, Admin, Group, Ban
 from core.utils import update_group, send_async
+from functions.admin import __kickban_from_chat
 
 Session()
 
@@ -29,7 +30,7 @@ def welcome(bot: MQBot, update: Update, user: User):
     for new_chat_member in update.message.new_chat_members:
         user_allowed, joined_user = __is_allowed_to_join(bot, update, new_chat_member, group)
         if not user_allowed:
-            __kick_and_restrict(bot, update, joined_user)
+            __kickban_from_chat(bot, joined_user, group)
         elif group.welcome_enabled:
             welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
             if not welcome_msg:
@@ -146,24 +147,6 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
     logging.warning("user_id='%s' does not meet any specific criteria for joining. Access denied!", joined_user.id)
     # In any other case, deny access!
     return (False, joined_user)
-
-
-def __kick_and_restrict(bot: MQBot, update: Update, kick_user: User):
-    logging.info("Kicking and restricting %s", kick_user.id)
-    text = MSG_THORNS if not kick_user.username else MSG_THORNS_NAME.format(kick_user.username)
-    send_async(
-        bot,
-        chat_id=update.message.chat.id,
-        text=text
-    )
-    bot.restrict_chat_member(
-        update.effective_message.chat.id,
-        kick_user.id
-    )
-    bot.kick_chat_member(
-        update.effective_message.chat.id,
-        kick_user.id
-    )
 
 @command_handler(
     allow_group=True,

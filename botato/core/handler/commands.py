@@ -3,30 +3,31 @@ import logging
 from telegram.ext import CommandHandler, Dispatcher
 
 from functions.activity import day_activity, week_activity, battle_activity
+from functions.admin import admin_panel, force_kick_botato, ping, delete_msg, ban, ban_info_all, \
+    unban, get_log, kickban
 from functions.battle import call_ready_to_battle_result
+from functions.common import help_msg, user_info
 from functions.common.pin import pin, silent_pin, not_pin_all, pin_all
-from functions.guild.stock import deposit, withdraw_help
-from functions.report import enable_report_fwd, disable_report_fwd
-from functions.squad.admin import call_squad
-from functions.user import set_admin, del_admin, list_admins, set_global_admin, set_super_admin, del_global_admin, \
-    admins_for_users
-from functions.common import admin_panel, ban, help_msg, ping, unban, get_log, force_kick_botato, kick_from_chat, \
-    delete_msg, user_info, ban_info_all
 from functions.exchange import list_items, list_items_other, list_items_unknown
 from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume
+from functions.group.admin import enable_thorns, enable_reminders, enable_silence, disable_thorns, disable_silence, \
+    disable_reminders, allow_bots, deny_bots
+from functions.guild.stock import deposit, withdraw_help
 from functions.profile import (find_by_character, find_by_id,
                                find_by_username, grant_access, revoke,
                                show_char, show_report, user_panel)
+from functions.report import enable_report_fwd, disable_report_fwd
+from functions.squad.admin import call_squad
 from functions.squad.admin.commands import add_squad, set_invite_link, set_squad_name, del_squad, force_add_to_squad, \
     add_to_squad, open_hiring, close_hiring
-from functions.group.admin import enable_thorns, enable_reminders, enable_silence, disable_thorns, disable_silence, \
-    disable_reminders, allow_bots, deny_bots
 from functions.triggers import (add_global_trigger, add_trigger,
                                 del_global_trigger, del_trigger,
                                 disable_trigger_all, enable_trigger_all,
                                 list_triggers, set_global_trigger,
                                 set_trigger)
+from functions.user import set_admin, del_admin, list_admins, set_global_admin, set_super_admin, del_global_admin, \
+    admins_for_users
 from functions.welcome import (disable_welcome, enable_welcome,
                                set_welcome, show_welcome)
 
@@ -62,7 +63,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("list_admins", list_admins))
 
     disp.add_handler(CommandHandler("force_kick_botato", force_kick_botato))  # Force Botato to remove himself from chat.
-    disp.add_handler(CommandHandler("kick", kick_from_chat))  # Force Botato to remove himself from chat.
+    disp.add_handler(CommandHandler("kick", kickban))  # Force Botato to remove himself from chat.
 
     disp.add_handler(CommandHandler("enable_trigger", enable_trigger_all))
     disp.add_handler(CommandHandler("disable_trigger", disable_trigger_all))

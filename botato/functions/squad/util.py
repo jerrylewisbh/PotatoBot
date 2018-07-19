@@ -5,6 +5,7 @@ from core.utils import send_async
 from core.texts import MSG_SQUAD_ALREADY_DELETED, MSG_SQUAD_LEFT
 from core.db import Session
 from core.model import User, Admin
+from functions.admin import __kickban_from_chat
 from functions.user.util import disable_api_functions
 
 
@@ -40,11 +41,7 @@ def __remove(bot: MQBot, user: User, squad_user: User):
         )
 
     # Try to remove user...
-    try:
-        bot.restrict_chat_member(squad_user.member.squad.chat_id, squad_user.id)
-        bot.kick_chat_member(squad_user.member.squad.chat_id, squad_user.id)
-    except TelegramError as err:
-        bot.logger.error(err.message)
+    __kickban_from_chat(bot, squad_user, squad_user.member.squad.chat)
 
     # Disable API related stuff and remove him from squad
     old_squad = squad_user.member.squad.squad_name

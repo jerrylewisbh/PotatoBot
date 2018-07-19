@@ -1,6 +1,8 @@
+import redis
 from sqlalchemy import func
 from telegram import Update, ParseMode
 
+from config import REDIS_SERVER, REDIS_PORT
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.db import Session
@@ -80,3 +82,13 @@ def list_items_unknown(bot: MQBot, update: Update, user: User):
         text=text,
         parse_mode=ParseMode.MARKDOWN,
     )
+
+
+def __get_item_worth(item_name):
+    r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
+    item_prices = r.lrange(item_name, 0, -1)
+    item_prices = list(map(int, item_prices))
+
+    if item_prices:
+        return int(min(item_prices))
+    return None
