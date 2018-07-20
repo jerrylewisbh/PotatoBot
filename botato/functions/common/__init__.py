@@ -215,36 +215,27 @@ def user_info(bot: MQBot, update: Update, user: User):
 
     username = update.message.text.split(' ', 1)[1]
     username = username.replace('@', '')
-    ban_user = Session.query(User).filter_by(username=username).first()
-    if not ban_user:
+    info_user = Session.query(User).filter_by(username=username).first()
+    if not info_user:
         try:
             # If we found no match, try to find by user_Id
-            ban_user = Session.query(User).filter(User.id == int(username)).first()
+            info_user = Session.query(User).filter(User.id == int(username)).first()
         except ValueError:
             pass
 
-    if not ban_user:
+    if not info_user:
         # Compare permissions between ban user and user who requests it. Only if they are not equal we allow that!
         send_async(
             bot,
             chat_id=update.message.chat_id,
-            text="User is not banned or unknown!"
+            text="User is unknown!"
         )
     else:
-        try:
-            send_async(
-                bot,
-                chat_id=update.message.chat_id,
-                text=__get_user_info(bot, ban_user),
-                parse_mode=ParseMode.HTML,
-            )
-        # This might fail due to channels botato was removed from that where previously unknown...
-        except TelegramError:
-            send_async(
-                bot,
-                chat_id=update.message.chat_id,
-                parse_mode=ParseMode.HTML,
-                text="Something went wrong generating the report. Try again. If it still fails notify admins!"
-            )
+        send_async(
+            bot,
+            chat_id=update.message.chat_id,
+            text=__get_user_info(bot, info_user),
+            parse_mode=ParseMode.HTML,
+        )
 
 
