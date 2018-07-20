@@ -4,7 +4,7 @@ from html import escape
 
 from sqlalchemy.exc import SQLAlchemyError
 from telegram import Update, ParseMode, TelegramError
-from telegram.error import Unauthorized
+from telegram.error import Unauthorized, BadRequest
 
 from config import LOG_ALLOWED_RECIPIENTS, LOGFILE
 from core.bot import MQBot
@@ -13,7 +13,7 @@ from core.decorators import command_handler
 from core.enums import AdminType
 from core.model import User, Admin, Group, Ban, SquadMember
 from core.texts import *
-from core.utils import send_async
+from core.utils import send_async, update_group
 from functions.reply_markup import generate_admin_markup
 from functions.user.util import disable_api_functions
 
@@ -156,6 +156,20 @@ def __kickban_from_chat(bot: MQBot, ban_user: User, group: Group):
             group.id
         )
         return False
+    except BadRequest as ex:
+        if ex.message == "Chat not found":
+            logging.warning(
+                "[Ban] Chat for group_id='%s' not found: %s",
+                group.id,
+                ex.message
+            )
+            update_group(group.id, False)
+        else:
+            logging.warning(
+                "[Ban] Can't unban in group_id='%s'. Message: %s",
+                group.id,
+                ex.message
+            )
     except TelegramError as ex:
         logging.warning(
             "[Ban] Error banning user: %s",
@@ -446,7 +460,7 @@ def unban(bot: MQBot, update: Update, user: User):
                 chat_user_bot = bot.get_chat_member(group.id, bot.id)
 
                 if chat_user_unbanned.status in ['kicked', 'restricted']:
-                    logging.info("[Ban] kick and restrict user_id='%s'", unban_user.id)
+                    logging.info("[Unban] kick and restrict user_id='%s'", unban_user.id)
                     bot.restrict_chat_member(
                         chat_id=group.id,
                         user_id=unban_user.id,
@@ -464,16 +478,32 @@ def unban(bot: MQBot, update: Update, user: User):
                         banned.reason
                     ),
                 )
+            except BadRequest as ex:
+                if ex.message == "Chat not found":
+                    logging.warning(
+                        "[Unban] Chat for group_id='%s' not found: %s",
+                        group.id,
+                        ex.message
+                    )
+                    update_group(group.id, False)
+                else:
+                    logging.warning(
+                        "[Unban] Can't unban in group_id='%s'. Message: %s",
+                        group.id,
+                        ex.message
+                    )
             except TelegramError as ex:
-                logging.warning(
-                    "[Ban] Error unbanning user: %s",
+                logging.error(
+                    "[Unban] Error unbanning user: %s",
                     ex.message
                 )
+
+
 
         send_async(bot, chat_id=unban_user.id, text=MSG_YOU_UNBANNED)
         send_async(
             bot,
-            chat_id=update.message.chat.id,
+            chat_id=update  .message.chat.id,
             text=__get_user_info(bot, unban_user),
             parse_mode=ParseMode.HTML
         )
