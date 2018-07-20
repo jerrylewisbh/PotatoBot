@@ -53,6 +53,7 @@ def info(bot: MQBot, update: Update, user: User):
 
     msg = MSG_GROUP_STATUS.format(
         group.title,
+        group.bot_in_group,
         adm_msg,
         MSG_ON if group.welcome_enabled else MSG_OFF,
         MSG_ON if group.allow_trigger_all else MSG_OFF,
@@ -111,7 +112,8 @@ def list(bot: MQBot, update: Update, user: User):
     for group in groups:
         inline_keys.append(
             InlineKeyboardButton(
-                "{}{}".format(
+                "{}{}{}".format(
+                    '⚠️' if not group.bot_in_group else '',
                     '⚜' if group.squad else '🏘️',
                     group.title if not group.squad else '{} (Squad: {})'.format(
                         group.title, group.squad.squad_name
