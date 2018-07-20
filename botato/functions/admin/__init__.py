@@ -466,7 +466,7 @@ def unban(bot: MQBot, update: Update, user: User):
                 )
             except TelegramError as ex:
                 logging.warning(
-                    "[Ban] Error banning user: %s",
+                    "[Ban] Error unbanning user: %s",
                     ex.message
                 )
 
