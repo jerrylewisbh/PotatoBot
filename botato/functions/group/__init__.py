@@ -107,7 +107,7 @@ def info(bot: MQBot, update: Update, user: User):
 )
 def list(bot: MQBot, update: Update, user: User):
     msg = MSG_GROUP_STATUS_CHOOSE_CHAT
-    groups = Session.query(Group).all()
+    groups = Session.query(Group).order_by(Group.title).all()
     inline_keys = []
     for group in groups:
         inline_keys.append(
