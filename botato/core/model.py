@@ -398,7 +398,7 @@ class SquadMember(Base):
 
     approved = Column(Boolean, default=False, nullable=False, server_default=expression.false())
 
-    squad = relationship('Squad', back_populates='members', lazy='dynamic')
+    squad = relationship('Squad', back_populates='members')
     user = relationship('User', back_populates='member')
 
 
