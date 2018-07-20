@@ -319,7 +319,7 @@ def __get_user_info(bot: MQBot, ban_user: User):
             elif user_info.status == 'left':
                 status = "⚠️Not in group but not banned! (Missing Bot-Permissions?)"
             elif user_info.status == 'restricted':
-                status = "⚠️Restricted /but not banned!"
+                status = "⚠️Restricted but not banned!"
             elif user_info.status == 'member':
                 status = "🚨In group (unbanned!)"
             elif user_info.status == 'administrator':
