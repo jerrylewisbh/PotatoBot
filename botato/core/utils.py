@@ -1,3 +1,5 @@
+import logging
+
 from telegram.ext import run_async
 
 from core.bot import MQBot
@@ -9,11 +11,10 @@ Session()
 def update_group(grp, in_group=True):
     if grp.type in ['group', 'supergroup', 'channel']:
         group = Session.query(Group).filter_by(id=grp.id).first()
-        if group is None:
-            group = Group(id=grp.id, title=grp.title,
-                          username=grp.username)
+        if not group:
+            logging.info("Creating new group: title='%s', id='%s', name='%s'", grp.title, grp.id, grp.username)
+            group = Group(id=grp.id, title=grp.title, username=grp.username)
             Session.add(group)
-
         else:
             updated = False
             if group.username != grp.username:
@@ -26,6 +27,7 @@ def update_group(grp, in_group=True):
                 group.bot_in_group = in_group
                 updated = True
             if updated:
+                logging.info("Updating group: title='%s', id='%s', name='%s'", grp.title, grp.id, grp.username)
                 Session.add(group)
 
         Session.commit()
