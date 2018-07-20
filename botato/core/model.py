@@ -40,7 +40,9 @@ class Group(Base):
     group_items = relationship(
         'OrderGroupItem', back_populates='chat', cascade="save-update, merge, delete, delete-orphan"
     )
+
     squad = relationship('Squad', back_populates='chat', uselist=False)
+
     orders = relationship('Order', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
 
 
@@ -380,6 +382,8 @@ class Squad(Base):
     __tablename__ = 'squads'
 
     chat_id = Column(BigInteger, ForeignKey(Group.id), primary_key=True)
+    chat = relationship('Group', back_populates='squad')
+
     invite_link = Column(UnicodeText(250), default='')
     squad_name = Column(UnicodeText(250))
 
@@ -387,7 +391,6 @@ class Squad(Base):
     testing_squad = Column(Boolean(), nullable=False, default=False, server_default=expression.false())
 
     members = relationship('SquadMember', back_populates='squad')
-    chat = relationship('Group', back_populates='squad')
 
 
 class SquadMember(Base):
