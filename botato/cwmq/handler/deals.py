@@ -123,11 +123,25 @@ def __handle_snipes(user, data, channel, method, dispatcher):
             Session.delete(order)
             Session.commit()
         elif outstanding_count > 0:
+            # After successfully ordering items we delete the old order and add a new one. This way every users
+            # gets a chance to get something
             order.outstanding_order = outstanding_count
-            logger.info("[Snipe] Order for %s from %s and price %s now only needs %s items!", order.item.name,
-                        user.id,
-                        order.max_price, order.outstanding_order)
-            Session.add(order)
+            logger.info(
+                "[Snipe] Order for %s from %s and price %s now only needs %s items!",
+                order.item.name,
+                user.id,
+                order.max_price,
+                order.outstanding_order)
+
+            replacement_order = UserExchangeOrder()
+            replacement_order.user = user
+            replacement_order.initial_order = order.initial_order
+            replacement_order.outstanding_order = outstanding_count
+            replacement_order.max_price = order.max_price
+            replacement_order.item = order.item
+
+            Session.delete(order)
+            Session.add(replacement_order)
             Session.commit()
 
         dispatcher.bot.send_message(
