@@ -40,7 +40,7 @@ def welcome(bot: MQBot, update: Update, user: User):
             logging.info("[Welcome] message='%s', chat_id='%s'", welcome_msg.message, welcome_msg.chat_id)
             send_async(
                 bot, chat_id=update.message.chat.id,
-                text=fill_template(welcome_msg.message, user)
+                text=fill_template(welcome_msg.message, joined_user)
             )
 
 def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.User, group: Group):
