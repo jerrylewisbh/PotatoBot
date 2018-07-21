@@ -10,7 +10,7 @@ Session()
 
 def disable_group(group: Group):
     if group:
-        logging.info("Updating group: title='%s', id='%s', name='%s'", grp.title, grp.id, grp.username)
+        logging.info("Updating group: '%s'", group.id)
         group.bot_in_group = False
         Session.add(group)
         Session.commit()
