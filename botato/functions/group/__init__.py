@@ -1,5 +1,6 @@
 import logging
 
+import math
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, TelegramError
 
 from core.bot import MQBot
@@ -87,7 +88,8 @@ def info(bot: MQBot, update: Update, user: User):
             MSG_BACK,
             callback_data=create_callback(
                 CallbackAction.GROUP,
-                user.id
+                user.id,
+                page_index=0
             )
         )
     ])
@@ -106,9 +108,23 @@ def info(bot: MQBot, update: Update, user: User):
     min_permission=AdminType.FULL,
 )
 def list(bot: MQBot, update: Update, user: User):
+    page_size_results = 3
+    page_index = 0
+
+    if update.callback_query:
+        action = get_callback_action(update.callback_query.data, update.effective_user.id)
+        if "page_index" in action.data:
+            page_index = action.data['page_index']
+
     msg = MSG_GROUP_STATUS_CHOOSE_CHAT
-    groups = Session.query(Group).order_by(Group.title).all()
+
+    groups_qry = Session.query(Group).order_by(Group.title)
+    groups_cnt = groups_qry.count()
+
+    start = page_index * page_size_results
+    groups = groups_qry.slice(start, start + page_size_results).all()
     inline_keys = []
+
     for group in groups:
         inline_keys.append(
             InlineKeyboardButton(
@@ -122,11 +138,30 @@ def list(bot: MQBot, update: Update, user: User):
                 callback_data=create_callback(
                     CallbackAction.GROUP_INFO,
                     user.id,
-                    group_id=group.id
+                    group_id=group.id,
+                    page_index=page_index
                 )
             )
         )
-    inline_markup = InlineKeyboardMarkup([[key] for key in inline_keys])
+    inline_markup = [[key] for key in inline_keys]
+
+    if groups_cnt > page_size_results:
+        page_buttons = []
+        pages = int(math.ceil(groups_cnt / page_size_results))
+        for x in range(0, pages):
+            page_buttons.append(
+                InlineKeyboardButton(
+                    "{}".format(x + 1),
+                    callback_data=create_callback(
+                        CallbackAction.GROUP,
+                        user.id,
+                        page_index=x
+                    )
+                )
+            )
+        inline_markup.append(page_buttons)
+
+    inline_markup = InlineKeyboardMarkup(inline_markup)
 
     if not update.callback_query:
         send_async(
