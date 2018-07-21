@@ -108,7 +108,7 @@ def info(bot: MQBot, update: Update, user: User):
     min_permission=AdminType.FULL,
 )
 def list(bot: MQBot, update: Update, user: User):
-    page_size_results = 3
+    page_size_results = 45
     page_index = 0
 
     if update.callback_query:
