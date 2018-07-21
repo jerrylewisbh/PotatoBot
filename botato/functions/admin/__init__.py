@@ -13,7 +13,7 @@ from core.decorators import command_handler
 from core.enums import AdminType
 from core.model import User, Admin, Group, Ban, SquadMember
 from core.texts import *
-from core.utils import send_async, update_group
+from core.utils import send_async, update_group, disable_group
 from functions.reply_markup import generate_admin_markup
 from functions.user.util import disable_api_functions
 
@@ -162,7 +162,7 @@ def __kickban_from_chat(bot: MQBot, ban_user: User, group: Group):
                 group.id,
                 ex.message
             )
-            update_group(group.id, False)
+            disable_group(group)
         else:
             logging.warning(
                 "[Ban] Can't unban in group_id='%s'. Message: %s",
@@ -298,7 +298,7 @@ def __get_user_info(bot: MQBot, ban_user: User):
                     group.id,
                     ex.message
                 )
-                update_group(group.id, False)
+                disable_group(group)
             else:
                 logging.warning(
                     "[User-Info] Can't get info for user in group_id='%s'. Message: %s",
@@ -483,7 +483,7 @@ def unban(bot: MQBot, update: Update, user: User):
                         group.id,
                         ex.message
                     )
-                    update_group(group.id, False)
+                    disable_group(group)
                 else:
                     logging.warning(
                         "[Unban] Can't unban in group_id='%s'. Message: %s",

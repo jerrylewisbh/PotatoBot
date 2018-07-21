@@ -8,7 +8,17 @@ from core.model import Group
 
 Session()
 
-def update_group(grp, in_group=True):
+def disable_group(group: Group):
+    if group:
+        logging.info("Updating group: title='%s', id='%s', name='%s'", grp.title, grp.id, grp.username)
+        group.bot_in_group = False
+        Session.add(group)
+        Session.commit()
+        return group
+
+    return None
+
+def update_group(grp):
     if grp.type in ['group', 'supergroup', 'channel']:
         group = Session.query(Group).filter_by(id=grp.id).first()
         if not group:
@@ -23,8 +33,8 @@ def update_group(grp, in_group=True):
             if group.title != grp.title:
                 group.title = grp.title
                 updated = True
-            if group.bot_in_group != in_group:
-                group.bot_in_group = in_group
+            if not group.bot_in_group:
+                group.bot_in_group = True
                 updated = True
             if updated:
                 logging.info("Updating group: title='%s', id='%s', name='%s'", grp.title, grp.id, grp.username)
