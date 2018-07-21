@@ -108,7 +108,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("findi", find_by_id))
     disp.add_handler(CommandHandler("ban", ban))
     disp.add_handler(CommandHandler("user_info", user_info))
-    disp.add_handler(CommandHandler("ban_info_all", ban_info_all))
+    disp.add_handler(CommandHandler("ban_list", ban_info_all))
     disp.add_handler(CommandHandler("unban", unban))
     disp.add_handler(CommandHandler("get_log", get_log))
 

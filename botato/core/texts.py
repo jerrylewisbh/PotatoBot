@@ -627,6 +627,7 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 /kick - Reply to any message to kick the user from a chat
 /ban &lt;user&gt; &lt;reason&gt;  - Ban user 
 /unban &lt;user&gt; - Unban user 
+/ban_list - List banned
 /find &lt;user&gt; - Show user status by telegram user name
 /findc &lt;ign&gt; - Show user status by ingame name
 /findi &lt;id&gt; - Show user status by telegram uquique id
@@ -714,7 +715,8 @@ MSG_HELP_GROUP_ADMIN= """<b>Available Commands:</b>
 /del_admin &lt;user&gt; — delete administrator from current chat
 /force_kick_botato - Force Botato to leave the chat where this command was issued
 /kick - Reply to any message to kick the user from a chat
-/ban &lt;user&gt; &lt;reason&gt;  - Ban user 
+/ban &lt;user&gt; &lt;reason&gt;  - Ban user
+/ban_list - List banned 
 /unban &lt;user&gt; - Unban user 
 /user_info - Get info for user regarding bans/restrictions 
 /find &lt;user&gt; - Show user status by telegram user name

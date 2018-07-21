@@ -265,13 +265,18 @@ def ban(bot: MQBot, update: Update, user: User):
 def ban_info_all(bot: MQBot, update: Update, user: User):
     """ Check all bans """
 
+    text = "<b>Banned users:</b>\n"
+
     all_banned = Session.query(Ban).all()
     for ban in all_banned:
-        ban_user = ban.user
+        text += "{}: {}\n".format(
+            ban.user.username if ban.user.username else ban.user.id,
+            ban.reason
+        )
         send_async(
             bot,
             chat_id=update.message.chat_id,
-            text=__get_user_info(bot, ban_user),
+            text=text,
             parse_mode=ParseMode.HTML,
         )
 
