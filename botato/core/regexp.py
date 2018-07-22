@@ -4,7 +4,7 @@
 EMOJI = u"(\ud83d[\ude00-\ude4f])|(\ud83c[\udf00-\uffff])|(\ud83d[\u0000-\uddff])|(\ud83d[\ude80-\udeff])|(\ud83c[\udde0-\uddff])+"
 
 # Fixme: Expertise is not extracted...
-HERO = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)(?P<guild_tag>(\[.+\])?)(?P<ribbon>(🎗?))(?P<name>.+)\n' \
+HERO = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)((\[(?P<guild_tag>.+)\])?)(?P<ribbon>(🎗?))(?P<name>.+)\n' \
        '🏅Level: (?P<level>[0-9]+)\n' \
        '.+Atk: (?P<attack>[0-9]+) 🛡Def: (?P<defence>[0-9]+)\n' \
        '🔥Exp: (?P<exp>[0-9]+)/(?P<exp_needed>[0-9]+)\n' \
@@ -20,7 +20,9 @@ HERO = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)(?P<guild_tag>(\[.+\])?)(?
        '🎽Equipment(?:(?P<equipment>.+)(?:\n)?((?:.|\n)+)?)\n\n' \
        '🎒Bag: (?P<bag>[0-9]+)/(?P<max_bag>[0-9]+) /inv\n' \
        '📦Warehouse: (?P<stock>[0-9]+) /stock'
+
 #(📚Expertise: (.*))?
+
 REPORT = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)' \
          '(?P<guild>(\[.+\])?)' \
          '(?P<ribbon>(🎗?))' \
