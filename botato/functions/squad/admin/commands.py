@@ -6,8 +6,20 @@ from core.db import Session
 from core.decorators import command_handler
 from core.enums import AdminType
 from core.handler.callback.util import create_callback, CallbackAction
-from core.model import Group, User, Squad, SquadMember
+from core.model import Group, User, Squad
 from core.texts import *
+from functions.squad.util import __add_member
+from telegram import Update, ParseMode, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton
+
+from core.bot import MQBot
+from core.db import Session
+from core.decorators import command_handler
+from core.enums import AdminType
+from core.handler.callback.util import create_callback, CallbackAction
+from core.model import Group, User, Squad
+from core.texts import *
+from core.utils import send_async
+from functions.squad.util import __add_member
 
 
 @command_handler(
@@ -138,19 +150,12 @@ def force_add_to_squad(bot: MQBot, update: Update, user: User):
                     send_async(bot, chat_id=update.message.chat.id,
                                text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
                 else:
-                    member = Session.query(SquadMember).filter_by(user_id=user.id).first()
-                    if member is None:
-                        member = SquadMember()
-                        member.user_id = user.id
-                        member.squad_id = update.message.chat.id
-                        member.approved = True
-                        Session.add(member)
-                        Session.commit()
-                        send_async(
-                            bot,
-                            chat_id=update.message.chat.id,
-                            text=MSG_SQUAD_ADD_FORCED.format(
-                                '@' + user.username))
+                        if __add_member(bot, user.id, update.message.chat.id):
+                            send_async(
+                                bot,
+                                chat_id=update.message.chat.id,
+                                text=MSG_SQUAD_ADD_FORCED.format(
+                                    '@' + user.username))
 
 
 @command_handler(

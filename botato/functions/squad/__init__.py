@@ -13,7 +13,7 @@ from core.texts import MSG_SQUAD_LEAVE_DECLINE, BTN_YES, BTN_NO, MSG_SQUAD_REQUE
 from core.db import Session
 from core.model import User, Admin, Squad, SquadMember
 from functions.reply_markup import generate_squad_markup
-from functions.squad.util import __remove
+from functions.squad.util import __remove, __add_member
 
 Session()
 
@@ -202,8 +202,12 @@ def squad_invite(bot: MQBot, update: Update, _user: User):
     if action.data['sub_action'] == "invite_decline":
         __invite_decline(bot, update, invited_user)
     elif action.data['sub_action'] == "invite_accept":
-        __invite_accept(bot, update, invited_user, action.data['squad_id'])
-
+        if __add_member(bot, invited_user.id, action.data['squad_id']):
+            bot.edit_message_text(
+                MSG_SQUAD_ADD_ACCEPTED.format('@' + invited_user.username),
+                update.callback_query.message.chat.id,
+                update.callback_query.message.message_id
+            )
 
 def __invite_decline(bot: MQBot, update: Update, invited_user: User):
     bot.edit_message_text(
@@ -211,20 +215,3 @@ def __invite_decline(bot: MQBot, update: Update, invited_user: User):
         update.callback_query.message.chat.id,
         update.callback_query.message.message_id
     )
-
-
-def __invite_accept(bot: MQBot, update: Update, invited_user: User, squad_id: int):
-    member = Session.query(SquadMember).filter_by(user_id=invited_user.id).first()
-    if not member:
-        member = SquadMember()
-        member.user_id = invited_user.id
-        member.squad_id = squad_id
-        member.approved = True
-        Session.add(member)
-        Session.commit()
-
-        bot.edit_message_text(
-            MSG_SQUAD_ADD_ACCEPTED.format('@' + invited_user.username),
-            update.callback_query.message.chat.id,
-            update.callback_query.message.message_id
-        )

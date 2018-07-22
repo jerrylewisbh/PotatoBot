@@ -1,10 +1,13 @@
+import logging
+
+from sqlalchemy.exc import SQLAlchemyError
 from telegram import ParseMode, TelegramError
 
 from core.bot import MQBot
 from core.utils import send_async
 from core.texts import MSG_SQUAD_ALREADY_DELETED, MSG_SQUAD_LEFT
 from core.db import Session
-from core.model import User, Admin
+from core.model import User, Admin, SquadMember
 from functions.admin import __kickban_from_chat
 from functions.user.util import disable_api_functions
 
@@ -50,3 +53,33 @@ def __remove(bot: MQBot, user: User, squad_user: User):
     Session.commit()
 
     return old_squad
+
+
+def __add_member(bot: MQBot, user_id: int, squad_id: int):
+    """ Add a person to a squad if he is not already in a squad... Also: Unban that user from this chat
+    if he is banned"""
+    member = Session.query(SquadMember).filter_by(user_id=user_id).first()
+    if member is None:
+        member = SquadMember()
+        member.user_id = user_id
+        member.squad_id = squad_id
+        member.approved = True
+
+        try:
+            bot.unban_chat_member(
+                chat_id=squad_id,
+                user_id=user_id
+            )
+        except Exception as ex:
+            logging.warning("Error unbanning user: %s", ex.message)
+
+        try:
+            Session.add(member)
+            Session.commit()
+        except SQLAlchemyError:
+            logging.error("Error adding SquadMember user_id='%s'", user_id)
+            Session.rollback()
+            
+        return True
+
+    return False
