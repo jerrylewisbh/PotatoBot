@@ -323,7 +323,6 @@ class Character(Base):
     prof = Column(UnicodeText(250))
     pet = Column(UnicodeText(250), nullable=True, default=None)
     petLevel = Column(Integer, default=0)
-    maxStamina = Column(Integer, default=5)
     level = Column(Integer)
     attack = Column(Integer)
     defence = Column(Integer)
@@ -349,6 +348,12 @@ class Character(Base):
     def __str__(self):
         return "<Character: '{}', level='{}', date='{}'>".format(self.name, self.level, self.date)
 
+    @hybrid_property
+    def name_with_guildtag(self):
+        return "{}{}".format(
+            "[{}]".format(self.guild_tag) if self.guild_tag else "",
+            self.name
+        )
 
 class BuildReport(Base):
     __tablename__ = 'build_reports'
