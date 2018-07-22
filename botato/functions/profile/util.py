@@ -44,7 +44,6 @@ def parse_hero_text(report_text):
         'name': parsed.group("name"),
         'guild_tag': parsed.group("guild_tag") if parsed.group("guild_tag") else None,
         'ribbon': parsed.group("ribbon") if parsed.group("ribbon") else None,
-        'guild': parsed.group("guild"),
         'attack': int(parsed.group("attack")) if parsed.group("attack") else 0,
         'defence': int(parsed.group("defence")) if parsed.group("defence") else 0,
         'level': int(parsed.group("level")) if parsed.group("level") else 0,
@@ -83,7 +82,6 @@ def parse_hero(bot: MQBot, profile, user_id, date):
         char.defence = parsed_data['defence']
         char.exp = parsed_data['exp']
         char.needExp = parsed_data['exp_needed']
-        char.maxStamina = parsed_data['max_stamina']
         char.gold = parsed_data['gold']
         char.donateGold = parsed_data['pouches']
 
@@ -91,9 +89,30 @@ def parse_hero(bot: MQBot, profile, user_id, date):
         last_with_class = Session.query(Character).filter(
             Character.user_id == user_id,
             Character.characterClass is not None
-        ).order_by(Character.date).first()
-        if last_with_class:
+        ).order_by(Character.date.desc()).first()
+        if last_with_class and last_with_class.characterClass:
             char.characterClass = last_with_class.characterClass
+        else:
+            # We still don't have a Class let's try if user forwarded /class
+            # TODO: We should think about merging this stuff...
+
+            logging.debug("Still can't get users class. Falling back to profession table")
+
+            user_profession = Session.query(Profession).filter(
+                User.id == user_id
+            ).order_by(Profession.date.desc()).first()
+            if user_profession and user_profession.name:
+                char.characterClass = user_profession.name
+
+        # Try to find guild info...
+        if char.guild_tag:
+            logging.debug("Trying to find guild name from other infos")
+            guild_character = Session.query(Character).filter(
+                Character.guild_tag == char.guild_tag,
+                Character.guild.isnot(None)
+            ).order_by(Character.date.desc()).first()
+            if guild_character and guild_character.guild:
+                char.guild = guild_character.guild
 
         # if parsed_data.group(21):
         #    char.pet = str(parsed_data.group(21))
