@@ -170,7 +170,6 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c.prof = CASTLE_MAP[data['payload']['profile']['castle']]
                 c.characterClass = CLASS_MAP.get(data['payload']['profile']['class'], "Unknown class")
                 c.pet = None
-                c.maxStamina = -1  # TODO?
                 c.level = data['payload']['profile']['lvl']
                 c.attack = data['payload']['profile']['atk']
                 c.defence = data['payload']['profile']['def']

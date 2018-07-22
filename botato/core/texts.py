@@ -170,8 +170,6 @@ MSG_PROFILE_ADMIN_INFO_ADDON = "\n\n<b>Admin-Info:</b>\n" \
                                "Sniping enabled: {} {}"
 
 
-# | 🔋 %maxStamina% - Removed until api provides it or sth else happens...
-
 # main.py texts
 MSG_MAIN_INLINE_BATTLE = 'ROGER THAT!'
 MSG_MAIN_READY_TO_BATTLE = 'The battle is in 10 minutes, 🛡🥔 HOLD DEFENSE HIDE GOLD AND WAIT FOR COMMANDS'

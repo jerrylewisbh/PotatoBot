@@ -24,10 +24,9 @@ def fill_template(msg: str, user: User):
 def fill_char_template(msg: str, user: User, char: Character, profession: Profession, squad_request=False):
     msg = fill_template(msg, user)
     msg = msg.replace('%date%', str(char.date))
-    msg = msg.replace('%name%', str(char.name))
+    msg = msg.replace('%name%', str(char.name_with_guildtag))
     msg = msg.replace('%prof%', str(char.prof))
     msg = msg.replace('%petLevel%', str(char.petLevel))
-    # msg = msg.replace('%maxStamina%', str(char.maxStamina))
     msg = msg.replace('%level%', str(char.level))
     msg = msg.replace('%attack%', str(char.attack))
     msg = msg.replace('%defence%', str(char.defence))
