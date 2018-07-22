@@ -402,11 +402,10 @@
         },
         "telethon": {
             "hashes": [
-                "sha256:805474f24941ec8c36a695d14c242764b1ae5f605942719ab4f469885022a3cd",
-                "sha256:b87b6c0ef3121bf3be871dbad0440db7a81d1f8b3be530954edc2bd918bf7055"
+                "sha256:9fe57f92fb6188825ff8b20b87bcf428df076560a4d0c9720343adf0fee3309e"
             ],
             "index": "pypi",
-            "version": "==1.0.4"
+            "version": "==1.1"
         }
     }
 }
