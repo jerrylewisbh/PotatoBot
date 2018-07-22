@@ -160,9 +160,13 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c = Character()
                 c.user_id = user.id
                 c.date = datetime.datetime.now()
-                guild_tag = "[" + data['payload']['profile']['guild_tag'] + "]" if 'guild_tag' in data['payload'][
-                    'profile'] and data['payload']['profile']['guild_tag'] else ''
-                c.name = guild_tag + data['payload']['profile']['userName']
+                c.name = data['payload']['profile']['userName']
+
+                if "guild" in data['payload']['profile']:
+                    c.guild = data['payload']['profile']['guild']
+                if "guild_tag" in data['payload']['profile']:
+                    c.guild_tag = data['payload']['profile']['guild_tag']
+
                 c.prof = CASTLE_MAP[data['payload']['profile']['castle']]
                 c.characterClass = CLASS_MAP.get(data['payload']['profile']['class'], "Unknown class")
                 c.pet = None
@@ -175,8 +179,7 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c.castle = data['payload']['profile']['castle']
                 c.gold = data['payload']['profile']['gold']
                 c.donateGold = data['payload']['profile']['pouches'] if 'pouches' in data['payload']['profile'] else 0
-                # c.guild = data['payload']['profile']['guild'] if 'guild' in data['payload']['guild'] else None
-                # c.guild_tag = data['payload']['profile']['guild_tag'] if 'guild_tag' in data['payload']['guild_tag'] else None
+
                 Session.add(c)
                 Session.commit()
 

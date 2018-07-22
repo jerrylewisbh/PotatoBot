@@ -4,7 +4,7 @@
 EMOJI = u"(\ud83d[\ude00-\ude4f])|(\ud83c[\udf00-\uffff])|(\ud83d[\u0000-\uddff])|(\ud83d[\ude80-\udeff])|(\ud83c[\udde0-\uddff])+"
 
 # Fixme: Expertise is not extracted...
-HERO = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)(?P<guild>(\[.+\])?)(?P<ribbon>(🎗?))(?P<name>.+)\n' \
+HERO = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)(?P<guild_tag>(\[.+\])?)(?P<ribbon>(🎗?))(?P<name>.+)\n' \
        '🏅Level: (?P<level>[0-9]+)\n' \
        '.+Atk: (?P<attack>[0-9]+) 🛡Def: (?P<defence>[0-9]+)\n' \
        '🔥Exp: (?P<exp>[0-9]+)/(?P<exp_needed>[0-9]+)\n' \
@@ -32,11 +32,6 @@ REPORT = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)' \
          '🔥Exp: (?P<exp>[0-9]+))?(?:\n' \
          '💰Gold: (?P<gold>-?[0-9]+))?(?:\n' \
          '📦Stock: (?P<stock>-?[0-9]+))?'
-
-
-BUILD_REPORT = 'Ты вернулся со стройки: (.+), прогресс работ: ([0-9]+)%'
-
-REPAIR_REPORT = 'Здание отремонтировано: (.+)'
 
 STOCK = '📦Storage'
 GUILD_WAREHOUSE = 'Guild Warehouse:'

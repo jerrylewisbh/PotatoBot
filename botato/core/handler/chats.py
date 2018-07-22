@@ -23,8 +23,6 @@ def add_handler(disp: Dispatcher):
 
     disp.add_handler(RegexHandler(HERO, char_update))
     disp.add_handler(RegexHandler(REPORT, report_received))
-    disp.add_handler(RegexHandler(BUILD_REPORT, build_report_received))
-    disp.add_handler(RegexHandler(REPAIR_REPORT, repair_report_received))
     disp.add_handler(RegexHandler(PROFESSION, profession_update))
     disp.add_handler(RegexHandler(ACCESS_CODE, handle_access_token))
     disp.add_handler(RegexHandler(to_re(STOCK, False), stock_compare_forwarded, pass_chat_data=True))

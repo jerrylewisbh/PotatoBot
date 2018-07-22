@@ -12,7 +12,7 @@ from core.utils import send_async
 from core.enums import CASTLE_MAP
 from core.handler.callback import CallbackAction
 from core.handler.callback.util import create_callback
-from core.regexp import BUILD_REPORT, HERO, PROFESSION, REPAIR_REPORT, REPORT
+from core.regexp import HERO, PROFESSION, REPORT
 from core.state import get_last_battle
 from core.template import fill_char_template
 from core.texts import *
@@ -41,10 +41,8 @@ def parse_hero_text(report_text):
         'castle': parsed.group("castle"),
         'castle_name': CASTLE_MAP[parsed.group("castle")],
         'name_standalone': parsed.group("name"),
-        'name': "{}{}".format(
-            "{}".format(parsed.group("guild")) if parsed.group("guild") else "",
-            parsed.group("name"),
-        ),
+        'name': parsed.group("name"),
+        'guild_tag': parsed.group("guild_tag") if parsed.group("guild_tag") else None,
         'ribbon': parsed.group("ribbon") if parsed.group("ribbon") else None,
         'guild': parsed.group("guild"),
         'attack': int(parsed.group("attack")) if parsed.group("attack") else 0,
@@ -78,6 +76,7 @@ def parse_hero(bot: MQBot, profile, user_id, date):
         char.date = date
         char.castle = parsed_data['castle']
         char.name = parsed_data['name']
+        char.guild_tag = parsed_data['guild_tag']
         char.prof = parsed_data['castle_name']
         char.level = parsed_data['level']
         char.attack = parsed_data['attack']

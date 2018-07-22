@@ -333,6 +333,9 @@ class Character(Base):
     gold = Column(Integer, default=0)
     donateGold = Column(Integer, default=0)
 
+    guild = Column(UnicodeText(250), nullable=True, default=None)
+    guild_tag = Column(UnicodeText(10), nullable=True, default=None)
+
     # guild = Column(UnicodeText(250), nullable=True, default=None)
     # guild_tag = Column(UnicodeText(250), nullable=True, default=None)
 

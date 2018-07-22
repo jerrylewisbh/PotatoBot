@@ -19,51 +19,6 @@ p = Publisher()
 
 Session()
 
-
-@command_handler(
-    forward_from=CWBOT_ID,
-)
-def build_report_received(bot: MQBot, update: Update, user: User):
-    if datetime.now() - update.message.forward_date > timedelta(minutes=10):
-        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_TOO_OLD)
-        return
-    report = re.search(BUILD_REPORT, update.message.text)
-
-    if report and user.character:
-        old_report = Session.query(BuildReport) \
-            .filter(BuildReport.user_id == user.id,
-                    BuildReport.date > update.message.forward_date - timedelta(minutes=5),
-                    BuildReport.date < update.message.forward_date + timedelta(minutes=5)).first()
-        if old_report is None:
-            parse_build_reports(update.message.text, update.message.from_user.id, update.message.forward_date)
-            user_builds = Session.query(BuildReport).filter_by(user_id=user.id).count()
-            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK.format(user_builds))
-        else:
-            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
-
-
-@command_handler(
-    forward_from=CWBOT_ID,
-)
-def repair_report_received(bot: MQBot, update: Update, user: User):
-    if datetime.now() - update.message.forward_date > timedelta(minutes=10):
-        send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_TOO_OLD)
-        return
-    report = re.search(REPAIR_REPORT, update.message.text)
-
-    if report and user.character:
-        old_report = Session.query(BuildReport) \
-            .filter(BuildReport.user_id == user.id,
-                    BuildReport.date > update.message.forward_date - timedelta(minutes=5),
-                    BuildReport.date < update.message.forward_date + timedelta(minutes=5)).first()
-        if old_report is None:
-            parse_repair_reports(update.message.text, update.message.from_user.id, update.message.forward_date)
-            user_builds = Session.query(BuildReport).filter_by(user_id=user.id).count()
-            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_OK.format(user_builds))
-        else:
-            send_async(bot, chat_id=update.message.from_user.id, text=MSG_BUILD_REPORT_EXISTS)
-
-
 @command_handler(
     forward_from=CWBOT_ID,
     allow_channel=True,
