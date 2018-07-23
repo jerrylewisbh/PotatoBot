@@ -41,7 +41,7 @@ def error_callback(bot: MQBot, update, error, **kwargs):
         logging.error("BadRequest occurred: %s", error.message, exc_info=True)
     except TimedOut:
         # handle slow connection problems
-        logging.warning("TimedOut: Ignoring this message")
+        logging.info("TimedOut: Ignoring this message")
     except NetworkError:
         # handle other connection problems
 
