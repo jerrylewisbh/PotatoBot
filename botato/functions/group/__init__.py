@@ -31,23 +31,23 @@ def info(bot: MQBot, update: Update, user: User):
     adm_msg = ''
     adm_del_keys = []
     for adm in admins:
-        user = Session.query(User).filter_by(id=adm.user_id).first()
+        admin_user = Session.query(User).filter_by(id=adm.user_id).first()
         adm_msg += MSG_GROUP_STATUS_ADMIN_FORMAT.format(
-            user.id,
-            user.username or '',
-            user.first_name or '',
-            user.last_name or ''
+            admin_user.id,
+            admin_user.username or '',
+            admin_user.first_name or '',
+            admin_user.last_name or ''
         )
 
         adm_del_keys.append([
             InlineKeyboardButton(
-                MSG_GROUP_STATUS_DEL_ADMIN.format(user.first_name or '', user.last_name or ''),
+                MSG_GROUP_STATUS_DEL_ADMIN.format(admin_user.first_name or '', admin_user.last_name or ''),
                 callback_data=create_callback(
                     CallbackAction.GROUP_MANAGE,
                     user.id,
                     sub_action='demote',
                     group_id=group.id,
-                    admin_user_id=user.id,
+                    admin_user_id=admin_user.id,
                 )
             )
         ])
