@@ -11,7 +11,7 @@ from core.enums import CASTLE_LIST, TACTICTS_COMMAND_PREFIX, AdminType, MessageT
 from core.handler.callback.util import create_callback, CallbackAction, get_callback_action
 from core.texts import *
 from core.db import Session
-from core.model import Group, User, Admin, OrderGroup, Order, OrderCleared, Squad, SquadMember
+from core.model import Group, User, Admin, OrderGroup, Order, OrderCleared, Squad, SquadMember, OrderGroupItem
 from functions.order.groups import list
 from functions.order.util import OrderDraft, __send_order
 
@@ -216,9 +216,12 @@ def send_order(bot: MQBot, update: Update, user: User, chat_data=None):
                 chat_id=action.data['group_id'],
                 markup=markup
             )
-    if "order_group_id" in action.data:
+    elif "order_group_id" in action.data:
         logging.info("Sending order for order_group='%s'", action.data['order_group_id'])
-        group = Session.query(OrderGroup).filter_by(id=action.data['order_group_id']).first()
+        group = Session.query(OrderGroup).filter(
+            OrderGroup.id == action.data['order_group_id'],
+            Group.bot_in_group.is_(True)
+        ).join(OrderGroupItem).join(Group).first()
         for item in group.items:
             logging.info("Order for chat_id='%s'", item.chat_id)
             if o.button:

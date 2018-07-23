@@ -1,11 +1,13 @@
 import logging
-from telegram.error import Unauthorized
+from telegram.error import Unauthorized, BadRequest, TimedOut
 from telegram import ReplyMarkup, TelegramError
 from telegram.ext import run_async
 
 from core.bot import MQBot
+from core.db import Session
 from core.enums import MessageType
-
+from core.model import Group
+from core.utils import disable_group
 
 
 class OrderDraft(object):
@@ -67,12 +69,38 @@ def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarku
             msg_sent = bot.send_photo(chat_id, order.order, reply_markup=markup)
         else:
             logging.info("Sending Order")
-            msg_sent = bot.send_message(
-                chat_id=chat_id,
-                text=order.order,
-                disable_web_page_preview=True,
-                reply_markup=markup
-            )
+
+            try:
+                msg_sent = bot.send_message(
+                    chat_id=chat_id,
+                    text=order.order,
+                    disable_web_page_preview=True,
+                    reply_markup=markup
+                )
+            except TimedOut as ex:
+                logging.warning("Giving order timed out. Retry!")
+                msg_sent = bot.send_message(
+                    chat_id=chat_id,
+                    text=order.order,
+                    disable_web_page_preview=True,
+                    reply_markup=markup
+                )
+            except BadRequest as ex:
+                if ex.message == "Chat not found":
+                    logging.warning(
+                        "Chat for group_id='%s' not found: %s",
+                        chat_id,
+                        ex.message
+                    )
+                    group = Session.query(Group).filter(Group.id == chat_id).first()
+                    if group:
+                        disable_group(group)
+                else:
+                    logging.warning(
+                        "Can't send order into group_id='%s'. Message: %s",
+                        chat_id,
+                        ex.message
+                    )
 
         if order.pin:
             msg_result = msg_sent.result()
@@ -87,6 +115,22 @@ def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarku
                     )
                 except Unauthorized:
                     logging.warning("I'm not allowed to pin message in chat_id='%s'", chat_id)
+                except BadRequest as ex:
+                    if ex.message == "Chat not found":
+                        logging.warning(
+                            "Chat for group_id='%s' not found: %s",
+                            chat_id,
+                            ex.message
+                        )
+                        group = Session.query(Group).filter(Group.id == chat_id).first()
+                        if group:
+                            disable_group(group)
+                    else:
+                        logging.warning(
+                            "Can't send order into group_id='%s'. Message: %s",
+                            chat_id,
+                            ex.message
+                        )
 
         logging.info(
             "END send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
