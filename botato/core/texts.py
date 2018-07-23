@@ -61,6 +61,7 @@ MSG_PERSONAL_SITE_LINK = 'Your personal link: {}'
 
 MSG_GROUP_STATUS_CHOOSE_CHAT = 'Choose chat'
 MSG_GROUP_STATUS = """<b>Group: {}</b>
+ID: {}
 
 Bot in Group: {}
 

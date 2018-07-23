@@ -54,6 +54,7 @@ def info(bot: MQBot, update: Update, user: User):
 
     msg = MSG_GROUP_STATUS.format(
         group.title,
+        group.id,
         group.bot_in_group,
         adm_msg,
         MSG_ON if group.welcome_enabled else MSG_OFF,

@@ -79,7 +79,7 @@ def __add_member(bot: MQBot, user_id: int, squad_id: int):
         except SQLAlchemyError:
             logging.error("Error adding SquadMember user_id='%s'", user_id)
             Session.rollback()
-            
+
         return True
 
     return False
