@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from enum import IntFlag, auto
 from html import escape
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -16,6 +17,11 @@ from core.texts import *
 from core.utils import send_async, update_group, disable_group
 from functions.reply_markup import generate_admin_markup
 from functions.user.util import disable_api_functions
+
+class KickBanResult(IntFlag):
+    KICKED = auto() # Kicked
+    GROUP_MEMBER = auto() # Is/Was group member
+    PERMISSION_FAILURE = auto() # Can't kick...
 
 
 @command_handler(
@@ -84,7 +90,7 @@ def kickban(bot: MQBot, update: Update, user: User):
             ban_user,
             group
         )
-        if result:
+        if KickBanResult.KICKED in result and KickBanResult.GROUP_MEMBER in result:
             bot.send_message(
                 chat_id=group.id,
                 text=MSG_USER_BANNED_NO_REASON.format(
@@ -121,7 +127,7 @@ def __kickban_from_chat(bot: MQBot, ban_user: User, group: Group):
                 ban_user.id,
                 group.id
             )
-            return False
+            return KickBanResult.PERMISSION_FAILURE
         elif chat_user_banned.status in ['member', 'restricted']:
             # Currently a member. restrict + kick
             logging.info(
@@ -130,7 +136,7 @@ def __kickban_from_chat(bot: MQBot, ban_user: User, group: Group):
                 group.id
             )
             bot.kick_chat_member(group.id, ban_user.id)
-            return True
+            return KickBanResult.KICKED | KickBanResult.GROUP_MEMBER
         elif chat_user_banned.status == 'left':
             # Not a member.
             logging.info(
@@ -139,7 +145,7 @@ def __kickban_from_chat(bot: MQBot, ban_user: User, group: Group):
                 group.id
             )
             bot.kick_chat_member(group.id, ban_user.id)
-            return True
+            return KickBanResult.KICKED
         elif chat_user_banned.status in ['administrator', 'creator']:
             # Can't be kicked...
             logging.warning(
@@ -147,14 +153,14 @@ def __kickban_from_chat(bot: MQBot, ban_user: User, group: Group):
                 ban_user.id,
                 group.id
             )
-            return False
+            return KickBanResult.PERMISSION_FAILURE
     except Unauthorized as ex:
         logging.warning(
             "[Ban] Can't kick and ban user_id='%s' from chat_id='%s' since he is an administrator!",
             ban_user.id,
             group.id
         )
-        return False
+        return KickBanResult.PERMISSION_FAILURE
     except BadRequest as ex:
         if ex.message == "Chat not found":
             logging.warning(
@@ -174,6 +180,8 @@ def __kickban_from_chat(bot: MQBot, ban_user: User, group: Group):
             "[Ban] Error banning user: %s",
             ex.message
         )
+
+    return KickBanResult.PERMISSION_FAILURE
 
 
 @command_handler(
@@ -403,7 +411,7 @@ def __ban_globally(bot: MQBot, ban_user: User, reason: str):
 
     for group in all_active_groups:
         result = __kickban_from_chat(bot, ban_user, group)
-        if result:
+        if KickBanResult.KICKED in result and KickBanResult.GROUP_MEMBER in result:
             bot.send_message(
                 chat_id=group.id,
                 text=MSG_USER_BANNED.format(
@@ -411,7 +419,9 @@ def __ban_globally(bot: MQBot, ban_user: User, reason: str):
                     banned.reason
                 ),
             )
-        else:
+        elif KickBanResult.KICKED in result:
+            logging.info("User was kicked/banned but was no group member")
+        elif KickBanResult.PERMISSION_FAILURE in result:
             bot.send_message(
                 chat_id=group.id,
                 text=MSG_USER_BANNED_UNAUTHORIZED.format(
