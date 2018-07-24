@@ -27,9 +27,9 @@ Session()
 )
 def report_received(bot: MQBot, update: Update, user: User):
     # logging.info("Handling report for %s", user.id)
-    # if datetime.now() - update.message.forward_date > timedelta(minutes=1):
-    #    send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
-    #    return
+    if datetime.now() - update.message.forward_date > timedelta(minutes=1):
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
+        return
 
     state = get_game_state()
     if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
@@ -42,6 +42,7 @@ def report_received(bot: MQBot, update: Update, user: User):
         return
 
     parsed_report = parse_report_text(update.message.text)
+    logging.debug("Parsed report: %s", parsed_report)
     if parsed_report and user.character and parsed_report['name'] == user.character.name:
         date = update.message.forward_date
         if update.message.forward_date.hour < 7:
