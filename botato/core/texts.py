@@ -206,7 +206,7 @@ MSG_BUILD_REPORT_OK = 'Thanks for the help! This is your {} report.'
 MSG_BUILD_REPORT_FORWARDED = 'Do not send me any more reports from alternative accounts !!! '
 MSG_BUILD_REPORT_TOO_OLD = 'This report is very old, I can not accept it.'
 
-MSG_REPORT_OLD = 'Your report stinks like rotten potato, next time try to send it within a minute after receiving."'
+MSG_REPORT_OLD = 'Your report stinks like rotten potato, next time try to send it within a minute after receiving.'
 MSG_REPORT_EXISTS = 'The report for this battle has already been submitted.'
 MSG_REPORT_MISSING = "No report for this period! Please forward me your /report from @chtwrsbot."
 
