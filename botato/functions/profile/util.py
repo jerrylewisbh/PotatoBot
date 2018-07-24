@@ -146,10 +146,7 @@ def parse_report_text(report_text):
     return {
         'castle': parsed.group("castle"),
         'name_standalone': parsed.group("name"),
-        'name': "{}{}".format(
-            parsed.group("guild") if parsed.group("guild") else "",
-            parsed.group("name"),
-        ),
+        'name': parsed.group("name"),
         'ribbon': parsed.group("ribbon") if parsed.group("ribbon") else None,
         'guild': parsed.group("guild"),
         'attack': int(parsed.group("attack")) if parsed.group("attack") else 0,
@@ -289,35 +286,6 @@ def get_required_xp(level):
         66: 2006021,
     }
     return required[level]
-
-
-def parse_build_reports(report, user_id, date):
-    parsed_data = re.search(BUILD_REPORT, report)
-    report = Session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
-    if report is None:
-        report = BuildReport()
-        report.user_id = user_id
-        report.date = date
-        report.building = str(parsed_data.group(1))
-        report.progress_percent = str(parsed_data.group(2))
-        report.report_type = BuildType.Build.value
-        Session.add(report)
-        Session.commit()
-    return report
-
-
-def parse_repair_reports(report, user_id, date):
-    parsed_data = re.search(REPAIR_REPORT, report)
-    report = Session.query(BuildReport).filter_by(user_id=user_id, date=date).first()
-    if report is None:
-        report = BuildReport()
-        report.user_id = user_id
-        report.date = date
-        report.building = str(parsed_data.group(1))
-        report.report_type = BuildType.Repair.value
-        Session.add(report)
-        Session.commit()
-    return report
 
 
 def __send_user_with_settings(bot: MQBot, update: Update, show_user: User, admin_user: User):
