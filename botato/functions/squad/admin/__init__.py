@@ -334,8 +334,8 @@ def battle_reports_inline(bot: MQBot, update: Update, user: User):
     action = get_callback_action(update.callback_query.data, user.id)
 
     squad = Session.query(Squad).filter(Squad.chat_id == action.data['squad_id']).first()
-    time_from = action.data['timestamp']
-    time_to = time_from + timedelta(hours=4)
+    time_from = get_last_battle(action.data['timestamp'])
+    time_to = time_from + timedelta(hours=8)
 
     reports = Session.query(User, Report).join(SquadMember).outerjoin(
         Report, and_(User.id == Report.user_id, Report.date > time_from, Report.date < time_to)
