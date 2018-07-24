@@ -232,6 +232,7 @@ def top(bot: MQBot, update: Update, user: User):
                 reply_markup=InlineKeyboardMarkup(class_buttons),
                 parse_mode=ParseMode.HTML,
             )
+            return
 
         bot.edit_message_text(
             chat_id=user.id,

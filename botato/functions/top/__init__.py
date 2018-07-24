@@ -75,19 +75,19 @@ def get_top(condition, header, field_name, icon, user, character_class=None, fil
     str_format = MSG_TOP_FORMAT
     str_format_reduced = MSG_TOP_FORMAT_REDUCED
     for i in range(min(3, len(characters))):
-        text += str_format_reduced.format(i + 1, characters[i].name, characters[i].level,
+        text += str_format_reduced.format(i + 1, characters[i].name_with_guildtag, characters[i].level,
                                   getattr(characters[i], field_name), icon)
     if user.id in [character.user_id for character in characters]:
         if user.id not in [character.user_id for character in characters[:3]]:
             for i in range(3, len(characters)):
                 if characters[i].user_id == user.id:
                     text += '...\n'
-                    text += str_format.format(i, characters[i - 1].name, characters[i - 1].level,
+                    text += str_format.format(i, characters[i - 1].name_with_guildtag, characters[i - 1].level,
                                               getattr(characters[i - 1], field_name), icon)
-                    text += str_format.format(i + 1, characters[i].name, characters[i].level,
+                    text += str_format.format(i + 1, characters[i].name_with_guildtag, characters[i].level,
                                               getattr(characters[i], field_name), icon)
                     if i != len(characters) - 1:
-                        text += str_format.format(i + 2, characters[i + 1].name, characters[i + 1].level,
+                        text += str_format.format(i + 2, characters[i + 1].name_with_guildtag, characters[i + 1].level,
                                                   getattr(characters[i + 1], field_name), icon)
                     break
     return text
@@ -97,16 +97,16 @@ def __gen_top_msg(data, user_id, header, icon):
     text = "<b>" + header + "</b>"
     str_format = MSG_TOP_FORMAT
     for i in range(min(3, len(data))):
-        text += str_format.format(i + 1, data[i][0].name, data[i][0].level, data[i][1], icon)
+        text += str_format.format(i + 1, data[i][0].name_with_guildtag, data[i][0].level, data[i][1], icon)
 
     if len(data) and hasattr(data[0][0], 'user_id') and user_id in [build[0].user_id for build in data]:
         if user_id not in [build[0].user_id for build in data[:3]]:
             for i in range(3, len(data)):
                 if data[i][0].user_id == user_id:
                     text += '...\n'
-                    text += str_format.format(i, data[i - 1][0].name, data[i - 1][0].level, data[i - 1][1], icon)
-                    text += str_format.format(i + 1, data[i][0].name, data[i][0].level, data[i][1], icon)
+                    text += str_format.format(i, data[i - 1][0].name_with_guildtag, data[i - 1][0].level, data[i - 1][1], icon)
+                    text += str_format.format(i + 1, data[i][0].name_with_guildtag, data[i][0].level, data[i][1], icon)
                     if i != len(data) - 1:
-                        text += str_format.format(i + 2, data[i + 1][0].name, data[i + 1][0].level, data[i + 1][1], icon)
+                        text += str_format.format(i + 2, data[i + 1][0].name_with_guildtag, data[i + 1][0].level, data[i + 1][1], icon)
                     break
     return text
