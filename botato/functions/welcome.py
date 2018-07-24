@@ -77,7 +77,7 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
     elif joined_user.id == bot.id:
         logging.info("[Welcome] user_id matches bot_id -> Bot joined this channel")
         return (True, joined_user)
-    elif update.effective_user.is_bot:
+    elif joined_user.is_bot:
         if group.allow_bots:
             logging.info("[Welcome] user_id='%s' is a bot, they are allowed in this chat.", joined_user.id)
             return (True, joined_user)
