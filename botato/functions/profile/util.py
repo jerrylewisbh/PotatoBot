@@ -88,7 +88,7 @@ def parse_hero(bot: MQBot, profile, user_id, date):
         # We don't get this fom forwarded text. So get it from the last one sent in to make sure its set.
         last_with_class = Session.query(Character).filter(
             Character.user_id == user_id,
-            Character.characterClass is not None
+            Character.characterClass.isnot(None),
         ).order_by(Character.date.desc()).first()
         if last_with_class and last_with_class.characterClass:
             char.characterClass = last_with_class.characterClass
@@ -99,7 +99,7 @@ def parse_hero(bot: MQBot, profile, user_id, date):
             logging.debug("Still can't get users class. Falling back to profession table")
 
             user_profession = Session.query(Profession).filter(
-                User.id == user_id
+                Profession.user_id == user_id
             ).order_by(Profession.date.desc()).first()
             if user_profession and user_profession.name:
                 char.characterClass = user_profession.name
