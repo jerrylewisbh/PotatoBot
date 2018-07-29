@@ -24,7 +24,9 @@ Session()
 )
 def welcome(bot: MQBot, update: Update, user: User):
     if update.message.chat.type not in ['group', 'supergroup']:
-        return 
+        return
+
+    print(update)
         
     group = update_group(update.message.chat)
     for new_chat_member in update.message.new_chat_members:
@@ -77,7 +79,7 @@ def __is_allowed_to_join(bot: MQBot, update: Update, new_chat_member: telegram.U
     elif joined_user.id == bot.id:
         logging.info("[Welcome] user_id matches bot_id -> Bot joined this channel")
         return (True, joined_user)
-    elif joined_user.is_bot:
+    elif new_chat_member.is_bot:
         if group.allow_bots:
             logging.info("[Welcome] user_id='%s' is a bot, they are allowed in this chat.", joined_user.id)
             return (True, joined_user)
