@@ -182,7 +182,7 @@ def battle_reports(bot: MQBot, update: Update, user: User):
             else:
                 if not report_user.character:
                     continue
-                text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(report_user.character.name, report_user.username)
+                text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(report_user.character.name_with_guildtag, report_user.username)
                 texts.append(text)
 
         template = MSG_REPORT_SUMMARY_HEADER.format(
@@ -367,7 +367,7 @@ def battle_reports_inline(bot: MQBot, update: Update, user: User):
             full_stock += report.earned_stock
             total_reports += 1
         else:
-            text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(report_user.character.name if report_user.character else "Unknown",
+            text = MSG_REPORT_SUMMARY_ROW_EMPTY.format(report_user.character.name_with_guildtag if report_user.character else "Unknown",
                                                        report_user.username)
             texts.append(text)
     template = MSG_REPORT_SUMMARY_HEADER.format(
@@ -469,7 +469,7 @@ def __generate_squad_member_list_keyboard_button(user: User, squad: Squad):
             InlineKeyboardButton(
                 '{}{}: {}⚔ {}🛡 {}🏅'.format(
                     status_emoji,
-                    character.name,
+                    character.name_with_guildtag,
                     character.attack,
                     character.defence,
                     character.level
