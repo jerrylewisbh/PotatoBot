@@ -74,11 +74,27 @@ def get_top(condition, header, field_name, icon, user, character_class=None, fil
     text = "<b>" + header + "</b>"
     str_format = MSG_TOP_FORMAT
     str_format_reduced = MSG_TOP_FORMAT_REDUCED
+
+    user_in_top_n = user.id in [character.user_id for character in characters[:3]]
     for i in range(min(3, len(characters))):
-        text += str_format_reduced.format(i + 1, characters[i].name_with_guildtag, characters[i].level,
-                                  getattr(characters[i], field_name), icon)
+        if not user_in_top_n:
+            text += str_format_reduced.format(
+                i + 1,
+                characters[i].name_with_guildtag,
+                characters[i].level,
+                getattr(characters[i], field_name),
+                icon
+            )
+        else:
+            text += str_format.format(
+                i + 1,
+                characters[i ].name_with_guildtag,
+                characters[i].level,
+                getattr(characters[i], field_name),
+                icon
+            )
     if user.id in [character.user_id for character in characters]:
-        if user.id not in [character.user_id for character in characters[:3]]:
+        if user_in_top_n:
             for i in range(3, len(characters)):
                 if characters[i].user_id == user.id:
                     text += '...\n'
