@@ -34,7 +34,8 @@ Session()
 def ready_to_battle(bot: MQBot, job_queue: Job):
     try:
         group = Session.query(Group).filter(
-            Group.reminders_enabled == True
+            Group.reminders_enabled.is_(True),
+            Group.bot_in_group.is_(True),
         ).all()
         for item in group:
             new_order = Order()
@@ -68,8 +69,9 @@ def after_battle(bot: MQBot, job_queue: Job):
     # reminder sent after fwd....
     try:
         group = Session.query(Squad).filter(
-            Group.reminders_enabled == True,
-            Group.fwd_minireport == False
+            Group.reminders_enabled.is_(True),
+            Group.fwd_minireport.is_(False),
+            Group.bot_in_group.is_(True)
         ).join(Group).all()
 
         for item in group:
