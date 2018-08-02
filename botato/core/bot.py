@@ -103,7 +103,7 @@ class MQBot(telegram.bot.Bot):
                     return
             raise ex
         except TimedOut as ex:
-            logging.warning("TimedOut: Ignoring this message")
+            logging.info("TimedOut: Ignoring this message")
         except BadRequest as ex:
             logging.error(
                 "BadRequest for: user_id='%s', text='%s', error_msg='%s'",
