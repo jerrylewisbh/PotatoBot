@@ -181,17 +181,6 @@ def profile_handler(channel, method, properties, body, dispatcher):
 
                 Session.add(c)
                 Session.commit()
-
-                """
-                  {castle}{userName}
-                  🏅Level: {lvl}
-                  ⚔Atk: {atk} 🛡Def: {def}
-                  🔥Exp: {exp}
-                  🔋Stamina: {stamina}
-                  💧Mana: {mana}
-                  💰{gold} 👝{pouches}
-                  🏛Class info: {class}
-                """
         elif data['action'] == "requestStock":
             if data['result'] == "InvalidToken":
                 # Revoked token?
