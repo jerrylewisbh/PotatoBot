@@ -45,6 +45,7 @@ def __get_top_attendance(user: User, date_filter, class_name, date_desc):
     ).filter(
         date_filter,
         Character.characterClass.ilike(class_name),
+        Report.preliminary_report.is_(False),
     ).filter(
         Report.earned_exp > 0
     ).group_by(

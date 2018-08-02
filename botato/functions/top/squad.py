@@ -46,7 +46,8 @@ def __get_top_attendance(user: User, date_filter, date_desc):
         Squad.chat_id == user.member.squad.chat_id,
         SquadMember.approved.is_(True),
     ).filter(
-        Report.earned_exp > 0
+        Report.earned_exp > 0,
+        Report.preliminary_report.is_(False),
     ).group_by(
         Character
     ).order_by(
