@@ -94,7 +94,7 @@ def get_top(condition, header, field_name, icon, user, character_class=None, fil
                 icon
             )
     if user.id in [character.user_id for character in characters]:
-        if user_in_top_n:
+        if not user_in_top_n:
             for i in range(3, len(characters)):
                 if characters[i].user_id == user.id:
                     text += '...\n'
