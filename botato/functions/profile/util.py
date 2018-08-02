@@ -102,7 +102,11 @@ def parse_hero(bot: MQBot, profile, user_id, date):
                 Profession.user_id == user_id
             ).order_by(Profession.date.desc()).first()
             if user_profession and user_profession.name:
-                char.characterClass = user_profession.name
+                # Since Class emoji doesn't differ between Master / Esquire we have to treat them as same...
+                if user_profession.name in ['Master', 'Esquire']:
+                    char.characterClass = "Esquire / Master"
+                else:
+                    char.characterClass = user_profession.name
 
         # Try to find guild info...
         if char.guild_tag:
