@@ -1,17 +1,6 @@
 from telegram import Update, ParseMode, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton
 
 from core.bot import MQBot
-from core.utils import send_async
-from core.db import Session
-from core.decorators import command_handler
-from core.enums import AdminType
-from core.handler.callback.util import create_callback, CallbackAction
-from core.model import Group, User, Squad
-from core.texts import *
-from functions.squad.util import __add_member
-from telegram import Update, ParseMode, TelegramError, InlineKeyboardMarkup, InlineKeyboardButton
-
-from core.bot import MQBot
 from core.db import Session
 from core.decorators import command_handler
 from core.enums import AdminType
@@ -150,12 +139,12 @@ def force_add_to_squad(bot: MQBot, update: Update, user: User):
                     send_async(bot, chat_id=update.message.chat.id,
                                text=MSG_SQUAD_ADD_IN_SQUAD.format('@' + username))
                 else:
-                        if __add_member(bot, user.id, update.message.chat.id):
-                            send_async(
-                                bot,
-                                chat_id=update.message.chat.id,
-                                text=MSG_SQUAD_ADD_FORCED.format(
-                                    '@' + user.username))
+                    if __add_member(bot, user.id, update.message.chat.id):
+                        send_async(
+                            bot,
+                            chat_id=update.message.chat.id,
+                            text=MSG_SQUAD_ADD_FORCED.format(
+                                '@' + user.username))
 
 
 @command_handler(
@@ -171,13 +160,13 @@ def add_to_squad(bot: MQBot, update: Update, user: User):
             username = username[1].replace('@', '')
             invited_user = Session.query(User).filter_by(username=username).first()
             if invited_user is not None:
-                if invited_user.character is None:
+                if not invited_user.character:
                     send_async(
                         bot,
                         chat_id=update.message.chat.id,
                         text=MSG_SQUAD_NO_PROFILE
                     )
-                elif invited_user.member is not None:
+                elif invited_user.member:
                     send_async(
                         bot,
                         chat_id=update.message.chat.id,

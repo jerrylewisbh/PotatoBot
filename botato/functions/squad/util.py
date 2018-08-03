@@ -58,14 +58,16 @@ def __remove(bot: MQBot, user: User, squad_user: User):
 def __add_member(bot: MQBot, user_id: int, squad_id: int):
     """ Add a person to a squad if he is not already in a squad... Also: Unban that user from this chat
     if he is banned"""
+    logging.info("Adding user_id='%s' to squad_id='%s'", user_id, squad_id)
     member = Session.query(SquadMember).filter_by(user_id=user_id).first()
-    if member is None:
+    if not member:
         member = SquadMember()
         member.user_id = user_id
         member.squad_id = squad_id
         member.approved = True
 
         try:
+            logging.info("Issuing 'unban' for user: %s", user_id)
             bot.unban_chat_member(
                 chat_id=squad_id,
                 user_id=user_id
