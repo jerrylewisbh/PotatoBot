@@ -68,10 +68,11 @@ def __add_member(bot: MQBot, user_id: int, squad_id: int):
 
         try:
             logging.info("Issuing 'unban' for user: %s", user_id)
-            bot.unban_chat_member(
-                chat_id=squad_id,
-                user_id=user_id
-            )
+            # Disabled for now as I think this will kick a user if he is already unbanned...
+            #bot.unban_chat_member(
+            #    chat_id=squad_id,
+            #    user_id=user_id
+            #)
         except Exception as ex:
             logging.warning("Error unbanning user: %s", ex.message)
 
