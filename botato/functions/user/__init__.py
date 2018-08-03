@@ -67,17 +67,16 @@ def del_admin(bot: MQBot, update: Update, user: User):
     if msg.find('@') != -1:
         msg = msg.replace('@', '')
         if msg != '':
-            user = Session.query(User).filter_by(username=msg).first()
-            if user is None:
+            target_user = Session.query(User).filter_by(username=msg).first()
+            if not target_user:
                 send_async(
                     bot,
                     chat_id=update.message.chat.id,
                     text=MSG_USER_UNKNOWN
                 )
-
             else:
                 adm = Session.query(Admin).filter_by(
-                    user_id=user.id,
+                    user_id=target_user.id,
                     group_id=update.message.chat.id
                 ).first()
 
@@ -85,7 +84,7 @@ def del_admin(bot: MQBot, update: Update, user: User):
                     send_async(
                         bot,
                         chat_id=update.message.chat.id,
-                        text=MSG_DEL_GROUP_ADMIN_NOT_EXIST.format(user.username)
+                        text=MSG_DEL_GROUP_ADMIN_NOT_EXIST.format(target_user.username)
                     )
 
                 else:
@@ -94,11 +93,11 @@ def del_admin(bot: MQBot, update: Update, user: User):
                     send_async(
                         bot,
                         chat_id=update.message.chat.id,
-                        text=MSG_DEL_GROUP_ADMIN.format(user.username)
+                        text=MSG_DEL_GROUP_ADMIN.format(target_user.username)
                     )
     else:
-        user = Session.query(User).filter_by(id=msg).first()
-        if user is None:
+        target_user = Session.query(User).filter_by(id=msg).first()
+        if not target_user:
             send_async(
                 bot,
                 chat_id=update.message.chat.id,
@@ -107,7 +106,7 @@ def del_admin(bot: MQBot, update: Update, user: User):
 
         else:
             adm = Session.query(Admin).filter_by(
-                user_id=user.id,
+                user_id=target_user.id,
                 group_id=update.message.chat.id
             ).first()
 
@@ -115,7 +114,7 @@ def del_admin(bot: MQBot, update: Update, user: User):
                 send_async(
                     bot,
                     chat_id=update.message.chat.id,
-                    text=MSG_DEL_GROUP_ADMIN_NOT_EXIST.format(user.username)
+                    text=MSG_DEL_GROUP_ADMIN_NOT_EXIST.format(target_user.username)
                 )
 
             else:
@@ -124,7 +123,7 @@ def del_admin(bot: MQBot, update: Update, user: User):
                 send_async(
                     bot,
                     chat_id=update.message.chat.id,
-                    text=MSG_DEL_GROUP_ADMIN.format(user.username)
+                    text=MSG_DEL_GROUP_ADMIN.format(target_user.username)
                 )
 
 
