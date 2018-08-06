@@ -172,35 +172,28 @@ MSG_PROFILE_ADMIN_INFO_ADDON = "\n\n<b>Admin-Info:</b>\n" \
 
 
 # main.py texts
-MSG_MAIN_INLINE_BATTLE = 'ROGER THAT!'
-MSG_MAIN_READY_TO_BATTLE = 'The battle is in 10 minutes, 🛡🥔 HOLD DEFENSE HIDE GOLD AND WAIT FOR COMMANDS'
-MSG_MAIN_READY_TO_BATTLE_30 = '❗️⚔️WAR IN 30 MINUTES ⚔️❗️\
-\n\n\
-CLOSE TRADES ⚖️ HIDE GOLD💰AND STOCK 📦 \
-\n\n\
-Equip dagger 🗡/ shield 🛡\
-\n\n\
-Set default status to DEF 🛡 and wait for orders.'
+MSG_MAIN_READY_TO_BATTLE_30 = """❗️⚔ <b>War in 30 minutes</b> ⚔️❗️
 
-MSG_MAIN_READY_TO_BATTLE_45 = 'WAAARRR IN 15 MINS!!\
-\n\n\
-1) 💰➡️🚫HIDE GOLD AND STOCK NOW\
-\n\n\
-2) Press 🛡  in the game bot \
-\n\n\
-3) Press "⚔️ Attack" to the state of "Ha, bold enough? Choose an enemy!". Don’t choose a target, wait for orders.\
-\n\n\
-4) Keep Battle-Silence from xx:57:00 till Wind \
-\n\n\
-@chtwrsbot'
+📦💰 <a href="http://telegra.ph/BASICS-OF-HIDING-GOLD-08-02">Hide your gold and stock</a>!
+Equip your dagger 🗡/ shield 🛡
 
-MSG_MAIN_SEND_REPORTS = '⚔️BATTLE IS OVER ⚔️\
-\n\n\
-📜send me your reports📜\
-\n\n\
-➡️@PotatoCastle_bot⬅️'
+Set default status to DEF 🛡 and wait for orders."""
 
-# -----------------------
+MSG_MAIN_READY_TO_BATTLE_45 = """❗️⚔ <b>War in 15 minutes</b> ⚔️❗
+
+1) 📦💰 <a href="http://telegra.ph/BASICS-OF-HIDING-GOLD-08-02">Hide your gold and stock NOW</a>!
+2) Press 🛡 in the game bot
+3) Press "⚔️ Attack" to the state of "Ha, bold enough? Choose an enemy!" and wait for orders!
+4) Keep Battle-Silence in this group from xx:57:00 till xx:00:00 
+
+<b>Remember:</b> Be prepared to <a href="http://telegra.ph/Orders-coming-Late-A-short-guide-to-turn-fast-02-05">turn fast</a> if orders change!
+
+@chtwrsbot"""
+
+MSG_MAIN_SEND_REPORTS = """⚔ Battle is over! ⚔️
+
+📜 Please send your /report to @PotatoCastle_bot"""
+
 MSG_BUILD_REPORT_EXISTS = 'This report already exists!'
 MSG_BUILD_REPORT_OK = 'Thanks for the help! This is your {} report.'
 MSG_BUILD_REPORT_FORWARDED = 'Do not send me any more reports from alternative accounts !!! '
@@ -324,7 +317,7 @@ MSG_TOP_DEFENCE_SQUAD = '🛡Top Defenders for squad {}:\n\n'
 MSG_TOP_ATTACK_SQUAD = '⚔Тop Attackers for squad {}:\n\n'
 MSG_TOP_EXPERIENCE_SQUAD = '🔥Top XP for squad {}:\n\n'
 
-MSG_TOP_WEEK_WARRIORS = '⛳️Top attendance in {}:\n\n'
+MSG_TOP_WEEK_WARRIORS = '⛳️Top attendance:\n\n'
 MSG_TOP_WEEK_WARRIORS_SQUAD = '⛳Top attendance in Squad "{}":\n\n'
 MSG_TOP_WEEK_WARRIORS_CLASS = '⛳Top {} battle attendance {}:\n\n'
 MSG_TOP_SQUAD = '<b>Squad TOP:</b>\n'
