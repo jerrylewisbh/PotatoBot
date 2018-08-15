@@ -40,6 +40,16 @@ def help_msg(bot: MQBot, update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_USER, parse_mode=ParseMode.HTML)
 
 
+@command_handler()
+def help_intro(bot: MQBot, update, user: User):
+    send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_INTRO, parse_mode=ParseMode.HTML)
+
+@command_handler(
+    squad_only=True
+)
+def tools(bot: MQBot, update, user: User):
+    send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_TOOLS, parse_mode=ParseMode.HTML)
+
 def get_diff(dict_one, dict_two):
     resource_diff_add = {}
     resource_diff_del = {}

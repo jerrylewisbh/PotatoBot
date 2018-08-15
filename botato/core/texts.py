@@ -564,15 +564,19 @@ SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFe
     "*Your current orders are:*\n" \
     "{}"
 
-AUCTION_WELCOME = "*Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
-    "*You can be notified once an item you're looking for is up for auction. Optionally matching a maximum price.*\n\n" \
-    "You can put items on your watchlist with `/a <itemId> [<maxPrice>]`.\n\n" \
-    "Examples: \n" \
-    "- `/a k17   ` - Notifies you if 📗Scroll of Peace is on auction\n" \
-    "- `/s k09 31` - Notifes you if Order Gauntlets part is on auction for 31👝 or less\n\n" \
-    "To remove an item from your watchlist do `/ar <itemId>`.\n\n" \
-    "*Your current orders are:*\n" \
-    "{}"
+AUCTION_WELCOME = """*Notify on new auctions:*
+Put items on your watchlist with `/a <itemId> [<maxPrice>]`. You can skip <maxPrice> if you want to be notified of all auctions for that item. 
+
+Example: `/watch k09 31` notifies you if Order Gauntlets part is on auction for 31👝 or less
+
+To remove an item from your watchlist simply issue `/watch <itemId>` again.
+    
+*Search for items:*
+- Search for all items currently up for auctions: `/lots <itemId>`. For example: `/lots k09` for all Order Gauntlet parts.      
+    
+*Your items on the watchlist are:*
+{}"""
+
 AUCTION_NOTIFY_UNLIMITED = "- Notify if {} is up for auction\n"
 AUCTION_NOTIFY_LIMITED = "- Notify if {} is up for a maximum price of {} 👝\n"
 
@@ -809,3 +813,14 @@ MSG_HELP_USER = """<b>Available Commands:</b>
 /report - Show your last report (including stock change if API is enabled)
 /deposit - Generate deposit-list for guild
 /withdraw - Generate withdraw-list"""
+
+
+MSG_HELP_INTRO = """Welcome, this bot is intended to make your life as a Potato easier and to better coordinate your castle."""
+
+MSG_HELP_TOOLS = """Here are some other useful commands:
+
+/deposit - Sends you a list of items you can deposit to your guild storage.
+/withdraw - Forward your guild-stock to me and I will send you a list of withdraw-commands
+/items - List all items that are tradable at the exchange
+/items_other - List all items that are NOT tradable on the exchange
+"""

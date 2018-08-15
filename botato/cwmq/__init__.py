@@ -8,7 +8,7 @@ from threading import Thread
 import pika
 
 from config import CW_OUT_Q, CW_IN_Q, CW_EXCHANGE, CW_URL, CW_DEALS_Q, CW_OFFERS_Q, CW_DIGEST_Q, LOG_LEVEL_MQ, \
-    MQ_TESTING
+    MQ_TESTING, CW_DIGEST_A
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL_MQ)
@@ -29,7 +29,7 @@ class Singleton(type):
 
 
 class Consumer(Thread):
-    def __init__(self, handler, deals_handler, offers_handler, digest_handler, dispatcher):
+    def __init__(self, handler, deals_handler, offers_handler, digest_handler, auction_digest_handler, dispatcher):
         """ Initialize Queue-Handler. We're passing a custom handler and a telegram-bot dispatcher
         instance to allow easier usage..."""
         Thread.__init__(self)
@@ -40,6 +40,7 @@ class Consumer(Thread):
         self.QUEUE_DEALS = CW_DEALS_Q
         self.QUEUE_OFFERS = CW_OFFERS_Q
         self.QUEUE_DIGEST = CW_DIGEST_Q
+        self.QUEUE_AUCTION = CW_DIGEST_A
         self._url = CW_URL
 
         self._connection = None
@@ -51,6 +52,7 @@ class Consumer(Thread):
         self.deals_handler = deals_handler
         self.offers_handler = offers_handler
         self.digest_handler = digest_handler
+        self.auction_digest_handler = auction_digest_handler
         self.dispatcher = dispatcher
 
     def connect(self):
@@ -110,6 +112,10 @@ class Consumer(Thread):
 
         logger.info('[Consumer] Setting up basic consumer for DIGEST')
         on_message_handler_digest = functools.partial(self.digest_handler, dispatcher=self.dispatcher)
+        self._channel.basic_consume(on_message_handler_digest, self.QUEUE_DIGEST)
+
+        logger.info('[Consumer] Setting up basic consumer for AUCTION DIGEST')
+        on_message_handler_digest = functools.partial(self.auction_digest_handler, dispatcher=self.dispatcher)
         self._channel.basic_consume(on_message_handler_digest, self.QUEUE_DIGEST)
 
     def add_on_channel_close_callback(self):

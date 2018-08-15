@@ -16,7 +16,7 @@ def __get_auction_settings(user):
 
     settings = user.hide_settings.order_by("priority").all()
     if not settings:
-        return "_Nothing configured yet / All orders completed._"
+        return "_Nothing configured yet_"
     else:
         text = ""
         for order in settings:
@@ -31,7 +31,21 @@ def __get_auction_settings(user):
 )
 def auction_info(bot: MQBot, update: Update, user: User):
     logging.info("auction_info called by %s", update.message.chat.id)
-    print("BAR")
+    user = Session.query(User).filter_by(id=update.message.chat.id).first()
+
+    text = AUCTION_WELCOME.format(__get_auction_settings(user))
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=text,
+        parse_mode=ParseMode.MARKDOWN,
+    )
+
+@command_handler(
+    squad_only=True
+)
+def watch(bot: MQBot, update: Update, user: User):
+    logging.info("auction_info called by %s", update.message.chat.id)
     user = Session.query(User).filter_by(id=update.message.chat.id).first()
 
     text = AUCTION_WELCOME.format(__get_auction_settings(user))

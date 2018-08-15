@@ -22,6 +22,7 @@ if __name__ == "__main__":
         clear_handler,
         clear_handler,
         clear_handler,
+        clear_handler,
         dispatcher=None
     )
     q_in.setName("T1_IN")

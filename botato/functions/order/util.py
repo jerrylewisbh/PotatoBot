@@ -1,6 +1,6 @@
 import logging
 from telegram.error import Unauthorized, BadRequest, TimedOut
-from telegram import ReplyMarkup, TelegramError
+from telegram import ReplyMarkup, TelegramError, ParseMode
 from telegram.ext import run_async
 
 from core.bot import MQBot
@@ -19,7 +19,7 @@ class OrderDraft(object):
 
 
 @run_async
-def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarkup):
+def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarkup, html_enabled=False):
     logging.info(
         "send_order(bot='%s', text='%s', message_type='%s', chat_id='%s', markup='%s', pin=%s)",
         bot,
@@ -75,7 +75,8 @@ def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarku
                     chat_id=chat_id,
                     text=order.order,
                     disable_web_page_preview=True,
-                    reply_markup=markup
+                    reply_markup=markup,
+                    parse_mode=ParseMode.HTML if html_enabled else None
                 )
             except TimedOut as ex:
                 logging.warning("Giving order timed out. Retry!")
@@ -83,7 +84,8 @@ def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarku
                     chat_id=chat_id,
                     text=order.order,
                     disable_web_page_preview=True,
-                    reply_markup=markup
+                    reply_markup=markup,
+                    parse_mode=ParseMode.HTML if html_enabled else None
                 )
             except BadRequest as ex:
                 if ex.message == "Chat not found":

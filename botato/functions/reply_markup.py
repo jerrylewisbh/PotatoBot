@@ -21,32 +21,39 @@ def generate_user_markup(user_id: int = None):
     user = None
     if user_id:
         user = Session.query(User).filter_by(id=user_id).first()
-
-    buttons = [
-        [KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP)],
-        [KeyboardButton(USER_COMMAND_SQUAD), KeyboardButton(USER_COMMAND_STATISTICS)],
+    buttons = []
+    row1 = [
+        KeyboardButton(USER_COMMAND_ME), KeyboardButton(USER_COMMAND_TOP), KeyboardButton(USER_COMMAND_STATISTICS)
     ]
+    buttons.append(row1)
 
-    if user and user.is_squadmember:
+    if user and user.is_squadmember and user.api_token:
         # Squad only features....
-        user_menu = [KeyboardButton(USER_COMMAND_EXCHANGE), #KeyboardButton(USER_COMMAND_AUCTION),
-                     KeyboardButton(USER_COMMAND_HIDE)]
+        row2 = [
+            KeyboardButton(USER_COMMAND_EXCHANGE),
+            KeyboardButton(USER_COMMAND_AUCTION),
+            KeyboardButton(USER_COMMAND_HIDE),
+            KeyboardButton(USER_COMMAND_TOOLS)
+        ]
+        buttons.append(row2)
 
-        # Exchange stuff...
-        # STILL IN TESTING
-
-        # Normal squad stuff...
+    row3 = [
+        KeyboardButton(USER_COMMAND_SQUAD)
+    ]
+    if user and user.is_squadmember:
         if not user or not user.api_token:
             # New
-            user_menu.append(KeyboardButton(USER_COMMAND_REGISTER))
+            row3.append(KeyboardButton(USER_COMMAND_REGISTER))
         elif user.api_token and (not user.is_api_profile_allowed or not user.is_api_stock_allowed):
             # Not complete access...
-            user_menu.append(KeyboardButton(USER_COMMAND_REGISTER_CONTINUE))
+            row3.append(KeyboardButton(USER_COMMAND_REGISTER_CONTINUE))
         elif user.api_token and user.is_api_profile_allowed and user.is_api_stock_allowed:
             # All set up
-            user_menu.append(KeyboardButton(USER_COMMAND_SETTINGS))
+            row3.append(KeyboardButton(USER_COMMAND_SETTINGS))
 
-        buttons.append(user_menu)
+
+    row3.append(KeyboardButton(USER_COMMAND_HELP))
+    buttons.append(row3)
 
     if user and user.admin_permission:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ADMINPANEL)])
@@ -94,7 +101,7 @@ def generate_squad_markup(is_group_admin=False, in_squad=False):
         buttons.append(
             [
                 KeyboardButton(ADMIN_COMMAND_FIRE_UP),
-                KeyboardButton(USER_COMMAND_SQUAD_LEAVE),
+                KeyboardButton(USER_COMMAND_SQUAD_LEAVE) if in_squad else KeyboardButton(USER_COMMAND_SQUAD_REQUEST),
                 KeyboardButton(TOP_COMMAND_SQUAD),
             ]
         )

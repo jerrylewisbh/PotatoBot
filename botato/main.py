@@ -15,6 +15,7 @@ from core.jobs import add_war_warning_messages, add_pre_war_messages, add_after_
 from core.logging import TelegramHandler, HtmlFormatter
 from core.texts import *
 from cwmq import Consumer, Publisher
+from cwmq.handler.auctions import auction_digest_handler
 from cwmq.handler.deals import deals_handler
 from cwmq.handler.offers import offers_handler
 from cwmq.handler.profiles import profile_handler
@@ -122,6 +123,7 @@ def main():
         deals_handler,
         offers_handler,
         digest_handler,
+        auction_digest_handler,
         dispatcher=updater
     )
     q_in.setName("T1_IN")

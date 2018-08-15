@@ -25,7 +25,7 @@ def squad_about(bot: MQBot, update: Update, user: User):
         Admin.group_id.isnot(None)
     ).first()
 
-    markup = generate_squad_markup(is_group_admin=admin is not None, in_squad=True if user.is_squadmember else False)
+    markup = generate_squad_markup(is_group_admin=admin is not None, in_squad=user.is_squadmember)
     if user.is_squadmember:
         squad_text = MSG_SQUAD_ABOUT.format(user.member.squad.squad_name)
     elif user.member and not user.member.approved:

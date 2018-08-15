@@ -9,6 +9,7 @@ from functions.battle import call_ready_to_battle_result
 from functions.common import help_msg, user_info
 from functions.common.pin import pin, silent_pin, not_pin_all, pin_all
 from functions.exchange import list_items, list_items_other, list_items_unknown
+from functions.exchange.auction import watch
 from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume
 from functions.group.admin import enable_thorns, enable_reminders, enable_silence, disable_thorns, disable_silence, \
@@ -131,5 +132,9 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler('deposit', deposit))
     disp.add_handler(CommandHandler('withdraw', withdraw_help))
     disp.add_handler(CommandHandler('battleresult', call_ready_to_battle_result))
+
+    # Auction stuff...
+    disp.add_handler(CommandHandler('watch', watch))
+    disp.add_handler(CommandHandler('watch', watch))
 
     logging.info("Finished adding button handlers")
