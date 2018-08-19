@@ -181,7 +181,8 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c.donateGold = data['payload']['profile']['pouches'] if 'pouches' in data['payload']['profile'] else 0
 
                 if data['payload']['profile']['castle'] != CASTLE:
-                    __ban_traitor(dispatcher.bot, user.id)
+                    if not user.is_banned:
+                        __ban_traitor(dispatcher.bot, user.id)
                 #else:
                 #    logging.debug("User is a potato! <3")
 
