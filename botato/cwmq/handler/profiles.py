@@ -4,13 +4,14 @@ import logging
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
 from telegram import ParseMode
 
-from config import BOT_ONE_STEP_API, LOG_LEVEL_MQ, MQ_TESTING
+from config import BOT_ONE_STEP_API, LOG_LEVEL_MQ, MQ_TESTING, CASTLE
 from core.bot import MQBot
 from core.enums import CASTLE_MAP, CLASS_MAP
 from core.texts import *
 from core.db import Session
 from core.model import User, Character
 from cwmq import Publisher, wrapper
+from functions.admin import __ban_traitor
 from functions.common import stock_compare
 from functions.exchange.hide import exit_hide_mode, autohide, get_hide_result, get_best_fulfillable_order, get_hide_mode
 from functions.profile.util import get_required_xp
@@ -178,6 +179,11 @@ def profile_handler(channel, method, properties, body, dispatcher):
                 c.castle = data['payload']['profile']['castle']
                 c.gold = data['payload']['profile']['gold']
                 c.donateGold = data['payload']['profile']['pouches'] if 'pouches' in data['payload']['profile'] else 0
+
+                if data['payload']['profile']['castle'] != CASTLE:
+                    __ban_traitor(dispatcher.bot, user.id)
+                #else:
+                #    logging.debug("User is a potato! <3")
 
                 Session.add(c)
                 Session.commit()
