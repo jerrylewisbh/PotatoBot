@@ -565,7 +565,7 @@ SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFe
     "{}"
 
 AUCTION_WELCOME = """*Notify on new auctions:*
-Put items on your watchlist with `/a <itemId> [<maxPrice>]`. You can skip <maxPrice> if you want to be notified of all auctions for that item. 
+Put items on your watchlist with `/watch <itemId> [<maxPrice>]`. You can skip <maxPrice> if you want to be notified of all auctions for that item. 
 
 Example: `/watch k09 31` notifies you if Order Gauntlets part is on auction for 31👝 or less
 

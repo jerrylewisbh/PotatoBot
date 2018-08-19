@@ -135,6 +135,6 @@ def add_handler(disp: Dispatcher):
 
     # Auction stuff...
     disp.add_handler(CommandHandler('watch', watch))
-    disp.add_handler(CommandHandler('watch', watch))
+    disp.add_handler(CommandHandler('lots', watch))
 
     logging.info("Finished adding button handlers")
