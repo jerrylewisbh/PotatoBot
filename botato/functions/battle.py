@@ -57,7 +57,8 @@ def ready_to_battle(bot: MQBot, job_queue: Job):
                 bot=bot,
                 order=o,
                 chat_id=new_order.chat_id,
-                markup=None
+                markup=None,
+                html_enabled=True
             )
     except SQLAlchemyError as err:
         logging.error(str(err))
@@ -94,7 +95,8 @@ def after_battle(bot: MQBot, job_queue: Job):
                 bot=bot,
                 order=o,
                 chat_id=new_order.chat_id,
-                markup=None
+                markup=None,
+                html_enabled=True
             )
     except SQLAlchemyError as err:
         bot.logger.error(str(err))
