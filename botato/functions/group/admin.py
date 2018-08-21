@@ -73,6 +73,7 @@ def disable_thorns(bot: MQBot, update: Update, user: User):
 def disable_silence(bot: MQBot, update: Update, user: User):
     group = Session.query(Group).filter_by(id=update.message.chat.id).first()
     if group:
+        group.silence_enabled = False
         Session.add(group)
         Session.commit()
         send_async(bot, chat_id=update.message.chat.id, text=MSG_GROUP_SILENCE_DISABLED)
