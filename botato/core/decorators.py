@@ -118,9 +118,7 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
                     )
                     return
 
-                if not min_permission:
-                    raise ValueError("None is no valid AdminType!")
-                elif min_permission not in AdminType:
+                if min_permission not in AdminType:
                     raise ValueError("Given permission does not match an existing AdminType")
                 elif min_permission != AdminType.NOT_ADMIN:
                     # We need actual admin-permissions. Check.
