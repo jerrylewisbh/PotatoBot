@@ -105,12 +105,6 @@ class MQBot(telegram.bot.Bot):
         except TimedOut as ex:
             logging.info("TimedOut: Ignoring this message")
         except BadRequest as ex:
-            logging.error(
-                "BadRequest for: user_id='%s', text='%s', error_msg='%s'",
-                kwargs['chat_id'] if 'chat_id' in kwargs else '<unknown_chat_id>',
-                kwargs['text'] if 'text' in kwargs else '<no_text>',
-                ex.message,
-            )
             if ex.message and ex.message == "Chat not found":
                 group = Session.query(Group).filter(Group.id == kwargs['chat_id']).first()
                 if group:
@@ -119,7 +113,9 @@ class MQBot(telegram.bot.Bot):
                         Session.add(group)
                         Session.commit()
                         logging.warning(
-                            "Bot is no longer member of chat_id='%s', disabling group", kwargs['chat_id']
+                            "Bot is no longer member of chat_id='%s', title='%s', disabling group",
+                            kwargs['chat_id'],
+                            group.title or '<Unknown>'
                         )
                     except SQLAlchemyError:
                         Session.rollback()
@@ -127,5 +123,12 @@ class MQBot(telegram.bot.Bot):
                             "Rollback while setting group.bot_in_group = False for chat_id='%s'", kwargs['chat_id']
                         )
                     return
+            else:
+                logging.error(
+                    "BadRequest for: user_id='%s', text='%s', error_msg='%s'",
+                    kwargs['chat_id'] if 'chat_id' in kwargs else '<unknown_chat_id>',
+                    kwargs['text'] if 'text' in kwargs else '<no_text>',
+                    ex.message,
+                )
 
 
