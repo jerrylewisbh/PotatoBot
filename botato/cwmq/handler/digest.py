@@ -29,7 +29,8 @@ def digest_handler(channel, method, properties, body, dispatcher):
         for digest_item in data:
             # TODO: Approx. every 5 Minutes we get a new digest. So we could expire after 300 seconds...?
             r.delete(digest_item['name'])
-            r.lpush(digest_item['name'], *digest_item['prices'])
+            if digest_item['prices']:
+                r.lpush(digest_item['name'], *digest_item['prices'])
 
             # Look for sniping orders in case we missed a new or old deal that matches...
             item = Session.query(Item).filter(
