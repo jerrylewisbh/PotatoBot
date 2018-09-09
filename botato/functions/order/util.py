@@ -89,18 +89,28 @@ def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarku
                 )
             except BadRequest as ex:
                 if ex.message == "Chat not found":
-                    logging.warning(
-                        "Chat for group_id='%s' not found: %s",
-                        chat_id,
-                        ex.message
-                    )
                     group = Session.query(Group).filter(Group.id == chat_id).first()
+                    group_title = "<Unknown>"
                     if group:
                         disable_group(group)
-                else:
+                        group_title = group.title
+
                     logging.warning(
-                        "Can't send order into group_id='%s'. Message: %s",
+                        "Chat for group_id='%s', title='%s' not found: %s",
                         chat_id,
+                        group_title,
+                        ex.message
+                    )
+                else:
+                    group = Session.query(Group).filter(Group.id == chat_id).first()
+                    group_title = "<Unknown>"
+                    if group:
+                        group_title = group.title
+
+                    logging.warning(
+                        "Can't send order into group_id='%s' / title='%s'. Message: %s",
+                        chat_id,
+                        group_title,
                         ex.message
                     )
 

@@ -93,7 +93,8 @@ def fwd_report(bot: MQBot, update: Update):
                     bot=bot,
                     order=o,
                     chat_id=new_order.chat_id,
-                    markup=None
+                    markup=None,
+                    html_enabled=True
                 )
 
         except BadRequest:

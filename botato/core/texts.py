@@ -192,7 +192,7 @@ MSG_MAIN_READY_TO_BATTLE_45 = """❗️⚔ <b>War in 15 minutes</b> ⚔️❗
 
 MSG_MAIN_SEND_REPORTS = """⚔ Battle is over! ⚔️
 
-📜 Please send your /report to @PotatoCastle_bot"""
+📜 Please send your <a href="https://t.me/share/url?url=/report">/report</a> to @PotatoCastle_bot"""
 
 MSG_BUILD_REPORT_EXISTS = 'This report already exists!'
 MSG_BUILD_REPORT_OK = 'Thanks for the help! This is your {} report.'
