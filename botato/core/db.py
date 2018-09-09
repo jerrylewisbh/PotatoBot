@@ -8,13 +8,16 @@ from telegram import Update
 
 from config import DB
 from core.enums import AdminType
-from core.model import User, Ban, Item, Log
+from core.model import User, Ban, Item, Log, Base
 
 ENGINE = create_engine(DB,
                        echo=False,
                        pool_size=200,
                        max_overflow=50,
                        isolation_level="READ UNCOMMITTED")
+
+Base.metadata.create_all(ENGINE)
+
 Session = scoped_session(sessionmaker(bind=ENGINE))
 Session()
 
