@@ -577,8 +577,9 @@ To remove an item from your watchlist simply issue `/watch <itemId>` again.
 *Your items on the watchlist are:*
 {}"""
 
-AUCTION_NOTIFY_UNLIMITED = "- Notify if {} is up for auction\n"
-AUCTION_NOTIFY_LIMITED = "- Notify if {} is up for a maximum price of {} 👝\n"
+AUCTION_NOTIFY_UNLIMITED = "- {}\n"
+AUCTION_NOTIFY_LIMITED = "- {} with max price {} 👝\n"
+AUCTION_ITEM_NOT_TRADABLE = "Sorry, this item is currently not auctionable!"
 
 SNIPE_LIMIT_EXCEEDED = "Sorry but you may only have {} orders active at any given time. Please remove another order first."
 SNIPE_INITIAL_ORDER_EXCEEDED = "Sorry but you may only order {} pieces at a time. Please reduce your amount."
@@ -815,7 +816,7 @@ MSG_HELP_USER = """<b>Available Commands:</b>
 /withdraw - Generate withdraw-list"""
 
 
-MSG_HELP_INTRO = """Welcome, this bot is intended to make your life as a Potato easier and to better coordinate your castle."""
+MSG_HELP_INTRO = """Welcome, this bot is intended to make your life as a Potato easier and to better coordinate our castle."""
 
 MSG_HELP_TOOLS = """Here are some other useful commands:
 

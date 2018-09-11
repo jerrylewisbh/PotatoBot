@@ -470,6 +470,7 @@ class Item(Base):
     cw_id = Column(String(50), unique=True, nullable=True, index=True)
 
     tradable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
+    auctionable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
     pillagable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
     weight = Column(BigInteger, default=1, nullable=False)
 
@@ -479,6 +480,7 @@ class Item(Base):
     user_orders = relationship('UserExchangeOrder', back_populates='item', lazy='dynamic')
     user_hide_settings = relationship('UserStockHideSetting', back_populates='item',
                                       lazy='dynamic', order_by='UserStockHideSetting.priority.desc()')
+    user_watchlist = relationship('UserAuctionWatchlist', back_populates='item', lazy='dynamic')
 
 
 class UserExchangeOrder(Base):
@@ -507,7 +509,7 @@ class UserAuctionWatchlist(Base):
     user = relationship(User, back_populates="auction_settings")
 
     item_id = Column(BigInteger, ForeignKey(Item.id))
-    item = relationship(Item)
+    item = relationship(Item, back_populates='user_watchlist')
 
     max_price = Column(Integer, nullable=False)
 

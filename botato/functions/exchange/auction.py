@@ -16,7 +16,7 @@ Session()
 def __get_auction_settings(user):
     logging.info("Getting UserAuctionWatchlist for %s", user.id)
 
-    settings = user.hide_settings.order_by("priority").all()
+    settings = user.auction_settings.all()
     if not settings:
         return "_Nothing configured yet_"
     else:
@@ -104,12 +104,12 @@ def watch(bot: MQBot, update: Update, user: User, **kwargs):
             parse_mode=ParseMode.MARKDOWN,
         )
         return
-    elif not item.tradable:
-        logging.debug("[Watch] user_id='%s' tried to trade untradable item cw_id='%s'", user.id, item.cw_id)
+    elif not item.auctionable:
+        logging.debug("[Watch] user_id='%s' tried to watch unauctionable item cw_id='%s'", user.id, item.cw_id)
         send_async(
             bot,
             chat_id=update.message.chat.id,
-            text=SNIPE_ITEM_NOT_TRADABLE.format(item.cw_id),
+            text=AUCTION_ITEM_NOT_TRADABLE.format(item.cw_id),
             parse_mode=ParseMode.MARKDOWN,
         )
         return

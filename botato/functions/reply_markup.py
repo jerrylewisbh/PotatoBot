@@ -33,7 +33,7 @@ def generate_user_markup(user_id: int = None):
             KeyboardButton(USER_COMMAND_EXCHANGE),
             KeyboardButton(USER_COMMAND_AUCTION),
             KeyboardButton(USER_COMMAND_HIDE),
-            KeyboardButton(USER_COMMAND_TOOLS)
+            #KeyboardButton(USER_COMMAND_TOOLS)
         ]
         buttons.append(row2)
 
@@ -52,7 +52,7 @@ def generate_user_markup(user_id: int = None):
             row3.append(KeyboardButton(USER_COMMAND_SETTINGS))
 
 
-    row3.append(KeyboardButton(USER_COMMAND_HELP))
+    #row3.append(KeyboardButton(USER_COMMAND_HELP))
     buttons.append(row3)
 
     if user and user.admin_permission:
