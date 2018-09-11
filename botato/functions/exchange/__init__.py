@@ -11,7 +11,7 @@ from core.utils import pad_string, send_async
 
 Session()
 
-LIMIT_SNIPES = 3
+LIMIT_SNIPES = 5
 LIMIT_ORDER_AMOUNT = 50
 
 
