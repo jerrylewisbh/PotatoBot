@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from telegram import Update, ParseMode
 from telegram.error import Unauthorized, BadRequest, TelegramError
 
-from config import LOG_ALLOWED_RECIPIENTS, LOGFILE
+from config import LOG_ALLOWED_RECIPIENTS, LOGFILE, GOVERNMENT_CHAT
 from core.bot import MQBot
 from core.db import Session
 from core.decorators import command_handler
@@ -409,6 +409,7 @@ def __ban_globally(bot: MQBot, ban_user: User, reason: str):
         Group.bot_in_group == True
     ).all()
 
+    failed_bans = []
     for group in all_active_groups:
         result = __kickban_from_chat(bot, ban_user, group)
         if KickBanResult.KICKED in result and KickBanResult.GROUP_MEMBER in result:
@@ -422,13 +423,23 @@ def __ban_globally(bot: MQBot, ban_user: User, reason: str):
         elif KickBanResult.KICKED in result:
             logging.info("User was kicked/banned but was no group member")
         elif KickBanResult.PERMISSION_FAILURE in result:
-            bot.send_message(
-                chat_id=group.id,
-                text=MSG_USER_BANNED_UNAUTHORIZED.format(
-                    '@' + ban_user.username if ban_user.username else ban_user.id,
-                    banned.reason
-                ),
+            logging.warning("Can't ban user because of permissions fail: %s", ban_user.id)
+            failed_bans.append(group.title)
+
+    ban_fail_txt = "Failed groups:"
+    if failed_bans:
+        for group_name in failed_bans:
+            ban_fail_txt += group_name
+            ban_fail_txt += "\n"
+
+        bot.send_message(
+            chat_id=GOVERNMENT_CHAT,
+            text=MSG_USER_BANNED_UNAUTHORIZED.format(
+                '@' + ban_user.username if ban_user.username else ban_user.id,
+                banned.reason,
+                ban_fail_txt
             )
+        )
 
 
     # TODO: REENABLE!
@@ -484,13 +495,7 @@ def unban(bot: MQBot, update: Update, user: User):
                         user_id=unban_user.id
                     )
             except Unauthorized as ex:
-                bot.send_message(
-                    chat_id=group.id,
-                    text=MSG_USER_BANNED_UNAUTHORIZED.format(
-                        '@' + unban_user.username if unban_user.username else unban_user.id,
-                        banned.reason
-                    ),
-                )
+                logging.warning("Unauthorized: Unban for %s failed", unban_user.id)
             except BadRequest as ex:
                 if ex.message == "Chat not found":
                     logging.warning(
