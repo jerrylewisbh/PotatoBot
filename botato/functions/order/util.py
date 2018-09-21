@@ -138,9 +138,15 @@ def __send_order(bot: MQBot, order: OrderDraft, chat_id: int, markup: ReplyMarku
                         if group:
                             disable_group(group)
                     else:
+                        group = Session.query(Group).filter(Group.id == chat_id).first()
+                        group_title = "<Unknown>"
+                        if group:
+                            group_title = group.title
+
                         logging.warning(
-                            "Can't send order into group_id='%s'. Message: %s",
+                            "Can't send order into group_id='%s' / title='%s'. Message: %s",
                             chat_id,
+                            group_title,
                             ex.message
                         )
 

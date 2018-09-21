@@ -47,9 +47,9 @@ def add_pre_war_messages(updater: Updater):
 
 
 def add_after_war_messages(updater: Updater):
-    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=7, minute=3))
-    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=15, minute=3))
-    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=23, minute=3))
+    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=7, minute=4))
+    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=15, minute=4))
+    updater.job_queue.run_daily(callback=refresh_api_users, time=time(hour=23, minute=4))
 
 
 def add_battle_report_messages(updater: Updater):
