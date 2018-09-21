@@ -511,7 +511,11 @@ class UserAuctionWatchlist(Base):
     item_id = Column(BigInteger, ForeignKey(Item.id))
     item = relationship(Item, back_populates='user_watchlist')
 
-    max_price = Column(Integer, nullable=False)
+    max_price = Column(Integer, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'item_id', name='uc_usr_item'),
+    )
 
 
 class UserStockHideSetting(Base):

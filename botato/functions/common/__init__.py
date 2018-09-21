@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from enum import Enum
 
@@ -38,6 +39,53 @@ def help_msg(bot: MQBot, update, user: User):
         send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_GROUP_ADMIN, parse_mode=ParseMode.HTML)
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_USER, parse_mode=ParseMode.HTML)
+
+
+@command_handler(
+    allow_channel=True,
+    allow_group=True,
+    allow_private=True,
+)
+def roll(bot: MQBot, update, user: User, **kwargs):
+    # Defaults
+    dices = 1
+    sides = 6
+
+    args = None
+    if "args" in kwargs:
+        args = kwargs["args"]
+
+    if len(args) == 1:
+        parts = args[0].split("d")
+        print(parts)
+        if len(parts) == 2:
+            try:
+                dices = int(parts[0])
+            except:
+                pass
+
+            try:
+                sides = int(parts[1])
+            except:
+                pass
+
+    results = ""
+    sum = 0
+    for _ in range(0, dices):
+        value = random.randint(1, sides)
+        results += "\n{}".format(value)
+        sum += value
+
+    sum_text = ""
+    if dices > 1:
+        sum_text = "<i>Sum: {}</i>".format(sum)
+
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text="<b>🎲 {} rolled {} dices with {} sides each ({}d{}):</b>\n{}\n\n{}".format(user.first_name, dices, sides, dices, sides, results, sum_text),
+        parse_mode=ParseMode.HTML
+    )
 
 
 @command_handler()

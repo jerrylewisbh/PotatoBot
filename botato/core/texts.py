@@ -564,22 +564,31 @@ SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFe
     "*Your current orders are:*\n" \
     "{}"
 
-AUCTION_WELCOME = """*Notify on new auctions:*
+AUCTION_WELCOME = """*Notify on new auctions (BETA!):*
 Put items on your watchlist with `/watch <itemId> [<maxPrice>]`. You can skip <maxPrice> if you want to be notified of all auctions for that item. 
 
 Example: `/watch k09 31` notifies you if Order Gauntlets part is on auction for 31👝 or less
 
 To remove an item from your watchlist simply issue `/watch <itemId>` again.
     
-*Search for items:*
-- Search for all items currently up for auctions: `/lots <itemId>`. For example: `/lots k09` for all Order Gauntlet parts.      
-    
 *Your items on the watchlist are:*
 {}"""
+
+# TODO: *Search for items:*
+# - Search for all items currently up for auctions: `/lots <itemId>`. For example: `/lots k09` for all Order Gauntlet parts.
 
 AUCTION_NOTIFY_UNLIMITED = "- {}\n"
 AUCTION_NOTIFY_LIMITED = "- {} with max price {} 👝\n"
 AUCTION_ITEM_NOT_TRADABLE = "Sorry, this item is currently not auctionable!"
+AUCTION_REMOVED = "{} was removed from your watchlist!"
+AUCTION_NOTIFICATION = """{} up for auction! 
+
+Seller: {}{}
+Current price: {}
+Buyer: {}
+End At: {}
+
+/bet_{}"""
 
 SNIPE_LIMIT_EXCEEDED = "Sorry but you may only have {} orders active at any given time. Please remove another order first."
 SNIPE_INITIAL_ORDER_EXCEEDED = "Sorry but you may only order {} pieces at a time. Please reduce your amount."
@@ -696,7 +705,7 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 /report - Show your last report (including stock change if API is enabled)
 /deposit - Generate deposit-list for guild
 /withdraw - Generate withdraw-list
-"""
+/roll - Roll a dice (1-6). You can specify your own number of dices and how many sides the dice has with /roll <num>d<sides>"""
 
 MSG_HELP_GROUP_ADMIN= """<b>Available Commands:</b>
 
@@ -786,7 +795,8 @@ MSG_HELP_GROUP_ADMIN= """<b>Available Commands:</b>
 /sr &lt;itemID&gt; - Remove sniping order
 /report - Show your last report (including stock change if API is enabled)
 /deposit - Generate deposit-list for guild
-/withdraw - Generate withdraw-list"""
+/withdraw - Generate withdraw-list
+/roll - Roll a dice (1-6). You can specify your own number of dices and how many sides the dice has with /roll <num>d<sides>"""
 
 MSG_HELP_USER = """<b>Available Commands:</b>
 
@@ -813,7 +823,8 @@ MSG_HELP_USER = """<b>Available Commands:</b>
 /sr &lt;itemID&gt; - Remove sniping order
 /report - Show your last report (including stock change if API is enabled)
 /deposit - Generate deposit-list for guild
-/withdraw - Generate withdraw-list"""
+/withdraw - Generate withdraw-list
+/roll - Roll a dice (1-6). You can specify your own number of dices and how many sides the dice has with /roll <num>d<sides>"""
 
 
 MSG_HELP_INTRO = """Welcome, this bot is intended to make your life as a Potato easier and to better coordinate our castle."""

@@ -7,7 +7,7 @@ from core.bot import MQBot
 from core.utils import send_async
 from core.db import Session
 from core.decorators import command_handler
-from core.model import User, UserExchangeOrder, UserAuctionWatchlist
+from core.model import User, UserExchangeOrder, UserAuctionWatchlist, Item
 from core.texts import *
 from functions.exchange import get_item_by_cw_id
 
@@ -16,7 +16,7 @@ Session()
 def __get_auction_settings(user):
     logging.info("Getting UserAuctionWatchlist for %s", user.id)
 
-    settings = user.auction_settings.all()
+    settings = user.auction_settings.all()#join(Item, UserAuctionWatchlist.item).order_by(Item.cw_id).all()
     if not settings:
         return "_Nothing configured yet_"
     else:
@@ -67,36 +67,23 @@ def watch(bot: MQBot, update: Update, user: User, **kwargs):
         )
         return
 
-    initial_order = 1
-    if len(args) == 3:
+    max_price = None
+    if len(args) > 1:
         try:
-            initial_order = int(args[2])
+            max_price = int(args[1])
         except Exception:
-            logging.debug("[Watch] user_id='%s' has specified an invalid initial order", user.id)
+            logging.info("[Watch] Invalid max_price=%s from user_id=%s", args[1], user.id)
             send_async(
                 bot,
                 chat_id=update.message.chat.id,
-                text=SNIPE_WRONG_LIMIT,
+                text=SNIPE_WRONG_ARGS,
                 parse_mode=ParseMode.MARKDOWN,
             )
             return
 
-    max_price = None
-    try:
-        max_price = int(args[1])
-    except Exception:
-        logging.info("[Watch] Invalid max_price=%s from user_id=%s", args[1], user.id)
-        send_async(
-            bot,
-            chat_id=update.message.chat.id,
-            text=SNIPE_WRONG_ARGS,
-            parse_mode=ParseMode.MARKDOWN,
-        )
-        return
-
     item = get_item_by_cw_id(args[0])
     if not item:
-        logging.debug("[Watch] user_id='%s' requested sniping for item id='%s'", user.id, args[0])
+        logging.debug("[Watch] user_id='%s' requested watch for item id='%s'", user.id, args[0])
         send_async(
             bot,
             chat_id=update.message.chat.id,
@@ -115,38 +102,53 @@ def watch(bot: MQBot, update: Update, user: User, **kwargs):
         return
 
     uaw = Session.query(UserAuctionWatchlist).filter(
-        UserExchangeOrder.user == user,
-        UserExchangeOrder.item == item
-    ).first()
+        UserAuctionWatchlist.user_id == user.id,
+        UserAuctionWatchlist.item_id == item.id
+    )
+    print(uaw)
+    uaw = uaw.first()
+    print(uaw)
+
+    print("---")
+    print(uaw)
+    print(item.id)
+    print(user.id)
+
     if not uaw:
         logging.info(
-            "[Watch] user_id='%s' created new order intial_order='%s', max_price='%s', item='%s'",
+            "[Watch] user_id='%s' created new order max_price='%s', item='%s'",
             user.id,
-            initial_order,
             max_price,
             item.cw_id,
         )
         uaw = UserAuctionWatchlist()
+        uaw.user = user
+        uaw.max_price = max_price
+        uaw.item = item
+        Session.add(uaw)
+        Session.commit()
+
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=AUCTION_WELCOME.format(__get_auction_settings(user)),
+            parse_mode=ParseMode.MARKDOWN,
+        )
     else:
         logging.info(
-            "[Watch] user_id='%s' updated order to intial_order='%s', max_price='%s', item='%s'",
+            "[Watch] user_id='%s' removed order for item='%s'",
             user.id,
-            initial_order,
-            max_price,
             item.cw_id,
         )
 
-    uaw.user = user
-    uaw.initial_order = initial_order
-    uaw.outstanding_order = initial_order
-    uaw.max_price = max_price
-    uaw.item = item
-    Session.add(uaw)
-    Session.commit()
+        Session.delete(uaw)
+        Session.commit()
 
-    send_async(
-        bot,
-        chat_id=update.message.chat.id,
-        text=AUCTION_WELCOME.format(__get_auction_settings(user)),
-        parse_mode=ParseMode.MARKDOWN,
-    )
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=AUCTION_REMOVED .format(item.name),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+
+

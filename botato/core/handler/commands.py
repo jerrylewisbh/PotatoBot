@@ -6,7 +6,7 @@ from functions.activity import day_activity, week_activity, battle_activity
 from functions.admin import admin_panel, force_kick_botato, ping, delete_msg, ban, ban_info_all, \
     unban, get_log, kickban
 from functions.battle import call_ready_to_battle_result
-from functions.common import help_msg, user_info
+from functions.common import help_msg, user_info, roll
 from functions.common.pin import pin, silent_pin, not_pin_all, pin_all
 from functions.exchange import list_items, list_items_other, list_items_unknown
 from functions.exchange.auction import watch
@@ -112,6 +112,8 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("ban_list", ban_info_all))
     disp.add_handler(CommandHandler("unban", unban))
     disp.add_handler(CommandHandler("get_log", get_log))
+
+    disp.add_handler(CommandHandler("roll", roll, pass_args=True))
 
     # User/Profile specific
     disp.add_handler(CommandHandler("me", show_char))

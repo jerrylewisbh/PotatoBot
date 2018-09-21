@@ -116,7 +116,7 @@ class Consumer(Thread):
 
         logger.info('[Consumer] Setting up basic consumer for AUCTION DIGEST')
         on_message_handler_digest = functools.partial(self.auction_digest_handler, dispatcher=self.dispatcher)
-        self._channel.basic_consume(on_message_handler_digest, self.QUEUE_DIGEST)
+        self._channel.basic_consume(on_message_handler_digest, self.QUEUE_AUCTION)
 
     def add_on_channel_close_callback(self):
         logger.info('[Consumer] Adding channel close callback')
