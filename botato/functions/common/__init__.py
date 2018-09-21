@@ -57,7 +57,6 @@ def roll(bot: MQBot, update, user: User, **kwargs):
 
     if len(args) == 1:
         parts = args[0].split("d")
-        print(parts)
         if len(parts) == 2:
             try:
                 dices = int(parts[0])

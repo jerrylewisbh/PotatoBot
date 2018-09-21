@@ -105,14 +105,7 @@ def watch(bot: MQBot, update: Update, user: User, **kwargs):
         UserAuctionWatchlist.user_id == user.id,
         UserAuctionWatchlist.item_id == item.id
     )
-    print(uaw)
     uaw = uaw.first()
-    print(uaw)
-
-    print("---")
-    print(uaw)
-    print(item.id)
-    print(user.id)
 
     if not uaw:
         logging.info(
