@@ -100,7 +100,7 @@ def generate_squad_markup(is_group_admin=False, in_squad=False):
         buttons.append([KeyboardButton(ADMIN_COMMAND_SQUAD_LIST), KeyboardButton(ADMIN_COMMAND_RECRUIT)])
         buttons.append(
             [
-                KeyboardButton(ADMIN_COMMAND_FIRE_UP),
+                #KeyboardButton(ADMIN_COMMAND_FIRE_UP),
                 KeyboardButton(USER_COMMAND_SQUAD_LEAVE) if in_squad else KeyboardButton(USER_COMMAND_SQUAD_REQUEST),
                 KeyboardButton(TOP_COMMAND_SQUAD),
             ]

@@ -38,7 +38,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_STATUS), list))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_GROUPS), groups.list))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_RECRUIT), list_requests))
-    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_FIRE_UP), remove_from_squad))
+    #disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_FIRE_UP), remove_from_squad))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_SQUAD_LIST), list_squads))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_ADMINPANEL), admin_panel))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_REPORTS), battle_reports))

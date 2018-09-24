@@ -389,6 +389,7 @@ BTN_HERO = '🏅Hero'
 BTN_STOCK = '📦Stock'
 BTN_EQUIPMENT = '🎽Equipment'
 BTN_SKILL = '🏛Skills'
+BTN_KICK = '🗑️Kick'
 
 BTN_YES = '✅YES'
 BTN_NO = '❌NO'

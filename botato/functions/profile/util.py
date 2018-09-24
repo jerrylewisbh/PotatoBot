@@ -9,7 +9,7 @@ from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMark
 from config import CASTLE
 from core.bot import MQBot
 from core.utils import send_async
-from core.enums import CASTLE_MAP
+from core.enums import CASTLE_MAP, AdminType
 from core.handler.callback import CallbackAction
 from core.handler.callback.util import create_callback
 from core.regexp import HERO, PROFESSION, REPORT
@@ -468,6 +468,33 @@ def __get_keyboard_profile(user: User, for_user: User, back_button=None):
                 )
             )
         ])
+    if for_user.is_squadmember and for_user.id != user.id:
+        # Show Kick-Button if user is squad member and user has admin-permissions...
+        is_squad_admin = False
+        if user.permissions:
+            for permission in user.permissions:
+                if permission.admin_type <= AdminType.FULL:
+                    is_squad_admin = True
+                    break
+                if permission.admin_type == AdminType.GROUP and permission.group_id == for_user.member.squad.chat_id:
+                    is_squad_admin = True
+                    break
+
+        if is_squad_admin:
+            inline_keys.append([
+                InlineKeyboardButton(
+                    BTN_KICK,
+                    callback_data=create_callback(
+                        CallbackAction.SQUAD_LEAVE,
+                        user.id,
+                        leave=True,
+                        leave_user_id=for_user.id
+                    )
+                )
+            ])
+
+
+
     if back_button:
         inline_keys.append([
             back_button
