@@ -73,6 +73,16 @@ def roll(bot: MQBot, update, user: User, **kwargs):
 
     results = ""
     sum = 0
+
+    if dices > 20 or sides > 120:
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text="Be reasonable...",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
     for _ in range(0, dices):
         value = random.randint(1, sides)
         results += "\n{}".format(value)
