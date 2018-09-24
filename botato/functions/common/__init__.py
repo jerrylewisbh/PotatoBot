@@ -5,7 +5,7 @@ from enum import Enum
 from sqlalchemy import collate
 from telegram import ParseMode, Update, TelegramError
 
-from config import CWBOT_ID
+from config import CWBOT_ID, CASTLE_CHAT_ID
 from core.bot import MQBot
 from core.db import Session, new_item
 from core.decorators import command_handler
@@ -47,6 +47,9 @@ def help_msg(bot: MQBot, update, user: User):
     allow_private=True,
 )
 def roll(bot: MQBot, update, user: User, **kwargs):
+    if update.effective_chat.id == CASTLE_CHAT_ID:
+        return
+
     # Defaults
     dices = 1
     sides = 6

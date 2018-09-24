@@ -706,7 +706,7 @@ MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 /report - Show your last report (including stock change if API is enabled)
 /deposit - Generate deposit-list for guild
 /withdraw - Generate withdraw-list
-/roll - Roll a dice (1-6). You can specify your own number of dices and how many sides the dice has with /roll <num>d<sides>"""
+/roll - Roll a dice (1-6). You can specify your own number of dice and how many sides the dice has with /roll <num>d<sides>"""
 
 MSG_HELP_GROUP_ADMIN= """<b>Available Commands:</b>
 
