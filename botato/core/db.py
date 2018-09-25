@@ -8,7 +8,7 @@ from telegram import Update
 
 from config import DB
 from core.enums import AdminType
-from core.model import User, Ban, Item, Log, Base
+from core.model import User, Ban, Item, Log, Base, ItemType
 
 ENGINE = create_engine(DB,
                        echo=False,
@@ -67,6 +67,10 @@ def new_item(name: str, tradable: bool):
         item = Item()
         item.name = name
         item.tradable = tradable
+
+        if '⚡️' in item.name or '🏆' in item.name:
+            item.item_type = ItemType.IGNORE
+
         Session.add(item)
         Session.commit()
 
