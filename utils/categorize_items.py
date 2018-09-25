@@ -108,4 +108,10 @@ for item in Session.query(Item).filter(Item.cw_id.like('a%')).all():
     item.item_type = ItemType.OTHER
     Session.add(item)
 
+
+for item in Session.query(Item).filter(Item.cw_id.like('e%')).all():
+    print(item.name)
+    item.item_type = ItemType.OTHER
+    Session.add(item)
+
 Session.commit()
