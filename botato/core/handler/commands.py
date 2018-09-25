@@ -7,7 +7,7 @@ from functions.admin import admin_panel, force_kick_botato, ping, delete_msg, ba
     unban, get_log, kickban
 from functions.battle import call_ready_to_battle_result
 from functions.common import help_msg, user_info, roll
-from functions.common.pin import pin, silent_pin, not_pin_all, pin_all
+from functions.common.pin import pin, silent_pin, not_pin_all, pin_all, unpin
 from functions.exchange import list_items, list_items_other, list_items_unknown
 from functions.exchange.auction import watch
 from functions.exchange.hide import auto_hide, hide_items, hide_list
@@ -77,8 +77,10 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("disable_thorns", disable_thorns))
     disp.add_handler(CommandHandler("disable_silence", disable_silence))
     disp.add_handler(CommandHandler("disable_reminders", disable_reminders))
+
     disp.add_handler(CommandHandler("allow_bots", allow_bots))
     disp.add_handler(CommandHandler("deny_bots", deny_bots))
+
     disp.add_handler(CommandHandler("set_squad_name", set_squad_name))
     disp.add_handler(CommandHandler("set_invite_link", set_invite_link))
     disp.add_handler(CommandHandler("add_squad", add_squad))
@@ -89,6 +91,7 @@ def add_handler(disp: Dispatcher):
     # Old inline chat commands
     disp.add_handler(CommandHandler("delete", delete_msg))
     disp.add_handler(CommandHandler("pin", silent_pin))
+    disp.add_handler(CommandHandler("unpin", unpin))
     disp.add_handler(CommandHandler("pin_notify", pin))
     disp.add_handler(CommandHandler("hiring_close", close_hiring))
     disp.add_handler(CommandHandler("hiring_open", open_hiring))

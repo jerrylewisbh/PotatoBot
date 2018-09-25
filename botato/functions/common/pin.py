@@ -22,6 +22,17 @@ def pin(bot: MQBot, update: Update, user: User):
         disable_notification=False
     )
 
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_group=True,
+    allow_private=False,
+)
+def unpin(bot: MQBot, update: Update, user: User):
+    bot.unpin_chat_message(
+        chat_id=update.message.reply_to_message.chat.id,
+        message_id=update.message.reply_to_message.message_id,
+    )
+
 
 @command_handler(
     min_permission=AdminType.GROUP,
