@@ -74,7 +74,7 @@ def roll(bot: MQBot, update, user: User, **kwargs):
     results = ""
     sum = 0
 
-    if dices > 20 or sides > 120:
+    if dices > 20 or sides > 120 or dices < 1 or sides < 1:
         send_async(
             bot,
             chat_id=update.message.chat.id,
