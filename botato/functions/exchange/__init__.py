@@ -168,7 +168,7 @@ def list_items_unknown(bot: MQBot, update: Update, user: User):
     text = __generate_itemlist(
         "*Items missing a Chatwars Item ID:*\n",
         "\nSee /items for additional things.",
-        (Item.item_type == None)
+        (Item.item_type.is_(None), )
     )
     send_long_message(
         bot,
