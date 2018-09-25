@@ -1,7 +1,8 @@
+import enum
 from datetime import datetime
 
 from sqlalchemy import Column, BigInteger, ForeignKey, Integer, UnicodeText, Boolean, DateTime, UniqueConstraint, Text, \
-    String
+    String, Enum
 from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -462,6 +463,16 @@ class Auth(Base):
     id = Column(Text(32))
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
 
+class ItemType(enum.Enum):
+    # Based on CW Guild Stock classification
+
+    RES = 1
+    ALCH = 3
+    OTHER = 3
+    MISC = 4
+
+    IGNORE = 1000
+
 
 class Item(Base):
     __tablename__ = 'item'
@@ -473,6 +484,8 @@ class Item(Base):
     auctionable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
     pillagable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
     weight = Column(BigInteger, default=1, nullable=False)
+
+    item_type = Column(Enum(ItemType))
 
     name = Column(UnicodeText(250))
 

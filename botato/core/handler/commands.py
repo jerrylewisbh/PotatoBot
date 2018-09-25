@@ -8,7 +8,8 @@ from functions.admin import admin_panel, force_kick_botato, ping, delete_msg, ba
 from functions.battle import call_ready_to_battle_result
 from functions.common import help_msg, user_info, roll
 from functions.common.pin import pin, silent_pin, not_pin_all, pin_all, unpin
-from functions.exchange import list_items, list_items_other, list_items_unknown
+from functions.exchange import list_items, list_items_other, list_items_unknown, list_items_res, list_items_alch, \
+    list_items_misc, list_items_ignored
 from functions.exchange.auction import watch
 from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume
@@ -127,9 +128,15 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler('s', sniping, pass_args=True))
     disp.add_handler(CommandHandler('sr', sniping_remove, pass_args=True))
     disp.add_handler(CommandHandler('resume', sniping_resume))
+
     disp.add_handler(CommandHandler('items', list_items))
+    disp.add_handler(CommandHandler('items_res', list_items_res))
+    disp.add_handler(CommandHandler('items_alch', list_items_alch))
     disp.add_handler(CommandHandler('items_other', list_items_other))
+    disp.add_handler(CommandHandler('items_misc', list_items_misc))
+    disp.add_handler(CommandHandler('items_ignored', list_items_ignored))
     disp.add_handler(CommandHandler('items_unknown', list_items_unknown))
+
     disp.add_handler(CommandHandler('hide', hide_items))
     disp.add_handler(CommandHandler('hide_list', hide_list))
     disp.add_handler(CommandHandler('revoke', revoke))
