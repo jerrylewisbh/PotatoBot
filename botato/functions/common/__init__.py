@@ -95,7 +95,7 @@ def roll(bot: MQBot, update, user: User, **kwargs):
     send_async(
         bot,
         chat_id=update.message.chat.id,
-        text="<b>🎲 {} rolled {} dices with {} sides each ({}d{}):</b>\n{}\n\n{}".format(user.first_name, dices, sides, dices, sides, results, sum_text),
+        text="<b>🎲 {} rolled {} dice with {} sides each ({}d{}):</b>\n{}\n\n{}".format(user.first_name, dices, sides, dices, sides, results, sum_text),
         parse_mode=ParseMode.HTML
     )
 
