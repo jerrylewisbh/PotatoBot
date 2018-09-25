@@ -483,7 +483,7 @@ class Item(Base):
     tradable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
     auctionable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
     pillagable = Column(Boolean(), default=False, nullable=False, server_default=expression.false())
-    weight = Column(BigInteger, default=1, nullable=False)
+    weight = Column(BigInteger, default=1, nullable=False, server_default='1')
 
     item_type = Column(Enum(ItemType))
 
