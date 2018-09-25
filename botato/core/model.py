@@ -467,7 +467,7 @@ class ItemType(enum.Enum):
     # Based on CW Guild Stock classification
 
     RES = 1
-    ALCH = 3
+    ALCH = 2
     OTHER = 3
     MISC = 4
 
