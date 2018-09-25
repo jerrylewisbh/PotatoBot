@@ -44,18 +44,6 @@ def update_group(grp):
         return group
     return None
 
-
-def pad_string(text, padding):
-    """ Add whitespaces to a string to make different texts the same length for pre-formatted texts """
-    if not text:
-        text = '\u00A0' * padding  # Format with hard spaces...
-
-    while len(text) <= padding:
-        text += " "
-
-    return text
-
-
 @run_async
 def send_async(bot: MQBot, *args, **kwargs):
     return bot.send_message(*args, **kwargs)
