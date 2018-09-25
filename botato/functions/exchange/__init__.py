@@ -148,7 +148,7 @@ def list_items_alch(bot: MQBot, update: Update, user: User):
 )
 def list_items_ignored(bot: MQBot, update: Update, user: User):
     text = __generate_itemlist(
-        "*Items missing a Chatwars Item ID:*\n",
+        "*Ignored items:*\n",
         "\nSee /items for additional things.",
         (Item.item_type == ItemType.IGNORE,)
     )
