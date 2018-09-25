@@ -65,6 +65,12 @@ def __handle_lot(bot, auction_lot, channel, method, dispatcher):
             # Still nothing?
             return
 
+    if not item.auctionable:
+        logging.warning("%s is now auctionable!", item.name)
+        item.auctionable = True
+        Session.add(item)
+        Session.commit()
+
     r = redis.StrictRedis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
     watchlist_items = Session.query(UserAuctionWatchlist).filter(
         UserAuctionWatchlist.item_id == item.id
