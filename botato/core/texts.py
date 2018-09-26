@@ -27,19 +27,20 @@ MSG_LIST_ADMINS_USER_FORMAT = '@{} {} {}\n'
 
 MSG_EMPTY = '[Empty]\n'
 
-MSG_START_NEW = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! \n\n' \
-                'To get things started please forward me your game profile from @chtwrsbot ("/hero" command).'
+MSG_START_NEW = """Greetings, warrior! I am the Castle Bot of 🥔Potato Castle!
 
-MSG_START_KNOWN = 'Greetings, warrior! I am the Castle Bot of 🥔Potato Castle! \n\n' \
-                  'If you want to refresh your game profile forward me your "/hero" from @chtwrsbot.\n\n' \
-                  'I also suggest you <b>join one of our squads</b> ("⚜Squad") to better coordinate in battle. After ' \
-                  'joining you can also get automated stock change information after war, get notified if you sell ' \
-                  'something or automatically buy cheap things in the Exchange (sniping).'
+To get things started please forward me your game profile from @chtwrsbot ("/hero" command)."""
 
-MSG_START_MEMBER_SQUAD = 'Welcome back 🥔{}!\n\n' \
-                         'As a squad member you can choose "🔑Register" to allow me direct access to your profile ' \
-                         'and get automated stock change information after war, get notified if you sell something or ' \
-                         'automatically buy cheap things in the Exchange (sniping).'
+MSG_START_KNOWN = """Welcome back, warrior! I am the Castle Bot of 🥔Potato Castle!
+
+If you want to refresh your game profile forward me your "/hero" from @chtwrsbot.
+
+<b>I also suggest you join one of our squads!</b> 
+This way we can better coordinate our battles. After joining you can also get automated stock change information after war, get notified if you sell something or automatically buy cheap things in the Exchange (sniping). To get things started just click the ⚜Squad Button."""
+
+MSG_START_MEMBER_SQUAD = """Hi 🥔{}!
+
+As a squad member you can choose "🔑Register" to allow me direct access to your profile and get automated stock change information after war, get notified if you sell something or automatically buy cheap things in the Exchange (sniping)."""
 
 MSG_START_MEMBER_SQUAD_REGISTERED = 'Welcome back 🥔{}!\n\n' \
                                     'How can I help you today?'
@@ -276,8 +277,12 @@ MSG_SQUAD_REQUEST = 'Here are the requests you have received:'
 MSG_SQUAD_LEFT = '{} left the squad {} 😰'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
-MSG_SQUAD_REQUESTED = 'You requested to join for the squad {}. ' \
-                      'Be patient, the process is manual and there is a small queue. Please join our waiting room, captains will talk to you from there: {}'
+MSG_SQUAD_REQUESTED = """<b>You requested to join the squad "{}"!</b> 
+
+Please be patient as this is a manual process and there is a small queue. Join our waiting room. Our captains will take care of you and guide you through the process.
+
+<a href="{}">Potato Castle Waiting Room</a>"""
+
 MSG_SQUAD_REQUEST_ACCEPTED = 'The request from {} is accepted.'
 MSG_SQUAD_REQUEST_DECLINED = '{} is useless, no one cares.'
 MSG_SQUAD_REQUEST_NEW = 'There are new applications for your squad'

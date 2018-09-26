@@ -37,7 +37,8 @@ def squad_about(bot: MQBot, update: Update, user: User):
         bot,
         chat_id=user.id,
         text=squad_text,
-        reply_markup=markup
+        reply_markup=markup,
+        parse_mode=ParseMode.HTML,
     )
 
 
