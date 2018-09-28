@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import collate
-from telegram import ParseMode, Update, TelegramError
+from telegram import ParseMode, Update
 
 from config import CWBOT_ID, CASTLE_CHAT_ID
 from core.bot import MQBot
@@ -13,7 +13,7 @@ from core.enums import AdminType
 from core.model import User, Admin, Stock, Item
 from core.state import GameState, get_game_state
 from core.texts import *
-from core.utils import send_async
+from core.utils import send_async, send_long_message
 from functions.admin import __get_user_info
 from functions.exchange import __get_item_worth
 
@@ -34,11 +34,11 @@ def help_msg(bot: MQBot, update, user: User):
             global_adm = True
             break
     if global_adm:
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_GLOBAL_ADMIN, parse_mode=ParseMode.HTML)
+        send_long_message(bot, chat_id=update.message.chat.id, text=MSG_HELP_GLOBAL_ADMIN, parse_mode=ParseMode.HTML)
     elif len(admin_user) != 0:
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_GROUP_ADMIN, parse_mode=ParseMode.HTML)
+        send_long_message(bot, chat_id=update.message.chat.id, text=MSG_HELP_GROUP_ADMIN, parse_mode=ParseMode.HTML)
     else:
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_USER, parse_mode=ParseMode.HTML)
+        send_long_message(bot, chat_id=update.message.chat.id, text=MSG_HELP_USER, parse_mode=ParseMode.HTML)
 
 
 @command_handler(

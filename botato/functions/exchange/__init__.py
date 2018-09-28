@@ -1,13 +1,14 @@
 import redis
 from sqlalchemy import func
-from telegram import Update, ParseMode, constants
+from telegram import Update, ParseMode
 
 from config import REDIS_SERVER, REDIS_PORT
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.db import Session
 from core.model import User, Item, ItemType
-from core.utils import send_async
+
+from core.utils import send_long_message
 
 Session()
 
@@ -32,29 +33,6 @@ def __generate_itemlist(intro: str, footer: str, item_filter):
 
     return text
 
-def send_long_message(bot, chat_id, text: str, **kwargs):
-    if len(text) <= constants.MAX_MESSAGE_LENGTH:
-        return bot.send_message(chat_id, text, **kwargs)
-
-    parts = []
-    while len(text) > 0:
-        if len(text) > constants.MAX_MESSAGE_LENGTH:
-            part = text[:constants.MAX_MESSAGE_LENGTH]
-            first_lnbr = part.rfind('\n')
-            if first_lnbr != -1:
-                parts.append(part[:first_lnbr])
-                text = text[first_lnbr:]
-            else:
-                parts.append(part)
-                text = text[constants.MAX_MESSAGE_LENGTH:]
-        else:
-            parts.append(text)
-            break
-
-    msg = None
-    for part in parts:
-        msg = bot.send_message(chat_id, part, **kwargs)
-    return msg  # return only the last message
 
 @command_handler(
     allow_group=True,

@@ -1,4 +1,5 @@
 import logging
+from telegram import constants
 
 from telegram.ext import run_async
 
@@ -47,3 +48,28 @@ def update_group(grp):
 @run_async
 def send_async(bot: MQBot, *args, **kwargs):
     return bot.send_message(*args, **kwargs)
+
+
+def send_long_message(bot, chat_id, text: str, **kwargs):
+    if len(text) <= constants.MAX_MESSAGE_LENGTH:
+        return bot.send_message(chat_id, text, **kwargs)
+
+    parts = []
+    while len(text) > 0:
+        if len(text) > constants.MAX_MESSAGE_LENGTH:
+            part = text[:constants.MAX_MESSAGE_LENGTH]
+            first_lnbr = part.rfind('\n')
+            if first_lnbr != -1:
+                parts.append(part[:first_lnbr])
+                text = text[first_lnbr:]
+            else:
+                parts.append(part)
+                text = text[constants.MAX_MESSAGE_LENGTH:]
+        else:
+            parts.append(text)
+            break
+
+    msg = None
+    for part in parts:
+        msg = bot.send_message(chat_id, part, **kwargs)
+    return msg  # return only the last message

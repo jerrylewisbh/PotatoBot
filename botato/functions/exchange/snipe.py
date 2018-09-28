@@ -3,11 +3,12 @@ from sqlalchemy import func
 from telegram import ParseMode, Update
 
 from core.bot import MQBot
-from core.utils import send_async
+from core.enums import AdminType
+from core.utils import send_async, send_long_message
 from core.decorators import command_handler
 from core.texts import *
 from core.db import Session
-from core.model import User, UserExchangeOrder
+from core.model import User, UserExchangeOrder, Item
 from cwmq import wrapper
 from functions.exchange import LIMIT_ORDER_AMOUNT, LIMIT_SNIPES, get_item_by_cw_id
 
@@ -317,3 +318,44 @@ def sniping(bot: MQBot, update: Update, user: User, **kwargs):
         text=SNIPE_WELCOME.format(__get_snipe_settings(user)),
         parse_mode=ParseMode.MARKDOWN,
     )
+
+
+
+@command_handler(
+    min_permission=AdminType.FULL
+)
+def list_snipes(bot: MQBot, update: Update, user: User):
+    # Check admin...
+    items = Session.query(
+        Item.cw_id,
+        Item.name,
+        func.count(UserExchangeOrder.id).label("count"),
+        func.sum(UserExchangeOrder.outstanding_order).label("outstanding"),
+        func.sum(UserExchangeOrder.max_price).label("min"),
+        func.sum(UserExchangeOrder.max_price).label("max"),
+    ).join(
+        UserExchangeOrder
+    ).group_by(
+        Item.cw_id,
+        Item.name
+
+    ).order_by(Item.cw_id).all()
+
+    text = ""
+    for item in items:
+        text += SNIPE_LIST_ITEM.format(
+            item.name,
+            item.cw_id,
+            item.count,
+            item.outstanding,
+            item.min,
+            item.max
+        )
+
+    send_long_message(
+        bot,
+        chat_id=user.id,
+        text=SNIPE_LIST + text,
+        parse_mode=ParseMode.MARKDOWN
+    )
+

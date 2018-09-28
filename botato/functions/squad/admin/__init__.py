@@ -14,7 +14,7 @@ from core.texts import *
 from core.texts import MSG_SQUAD_CLEAN
 from core.db import Session
 from core.enums import AdminType
-from core.model import User, Admin, Character, Report, Squad, SquadMember
+from core.model import User, Admin, Character, Report, Squad, SquadMember, UserExchangeOrder, Item
 from functions.reply_markup import generate_user_markup
 
 
@@ -251,7 +251,6 @@ def list_squads(bot: MQBot, update: Update, user: User):
         text=MSG_SQUAD_LIST,
         reply_markup=InlineKeyboardMarkup(inline_keys)
     )
-
 
 @command_handler(
     min_permission=AdminType.GROUP

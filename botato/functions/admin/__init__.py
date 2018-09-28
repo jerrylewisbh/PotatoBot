@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 from enum import IntFlag, auto
 from html import escape
-
 from sqlalchemy.exc import SQLAlchemyError
 from telegram import Update, ParseMode
 from telegram.error import Unauthorized, BadRequest, TelegramError
@@ -14,9 +13,10 @@ from core.decorators import command_handler
 from core.enums import AdminType
 from core.model import User, Admin, Group, Ban, SquadMember
 from core.texts import *
-from core.utils import send_async, update_group, disable_group
+from core.utils import send_async, disable_group
 from functions.reply_markup import generate_admin_markup
 from functions.user.util import disable_api_functions
+
 
 class KickBanResult(IntFlag):
     KICKED = auto() # Kicked
@@ -515,8 +515,6 @@ def unban(bot: MQBot, update: Update, user: User):
                     "[Unban] Error unbanning user: %s",
                     ex.message
                 )
-
-
 
         send_async(bot, chat_id=unban_user.id, text=MSG_YOU_UNBANNED)
         send_async(

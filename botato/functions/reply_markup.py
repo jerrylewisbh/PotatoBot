@@ -10,8 +10,12 @@ Session()
 def generate_admin_markup(full=False):
     buttons = [[KeyboardButton(ADMIN_COMMAND_ORDER)]]
     if full:
-        buttons.append([KeyboardButton(ADMIN_COMMAND_STATUS), KeyboardButton(ADMIN_COMMAND_GROUPS)])
-    buttons.append([KeyboardButton(ADMIN_COMMAND_SQUAD_LIST)])
+        buttons.append([
+            KeyboardButton(ADMIN_COMMAND_STATUS),
+            KeyboardButton(ADMIN_COMMAND_GROUPS),
+            KeyboardButton(ADMIN_COMMAND_SQUAD_LIST)
+        ])
+    buttons.append([KeyboardButton(ADMIN_COMMAND_SNIPE_LIST)])
     buttons.append([KeyboardButton(USER_COMMAND_BACK)])
     return ReplyKeyboardMarkup(buttons, True)
 

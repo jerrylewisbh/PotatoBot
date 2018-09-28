@@ -6,13 +6,13 @@ from functions.admin import admin_panel
 from functions.common import help_intro, tools
 from functions.exchange.auction import auction_info
 from functions.exchange.hide import hide_gold_info
-from functions.exchange.snipe import sniping_info
+from functions.exchange.snipe import sniping_info, list_snipes
 from functions.group import list
 from functions.order import groups
 from functions.profile import user_panel, show_char, grant_access, settings
 from functions.squad import (leave_squad_request, squad_about, join_squad_request)
 from functions.squad.admin import list_requests, battle_attendance_show, \
-    battle_reports, remove_from_squad, list_squads
+    battle_reports, list_squads
 from functions.statistics import statistic_about, exp_statistic, skill_statistic, quest_statistic, item_statistic
 from functions.statistics.foray import foray_statistic
 from functions.top import classes as top_class
@@ -40,6 +40,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_RECRUIT), list_requests))
     #disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_FIRE_UP), remove_from_squad))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_SQUAD_LIST), list_squads))
+    disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_SNIPE_LIST), list_snipes))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_ADMINPANEL), admin_panel))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_REPORTS), battle_reports))
     disp.add_handler(RegexHandler(to_re(ADMIN_COMMAND_ATTENDANCE), battle_attendance_show))
