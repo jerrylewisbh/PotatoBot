@@ -62,7 +62,7 @@ def send_long_message(bot, chat_id, text: str, **kwargs):
 )
 def list_items_res(bot: MQBot, update: Update, user: User):
     text = __generate_itemlist(
-        "*Items missing a Chatwars Item ID:*\n",
+        "*Resources*\n",
         "\nSee /items for additional things.",
         (Item.item_type == ItemType.RES, )
     )
