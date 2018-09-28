@@ -257,6 +257,8 @@ MSG_WELCOME_DISABLED = 'Welcome disabled'
 MSG_MINI_REPORT_FWD_DISABLED = 'Mini Report forward disabled'
 MSG_MINI_REPORT_FWD_ENABLED = 'Mini Report forward enabled'
 
+MSG_NO_PERMISSION_TO_ADD_BOT = "Sorry but you do not have permission to add me to a group. Please ask a council member or someone admin. You can also contact [@BotatoFeedbackBot](tg://user?id=582014258)."
+
 MSG_PIN_ALL_ENABLED = 'Anyone can pin'
 MSG_PIN_ALL_DISABLED = 'Now only admins can pin😡'
 

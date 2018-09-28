@@ -4,7 +4,7 @@ import logging
 
 import telegram
 from datetime import datetime, timedelta
-from telegram import Update
+from telegram import Update, ParseMode
 
 from config import CASTLE_CHAT_ID
 from core.bot import MQBot
@@ -26,13 +26,25 @@ def welcome(bot: MQBot, update: Update, user: User):
     if update.message.chat.type not in ['group', 'supergroup']:
         return
 
-    print(update)
-        
     group = update_group(update.message.chat)
     for new_chat_member in update.message.new_chat_members:
         user_allowed, joined_user = __is_allowed_to_join(bot, update, new_chat_member, group)
         if not user_allowed:
             __kickban_from_chat(bot, joined_user, group)
+        elif joined_user.id == bot.id:
+            # Bot may only be added by admins of that channel or global admins...
+            logging.info("Bot was added to new channel")
+
+            bot_added_by_user = create_or_update_user(update.effective_user)
+            if not check_permission(bot_added_by_user, update, min_permission=AdminType.GROUP):
+                msg_send = bot.send_message(
+                    chat_id=update.message.chat.id,
+                    text=MSG_NO_PERMISSION_TO_ADD_BOT,
+                    parse_mode=ParseMode.MARKDOWN
+                )
+                msg_result = msg_send.result()
+                if msg_result:
+                    bot.leave_chat(chat_id=update.message.chat.id)
         elif group.welcome_enabled:
             welcome_msg = Session.query(WelcomeMsg).filter_by(chat_id=group.id).first()
             if not welcome_msg:
