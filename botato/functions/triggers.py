@@ -225,7 +225,8 @@ def add_trigger(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger_text = msg[1].strip()
-        trigger = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id, trigger=trigger_text).first()
+        trigger = Session.query(LocalTrigger).filter(Trigger.trigger == trigger_text,
+                                                     Trigger.chat_id == update.message.chat.id).first()
         if trigger is None:
             data = update.message.reply_to_message
             add_trigger_db(data, update.message.chat, trigger_text)
@@ -269,7 +270,7 @@ def disable_trigger_all(bot: MQBot, update: Update, user: User):
 )
 def del_trigger(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)[1]
-    trigger = Session.query(LocalTrigger).filter_by(trigger=msg).first()
+    trigger = Session.query(LocalTrigger).filter(Trigger.trigger == msg, Trigger.chat_id == update.message.chat.id).first()
     if trigger is not None:
         Session.delete(trigger)
         Session.commit()
