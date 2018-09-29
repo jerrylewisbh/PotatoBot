@@ -107,26 +107,24 @@ def battle_attendance_show(bot: MQBot, update: Update, user: User):
         if squad is not None:
             group_admin.append([adm, squad])
     for adm, squad in group_admin:
-        actual_profiles = Session.query(Character.user_id, func.max(Character.date)). \
-            group_by(Character.user_id)
-        actual_profiles = actual_profiles.all()
         today = datetime.today().date()
-        battles = Session.query(Character, func.count(Report.user_id)) \
-            .outerjoin(Report, Report.user_id == Character.user_id) \
-            .join(SquadMember, SquadMember.user_id == Character.user_id) \
-            .filter(Report.date > datetime(2017, 12, 11)) \
-            .filter(tuple_(Character.user_id, Character.date)
-                    .in_([(a[0], a[1]) for a in actual_profiles]),
-                    Character.date > datetime.now() - timedelta(days=7)) \
-            .filter(SquadMember.squad_id == adm.group_id).group_by(Character) \
-            .filter(Report.date > today - timedelta(days=today.weekday())) \
-            .filter(Report.earned_exp > 0) \
-            .order_by(func.count(Report.user_id).desc())
-        battles = battles.all()
+
+        squad_members = Session.query(User).join(
+            SquadMember, SquadMember.user_id == User.id
+        ).filter(
+            SquadMember.squad_id == adm.group_id
+        ).all()
+
         text = MSG_TOP_WEEK_WARRIORS_SQUAD.format(squad.squad_name)
-        str_format = MSG_TOP_FORMAT
-        for i in range(0, len(battles)):
-            text += str_format.format(i + 1, battles[i][0].name, battles[i][0].level, battles[i][1], '⛳️')
+
+        attendance_list = []
+        for user in squad_members:
+            attendance = Session.query(func.count(Report.user_id)).filter(Report.user_id == user.id).scalar()
+            attendance_list.append((attendance, user))
+
+        for index, values in enumerate(sorted(attendance_list, key=lambda x: x[0], reverse=True)):
+            text += MSG_TOP_FORMAT.format(index + 1, values[1].username, values[1].character.level if values[1].character else '?', values[0], '⛳️')
+
         if update.message:
             send_async(bot,
                        chat_id=update.message.chat.id,
