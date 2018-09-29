@@ -4,17 +4,17 @@ from sqlalchemy import func, tuple_, and_
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot import MQBot
-from core.utils import send_async
+from core.db import Session
 from core.decorators import command_handler
+from core.enums import AdminType
 from core.handler.callback import get_callback_action, CallbackAction
 from core.handler.callback.util import create_callback
+from core.model import User, Admin, Character, Report, Squad, SquadMember
 from core.state import get_last_battle
 from core.template import fill_char_template
 from core.texts import *
 from core.texts import MSG_SQUAD_CLEAN
-from core.db import Session
-from core.enums import AdminType
-from core.model import User, Admin, Character, Report, Squad, SquadMember, UserExchangeOrder, Item
+from core.utils import send_async
 from functions.reply_markup import generate_user_markup
 
 
@@ -123,12 +123,26 @@ def battle_attendance_show(bot: MQBot, update: Update, user: User):
             attendance_list.append((attendance, user))
 
         for index, values in enumerate(sorted(attendance_list, key=lambda x: x[0], reverse=True)):
-            text += MSG_TOP_FORMAT.format(index + 1, values[1].username, values[1].character.level if values[1].character else '?', values[0], '⛳️')
+            user_str = '<a href="https://t.me/share/url?url=/findi {}">{}</a> (@{})'.format(
+                values[1].username,
+                values[1].character.name_with_guildtag if values[1].character else 'Unknown',
+                values[1].username,
+            )
+            text += MSG_TOP_FORMAT.format(
+                index + 1,
+                user_str,
+                values[1].character.level if values[1].character else '???',
+                values[0],
+                '⛳️',
+            )
 
         if update.message:
-            send_async(bot,
-                       chat_id=update.message.chat.id,
-                       text=text)
+            send_async(
+                bot,
+                chat_id=update.message.chat.id,
+                text=text,
+                parse_mode=ParseMode.HTML
+            )
 
 
 @command_handler(
