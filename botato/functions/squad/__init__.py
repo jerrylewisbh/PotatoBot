@@ -1,7 +1,7 @@
 import logging
 from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
 
-from config import WAITING_ROOM_LINK, MINIMUM_SQUAD_MEMBER_LEVEL
+from config import WAITING_ROOM_LINK, MINIMUM_SQUAD_MEMBER_LEVEL, ACADEM_CHAT_ID
 from core.bot import MQBot
 from core.utils import send_async
 from core.decorators import command_handler
@@ -129,15 +129,26 @@ def join_squad_request(bot: MQBot, update: Update, user: User):
         Session.add(member)
         Session.commit()
 
-        bot.edit_message_text(
-            MSG_SQUAD_REQUESTED.format(
-                member.squad.squad_name,
-                WAITING_ROOM_LINK
-            ),
-            update.callback_query.message.chat.id,
-            update.callback_query.message.message_id,
-            parse_mode=ParseMode.HTML
-        )
+        if member.squad.chat_id == ACADEM_CHAT_ID:
+            bot.edit_message_text(
+                MSG_ACADEMY_REQUESTED.format(
+                    member.squad.squad_name,
+                    WAITING_ROOM_LINK
+                ),
+                update.callback_query.message.chat.id,
+                update.callback_query.message.message_id,
+                parse_mode=ParseMode.HTML
+            )
+        else:
+            bot.edit_message_text(
+                MSG_SQUAD_REQUESTED.format(
+                    member.squad.squad_name,
+                    WAITING_ROOM_LINK
+                ),
+                update.callback_query.message.chat.id,
+                update.callback_query.message.message_id,
+                parse_mode=ParseMode.HTML
+            )
 
         # Notify Admins
         admins = Session.query(Admin).filter_by(group_id=member.squad.chat_id).all()

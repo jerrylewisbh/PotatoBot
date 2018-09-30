@@ -279,7 +279,12 @@ MSG_SQUAD_REQUEST = 'Here are the requests you have received:'
 MSG_SQUAD_LEFT = '{} left the squad {} 😰'
 MSG_SQUAD_LEAVE_ASK = 'Are you sure you want to leave the squad?'
 MSG_SQUAD_LEAVE_DECLINE = 'Have you changed your mind? Well, it is nice, let it remain a secret!'
+
 MSG_SQUAD_REQUESTED = """<b>You requested to join the squad "{}"!</b> 
+
+Please be patient as this is a manual process."""
+
+MSG_ACADEMY_REQUESTED = """<b>You requested to join the squad "{}"!</b> 
 
 Please be patient as this is a manual process and there is a small queue. Join our waiting room. Our captains will take care of you and guide you through the process.
 
