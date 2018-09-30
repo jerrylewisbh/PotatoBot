@@ -209,7 +209,7 @@ def manage(bot: MQBot, update: Update, user: User):
             except SQLAlchemyError as err:
                 logging.error(str(err))
                 Session.rollback()
-                
+
         # Now delete the group
         group = Session.query(Group).filter(Group.id == action.data['group_id']).first()
         logging.warning("Deleting group %s", group.title)
