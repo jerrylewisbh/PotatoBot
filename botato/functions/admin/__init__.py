@@ -539,5 +539,5 @@ def get_log(bot: MQBot, update: Update, user: User):
             bot.send_document(
                 chat_id=update.message.chat.id,
                 document=file,
-                timeout=120  # Logs can be big, so use a bigger timeout...
+                timeout=240  # Logs can be big, so use a bigger timeout...
             )
