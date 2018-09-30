@@ -488,7 +488,7 @@ def __get_keyboard_profile(user: User, for_user: User, back_button=None):
                         CallbackAction.SQUAD_LEAVE,
                         user.id,
                         leave=True,
-                        leave_user_id=for_user.id
+                        leave_user_id=for_user.id,
                     )
                 )
             ])

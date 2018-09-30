@@ -152,8 +152,8 @@ def del_global_trigger(bot: MQBot, update: Update, user: User):
     allow_private=False,
 )
 def list_triggers(bot: MQBot, update: Update, user: User):
-    triggers = Session.query(Trigger).all()
-    local_triggers = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id).all()
+    triggers = Session.query(Trigger).order_by(Trigger.trigger).all()
+    local_triggers = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id).order_by(LocalTrigger.trigger).all()
     msg = MSG_TRIGGER_LIST_HEADER + \
         MSG_TRIGGER_GLOBAL + ('\n'.join([escape(trigger.trigger) for trigger in triggers]) or MSG_EMPTY) + \
         MSG_TRIGGER_LOCAL + ('\n'.join([escape(trigger.trigger) for trigger in local_triggers]) or MSG_EMPTY)
