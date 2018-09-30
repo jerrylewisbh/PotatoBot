@@ -1,6 +1,8 @@
 import logging
 
 import math
+
+from sqlalchemy.exc import SQLAlchemyError
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, TelegramError
 
 from core.bot import MQBot
@@ -200,9 +202,14 @@ def manage(bot: MQBot, update: Update, user: User):
             bot.send_message(chat_id=action.data['group_id'], text=MSG_SQUAD_DELETE)
             for member in squad.members:
                 Session.delete(member)
-            Session.delete(squad)
-            Session.commit()
 
+            try:
+                Session.delete(squad)
+                Session.commit()
+            except SQLAlchemyError as err:
+                logging.error(str(err))
+                Session.rollback()
+                
         # Now delete the group
         group = Session.query(Group).filter(Group.id == action.data['group_id']).first()
         logging.warning("Deleting group %s", group.title)
@@ -213,8 +220,13 @@ def manage(bot: MQBot, update: Update, user: User):
             pass
 
         if group:
-            Session.delete(group)
-            Session.commit()
+            try:
+                Session.delete(group)
+                Session.commit()
+            except SQLAlchemyError as err:
+                logging.error(str(err))
+                Session.rollback()
+
     elif action.data['sub_action'] == "demote":
         admin_user = Session.query(User).filter(User.id == action.data['admin_user_id']).first()
         if admin_user:
