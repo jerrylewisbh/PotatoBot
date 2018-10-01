@@ -54,11 +54,31 @@ def info(bot: MQBot, update: Update, user: User):
             )
         ])
 
+    members_count = bot.get_chat_members_count(chat_id=group.id)
+    chat_admins = bot.get_chat_administrators(chat_id=group.id)
+
+    admin_user_text = ""
+    for admin_user in chat_admins:
+        print(admin_user.user)
+        if admin_user.user.username:
+            admin_user_text += " @{}".format(admin_user.user.username)
+        elif admin_user.user.first_name:
+            admin_user_text += "{}".format(admin_user.user.first_name)
+
+    invite_link = "Not available"
+    try:
+        invite_link = bot.export_chat_invite_link(chat_id=group.id)
+    except:
+        pass
+
     msg = MSG_GROUP_STATUS.format(
         group.title,
         group.id,
         group.bot_in_group,
-        adm_msg,
+        members_count if members_count else "Unknown",
+        admin_user_text,
+        invite_link,
+        adm_msg if adm_msg else "None",
         MSG_ON if group.welcome_enabled else MSG_OFF,
         MSG_ON if group.allow_trigger_all else MSG_OFF,
         MSG_ON if group.fwd_minireport else MSG_OFF,

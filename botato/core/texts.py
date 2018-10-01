@@ -65,8 +65,11 @@ MSG_GROUP_STATUS = """<b>Group: {}</b>
 ID: {}
 
 Bot in Group: {}
+Members in Group: {}
+Admins in Group: {}
+Link: {}
 
-<i>Admins:</i>
+<i>Botato-Admins:</i>
 {}
 
 <i>Settings:</i>
