@@ -38,13 +38,12 @@ class Group(Base):
 
     bot_in_group = Column(Boolean, default=True, nullable=False, server_default=expression.true())
 
-    group_items = relationship(
-        'OrderGroupItem', back_populates='chat', cascade="save-update, merge, delete, delete-orphan"
-    )
-
+    group_items = relationship('OrderGroupItem', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
     squad = relationship('Squad', back_populates='chat', uselist=False)
     orders = relationship('Order', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
     triggers = relationship('LocalTrigger', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
+
+    user_permissions = relationship('Admin', back_populates='group', lazy='dynamic', cascade="save-update, merge, delete, delete-orphan")
 
 class User(Base):
     __tablename__ = 'users'
@@ -240,7 +239,7 @@ class Admin(Base):
     admin_type = Column(Integer)
 
     group_id = Column(BigInteger, ForeignKey(Group.id), nullable=True)
-    group = relationship(Group)
+    group = relationship(Group, back_populates='user_permissions')
 
     __table_args__ = (
         UniqueConstraint('user_id', 'group_id', name='uc_usr_group'),
