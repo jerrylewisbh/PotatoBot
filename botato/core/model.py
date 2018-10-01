@@ -277,6 +277,7 @@ class Order(Base):
     chat_id = Column(BigInteger, ForeignKey(Group.id))
     text = Column(UnicodeText(2500))
     confirmed_msg = Column(BigInteger)
+
     date = Column(DATETIME(fsp=6), default=datetime.now())
 
     cleared = relationship('OrderCleared', back_populates='order')
@@ -290,7 +291,7 @@ class OrderCleared(Base):
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
     date = Column(DATETIME(fsp=6), default=datetime.now())
 
-    order = relationship('Order', back_populates='cleared')
+    order = relationship('Order', back_populates='cleared', cascade="save-update, merge, delete, delete-orphan")
     user = relationship('User', back_populates='orders_confirmed')
 
 
