@@ -225,8 +225,7 @@ def add_trigger(bot: MQBot, update: Update, user: User):
     msg = update.message.text.split(' ', 1)
     if len(msg) == 2 and len(msg[1]) > 0 and update.message.reply_to_message:
         trigger_text = msg[1].strip()
-        trigger = Session.query(LocalTrigger).filter(Trigger.trigger == trigger_text,
-                                                     Trigger.chat_id == update.message.chat.id).first()
+        trigger = Session.query(LocalTrigger).filter(Trigger.trigger == trigger_text).first()
         if trigger is None:
             data = update.message.reply_to_message
             add_trigger_db(data, update.message.chat, trigger_text)
