@@ -43,9 +43,8 @@ class Group(Base):
     )
 
     squad = relationship('Squad', back_populates='chat', uselist=False)
-
     orders = relationship('Order', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
-
+    triggers = relationship('LocalTrigger', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
 
 class User(Base):
     __tablename__ = 'users'
@@ -429,7 +428,10 @@ class LocalTrigger(Base):
     __tablename__ = 'local_triggers'
 
     id = Column(BigInteger, autoincrement=True, primary_key=True)
+
     chat_id = Column(BigInteger, ForeignKey(Group.id))
+    chat = relationship(Group, back_populates='triggers')
+
     trigger = Column(UnicodeText(2500))
     message = Column(UnicodeText(2500))
     message_type = Column(Integer, default=0)
