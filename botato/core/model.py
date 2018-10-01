@@ -46,11 +46,8 @@ class Group(Base):
 
     user_permissions = relationship('Admin', back_populates='group', lazy='dynamic', cascade="save-update, merge, delete, delete-orphan")
 
-    orders_cleared = relationship('OrderCleared', back_populates='chat', lazy='dynamic',
-                                    cascade="save-update, merge, delete, delete-orphan")
     orders = relationship('Order', back_populates='chat', lazy='dynamic',
                                     cascade="save-update, merge, delete, delete-orphan")
-
 
 
 class User(Base):
