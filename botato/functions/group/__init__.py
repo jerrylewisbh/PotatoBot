@@ -59,7 +59,6 @@ def info(bot: MQBot, update: Update, user: User):
 
     admin_user_text = ""
     for admin_user in chat_admins:
-        print(admin_user.user)
         if admin_user.user.username:
             admin_user_text += " @{}".format(admin_user.user.username)
         elif admin_user.user.first_name:
