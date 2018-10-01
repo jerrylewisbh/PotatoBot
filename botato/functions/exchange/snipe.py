@@ -331,8 +331,8 @@ def list_snipes(bot: MQBot, update: Update, user: User):
         Item.name,
         func.count(UserExchangeOrder.id).label("count"),
         func.sum(UserExchangeOrder.outstanding_order).label("outstanding"),
-        func.sum(UserExchangeOrder.max_price).label("min"),
-        func.sum(UserExchangeOrder.max_price).label("max"),
+        func.min(UserExchangeOrder.max_price).label("min"),
+        func.max(UserExchangeOrder.max_price).label("max"),
     ).join(
         UserExchangeOrder
     ).group_by(
@@ -344,8 +344,8 @@ def list_snipes(bot: MQBot, update: Update, user: User):
     text = ""
     for item in items:
         text += SNIPE_LIST_ITEM.format(
-            item.name,
             item.cw_id,
+            item.name,
             item.count,
             item.outstanding,
             item.min,

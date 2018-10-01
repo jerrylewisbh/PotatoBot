@@ -564,7 +564,7 @@ HIDE_BOUGHT = "You bought <b>{}</b> for {}💰\n"
 HIDE_LIST = "*Choose items to hide and forward to Chatwars:*"
 
 SNIPE_LIST = "*Current snipe orders:*\n"
-SNIPE_LIST_ITEM = '{} (`{}`) - Orders: {} / Items: {} / Min: {} / Max: {}\n'
+SNIPE_LIST_ITEM = '`{}` {} - Orders: {} / Items: {} / Min: {} / Max: {}\n'
 SNIPE_WELCOME = "*Use at your own risk! Please report any issues to:* [@BotatoFeedbackBot](tg://user?id=582014258)\n\n" \
     "*Automated buying of items at a given price*\n" \
     "You can set your order via `/s <itemId> <price> [<numberOfItems>]`.\n\n" \
