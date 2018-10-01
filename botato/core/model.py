@@ -39,11 +39,19 @@ class Group(Base):
     bot_in_group = Column(Boolean, default=True, nullable=False, server_default=expression.true())
 
     group_items = relationship('OrderGroupItem', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
+
     squad = relationship('Squad', back_populates='chat', uselist=False)
     orders = relationship('Order', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
     triggers = relationship('LocalTrigger', back_populates='chat', cascade="save-update, merge, delete, delete-orphan")
 
     user_permissions = relationship('Admin', back_populates='group', lazy='dynamic', cascade="save-update, merge, delete, delete-orphan")
+
+    orders_cleared = relationship('OrderCleared', back_populates='chat', lazy='dynamic',
+                                    cascade="save-update, merge, delete, delete-orphan")
+    orders = relationship('Order', back_populates='chat', lazy='dynamic',
+                                    cascade="save-update, merge, delete, delete-orphan")
+
+
 
 class User(Base):
     __tablename__ = 'users'
