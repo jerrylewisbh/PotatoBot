@@ -280,7 +280,7 @@ class Order(Base):
 
     date = Column(DATETIME(fsp=6), default=datetime.now())
 
-    cleared = relationship('OrderCleared', back_populates='order')
+    cleared = relationship('OrderCleared', back_populates='order', cascade="save-update, merge, delete, delete-orphan")
     chat = relationship('Group', back_populates='orders')
 
 
@@ -291,7 +291,7 @@ class OrderCleared(Base):
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
     date = Column(DATETIME(fsp=6), default=datetime.now())
 
-    order = relationship('Order', back_populates='cleared', cascade="save-update, merge, delete, delete-orphan")
+    order = relationship('Order', back_populates='cleared')
     user = relationship('User', back_populates='orders_confirmed')
 
 
