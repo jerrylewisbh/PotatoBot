@@ -1,6 +1,8 @@
 from datetime import datetime
 
 import re
+import logging
+
 from sqlalchemy import collate
 from telegram import Update, ParseMode
 
@@ -131,19 +133,17 @@ def get_stock_type(stock_string):
         return None
 
     # Just extract the first item (or try so) to determine stock type
-    split_stock = stock_string.split('\n', maxsplit=3)
-    if len(split_stock) > 1:
-        split_stock = split_stock[1]
-    else:
+    split_stock = stock_string.splitlines()
+    if len(split_stock) < 2:
         return
 
-    item = re.search(r"(?P<cw_id>\w+) ([\w\W]+) x ([0-9]*)", split_stock)
-    cw_id = item.group("cw_id")
+    for line in split_stock[1:]:
+        item = re.search(r"(?P<cw_id>\w+) ([\w\W]+) x ([0-9]*)", line)
+        cw_id = item.group("cw_id")
+        item = Session.query(Item).filter(Item.cw_id == cw_id).first()
 
-    item = Session.query(Item).filter(Item.cw_id == cw_id).first()
-
-    if item:
-        return item.item_type
+        if item and item.item_type:
+            return item.item_type
 
 
 def stock_split(old_stock, new_stock):
@@ -217,6 +217,10 @@ def stock_compare(user_id, new_stock_text):
     """
 
     stock_type = get_stock_type(new_stock_text)
+
+    if not stock_type:
+        logging.warning("Can't determine stock type with: %s", new_stock_text)
+        return
 
     old_stock = Session.query(GuildStock).filter(
         GuildStock.user_id == user_id,
