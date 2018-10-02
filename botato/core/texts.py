@@ -40,7 +40,9 @@ This way we can better coordinate our battles. After joining you can also get au
 
 MSG_START_MEMBER_SQUAD = """Hi 🥔{}!
 
-As a squad member you can choose "🔑Register" to allow me direct access to your profile and get automated stock change information after war, get notified if you sell something or automatically buy cheap things in the Exchange (sniping)."""
+<b>As a squad member you can choose 🔑Register to allow me direct access to your profile!</b>
+ 
+By registering you get automated stock change information after war, get notified if you sell something or automatically buy cheap things in the Exchange (sniping)."""
 
 MSG_START_MEMBER_SQUAD_REGISTERED = 'Welcome back 🥔{}!\n\n' \
                                     'How can I help you today?'
@@ -172,7 +174,7 @@ MSG_PROFILE_ADMIN_INFO_ADDON = "\n\n<b>Admin-Info:</b>\n" \
                                "Report enabled: {}\n" \
                                "Exchange enabled: {}\n" \
                                "Hide enabled: {}\n" \
-                               "Sniping enabled: {} {}"
+                               "Sniping enabled: {} {}\n\n{}"
 
 
 # main.py texts
@@ -315,6 +317,13 @@ MSG_TOP_ABOUT = '🏆 Select the statistics you want to see'
 MSG_STATISTICS_ABOUT = '📈Statistics📈'
 MSG_SQUAD_ABOUT = 'You are a member of the Squad "{}"'
 MSG_SQUAD_NONE = 'You are currently not a member of any squad. Select "⚜Join Squad" to join one!'
+
+MSG_INFO_GUILD = """<b>Guild features:</b>
+
+/deposit - Show a list of items you can deposit (make sure your inventory is up to date!)
+/withdraw - After you sent your /g_stock to Botato you can get a list with withdraw-commands
+
+Stock-Changes: When you forward /g_stock_res, /g_stock_alch, /g_stock_misc or /g_stock_other to me I will show you what changed since the last time you sent your stock info."""
 
 MSG_TOP_FORMAT = '{}. {} (Level {}) - {}{}\n'
 MSG_TOP_FORMAT_REDUCED = '{}. {} (Level {})\n'

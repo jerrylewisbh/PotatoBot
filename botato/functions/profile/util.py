@@ -17,7 +17,7 @@ from core.state import get_last_battle
 from core.template import fill_char_template
 from core.texts import *
 from core.texts import BTN_HERO, BTN_STOCK, BTN_EQUIPMENT, BTN_SKILL
-from core.db import Session, new_item
+from core.db import Session, new_item, check_permission
 from core.model import User, Stock, Profession, Character, BuildReport, Report, Equip, Item
 from functions.common import StockType
 from functions.admin import __ban_traitor
@@ -296,6 +296,14 @@ def __send_user_with_settings(bot: MQBot, update: Update, show_user: User, admin
     if show_user and show_user.character:
         char = show_user.character
         profession = show_user.profession
+
+        permission_info = ""
+        if check_permission(admin_user, update, AdminType.FULL):
+            permission_info = "\n<b>Permissions (0 = Super, 1 = Global, 2 = Group):</b>\n"
+            for permission in show_user.permissions:
+                permission_info += "{}: {}\n".format(permission.group.title if permission.group else "Global", permission.admin_type)
+            permission_info += "\n"
+
         text = fill_char_template(MSG_PROFILE_SHOW_FORMAT, show_user, char, profession)
         text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
             bool(show_user.is_banned),
@@ -308,7 +316,8 @@ def __send_user_with_settings(bot: MQBot, update: Update, show_user: User, admin
             bool(show_user.setting_automated_deal_report),
             bool(show_user.setting_automated_hiding),
             bool(show_user.setting_automated_sniping),
-            "Temp. Suspended" if show_user.sniping_suspended else ""
+            "Suspended" if show_user.sniping_suspended else "",
+            permission_info,
         )
         btns = __get_keyboard_profile(admin_user, show_user)
         send_async(
