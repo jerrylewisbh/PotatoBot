@@ -320,10 +320,21 @@ MSG_SQUAD_NONE = 'You are currently not a member of any squad. Select "⚜Join S
 
 MSG_INFO_GUILD = """<b>Guild features:</b>
 
+<i>Deposit:</i>
 /deposit - Show a list of items you can deposit (make sure your inventory is up to date!)
-/withdraw - After you sent your /g_stock to Botato you can get a list with withdraw-commands
 
-Stock-Changes: When you forward /g_stock_res, /g_stock_alch, /g_stock_misc or /g_stock_other to me I will show you what changed since the last time you sent your stock info."""
+<i>Withdraw:</i>
+Sends you back a list of withdraw-commands. You need to forward your /g_stock at least once for this to work
+
+/withdraw_res
+/withdraw_alch
+/withdraw_misc
+/withdraw_other
+
+<i>Stock-Changes:</i>
+When you forward /g_stock_res, /g_stock_alch, /g_stock_misc or /g_stock_other to me I will show you what changed since the last time you sent your stock info."""
+
+MSG_INFO_NO_GUILDSTOCK = "Please forward me the /g_stock for that type first!"
 
 MSG_TOP_FORMAT = '{}. {} (Level {}) - {}{}\n'
 MSG_TOP_FORMAT_REDUCED = '{}. {} (Level {})\n'
@@ -639,7 +650,12 @@ ITEM_LIST = "*Items I know:*\n"
 
 GUILD_DEPOSIT = "*Deposit:*"
 GUILD_WITHDRAW = "*Withdraw:*"
-GUILD_WITHDRAW_HELP = "Please forward me your Guild Warehouse"
+GUILD_WITHDRAW_HELP = """<b>Get /g_withdraw codes:</b>
+
+/withdraw_res
+/withdraw_alch
+/withdraw_misc
+/withdraw_other"""
 
 MSG_HELP_GLOBAL_ADMIN = """<b>Available Commands:</b>
 

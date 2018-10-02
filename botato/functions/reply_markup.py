@@ -55,9 +55,14 @@ def generate_user_markup(user_id: int = None):
             # All set up
             row3.append(KeyboardButton(USER_COMMAND_SETTINGS))
 
+    if user and user.character and (user.character.guild or user.character.guild_tag):
+        row3.append(KeyboardButton(USER_COMMAND_GUILD))
+
 
     #row3.append(KeyboardButton(USER_COMMAND_HELP))
     buttons.append(row3)
+
+    #buttons.append([KeyboardButton("💖💖💖 Tindertato™ 💖💖💖"), ])
 
     if user and user.admin_permission:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ADMINPANEL)])

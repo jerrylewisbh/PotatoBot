@@ -15,7 +15,8 @@ from functions.exchange.hide import auto_hide, hide_items, hide_list
 from functions.exchange.snipe import sniping, sniping_remove, sniping_resume
 from functions.group.admin import enable_thorns, enable_reminders, enable_silence, disable_thorns, disable_silence, \
     disable_reminders, allow_bots, deny_bots
-from functions.guild.stock import deposit, withdraw_help
+from functions.guild.stock import deposit, withdraw_info, withdraw_misc, withdraw_other, withdraw_res, \
+    withdraw_alch
 from functions.profile import (find_by_character, find_by_id,
                                find_by_username, grant_access, revoke,
                                show_char, show_report, user_panel)
@@ -142,7 +143,11 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler('revoke', revoke))
 
     disp.add_handler(CommandHandler('deposit', deposit))
-    disp.add_handler(CommandHandler('withdraw', withdraw_help))
+    disp.add_handler(CommandHandler('withdraw', withdraw_info))
+    disp.add_handler(CommandHandler('withdraw_misc', withdraw_misc))
+    disp.add_handler(CommandHandler('withdraw_other', withdraw_other))
+    disp.add_handler(CommandHandler('withdraw_res', withdraw_res))
+    disp.add_handler(CommandHandler('withdraw_alch', withdraw_alch))
     disp.add_handler(CommandHandler('battleresult', call_ready_to_battle_result))
 
     # Auction stuff...

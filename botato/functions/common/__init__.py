@@ -187,6 +187,12 @@ def __get_item(item_name):
     ).first()
 
 
+def __get_item_by_cw_id(cw_id):
+    return Session.query(Item).filter(
+        Item.cw_id == cw_id
+    ).first()
+
+
 def stock_compare_text(old_stock, new_stock):
     """ Compare stock... """
     if old_stock:
@@ -258,8 +264,6 @@ def stock_compare(user_id, new_stock_text):
 )
 def stock_compare_forwarded(bot: MQBot, update: Update, user: User, chat_data: dict):
     # If user-stock is automatically updated via API do not allow reports during SILENCE
-    user = Session.query(User).filter_by(id=update.message.from_user.id).first()
-
     state = get_game_state()
     if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
         text = MSG_NO_REPORT_PHASE_BEFORE_BATTLE if GameState.NIGHT in state else MSG_NO_REPORT_PHASE_AFTER_BATTLE

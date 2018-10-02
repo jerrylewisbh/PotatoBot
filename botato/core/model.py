@@ -11,6 +11,17 @@ from sqlalchemy.sql import expression
 
 Base = declarative_base()
 
+
+class ItemType(enum.Enum):
+    # Based on CW Guild Stock classification
+
+    RES = 1
+    ALCH = 2
+    OTHER = 3
+    MISC = 4
+
+    IGNORE = 1000
+
 class UserQuestItem(Base):
     __tablename__ = 'user_quest_item'
 
@@ -63,7 +74,9 @@ class User(Base):
     # the latest one...
     characters = relationship('Character', back_populates='user', order_by='Character.date.desc()', lazy='dynamic')
     equipments = relationship('Equip', back_populates='user', order_by='Equip.date.desc()', lazy='dynamic')
+
     stocks = relationship('Stock', back_populates='user', order_by='Stock.date.desc()', lazy='dynamic')
+    guild_stock = relationship('GuildStock', back_populates='user', order_by='Stock.date.desc()', lazy='dynamic')
 
     orders_confirmed = relationship('OrderCleared', back_populates='user')
 
@@ -306,6 +319,17 @@ class Stock(Base):
 
     user = relationship('User', back_populates='stocks')
 
+class GuildStock(Base):
+    __tablename__ = 'guild_stock'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(BigInteger, ForeignKey(User.id))
+    stock = Column(UnicodeText(2500))
+    date = Column(DATETIME(fsp=6), default=datetime.now())
+
+    stock_type = Column(Enum(ItemType))
+
+    user = relationship('User', back_populates='guild_stock')
 
 class Profession(Base):
     __tablename__ = 'profession'
@@ -469,17 +493,6 @@ class Auth(Base):
 
     id = Column(Text(32))
     user_id = Column(BigInteger, ForeignKey(User.id), primary_key=True)
-
-class ItemType(enum.Enum):
-    # Based on CW Guild Stock classification
-
-    RES = 1
-    ALCH = 2
-    OTHER = 3
-    MISC = 4
-
-    IGNORE = 1000
-
 
 class Item(Base):
     __tablename__ = 'item'

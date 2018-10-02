@@ -108,53 +108,6 @@ def deny_bots(bot: MQBot, update: Update, user: User):
 
 @command_handler(
     min_permission=AdminType.GROUP,
-)
-def list_aliens(bot: MQBot, update: Update, user: User):
-    """ Get some info about the people currently in a given group """
-    no_user = []
-    no_char = []
-    banned = []
-    not_in_squad = []
-
-    chat_id = None
-    group = None
-
-    for row in update.message.text.splitlines():
-        if row.startswith("👽"):
-            chat_id = row.replace("👽", "")
-            group = Session.query(Group).filter_by(id=chat_id).first()
-            continue
-
-        split_row = row.split(";", maxsplit=1)
-        user_id = split_row[0]
-        username = split_row[1] if len(split_row) > 1 else None
-
-        user_account = Session.query(User).filter(User.id == user_id).first()
-        if not user_account:
-            no_user.append((user_id, username))
-        else:
-            if user.is_banned:
-                banned.append((user_id, username))
-            elif not user.character:
-                no_char.append((user_id, username))
-            elif group.squad and user.is_squadmember and user.member.squad.chat_id != group.id:
-                not_in_squad.append((user_id, username))
-
-    text = "Results:\n"
-    for acc in banned:
-        text += "⚱️{}\n".format("@{}".format(acc[1]) if acc[1] else acc[0])
-    for acc in no_user:
-        text += "👤{}\n".format("@{}".format(acc[1]) if acc[1] else acc[0])
-    for acc in no_char:
-        text += "🏛{}\n".format("@{}".format(acc[1]) if acc[1] else acc[0])
-    for acc in not_in_squad:
-        text += "️{}\n".format("@{}".format(acc[1]) if acc[1] else acc[0])
-
-    send_async(bot, chat_id=update.message.chat.id, text=text)
-
-
-@command_handler(
-    min_permission=AdminType.GROUP,
     allow_private=False,
     allow_group=True
 )

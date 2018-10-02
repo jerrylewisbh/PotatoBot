@@ -8,6 +8,7 @@ from functions.exchange.auction import auction_info
 from functions.exchange.hide import hide_gold_info
 from functions.exchange.snipe import sniping_info, list_snipes
 from functions.group import list
+from functions.guild import guild_info
 from functions.order import groups
 from functions.profile import user_panel, show_char, grant_access, settings
 from functions.squad import (leave_squad_request, squad_about, join_squad_request)
@@ -57,6 +58,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(to_re(USER_COMMAND_HIDE), hide_gold_info))
     disp.add_handler(RegexHandler(to_re((USER_COMMAND_HELP)), help_intro))
     disp.add_handler(RegexHandler(to_re((USER_COMMAND_TOOLS)), tools))
+    disp.add_handler(RegexHandler(to_re((USER_COMMAND_GUILD)), guild_info))
 
     # Top
     disp.add_handler(RegexHandler(to_re(USER_COMMAND_TOP), top_about))
