@@ -1,3 +1,5 @@
+import os
+
 import random
 from datetime import datetime
 from enum import Enum
@@ -103,6 +105,11 @@ def roll(bot: MQBot, update, user: User, **kwargs):
 @command_handler()
 def help_intro(bot: MQBot, update, user: User):
     send_async(bot, chat_id=update.message.chat.id, text=MSG_HELP_INTRO, parse_mode=ParseMode.HTML)
+
+@command_handler()
+def tindertato(bot: MQBot, update, user: User):
+    img = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'sticker.webp')
+    bot.send_sticker(update.message.chat.id, open(img, "rb"))
 
 @command_handler(
     squad_only=True

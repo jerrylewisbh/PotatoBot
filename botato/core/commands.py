@@ -25,6 +25,7 @@ USER_COMMAND_AUCTION = '🛎Auction'
 USER_COMMAND_GUILD = '👥Guild'
 USER_COMMAND_TOOLS = '💼Tools'
 USER_COMMAND_HIDE = '🙈Hide gold'
+USER_COMMAND_TEMP = '💖Tindertato™'
 
 USER_COMMAND_BACK = '🔙Go Back'
 

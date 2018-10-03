@@ -60,9 +60,10 @@ def generate_user_markup(user_id: int = None):
 
 
     #row3.append(KeyboardButton(USER_COMMAND_HELP))
+    row3.append(KeyboardButton(USER_COMMAND_TEMP))
     buttons.append(row3)
 
-    #buttons.append([KeyboardButton("💖💖💖 Tindertato™ 💖💖💖"), ])
+
 
     if user and user.admin_permission:
         buttons.append([KeyboardButton(ADMIN_COMMAND_ADMINPANEL)])

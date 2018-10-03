@@ -3,7 +3,7 @@ import logging
 from core.commands import *
 from functions import order
 from functions.admin import admin_panel
-from functions.common import help_intro, tools
+from functions.common import help_intro, tools, tindertato
 from functions.exchange.auction import auction_info
 from functions.exchange.hide import hide_gold_info
 from functions.exchange.snipe import sniping_info, list_snipes
@@ -59,6 +59,7 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(to_re((USER_COMMAND_HELP)), help_intro))
     disp.add_handler(RegexHandler(to_re((USER_COMMAND_TOOLS)), tools))
     disp.add_handler(RegexHandler(to_re((USER_COMMAND_GUILD)), guild_info))
+    disp.add_handler(RegexHandler(to_re((USER_COMMAND_TEMP)), tindertato))
 
     # Top
     disp.add_handler(RegexHandler(to_re(USER_COMMAND_TOP), top_about))
