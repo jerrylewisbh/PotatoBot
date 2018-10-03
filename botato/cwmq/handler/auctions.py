@@ -82,7 +82,14 @@ def __handle_lot(bot, auction_lot, channel, method, dispatcher):
         if notify_state:
             notify_state = list(map(int, notify_state))
 
-        end = datetime.strptime(auction_lot['endAt'], "%Y-%m-%dT%H:%M:%S.%fZ")
+        try:
+            end = datetime.strptime(auction_lot['endAt'], "%Y-%m-%dT%H:%M:%S.%fZ")
+        except ValueError:
+            try:
+                end = datetime.strptime(auction_lot['endAt'], "%Y-%m-%dT%H:%M:%SZ")
+            except:
+                logging.warning("Can't parse endAt: %s", auction_lot['endAt'])
+                return
         if not notify_state or watchlist_item.user.id not in notify_state:
             if not watchlist_item.max_price or watchlist_item.max_price <= auction_lot['price']:
                 send_async(
