@@ -118,15 +118,15 @@ def battle_attendance_show(bot: MQBot, update: Update, user: User):
         text = MSG_TOP_WEEK_WARRIORS_SQUAD.format(squad.squad_name)
 
         attendance_list = []
-        for user in squad_members:
+        for squad_member in squad_members:
             attendance = Session.query(func.count(Report.user_id)).filter(
-                Report.user_id == user.id,
+                Report.user_id == squad_member.id,
                 Report.date > today - timedelta(days=today.weekday())
             ).scalar()
-            attendance_list.append((attendance, user))
+            attendance_list.append((attendance, squad_member))
 
         for index, values in enumerate(sorted(attendance_list, key=lambda x: x[0], reverse=True)):
-            user_str = '<a href="https://t.me/share/url?url=/findi {}">{}</a> (@{})'.format(
+            user_str = '<a href="https://t.me/share/url?url=/find @{}">{}</a> (@{})'.format(
                 values[1].username,
                 values[1].character.name_with_guildtag if values[1].character else 'Unknown',
                 values[1].username,
