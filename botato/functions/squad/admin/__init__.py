@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from sqlalchemy import func, tuple_, and_
+from sqlalchemy import func, tuple_, and_, or_
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.bot import MQBot
@@ -121,7 +121,13 @@ def battle_attendance_show(bot: MQBot, update: Update, user: User):
         for squad_member in squad_members:
             attendance = Session.query(func.count(Report.user_id)).filter(
                 Report.user_id == squad_member.id,
-                Report.date > today - timedelta(days=today.weekday())
+                Report.date > today - timedelta(days=today.weekday()),
+                Report.preliminary_report == False,
+                or_(
+                    Report.earned_exp > 0,
+                    Report.earned_gold != 0,
+                    Report.earned_stock != 0
+                )
             ).scalar()
             attendance_list.append((attendance, squad_member))
 
