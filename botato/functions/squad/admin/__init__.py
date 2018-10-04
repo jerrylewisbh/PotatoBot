@@ -694,7 +694,7 @@ def manage(bot: MQBot, update: Update, user: User):
         )
         send_async(
             bot,
-            chat_id=action.data['applicant_id'],
+            chat_id=user.id,
             text=MSG_INVITE_SENT,
             reply_markup=generate_user_markup(user.id),
             parse_mode=ParseMode.HTML
