@@ -435,7 +435,7 @@ BTN_LEAVE = 'Leave'
 
 BTN_ACCEPT = '✅Accept'
 BTN_DECLINE = '❌Decline'
-BTN_WAITING = '📯Invite'
+BTN_WAITING = '📯Waitingroom'
 
 BTN_SETTING_API_DISABLE = '❌Disable API'
 BTN_SETTING_DISABLE_REPORT = '✅Disable automated report'

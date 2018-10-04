@@ -54,9 +54,9 @@ def list_requests(bot: MQBot, update: Update, user: User):
                     )
                 ),
                 InlineKeyboardButton(
-                    BTN_DECLINE,
+                    BTN_WAITING,
                     callback_data=create_callback(
-                        CallbackAction.SQUAD_INVITE,
+                        CallbackAction.SQUAD_MANAGE,
                         user.id,
                         sub_action='waitingroom',
                         applicant_id=member.user_id
