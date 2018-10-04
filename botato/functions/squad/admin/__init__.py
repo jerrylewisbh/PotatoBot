@@ -119,7 +119,10 @@ def battle_attendance_show(bot: MQBot, update: Update, user: User):
 
         attendance_list = []
         for user in squad_members:
-            attendance = Session.query(func.count(Report.user_id)).filter(Report.user_id == user.id).scalar()
+            attendance = Session.query(func.count(Report.user_id)).filter(
+                Report.user_id == user.id,
+                Report.date > today - timedelta(days=today.weekday())
+            ).scalar()
             attendance_list.append((attendance, user))
 
         for index, values in enumerate(sorted(attendance_list, key=lambda x: x[0], reverse=True)):
