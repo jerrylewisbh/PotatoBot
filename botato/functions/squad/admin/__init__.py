@@ -53,9 +53,6 @@ def list_requests(bot: MQBot, update: Update, user: User):
                         applicant_id=member.user_id
                     )
                 ),
-            ]
-
-            if adm.group_id == ACADEM_CHAT_ID:
                 InlineKeyboardButton(
                     BTN_DECLINE,
                     callback_data=create_callback(
@@ -65,6 +62,7 @@ def list_requests(bot: MQBot, update: Update, user: User):
                         applicant_id=member.user_id
                     )
                 ),
+            ]
 
             send_async(
                 bot,

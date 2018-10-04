@@ -46,7 +46,7 @@ def __withdraw(bot: MQBot, update: Update, user: User, stock_type: ItemType):
 
     latest_stock = Session.query(GuildStock).filter(
         GuildStock.stock_type == stock_type,
-    ).order_by(GuildStock.date).desc().first()
+    ).order_by(GuildStock.date.desc()).first()
 
     if not latest_stock:
         send_async(
