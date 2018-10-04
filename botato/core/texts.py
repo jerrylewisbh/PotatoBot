@@ -301,6 +301,8 @@ MSG_SQUAD_REQUEST_NEW = 'There are new applications for your squad'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER = 'You were accepted into the squad'
 MSG_SQUAD_REQUEST_ACCEPTED_ANSWER_LINK = 'You were accepted into the squad join using {}'
 MSG_SQUAD_REQUEST_DECLINED_ANSWER = 'You application was rejected'
+MSG_INVITE_WAITINGROOM = 'Hi! I have noticed you want to join our Academy. Please join the <a href="{}">Potato Castle Waiting Room</a> to get things started!'
+MSG_INVITE_SENT = 'User was invited to the waiting room'
 MSG_SQUAD_CLEAN = """Harvesting in the squad {}.
 Who do you want to kick? """
 MSG_SQUAD_ADD = '{}, Do you want to join the squad?'
@@ -433,6 +435,7 @@ BTN_LEAVE = 'Leave'
 
 BTN_ACCEPT = '✅Accept'
 BTN_DECLINE = '❌Decline'
+BTN_WAITING = '📯Invite'
 
 BTN_SETTING_API_DISABLE = '❌Disable API'
 BTN_SETTING_DISABLE_REPORT = '✅Disable automated report'

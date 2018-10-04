@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import func, tuple_, and_, or_
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 
+from config import ACADEM_CHAT_ID, WAITING_ROOM_LINK
 from core.bot import MQBot
 from core.db import Session
 from core.decorators import command_handler
@@ -34,7 +35,7 @@ def list_requests(bot: MQBot, update: Update, user: User):
             count += 1
 
             inline_keys = [
-                [InlineKeyboardButton(
+                InlineKeyboardButton(
                     BTN_ACCEPT,
                     callback_data=create_callback(
                         CallbackAction.SQUAD_MANAGE,
@@ -43,16 +44,27 @@ def list_requests(bot: MQBot, update: Update, user: User):
                         applicant_id=member.user_id
                     )
                 ),
-                    InlineKeyboardButton(
-                        BTN_DECLINE,
-                        callback_data=create_callback(
-                            CallbackAction.SQUAD_MANAGE,
-                            user.id,
-                            sub_action='decline_application',
-                            applicant_id=member.user_id
-                        )
-                )]
+                InlineKeyboardButton(
+                    BTN_DECLINE,
+                    callback_data=create_callback(
+                        CallbackAction.SQUAD_MANAGE,
+                        user.id,
+                        sub_action='decline_application',
+                        applicant_id=member.user_id
+                    )
+                ),
             ]
+
+            if adm.group_id == ACADEM_CHAT_ID:
+                InlineKeyboardButton(
+                    BTN_DECLINE,
+                    callback_data=create_callback(
+                        CallbackAction.SQUAD_MANAGE,
+                        user.id,
+                        sub_action='waitingroom',
+                        applicant_id=member.user_id
+                    )
+                ),
 
             send_async(
                 bot,
@@ -63,7 +75,7 @@ def list_requests(bot: MQBot, update: Update, user: User):
                     member.user.character,
                     member.user.profession,
                     True),
-                reply_markup=InlineKeyboardMarkup(inline_keys),
+                reply_markup=InlineKeyboardMarkup([inline_keys]),
                 parse_mode=ParseMode.HTML)
     if count == 0:
         send_async(bot, chat_id=update.message.chat.id,
@@ -674,3 +686,18 @@ def manage(bot: MQBot, update: Update, user: User):
         __request_accept(bot, update, action.data['applicant_id'])
     elif action.data['sub_action'] == "decline_application":
         __request_decline(bot, update, action.data['applicant_id'])
+    elif action.data['sub_action'] == "waitingroom":
+        send_async(
+            bot,
+            chat_id=action.data['applicant_id'],
+            text=MSG_INVITE_WAITINGROOM.format(WAITING_ROOM_LINK),
+            reply_markup=generate_user_markup(action.data['applicant_id']),
+            parse_mode=ParseMode.HTML
+        )
+        send_async(
+            bot,
+            chat_id=action.data['applicant_id'],
+            text=MSG_INVITE_SENT,
+            reply_markup=generate_user_markup(user.id),
+            parse_mode=ParseMode.HTML
+        )

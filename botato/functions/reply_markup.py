@@ -15,7 +15,8 @@ def generate_admin_markup(full=False):
             KeyboardButton(ADMIN_COMMAND_GROUPS),
             KeyboardButton(ADMIN_COMMAND_SQUAD_LIST)
         ])
-    buttons.append([KeyboardButton(ADMIN_COMMAND_SNIPE_LIST)])
+        buttons.append([KeyboardButton(ADMIN_COMMAND_SNIPE_LIST)])
+
     buttons.append([KeyboardButton(USER_COMMAND_BACK)])
     return ReplyKeyboardMarkup(buttons, True)
 
@@ -60,7 +61,7 @@ def generate_user_markup(user_id: int = None):
 
 
     #row3.append(KeyboardButton(USER_COMMAND_HELP))
-    row3.append(KeyboardButton(USER_COMMAND_TEMP))
+    #row3.append(KeyboardButton(USER_COMMAND_TEMP))
     buttons.append(row3)
 
 
