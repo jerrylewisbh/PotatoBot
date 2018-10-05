@@ -180,6 +180,8 @@ def check_requirements(bot: MQBot, update: Update, user: User, **kwargs):
             ),
             parse_mode=ParseMode.HTML
         )
+    else:
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_ATTENDANCE_ERROR, parse_mode=ParseMode.HTML)
 
 
 
