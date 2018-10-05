@@ -220,6 +220,7 @@ MSG_SUMMARY_GRADUATION = """<b>User: {} / {}</b>
 - This week: {}
 - Last week: {}
 
+<b>Equipment:</b>
 {}
 """
 
