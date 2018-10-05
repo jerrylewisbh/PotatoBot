@@ -116,6 +116,7 @@ def check_requirements(bot: MQBot, update: Update, user: User, **kwargs):
             "'%s' is not allowed to call check_requirements!",
             "@{}".format(user.username) if user.username else user.id,
         )
+        return
 
     args = None
     if "args" in kwargs:
