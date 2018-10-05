@@ -1,5 +1,6 @@
 from html import escape
 from json import loads
+from sqlalchemy import or_
 from telegram import Message, ParseMode, Update
 
 from core.bot import MQBot
@@ -92,9 +93,13 @@ def add_global_trigger(bot: MQBot, update: Update, user: User):
     allow_group=True,
 )
 def trigger_show(bot: MQBot, update: Update, user: User):
-    trigger = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id, trigger=update.message.text).first()
+    trigger_text = update.message.text
+    if trigger_text and trigger_text .startswith("/") and trigger_text.endswith("@PotatoCastle_bot"):
+        trigger_text = trigger_text.replace("@PotatoCastle_bot", "")
+
+    trigger = Session.query(LocalTrigger).filter_by(chat_id=update.message.chat.id, trigger=trigger_text).first()
     if trigger is None:
-        trigger = Session.query(Trigger).filter_by(trigger=update.message.text).first()
+        trigger = Session.query(Trigger).filter_by(trigger=trigger_text).first()
     if trigger is not None:
         if trigger.message_type == MessageType.AUDIO.value:
             bot.send_audio(update.message.chat.id, trigger.message)
@@ -161,7 +166,11 @@ def list_triggers(bot: MQBot, update: Update, user: User):
 
 
 def add_trigger_db(msg: Message, chat, trigger_text: str):
-    trigger = Session.query(LocalTrigger).filter_by(chat_id=chat.id, trigger=trigger_text).first()
+    trigger = Session.query(LocalTrigger).filter(
+        LocalTrigger.chat_id == chat.id,
+        LocalTrigger.trigger == trigger_text,
+    ).first()
+
     if trigger is None:
         trigger = LocalTrigger()
         trigger.chat_id = chat.id
