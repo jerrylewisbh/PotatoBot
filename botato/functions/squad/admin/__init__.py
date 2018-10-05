@@ -106,11 +106,17 @@ def call_squad(bot: MQBot, update: Update, user: User):
             send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_CALL_HEADER)
 
 @command_handler(
-    min_permission=AdminType.GROUP,
     allow_private=False,
     allow_group=True
 )
 def check_requirements(bot: MQBot, update: Update, user: User, **kwargs):
+    """ NOTE: This command is only available in Academy-Captains Group! """
+    if update.effective_chat.id != -1001118469208:
+        logging.warning(
+            "'%s' is not allowed to call check_requirements!",
+            "@{}".format(user.username) if user.username else user.id,
+        )
+
     args = None
     if "args" in kwargs:
         args = kwargs["args"]
