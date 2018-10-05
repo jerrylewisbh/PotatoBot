@@ -215,6 +215,7 @@ MSG_ATTENDANCE_ERROR = "There's no such user or you aren't allowed to view his s
 MSG_SQUAD_REQUEST_EMPTY = 'At the moment no one wants to join you.'
 
 MSG_SUMMARY_GRADUATION = """<b>User: {} / {}</b>
+<b>Class:</b> {}
 
 <b>Attendance:</b>
 - This week: {}
