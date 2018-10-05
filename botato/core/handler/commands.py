@@ -21,7 +21,7 @@ from functions.profile import (find_by_character, find_by_id,
                                find_by_username, grant_access, revoke,
                                show_char, show_report, user_panel)
 from functions.report import enable_report_fwd, disable_report_fwd
-from functions.squad.admin import call_squad
+from functions.squad.admin import call_squad, check_requirements
 from functions.squad.admin.commands import add_squad, set_invite_link, set_squad_name, del_squad, force_add_to_squad, \
     add_to_squad, open_hiring, close_hiring
 from functions.triggers import (add_global_trigger, add_trigger,
@@ -117,6 +117,8 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(CommandHandler("ban_list", ban_info_all))
     disp.add_handler(CommandHandler("unban", unban))
     disp.add_handler(CommandHandler("get_log", get_log))
+
+    disp.add_handler(CommandHandler("check_requirements", check_requirements, pass_args=True))
 
     disp.add_handler(CommandHandler("roll", roll, pass_args=True))
 

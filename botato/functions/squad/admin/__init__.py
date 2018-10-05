@@ -105,6 +105,77 @@ def call_squad(bot: MQBot, update: Update, user: User):
         if len(notify_users) > 0:
             send_async(bot, chat_id=update.message.chat.id, text=MSG_SQUAD_CALL_HEADER)
 
+@command_handler(
+    min_permission=AdminType.GROUP,
+    allow_private=False,
+    allow_group=True
+)
+def check_requirements(bot: MQBot, update: Update, user: User, **kwargs):
+    args = None
+    if "args" in kwargs:
+        args = kwargs["args"]
+
+    if len(args) != 1:
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_ATTENDANCE_ERROR, parse_mode=ParseMode.HTML)
+        return
+
+    username = args[0].replace("@", "")
+    player = account = Session.query(User).filter_by(username=username).first()
+
+    if not player or not player.member.squad:
+        send_async(bot, chat_id=update.message.chat.id, text=MSG_ATTENDANCE_ERROR, parse_mode=ParseMode.HTML)
+        return
+
+    is_allowed = False
+    for adm in user.permissions:
+        if adm.admin_type <= AdminType.FULL.value:
+            is_allowed = True
+            break
+        elif adm.admin_type == AdminType.GROUP and adm.group_id == player.member.squad.chat_id:
+            is_allowed = True
+            break
+
+    if is_allowed:
+        today = datetime.today().date()
+
+        attendance_this_week = Session.query(func.count(Report.user_id)).filter(
+            Report.user_id == player.id,
+            Report.date > today - timedelta(days=today.weekday()),
+            Report.preliminary_report == False,
+            or_(
+                Report.earned_exp > 0,
+                Report.earned_gold != 0,
+                Report.earned_stock != 0
+            )
+        ).scalar()
+
+        attendance_last_week = Session.query(func.count(Report.user_id)).filter(
+            Report.user_id == player.id,
+            Report.date > today - timedelta(days=today.weekday()) - timedelta(days=7),
+            Report.date <= today - timedelta(days=today.weekday()),
+            Report.preliminary_report == False,
+            or_(
+                Report.earned_exp > 0,
+                Report.earned_gold != 0,
+                Report.earned_stock != 0
+            )
+        ).scalar()
+
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=MSG_SUMMARY_GRADUATION.format(
+                player.username,
+                player.character.name_with_guildtag,
+                attendance_this_week,
+                attendance_last_week,
+                player.equip.equip if player.equip else ''
+            ),
+            parse_mode=ParseMode.HTML
+        )
+
+
+
 
 @command_handler(
     min_permission=AdminType.GROUP

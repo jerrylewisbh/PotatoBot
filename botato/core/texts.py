@@ -211,7 +211,17 @@ MSG_REPORT_MISSING = "No report for this period! Please forward me your /report 
 
 MSG_PROFILE_NOT_FOUND = 'In the potato plantation records, there is still no data about this hero or you are not ' \
                         'permitted to see him.'
+MSG_ATTENDANCE_ERROR = "There's no such user or you aren't allowed to view his stats."
 MSG_SQUAD_REQUEST_EMPTY = 'At the moment no one wants to join you.'
+
+MSG_SUMMARY_GRADUATION = """<b>User: {} / {}</b>
+
+<b>Attendance:</b>
+- This week: {}
+- Last week: {}
+
+{}
+"""
 
 MSG_NO_PROFILE_IN_BOT = 'Please forward me a recent /hero command or grant me access to your profile!'
 MSG_SQUAD_RECRUITING_ENABLED = 'Squad recruiting is enabled!'
