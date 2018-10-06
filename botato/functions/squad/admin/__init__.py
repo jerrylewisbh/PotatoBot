@@ -175,6 +175,7 @@ def check_requirements(bot: MQBot, update: Update, user: User, **kwargs):
                 player.username,
                 player.character.name_with_guildtag,
                 player.character.characterClass if player.character else 'Unknown',
+                player.character.level if player.character else 'Unknown',
                 attendance_this_week,
                 attendance_last_week,
                 player.equip.equip if player.equip else ''
