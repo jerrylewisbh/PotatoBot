@@ -13,7 +13,7 @@ HERO = '(?P<castle>🌑|🐺|🥔|🦅|🦌|🐉|🦈)((\[(?P<guild_tag>.+)\])?)
        '💰(?P<gold>-?[0-9]+)(?: 👝(?P<pouches>[0-9]+))?(?: 💎(?P<diamonds>[0-9]+))?\n' \
        '(?:🤺PVP: (?P<pvp>[0-9]+)\n)?' \
        '(?:📚Expertise: (?P<expertise>.+)\n)?' \
-       '(?:🏛Class info: (?P<class>.+)\n)?' \
+       '(?:(?P<class>.+)Class info: .+\n)?' \
        '.+\n+' \
        '(?:.+\n)*'\
        '.+\n+' \

@@ -21,7 +21,8 @@ CLASS_MAP = {
     '🛡': 'Sentinel',
     '⚒': 'Blacksmith',
     '📦': 'Collector',
-    '🐣': 'Esquire / Master'
+    '🐣': 'Esquire / Master',
+    '🏛': 'Esquire / Master'
 }
 
 TACTICTS_COMMAND_PREFIX = "/tactics_"

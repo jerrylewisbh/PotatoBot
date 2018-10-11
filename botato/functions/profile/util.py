@@ -9,7 +9,7 @@ from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMark
 from config import CASTLE
 from core.bot import MQBot
 from core.utils import send_async
-from core.enums import CASTLE_MAP, AdminType
+from core.enums import CASTLE_MAP, AdminType, CLASS_MAP
 from core.handler.callback import CallbackAction
 from core.handler.callback.util import create_callback
 from core.regexp import HERO, PROFESSION, REPORT
@@ -42,6 +42,7 @@ def parse_hero_text(report_text):
         'castle_name': CASTLE_MAP[parsed.group("castle")],
         'name_standalone': parsed.group("name"),
         'name': parsed.group("name"),
+        'class': CLASS_MAP.get(parsed.group("class"), "Unknown class") if parsed.group("class") else None,
         'guild_tag': parsed.group("guild_tag") if parsed.group("guild_tag") else None,
         'ribbon': parsed.group("ribbon") if parsed.group("ribbon") else None,
         'attack': int(parsed.group("attack")) if parsed.group("attack") else 0,
@@ -76,6 +77,7 @@ def parse_hero(bot: MQBot, profile, user_id, date):
         char.castle = parsed_data['castle']
         char.name = parsed_data['name']
         char.guild_tag = parsed_data['guild_tag']
+        char.characterClass = parsed_data['class']
         char.prof = parsed_data['castle_name']
         char.level = parsed_data['level']
         char.attack = parsed_data['attack']

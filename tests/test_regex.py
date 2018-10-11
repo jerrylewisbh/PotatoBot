@@ -2,7 +2,7 @@ import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'botato')))
 
 from functions.profile import parse_hero_text, parse_report_text
 from functions.profile import user_panel
@@ -20,10 +20,9 @@ Your result on the battlefield:
         self.assertNotEqual(parsed_data, None)
 
         self.assertEqual(parsed_data['castle'], "🥔")
-        self.assertEqual(parsed_data['name'], "[GO]Kroket van Potet")
+        self.assertEqual(parsed_data['name_standalone'], "Kroket van Potet")
         self.assertEqual(parsed_data['attack'], 12)
         self.assertEqual(parsed_data['defence'], 34)
-        self.assertEqual(parsed_data['guild'], "[GO]")
         self.assertEqual(parsed_data['ribbon'], None)
         self.assertEqual(parsed_data['level'], 56)
         self.assertEqual(parsed_data['exp'], 123)
@@ -41,9 +40,8 @@ Your result on the battlefield:
         self.assertNotEqual(parsed_data, None)
 
         self.assertEqual(parsed_data['castle'], "🥔")
-        self.assertEqual(parsed_data['name'], "[GO]Kroket van Potet")
+        self.assertEqual(parsed_data['name'], "Kroket van Potet")
         self.assertEqual(parsed_data['attack'], 12)
-        self.assertEqual(parsed_data['guild'], "[GO]")
         self.assertEqual(parsed_data['ribbon'], "🎗")
         self.assertEqual(parsed_data['defence'], 34)
         self.assertEqual(parsed_data['level'], 56)
@@ -64,7 +62,6 @@ Your result on the battlefield:
         self.assertEqual(parsed_data['castle'], "🥔")
         self.assertEqual(parsed_data['name'], "Kroket van Potet")
         self.assertEqual(parsed_data['attack'], 12)
-        self.assertEqual(parsed_data['guild'], "")
         self.assertEqual(parsed_data['ribbon'], "🎗")
         self.assertEqual(parsed_data['defence'], 34)
         self.assertEqual(parsed_data['level'], 56)
@@ -85,7 +82,6 @@ Your result on the battlefield:
         self.assertEqual(parsed_data['castle'], "🥔")
         self.assertEqual(parsed_data['name'], "Kroket van Potet")
         self.assertEqual(parsed_data['attack'], 12)
-        self.assertEqual(parsed_data['guild'], "")
         self.assertEqual(parsed_data['ribbon'], None)
         self.assertEqual(parsed_data['defence'], 34)
         self.assertEqual(parsed_data['level'], 56)
@@ -124,7 +120,6 @@ Royal Guard Cape +1⚔ +1🛡
         self.assertEqual(parsed_data['castle_name'], "Potato")
         self.assertEqual(parsed_data['name'], "Fozzie")
         self.assertEqual(parsed_data['attack'], 73)
-        self.assertEqual(parsed_data['guild'], "")
         self.assertEqual(parsed_data['ribbon'], "🎗")
         self.assertEqual(parsed_data['defence'], 64)
         self.assertEqual(parsed_data['level'], 23)
@@ -169,7 +164,6 @@ Royal Guard Cape +1⚔ +1🛡
         self.assertEqual(parsed_data['castle_name'], "Potato")
         self.assertEqual(parsed_data['name'], "Fozzie")
         self.assertEqual(parsed_data['attack'], 73)
-        self.assertEqual(parsed_data['guild'], "")
         self.assertEqual(parsed_data['ribbon'], None)
         self.assertEqual(parsed_data['defence'], 64)
         self.assertEqual(parsed_data['level'], 23)
@@ -214,7 +208,6 @@ Royal Guard Cape +1⚔ +1🛡
         self.assertEqual(parsed_data['castle_name'], "Potato")
         self.assertEqual(parsed_data['name'], "Fozzie")
         self.assertEqual(parsed_data['attack'], 73)
-        self.assertEqual(parsed_data['guild'], "")
         self.assertEqual(parsed_data['ribbon'], None)
         self.assertEqual(parsed_data['defence'], 64)
         self.assertEqual(parsed_data['level'], 23)
@@ -256,9 +249,9 @@ Royal Guard Cape +1⚔️ +1🛡
 
         self.assertEqual(parsed_data['castle'], "🥔")
         self.assertEqual(parsed_data['castle_name'], "Potato")
-        self.assertEqual(parsed_data['name'], "[AVE]Lauri van Potet")
+        self.assertEqual(parsed_data['name'], "Lauri van Potet")
         self.assertEqual(parsed_data['attack'], 154)
-        self.assertEqual(parsed_data['guild'], "[AVE]")
+        self.assertEqual(parsed_data['guild_tag'], "AVE")
         self.assertEqual(parsed_data['ribbon'], None)
         self.assertEqual(parsed_data['defence'], 91)
         self.assertEqual(parsed_data['level'], 36)
@@ -304,9 +297,9 @@ Royal Guard Cape +1⚔️ +1🛡
 
         self.assertEqual(parsed_data['castle'], "🦈")
         self.assertEqual(parsed_data['castle_name'], "Sharkteeth")
-        self.assertEqual(parsed_data['name'], "[R1]Maling")
+        self.assertEqual(parsed_data['name'], "Maling")
         self.assertEqual(parsed_data['attack'], 166)
-        self.assertEqual(parsed_data['guild'], "[R1]")
+        self.assertEqual(parsed_data['guild_tag'], "R1")
         self.assertEqual(parsed_data['ribbon'], None)
         self.assertEqual(parsed_data['defence'], 141)
         self.assertEqual(parsed_data['level'], 45)
