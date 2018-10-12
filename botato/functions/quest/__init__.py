@@ -10,6 +10,7 @@ class QuestType(IntFlag):
 
     STOP = auto()
     STOP_FAIL = auto()
+    STOP_MISS = auto()
 
     ARENA = auto()
     ARENA_FAIL = auto()

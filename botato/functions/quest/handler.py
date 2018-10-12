@@ -37,7 +37,7 @@ def __save_user_quest(user: User, update: Update, quest_data):
     uq.successful = quest_data['success']
     if quest_data['type'] in [QuestType.FORAY, QuestType.FORAY_FAILED]:
         uq.location_id = QUEST_LOCATION_FORAY_ID
-    elif quest_data['type'] in [QuestType.STOP, QuestType.STOP_FAIL]:
+    elif quest_data['type'] in [QuestType.STOP, QuestType.STOP_FAIL, QuestType.STOP_MISS]:
         uq.location_id = QUEST_LOCATION_DEFEND_ID
     elif quest_data['type'] in [QuestType.ARENA, QuestType.ARENA_FAIL]:
         uq.location_id = QUEST_LOCATION_ARENA_ID
@@ -207,7 +207,7 @@ def parse_quest(bot: MQBot, update: Update, user: User):
             text=MSG_FORAY_ACCEPTED,
             parse_mode=ParseMode.HTML,
         )
-    elif quest_data['type'] == QuestType.STOP_FAIL:
+    elif [QuestType.STOP_FAIL, QuestType.STOP_MISS] in quest_data['type']:
         uq = __save_user_quest(user, update, quest_data)
 
         bot.sendMessage(

@@ -16,6 +16,7 @@ REGEX_LOST = '((?:Lost: )(-[0-9]+) gold)'
 # Stopping forays
 REGEX_GO = r"As he was crawling away, you picked up some of the gold he left behind."
 REGEX_GO_FAILED = r"Sadly, he was too strong. Your body hurts"
+REGEX_GO_MISSED = r"go and he pillaged the village. We hope you feel terrible."
 
 REGEX_FORAY_GO_FAILED_REWARD = r"((?:Received: )([0-9]+) exp.)"
 
@@ -51,6 +52,7 @@ def analyze_text(text):
     # Stopping forays
     find_go = re.findall(REGEX_GO, text)
     find_go_failed = re.findall(REGEX_GO_FAILED, text)
+    find_go_missed = re.findall(REGEX_GO_MISSED, text)
 
     text_stripped = re.sub(REGEX_GO, '', text_stripped)
 
@@ -76,6 +78,15 @@ def analyze_text(text):
             'items': {},
             'gold': 0,
             'exp': int(find_foray_go_failed_reward[0][1]) if find_foray_go_failed_reward else 0,
+            'text': text_stripped,
+        }
+    elif find_go_missed:
+        return {
+            'type': QuestType.STOP_MISS,
+            'success': False,
+            'items': {},
+            'gold': 0,
+            'exp': 0,
             'text': text_stripped,
         }
     elif find_foray_success:

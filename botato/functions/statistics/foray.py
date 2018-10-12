@@ -242,7 +242,13 @@ def foray_interval(bot: MQBot, update: Update, user: User):
             text_stats += "Not enough data\n\n"
 
         if idx != limit:
-            text_stats += "{}{}\n".format("🛡" if stat.successful else "⚔️", stat.from_date.strftime("%Y-%m-%d - %H:%M:%S UTC"))
+            if stat.successful:
+                icon = "🛡"
+            elif not stat.successful and stat.exp == 0 and stat.gold == 0:
+                icon = "❌"
+            else:
+                icon = "⚔️"
+            text_stats += "{}{}\n".format(icon, stat.from_date.strftime("%Y-%m-%d - %H:%M:%S UTC"))
 
         if length - 1 == idx:
             text_stats += "No more data\n"
