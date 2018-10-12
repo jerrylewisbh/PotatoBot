@@ -213,7 +213,7 @@ def foray_statistic(bot: MQBot, update: Update, user: User):
 def foray_interval(bot: MQBot, update: Update, user: User):
     logging.info("User '%s' called foray_interval", user.id)
 
-    limit = 20
+    limit = 10
 
     go_stats = Session.query(
         UserQuest
