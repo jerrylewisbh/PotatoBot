@@ -15,7 +15,7 @@ from functions.squad import (leave_squad_request, squad_about, join_squad_reques
 from functions.squad.admin import list_requests, battle_attendance_show, \
     battle_reports, list_squads
 from functions.statistics import statistic_about, exp_statistic, skill_statistic, quest_statistic, item_statistic
-from functions.statistics.foray import foray_statistic
+from functions.statistics.foray import foray_statistic, foray_interval
 from functions.top import classes as top_class
 from functions.top import overall as top_overall, top_about
 from telegram.ext import Dispatcher, RegexHandler
@@ -71,7 +71,8 @@ def add_handler(disp: Dispatcher):
     disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_QUESTS), quest_statistic))
     disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_QUESTS_ALL), quest_statistic))
     disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_ITEMS_ALL), item_statistic))
-    disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_FORAY), foray_statistic))
+    disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_FORAY_GLOBAL), foray_statistic))
+    disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_FORAY), foray_interval))
     disp.add_handler(RegexHandler(to_re(STATISTICS_COMMAND_SKILLS), skill_statistic))
 
     logging.info("Finished adding button handlers")

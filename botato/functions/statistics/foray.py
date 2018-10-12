@@ -6,12 +6,13 @@ from sqlalchemy import func, extract
 from sqlalchemy.sql.functions import count
 from telegram import ParseMode, Update
 
-from config import QUEST_LOCATION_FORAY_ID
+from config import QUEST_LOCATION_FORAY_ID, QUEST_LOCATION_DEFEND_ID
 from core.bot import MQBot
 from core.decorators import command_handler
 from core.texts import *
 from core.db import Session
 from core.model import User, UserQuest, Location, Character
+from core.utils import send_async
 
 plot.ioff()
 Session()
@@ -204,5 +205,58 @@ def __get_overall_successrate():
 
 @command_handler()
 def foray_statistic(bot: MQBot, update: Update, user: User):
-    logging.info("User '%s' called quest_statistic", user.id)
+    logging.info("User '%s' called foray_statistic", user.id)
     send_graph(bot, user)
+
+
+@command_handler()
+def foray_interval(bot: MQBot, update: Update, user: User):
+    logging.info("User '%s' called foray_interval", user.id)
+
+    limit = 20
+
+    go_stats = Session.query(
+        UserQuest
+    ).filter(
+        UserQuest.user_id == user.id,
+        UserQuest.location_id == QUEST_LOCATION_DEFEND_ID,
+    ).order_by(UserQuest.forward_date.desc()).limit(limit+1).all()
+
+
+    text = "<b>Last 10 forays:</b>\n"
+    text_stats = ""
+
+    newest = None
+    second_newest = None
+    last = None
+    length = len(go_stats)
+    for idx, stat in enumerate(go_stats):
+        if idx == 0:
+            newest = stat.from_date
+        elif idx == 1:
+            second_newest = stat.forward_date
+
+        if last:
+            text_stats += "Interval: {}\n\n".format(str(last.forward_date - stat.forward_date))
+        elif idx != 0:
+            text_stats += "Not enough data\n\n"
+
+        if idx != limit:
+            text_stats += "{}{}\n".format("🛡" if stat.successful else "⚔️", stat.from_date.strftime("%Y-%m-%d - %H:%M:%S UTC"))
+
+        if length - 1 == idx:
+            text_stats += "No more data\n"
+
+        last = stat
+
+
+    text = text + text_stats + "\n<i>Time in UTC</i>"
+    send_async(
+        bot,
+        chat_id=update.message.chat.id,
+        text=text,
+        parse_mode=ParseMode.HTML
+    )
+
+
+

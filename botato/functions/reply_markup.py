@@ -92,12 +92,10 @@ def generate_statistics_markup():
             KeyboardButton(STATISTICS_COMMAND_EXP),
             KeyboardButton(STATISTICS_COMMAND_SKILLS),
             KeyboardButton(STATISTICS_COMMAND_QUESTS),
-            KeyboardButton(STATISTICS_COMMAND_FORAY),
-        ],  # [
-        # KeyboardButton(STATISTICS_COMMAND_QUESTS_ALL),
-        # KeyboardButton(STATISTICS_COMMAND_ITEMS_ALL),
-        # ],
+        ],
         [
+            KeyboardButton(STATISTICS_COMMAND_FORAY),
+            KeyboardButton(STATISTICS_COMMAND_FORAY_GLOBAL),
             KeyboardButton(USER_COMMAND_BACK)
         ]
     ]
