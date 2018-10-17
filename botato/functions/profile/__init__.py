@@ -26,10 +26,10 @@ Session()
     allow_private=True
 )
 def report_received(bot: MQBot, update: Update, user: User):
-    # logging.info("Handling report for %s", user.id)
+    old_report = False
+
     if datetime.now() - update.message.forward_date > timedelta(minutes=1):
-        send_async(bot, chat_id=update.message.chat.id, text=MSG_REPORT_OLD)
-        return
+        old_report = True
 
     state = get_game_state()
     if user.is_api_stock_allowed and user.setting_automated_report and GameState.NO_REPORTS in state:
@@ -69,12 +69,18 @@ def report_received(bot: MQBot, update: Update, user: User):
             return
 
         if not report or (report and report.preliminary_report):
-            save_report(update.message.text, update.message.from_user.id, update.message.forward_date)
-            if report and report.castle != CASTLE:
+            saved_report = save_report(update.message.text, update.message.from_user.id, update.message.forward_date)
+            if saved_report and saved_report.castle != CASTLE:
                 __ban_traitor(bot, update.message.from_user.id)
+                return
             show_report(bot, update, user)
         else:
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
+    else:
+        logging.debug("Report from another user... Ignoring it")
+
+    if old_report:
+        send_async(bot, chat_id=user.id, text=MSG_REPORT_OLD)
 
 
 @command_handler(
@@ -435,7 +441,7 @@ def find_by_id(bot: MQBot, update: Update, user: User):
                     if adm.admin_type <= AdminType.FULL.value:
                         global_adm = True
                         break
-                
+
                 if global_adm:
                     __send_user_with_settings(bot, update, account, user)
                     return
