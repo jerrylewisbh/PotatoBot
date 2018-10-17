@@ -44,6 +44,11 @@ def report_received(bot: MQBot, update: Update, user: User):
     parsed_report = parse_report_text(update.message.text)
     logging.debug("Parsed report: %s", parsed_report)
     if parsed_report and user.character and parsed_report['name'] == user.character.name:
+        if old_report:
+            logging.info("User send old report")
+            send_async(bot, chat_id=user.id, text=MSG_REPORT_OLD)
+            return
+
         date = update.message.forward_date
         if update.message.forward_date.hour < 7:
             date = update.message.forward_date - timedelta(days=1)
@@ -78,10 +83,6 @@ def report_received(bot: MQBot, update: Update, user: User):
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
     else:
         logging.debug("Report from another user... Ignoring it")
-
-    if old_report:
-        send_async(bot, chat_id=user.id, text=MSG_REPORT_OLD)
-
 
 @command_handler(
     forward_from=CWBOT_ID,
