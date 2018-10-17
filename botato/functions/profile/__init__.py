@@ -423,9 +423,11 @@ def find_by_id(bot: MQBot, update: Update, user: User):
     if update.message.chat.type == 'private':
         msg = update.message.text.split(' ', 1)[1]
         msg = msg.replace('@', '')
+        logging.info("###")
+        logging.info(msg)
+        logging.info("###")
         if msg:
             account = Session.query(User).filter_by(id=msg).first()
-
             if account:
                 admin = Session.query(Admin).filter_by(user_id=update.message.from_user.id).all()
                 global_adm = False

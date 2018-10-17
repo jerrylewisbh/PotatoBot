@@ -21,6 +21,7 @@ Session()
 
 @command_handler(
     allow_group=True,
+    allow_banned=True, # Allowed because we handle this directly in code..
 )
 def welcome(bot: MQBot, update: Update, user: User):
     if update.message.chat.type not in ['group', 'supergroup']:
