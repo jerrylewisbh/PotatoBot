@@ -329,6 +329,36 @@ def __send_user_with_settings(bot: MQBot, update: Update, show_user: User, admin
             reply_markup=btns,
             parse_mode=ParseMode.HTML
         )
+    elif show_user:
+        permission_info = ""
+        if check_permission(admin_user, update, AdminType.FULL):
+            permission_info = "\n<b>Permissions (0 = Super, 1 = Global, 2 = Group):</b>\n"
+            for permission in show_user.permissions:
+                permission_info += "{}: {}\n".format(permission.group.title if permission.group else "Global",
+                                                     permission.admin_type)
+            permission_info += "\n"
+
+        text = "User: {}\n\n".format(show_user.username if show_user.username else show_user.id)
+        text += MSG_PROFILE_ADMIN_INFO_ADDON.format(
+            bool(show_user.is_banned),
+            bool(show_user.api_token),
+            bool(show_user.api_user_id),
+            bool(show_user.is_api_profile_allowed),
+            bool(show_user.is_api_stock_allowed),
+            bool(show_user.is_api_trade_allowed),
+            bool(show_user.setting_automated_report),
+            bool(show_user.setting_automated_deal_report),
+            bool(show_user.setting_automated_hiding),
+            bool(show_user.setting_automated_sniping),
+            "Suspended" if show_user.sniping_suspended else "",
+            permission_info,
+        )
+        send_async(
+            bot,
+            chat_id=update.message.chat.id,
+            text=text,
+            parse_mode=ParseMode.HTML
+        )
     else:
         send_async(bot, chat_id=update.message.chat.id, text=MSG_PROFILE_NOT_FOUND, parse_mode=ParseMode.HTML)
 

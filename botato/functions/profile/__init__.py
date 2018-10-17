@@ -435,7 +435,7 @@ def find_by_id(bot: MQBot, update: Update, user: User):
                     if adm.admin_type <= AdminType.FULL.value:
                         global_adm = True
                         break
-
+                
                 if global_adm:
                     __send_user_with_settings(bot, update, account, user)
                     return
