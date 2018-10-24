@@ -70,3 +70,5 @@ QUEST_LOCATION_FORAY_ID = 16
 QUEST_LOCATION_DEFEND_ID = 17
 QUEST_LOCATION_ARENA_ID = 18
 
+# These Squads are trusted and are exempt from bans!
+TRUSTED_SQUAD = 0

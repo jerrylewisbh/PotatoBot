@@ -6,7 +6,7 @@ from enum import Enum
 from sqlalchemy import collate
 from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
 
-from config import CASTLE
+from config import CASTLE, TRUSTED_SQUAD
 from core.bot import MQBot
 from core.utils import send_async
 from core.enums import CASTLE_MAP, AdminType, CLASS_MAP
@@ -135,8 +135,13 @@ def parse_hero(bot: MQBot, profile, user_id, date):
             Session.commit()
         else:
             Session.rollback()
-            __ban_traitor(bot, user_id)
-            logging.warning('%s is a traitor!', user_id)
+            user = Session.query(User).filter(User.id == user_id).first()
+            if user and user.is_squadmember and user.member.squad.chat_id not in TRUSTED_SQUAD:
+                logging.warning('%s is a traitor!', user_id)
+                __ban_traitor(bot, user_id)
+                return
+            elif user.member.squad.chat_id in TRUSTED_SQUAD:
+                logging.info("User %s is trusted and will not be banned.", user.id)
     return char
 
 

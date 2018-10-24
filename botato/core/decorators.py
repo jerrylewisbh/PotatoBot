@@ -31,8 +31,6 @@ def command_handler(min_permission: AdminType = AdminType.NOT_ADMIN, allow_priva
     Functions with this decorator get also the "User" object passed into or the decorator will fail. It should be safe
     to depend on the existence of a valid User object. permission_required:
 
-
-
     :type min_permission: AdminType
     :type allow_private: bool
     :type allow_banned: bool

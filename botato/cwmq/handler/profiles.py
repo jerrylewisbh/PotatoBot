@@ -4,7 +4,7 @@ import logging
 from sqlalchemy.exc import InterfaceError, InvalidRequestError
 from telegram import ParseMode
 
-from config import BOT_ONE_STEP_API, LOG_LEVEL_MQ, MQ_TESTING, CASTLE
+from config import BOT_ONE_STEP_API, LOG_LEVEL_MQ, MQ_TESTING, CASTLE, TRUSTED_SQUAD
 from core.bot import MQBot
 from core.enums import CASTLE_MAP, CLASS_MAP
 from core.texts import *
@@ -182,7 +182,12 @@ def profile_handler(channel, method, properties, body, dispatcher):
 
                 if data['payload']['profile']['castle'] != CASTLE:
                     if not user.is_banned:
-                        __ban_traitor(dispatcher.bot, user.id)
+                        if user and user.is_squadmember and user.member.squad.chat_id not in TRUSTED_SQUAD:
+                            logging.warning('%s is a traitor!', user.id)
+                            __ban_traitor(dispatcher.bot, user.id)
+                            return
+                        elif user.member.squad.chat_id in TRUSTED_SQUAD:
+                            logging.info("User %s is trusted and will not be banned.", user.id)
                 #else:
                 #    logging.debug("User is a potato! <3")
 

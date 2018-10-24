@@ -76,8 +76,12 @@ def report_received(bot: MQBot, update: Update, user: User):
         if not report or (report and report.preliminary_report):
             saved_report = save_report(update.message.text, update.message.from_user.id, update.message.forward_date)
             if saved_report and saved_report.castle != CASTLE:
-                __ban_traitor(bot, update.message.from_user.id)
-                return
+                if user and user.is_squadmember and user.member.squad.chat_id not in TRUSTED_SQUAD:
+                    logging.warning('%s is a traitor!', user.id)
+                    __ban_traitor(bot, user.id)
+                    return
+                elif user.member.squad.chat_id in TRUSTED_SQUAD:
+                    logging.info("User %s is trusted and will not be banned.", user.id)
             show_report(bot, update, user)
         else:
             send_async(bot, chat_id=update.message.from_user.id, text=MSG_REPORT_EXISTS)
@@ -137,7 +141,12 @@ def char_update(bot: MQBot, update: Update, user: User):
         )
 
     if char and char.castle != CASTLE:
-        __ban_traitor(bot, update.message.from_user.id)
+        if user and user.is_squadmember and user.member.squad.chat_id not in TRUSTED_SQUAD:
+            logging.warning('%s is a traitor!', user.id)
+            __ban_traitor(bot, user.id)
+            return
+        elif user.member.squad.chat_id in TRUSTED_SQUAD:
+            logging.info("User %s is trusted and will not be banned.", user.id)
 
 
 @command_handler(
